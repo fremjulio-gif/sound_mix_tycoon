@@ -1046,21 +1046,21 @@ function finishExport(wrap, fill, stat) {
   if (rules) {
     // Vérification du tempo
     if (STATE.bpm >= rules.idealBpmMin && STATE.bpm <= rules.idealBpmMax) {
-      comboBonus += 0.5; // +50% bonus
+      comboBonus += 0.1; // +50% bonus
     } else {
-      comboBonus -= 0.3; // Malus hors tempo
+      comboBonus -= 0.2; // Malus hors tempo
     }
     
     // Vérification de la voix
     if (STATE.vocal === rules.bestVocal) {
-      comboBonus += 0.5; // +50% bonus
+      comboBonus += 0.2; // +50% bonus
     } else if (STATE.vocal === rules.worstVocal) {
-      comboBonus -= 0.4; // Pénalité sévère
+      comboBonus -= 0.1; // Pénalité sévère
     }
   }
   
   // Limite pour ne pas descendre dans les négatifs si tout est faux
-  comboBonus = Math.max(0.2, comboBonus); 
+  comboBonus = Math.max(0.15, comboBonus); 
   // ==================================
 
   // Le roll est influencé par le combo (un bon combo abaisse le chiffre vers 0)
@@ -1071,11 +1071,11 @@ function finishExport(wrap, fill, stat) {
   
   // Les seuils ont été ajustés pour prendre en compte le comboBonus
   if (roll < 0.01) { 
-    rMult = 15; title = 'CLASSIQUE MONUMENTAL !'; msgType = 'legend';
+    rMult = 8; title = 'CLASSIQUE MONUMENTAL !'; msgType = 'legend';
   } else if (roll < 0.05) { 
-    rMult = 4; title = 'BANGER ABSOLU !'; msgType = 'legend';
+    rMult = 2; title = 'BANGER ABSOLU !'; msgType = 'legend';
   } else if (roll > 0.8) { // Si le roll est resté très haut = mauvais combo
-    rMult = 0.2; title = 'BIDE TOTAL...'; msgType = 'danger';
+    rMult = 0.15; title = 'BIDE TOTAL...'; msgType = 'danger';
   }
 
   // On applique le comboBonus aux gains finaux
