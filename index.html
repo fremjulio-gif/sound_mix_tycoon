@@ -24,6 +24,65 @@
     overflow: hidden;
   }
 
+  /* ===== LOGIN OVERLAY ===== */
+  #login-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at center, #11111a 0%, #050508 100%);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .login-box {
+    background: #0d0d14;
+    border: 1px solid #2a2a3a;
+    padding: 40px;
+    border-radius: 4px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 255, 136, 0.05);
+  }
+  .login-box h1 {
+    font-size: 24px;
+    color: #0fa;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+  .login-desc {
+    font-size: 11px;
+    color: #667;
+    margin-bottom: 24px;
+  }
+  #username-input {
+    background: #1a1a2e;
+    border: 1px solid #333;
+    padding: 12px;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    width: 250px;
+    margin-bottom: 20px;
+    text-align: center;
+    outline: none;
+    border-radius: 2px;
+    font-size: 14px;
+    text-transform: uppercase;
+  }
+  #username-input:focus { border-color: #0fa; }
+  .login-btn {
+    background: rgba(0, 200, 100, 0.15);
+    border: 1px solid #0c6;
+    color: #0fa;
+    padding: 12px 30px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+  .login-btn:hover { background: rgba(0, 200, 100, 0.3); }
+
   /* ===== HUD ===== */
   #hud {
     position: absolute;
@@ -37,12 +96,7 @@
     gap: 24px;
     z-index: 100;
   }
-  .hud-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-  }
+  .hud-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
   .hud-label { color: #666; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
   .hud-value { color: #00ff88; font-size: 14px; font-weight: bold; }
   
@@ -61,130 +115,47 @@
   }
 
   /* ===== VIEWS ===== */
-  .view {
-    position: absolute;
-    top: 48px; left: 0; right: 0; bottom: 0;
-    display: none;
-  }
+  .view { position: absolute; top: 48px; left: 0; right: 0; bottom: 0; display: none; }
   .view.active { display: block; }
-
-  /* ===== ROOM VIEW ===== */
   #room-view { background: #050508; }
-  #room-canvas {
-    width: 100%;
-    height: 100%;
-    image-rendering: pixelated;
-    transition: cursor 0.1s;
-  }
+  #room-canvas { width: 100%; height: 100%; image-rendering: pixelated; transition: cursor 0.1s; }
 
   /* ===== PC VIEW ===== */
-  #pc-view {
-    background: #111118;
-    display: none;
-    flex-direction: column;
-  }
+  #pc-view { background: #111118; display: none; flex-direction: column; }
   #pc-view.active { display: flex; }
-
   #pc-taskbar {
-    height: 36px;
-    background: #1a1a2e;
-    border-bottom: 1px solid #2a2a4a;
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    gap: 8px;
-    flex-shrink: 0;
+    height: 36px; background: #1a1a2e; border-bottom: 1px solid #2a2a4a;
+    display: flex; align-items: center; padding: 0 12px; gap: 8px; flex-shrink: 0;
   }
   .taskbar-btn {
-    padding: 4px 12px;
-    font-size: 11px;
-    font-family: 'Courier New', monospace;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid #333;
-    color: #ccc;
-    cursor: pointer;
-    border-radius: 3px;
-    transition: all 0.15s;
+    padding: 4px 12px; font-size: 11px; background: rgba(255,255,255,0.05);
+    border: 1px solid #333; color: #ccc; cursor: pointer; border-radius: 3px; transition: all 0.15s;
   }
   .taskbar-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
   .taskbar-btn.active { background: rgba(0,200,100,0.15); border-color: #0c6; color: #0fa; }
-  #taskbar-time {
-    margin-left: auto;
-    font-size: 12px;
-    color: #556;
-    font-weight: bold;
-  }
-  #back-btn {
-    padding: 4px 10px;
-    font-size: 11px;
-    font-family: 'Courier New', monospace;
-    background: rgba(255,80,80,0.1);
-    border: 1px solid #522;
-    color: #f88;
-    cursor: pointer;
-    border-radius: 3px;
-    margin-right: 8px;
-  }
+  #taskbar-time { margin-left: auto; font-size: 12px; color: #556; font-weight: bold; }
+  #back-btn { padding: 4px 10px; font-size: 11px; background: rgba(255,80,80,0.1); border: 1px solid #522; color: #f88; cursor: pointer; border-radius: 3px; margin-right: 8px; }
   #back-btn:hover { background: rgba(255,80,80,0.2); }
-
-  #pc-workspace {
-    flex: 1;
-    display: flex;
-    overflow: hidden;
-    position: relative;
-    background: radial-gradient(circle at center, #111118 0%, #050508 100%);
-  }
+  #pc-workspace { flex: 1; display: flex; overflow: hidden; position: relative; background: radial-gradient(circle at center, #111118 0%, #050508 100%); }
 
   /* ===== WINDOWS ===== */
   .window {
-    position: absolute;
-    background: #16161e;
-    border: 1px solid #2a2a3a;
-    border-radius: 4px;
-    display: none;
-    flex-direction: column;
-    min-width: 300px;
-    min-height: 200px;
-    z-index: 10;
-    box-shadow: 4px 4px 0 #000;
+    position: absolute; background: #16161e; border: 1px solid #2a2a3a;
+    border-radius: 4px; display: none; flex-direction: column; min-width: 300px; min-height: 200px;
+    z-index: 10; box-shadow: 4px 4px 0 #000;
   }
   .window.visible { display: flex; }
-  .window-titlebar {
-    height: 28px;
-    background: #1e1e2e;
-    border-bottom: 1px solid #2a2a3a;
-    display: flex;
-    align-items: center;
-    padding: 0 8px;
-    cursor: move;
-    flex-shrink: 0;
-    gap: 8px;
-  }
+  .window-titlebar { height: 28px; background: #1e1e2e; border-bottom: 1px solid #2a2a3a; display: flex; align-items: center; padding: 0 8px; cursor: move; flex-shrink: 0; gap: 8px; }
   .window-title { font-size: 11px; color: #aaa; letter-spacing: 1px; flex: 1; }
-  .win-close {
-    width: 14px; height: 14px;
-    background: #5a1a1a;
-    border: 1px solid #8a2a2a;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 9px;
-    display: flex; align-items: center; justify-content: center;
-    color: #f88;
-  }
+  .win-close { width: 14px; height: 14px; background: #5a1a1a; border: 1px solid #8a2a2a; border-radius: 50%; cursor: pointer; font-size: 9px; display: flex; align-items: center; justify-content: center; color: #f88; }
   .win-close:hover { background: #8a2a2a; }
-  .window-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-    scrollbar-width: thin;
-    scrollbar-color: #333 transparent;
-  }
+  .window-body { flex: 1; overflow-y: auto; padding: 12px; scrollbar-width: thin; scrollbar-color: #333 transparent; }
 
   /* ===== DAW WINDOW ===== */
   #daw-window { left: 20px; top: 20px; width: 520px; height: 480px; }
   .section-label { font-size: 9px; color: #556; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #222; }
   .genre-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 16px; }
-  .genre-btn { padding: 10px 6px; background: rgba(255,255,255,0.03); border: 1px solid #2a2a3a; color: #888; font-family: 'Courier New', monospace; font-size: 11px; cursor: pointer; text-align: center; border-radius: 3px; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .genre-btn { padding: 10px 6px; background: rgba(255,255,255,0.03); border: 1px solid #2a2a3a; color: #888; font-size: 11px; cursor: pointer; text-align: center; border-radius: 3px; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
   .genre-btn .genre-icon { font-size: 18px; }
   .genre-btn:hover { border-color: #444; color: #ccc; background: rgba(255,255,255,0.06); }
   .genre-btn.selected { border-color: #0c6; color: #0fa; background: rgba(0,200,100,0.1); }
@@ -197,7 +168,7 @@
   .slider-val { font-size: 12px; color: #0fa; min-width: 36px; text-align: right; }
 
   .toggle-row { display: flex; gap: 8px; margin-bottom: 16px; }
-  .toggle-btn { flex: 1; padding: 8px; background: rgba(255,255,255,0.03); border: 1px solid #2a2a3a; color: #666; font-family: 'Courier New', monospace; font-size: 11px; cursor: pointer; border-radius: 3px; transition: all 0.15s; }
+  .toggle-btn { flex: 1; padding: 8px; background: rgba(255,255,255,0.03); border: 1px solid #2a2a3a; color: #666; font-size: 11px; cursor: pointer; border-radius: 3px; transition: all 0.15s; }
   .toggle-btn.active { border-color: #06a; color: #4af; background: rgba(0,100,200,0.15); }
 
   #sequencer { display: grid; grid-template-columns: 60px repeat(16, 1fr); gap: 2px; margin-bottom: 16px; }
@@ -227,7 +198,7 @@
   .browser-tab.active { background: #0d0d14; color: #4af; border-color: #4af; }
   .browser-tab.locked { opacity: 0.4; cursor: not-allowed; }
   #browser-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 6px 8px; background: #0d0d14; border-radius: 3px; border: 1px solid #222; }
-  #browser-url { flex: 1; font-size: 11px; color: #667; font-family: 'Courier New', monospace; }
+  #browser-url { flex: 1; font-size: 11px; color: #667; }
   
   .browser-page { display: none; }
   .browser-page.active { display: block; }
@@ -246,7 +217,7 @@
   .plugin-warning { font-size: 10px; color: #a64; background: rgba(160,80,0,0.1); border: 1px solid #542; padding: 6px 8px; border-radius: 3px; margin-bottom: 10px; }
   .plugin-safe { font-size: 10px; color: #4a6; background: rgba(0,160,80,0.1); border: 1px solid #253; padding: 6px 8px; border-radius: 3px; margin-bottom: 10px; }
 
-  .dl-btn { width: 100%; padding: 10px; background: rgba(0,100,200,0.15); border: 1px solid #06a; color: #4af; font-family: 'Courier New', monospace; font-size: 12px; cursor: pointer; border-radius: 3px; transition: all 0.15s; }
+  .dl-btn { width: 100%; padding: 10px; background: rgba(0,100,200,0.15); border: 1px solid #06a; color: #4af; font-size: 12px; cursor: pointer; border-radius: 3px; transition: all 0.15s; }
   .dl-btn:hover { background: rgba(0,100,200,0.25); }
   .dl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -266,12 +237,12 @@
   .collab-item { background: #11111a; border: 1px solid #222; padding: 10px; border-radius: 4px; display: flex; flex-direction: column; gap: 6px; }
   .collab-title { font-size: 12px; color: #fff; }
   .collab-req { font-size: 10px; color: #888; }
-  .collab-btn { background: rgba(160, 64, 255, 0.15); border: 1px solid #a4f; color: #a4f; padding: 6px; border-radius: 2px; cursor: pointer; font-family: monospace; font-size: 11px; transition: 0.2s; }
+  .collab-btn { background: rgba(160, 64, 255, 0.15); border: 1px solid #a4f; color: #a4f; padding: 6px; border-radius: 2px; cursor: pointer; font-size: 11px; transition: 0.2s; }
   .collab-btn:hover { background: rgba(160, 64, 255, 0.3); }
   .collab-btn:disabled { background: #222; border-color: #444; color: #666; cursor: not-allowed; }
 
   /* ===== VIRUS / BSOD ===== */
-  #bsod { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0000aa; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; font-family: 'Courier New', monospace; padding: 60px; }
+  #bsod { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0000aa; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 60px; }
   #bsod.active { display: flex; }
   .bsod-face { font-size: 64px; margin-bottom: 24px; }
   .bsod-title { font-size: 28px; font-weight: bold; color: #fff; margin-bottom: 24px; }
@@ -281,8 +252,8 @@
   .bsod-recovery { font-size: 12px; color: #88a; margin-top: 12px; }
 
   /* ===== NOTIFICATIONS ===== */
-  #notif-container { position: fixed; bottom: 20px; right: 20px; z-index: 500; display: flex; flex-direction: column; gap: 8px; }
-  .notif { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 4px; padding: 10px 16px; font-size: 12px; min-width: 220px; animation: slideIn 0.2s ease; transition: opacity 0.3s; }
+  #notif-container { position: fixed; bottom: 20px; right: 20px; z-index: 500; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .notif { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 4px; padding: 10px 16px; font-size: 12px; min-width: 220px; animation: slideIn 0.2s ease; transition: opacity 0.3s; pointer-events: none; }
   .notif.success { border-left: 3px solid #0c6; color: #0fa; }
   .notif.danger { border-left: 3px solid #c33; color: #f88; }
   .notif.info { border-left: 3px solid #06a; color: #4af; }
@@ -319,6 +290,18 @@
 </style>
 </head>
 <body>
+
+<!-- ÉCRAN DE CONNEXION / SAUVEGARDE -->
+<div id="login-overlay">
+  <div class="login-box">
+    <h1>SOUND MIX TYCOON</h1>
+    <div class="login-desc">VOTRE PROGRESSION EST LIÉE À VOTRE PSEUDO</div>
+    <input type="text" id="username-input" placeholder="NOM D'ARTISTE..." maxlength="15" autocomplete="off">
+    <br>
+    <button class="login-btn" onclick="checkUser()">Lancer le Studio</button>
+  </div>
+</div>
+
 <div id="game-container">
 
   <div id="hud">
@@ -408,7 +391,7 @@
         <div class="window-body">
           <div id="browser-nav">
             <button class="browser-tab active" id="nav-crack" onclick="loadBrowserTab('crack')">☠ CrackZ (Free)</button>
-            <button class="browser-tab locked" id="nav-store" onclick="loadBrowserTab('store')">&#128176; AudioStore (LVL Studio Requis)</button>
+            <button class="browser-tab locked" id="nav-store" onclick="loadBrowserTab('store')">&#128176; AudioStore (VIP)</button>
           </div>
           <div id="browser-bar">
             <span style="color:#446;font-size:10px;">URL:</span>
@@ -444,8 +427,7 @@
           </div>
           
           <div class="section-label">Offres de Marques</div>
-          <div class="collab-list" id="collab-list">
-            </div>
+          <div class="collab-list" id="collab-list"></div>
         </div>
       </div>
 
@@ -478,14 +460,15 @@
 
 <script>
 // ============================================================
-//  GAME STATE
+//  GAME STATE & SAVE SYSTEM
 // ============================================================
-const STATE = {
+let STATE = {
+  pseudo: "",
   view: 'ROOM_VIEW',
   money: 50,
   reputation: 0,
   followers: 0,
-  studioLevel: 1, // 1: Chambre, 2: Studio (Se débloque à 500 Rep)
+  studioLevel: 1, // 1: Chambre, 2: Studio
   tracksProduced: 0,
   pluginsInstalled: 0,
   collabsDone: 0,
@@ -498,26 +481,57 @@ const STATE = {
   dawCooldown: 0, // En secondes
   virusActive: false,
   day: 1,
-  timeMin: 8 * 60, // Starts at 08:00
-  reputationMax: 1000, // Objectif visuel
+  timeMin: 8 * 60, // 08:00
+  reputationMax: 1000
 };
+
+function checkUser() {
+  const input = document.getElementById('username-input').value.trim().toUpperCase();
+  if (input.length < 3) {
+    notify("Pseudo trop court (3 lettres min.)", "danger");
+    return;
+  }
+  STATE.pseudo = input;
+  
+  const savedData = localStorage.getItem('SMT_SAVE_' + STATE.pseudo);
+  if (savedData) {
+    try {
+      const parsedData = JSON.parse(savedData);
+      STATE = { ...STATE, ...parsedData }; // Fusion pour garder les nouvelles variables du code
+      STATE.exporting = false; // Reset au cas où
+      STATE.virusActive = false;
+      notify("Session chargée. Bon retour " + STATE.pseudo + " !", "success");
+    } catch (e) {
+      console.error("Erreur de lecture de la sauvegarde", e);
+      notify("Fichier de sauvegarde corrompu.", "danger");
+    }
+  } else {
+    notify("Bienvenue dans l'industrie, " + STATE.pseudo + " !", "info");
+  }
+  
+  document.getElementById('login-overlay').style.display = 'none';
+  initGame(); // Démarrage du jeu uniquement après le login
+}
+
+function saveGame() {
+  if (!STATE.pseudo) return;
+  localStorage.setItem('SMT_SAVE_' + STATE.pseudo, JSON.stringify(STATE));
+}
 
 // ============================================================
 //  ASSET LOADER
 // ============================================================
-const const ASSETS = {
-  tex_floor_a: new Image(),
-  tex_floor_b: new Image(),
-  tex_wall_north: new Image(),
-  tex_wall_west: new Image(),
-  spr_desk: new Image(),
-  spr_chair: new Image(),
-  spr_monitors: new Image(),
-  spr_pc_tower: new Image(),
+const ASSETS = {
+  // Textures
+  tex_floor_a: new Image(), tex_floor_b: new Image(),
+  tex_wall_north: new Image(), tex_wall_west: new Image(),
+  // Sprites
+  spr_desk: new Image(), spr_chair: new Image(),
+  spr_monitors: new Image(), spr_pc_tower: new Image(),
   spr_speaker: new Image()
 };
 
-// Attribution des sources
+// Chemins des images
 ASSETS.tex_floor_a.src = 'tex_floor_a.png';
 ASSETS.tex_floor_b.src = 'tex_floor_b.png';
 ASSETS.tex_wall_north.src = 'tex_wall_north.png';
@@ -527,8 +541,10 @@ ASSETS.spr_chair.src = 'spr_chair.png';
 ASSETS.spr_monitors.src = 'spr_monitors.png';
 ASSETS.spr_pc_tower.src = 'spr_pc_tower.png';
 ASSETS.spr_speaker.src = 'spr_speaker.png';
-
  
+// ============================================================
+//  DATA CONSTANTS
+// ============================================================
 const GENRES = [
   { id: 'trap',      label: 'Trap',      icon: '&#129309;', reqRep: 0,   bonus: 1.0 },
   { id: 'lofi',      label: 'Lo-Fi',     icon: '&#9749;',   reqRep: 0,   bonus: 0.9 },
@@ -539,12 +555,9 @@ const GENRES = [
 ];
 
 const PLUGINS = [
-  // Site CrackZ (store: 'crack')
   { id: 'eq_pro',   name: 'EQ-Pro X64',     version:'2.1.3', risk: 0.20, price: 0,    store: 'crack', bonus: '+15% Gain', bonusVal: 0.15, desc: 'Egaliseur professionnel piraté. Risque de virus élevé.' },
   { id: 'comp_vst', name: 'CompFX Ultra',   version:'1.8.0', risk: 0.25, price: 0,    store: 'crack', bonus: '+20% Gain', bonusVal: 0.20, desc: 'Compresseur cracké par TeamR2R.' },
   { id: 'reverb3',  name: 'SpaceVerb 3',    version:'3.0.1', risk: 0.15, price: 0,    store: 'crack', bonus: '+10% Rep',  bonusVal: 0.10, desc: 'Reverb algorithmique. Source louche.' },
-  
-  // Site Légal (store: 'legal')
   { id: 'syn_legit',name: 'OmniSynth Pro',  version:'1.0.0', risk: 0.00, price: 1500, store: 'legal', bonus: '+40% Gain', bonusVal: 0.40, desc: 'Synthétiseur officiel avec licence. Aucun risque.' },
   { id: 'lim_legit',name: 'Mastering Limiter',version:'2.5', risk: 0.00, price: 2500, store: 'legal', bonus: '+50% Gain', bonusVal: 0.50, desc: 'Le standard de l\'industrie audio pour le mastering.' },
   { id: 'voc_legit',name: 'Vocal Tuner AI', version:'4.0',   risk: 0.00, price: 5000, store: 'legal', bonus: '+100% Rep', bonusVal: 1.00, desc: 'Correction de voix parfaite. Indispensable.' }
@@ -561,7 +574,7 @@ const COLLABS = [
 // ============================================================
 class AudioManager {
   constructor() { this.ctx = null; }
-  init {
+  init() {
     try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } 
     catch(e) {}
   }
@@ -604,16 +617,15 @@ function updateClock() {
   document.getElementById('hud-clock').textContent = `JOUR ${STATE.day} | ${hh}:${mm}`;
   document.getElementById('taskbar-time').textContent = `${hh}:${mm}`;
 
-  // Check Studio Unlock
   if (STATE.studioLevel === 1 && STATE.reputation >= 500) {
     STATE.studioLevel = 2;
     document.getElementById('nav-store').classList.remove('locked');
     document.getElementById('nav-store').textContent = '💰 AudioStore (VIP)';
     notify('LEVEL UP ! Vous avez accès au Store Légal !', 'legend', 6000);
     updateHUD();
+    saveGame();
   }
 
-  // Handle DAW Cooldown
   if (STATE.dawCooldown > 0) {
     STATE.dawCooldown--;
     const btn = document.getElementById('export-btn');
@@ -635,7 +647,7 @@ function startDAWCooldown(seconds) {
   const fill = document.getElementById('export-cooldown-fill');
   btn.disabled = true;
   fill.style.width = '100%';
-  fill.style.transition = 'none'; // reset
+  fill.style.transition = 'none'; 
   setTimeout(() => {
     fill.style.transition = `width ${seconds}s linear`;
     fill.style.width = '0%';
@@ -675,31 +687,10 @@ function switchView(target) {
 }
 
 // ============================================================
-//  ROOM VIEW — ISOMETRIC ENGINE (Medium FPV)
+//  ROOM VIEW — ISOMETRIC ENGINE & RENDER
 // ============================================================
-
-function fillImageFace(ctx, pts, img, fallbackHex) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(pts[0][0], pts[0][1]);
-  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
-  ctx.closePath();
-
-  if (img.complete && img.naturalWidth > 0) {
-    const pattern = ctx.createPattern(img, 'repeat');
-    // On translate le pattern pour qu'il soit ancré au point de départ de la face
-    ctx.translate(pts[0][0], pts[0][1]);
-    ctx.fillStyle = pattern;
-    ctx.fill();
-  } else {
-    ctx.fillStyle = fallbackHex;
-    ctx.fill();
-  }
-  ctx.restore();
-}
- 
 const ISO = {
-  tileW: 140, // Zoom intermédiaire
+  tileW: 140,
   tileH: 70,
   originX: 0, originY: 0,
   toScreen(gx, gy) {
@@ -712,102 +703,76 @@ const ISO = {
 
 function hz2px(h) { return h * ISO.tileH * 0.55; }
 
-// Texture procédurale ultra légère pour simuler le 64x64 sur chaque face
-function fillTexturedFace(ctx, pts, baseHex, variant=0) {
+function fillImageFace(ctx, pts, img, fallbackHex) {
   ctx.save();
   ctx.beginPath();
   ctx.moveTo(pts[0][0], pts[0][1]);
   for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
   ctx.closePath();
-  ctx.fillStyle = baseHex;
-  ctx.fill();
-  
-  // Pattern Pixel-Art
-  ctx.clip();
-  ctx.fillStyle = 'rgba(0,0,0,0.12)';
-  const minX = Math.floor(Math.min(...pts.map(p=>p[0])));
-  const maxX = Math.ceil(Math.max(...pts.map(p=>p[0])));
-  const minY = Math.floor(Math.min(...pts.map(p=>p[1])));
-  const maxY = Math.ceil(Math.max(...pts.map(p=>p[1])));
-  
-  for(let px = minX; px < maxX; px += 4) {
-      for(let py = minY; py < maxY; py += 4) {
-          // Hash statique simple basé sur la position et la variante
-          if((px + py*2 + variant*3) % 4 === 0) {
-              ctx.fillRect(px, py, 2, 2);
-          }
-      }
+
+  if (img.complete && img.naturalWidth > 0) {
+    const pattern = ctx.createPattern(img, 'repeat');
+    ctx.translate(pts[0][0], pts[0][1]);
+    ctx.fillStyle = pattern;
+    ctx.fill();
+  } else {
+    ctx.fillStyle = fallbackHex;
+    ctx.fill();
   }
   ctx.restore();
 }
 
-function fillFloorTile(ctx, pts, col1, col2) {
-  const [tl, tr, br, bl] = pts;
-  const cx = (tl[0] + tr[0] + br[0] + bl[0]) / 4, cy = (tl[1] + tr[1] + br[1] + bl[1]) / 4;
-  const quads = [
-    [tl, [(tl[0]+tr[0])/2,(tl[1]+tr[1])/2], [cx,cy], [(tl[0]+bl[0])/2,(tl[1]+bl[1])/2]],
-    [[(tl[0]+tr[0])/2,(tl[1]+tr[1])/2], tr, [(tr[0]+br[0])/2,(tr[1]+br[1])/2], [cx,cy]],
-    [[cx,cy], [(tr[0]+br[0])/2,(tr[1]+br[1])/2], br, [(br[0]+bl[0])/2,(br[1]+bl[1])/2]],
-    [[(tl[0]+bl[0])/2,(tl[1]+bl[1])/2], [cx,cy], [(br[0]+bl[0])/2,(br[1]+bl[1])/2], bl],
-  ];
-  quads.forEach((q, i) => { fillTexturedFace(ctx, q, i % 2 === 0 ? col1 : col2, i*5); });
+function drawSprite(ctx, img, gx, gy, targetWidth, yOffset = 0, label = 'OBJ') {
+    const { x, y } = ISO.toScreen(gx, gy);
+    
+    // Fallback robuste au cas où l'image n'est pas trouvée (ex: tests locaux)
+    if (!img.complete || img.naturalWidth === 0) {
+        ctx.save();
+        const hBox = targetWidth * 0.8;
+        const wBox = targetWidth;
+        
+        // Face Haut
+        ctx.fillStyle = 'rgba(255, 0, 128, 0.5)';
+        ctx.beginPath(); ctx.moveTo(x, y - hBox); ctx.lineTo(x + wBox/2, y - hBox + wBox/4); ctx.lineTo(x, y - hBox + wBox/2); ctx.lineTo(x - wBox/2, y - hBox + wBox/4); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        
+        // Face Gauche
+        ctx.fillStyle = 'rgba(200, 0, 100, 0.7)';
+        ctx.beginPath(); ctx.moveTo(x - wBox/2, y - hBox + wBox/4); ctx.lineTo(x, y - hBox + wBox/2); ctx.lineTo(x, y); ctx.lineTo(x - wBox/2, y - wBox/4); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        
+        // Face Droite
+        ctx.fillStyle = 'rgba(150, 0, 80, 0.9)';
+        ctx.beginPath(); ctx.moveTo(x, y - hBox + wBox/2); ctx.lineTo(x + wBox/2, y - hBox + wBox/4); ctx.lineTo(x + wBox/2, y - wBox/4); ctx.lineTo(x, y); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 12px Courier New';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, x, y - hBox/2);
+        ctx.restore();
+        return;
+    }
+
+    const ratio = targetWidth / img.width;
+    const h = img.height * ratio;
+    ctx.drawImage(img, x - targetWidth/2, (y - h) + yOffset, targetWidth, h);
 }
-
-function drawIsoCube(ctx, gx, gy, gz, colors, opts = {}) {
-  const { x, y } = ISO.toScreen(gx, gy);
-  const w = ISO.tileW, h = ISO.tileH, d = hz2px(gz);
-  const { topA = 1.0, leftA = 0.7, rightA = 0.85, shadow = true, variant=0 } = opts;
-  const [topC, leftC, rightC] = colors;
-
-  if (shadow && gz > 0) {
-    ctx.save(); ctx.globalAlpha = 0.2; ctx.fillStyle = '#000';
-    ctx.beginPath(); ctx.moveTo(x, y + h); ctx.lineTo(x + w/2, y + h/2); ctx.lineTo(x + w/2 + 4, y + h/2 + 2); ctx.lineTo(x + 4, y + h + 2); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(x - w/2, y + h/2); ctx.lineTo(x, y + h); ctx.lineTo(x + 4, y + h + 2); ctx.lineTo(x - w/2 + 4, y + h/2 + 2); ctx.closePath(); ctx.fill();
-    ctx.restore();
-  }
-
-  const topPts = [[x, y - d], [x + w/2, y - d + h/2], [x, y - d + h], [x - w/2, y - d + h/2]];
-  ctx.save(); ctx.globalAlpha = topA; fillTexturedFace(ctx, topPts, topC, variant); ctx.restore();
-
-  const leftPts = [[x - w/2, y - d + h/2], [x, y - d + h], [x, y + h], [x - w/2, y + h/2]];
-  ctx.save(); ctx.globalAlpha = leftA; fillTexturedFace(ctx, leftPts, leftC, variant+1); ctx.restore();
-
-  const rightPts = [[x + w/2, y - d + h/2], [x, y - d + h], [x, y + h], [x + w/2, y + h/2]];
-  ctx.save(); ctx.globalAlpha = rightA; fillTexturedFace(ctx, rightPts, rightC, variant+2); ctx.restore();
-
-  ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(x, y - d); ctx.lineTo(x + w/2, y - d + h/2); ctx.lineTo(x, y - d + h); ctx.lineTo(x - w/2, y - d + h/2); ctx.closePath(); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x, y - d + h); ctx.lineTo(x, y + h); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x - w/2, y - d + h/2); ctx.lineTo(x - w/2, y + h/2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x + w/2, y - d + h/2); ctx.lineTo(x + w/2, y + h/2); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x - w/2, y + h/2); ctx.lineTo(x, y + h); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x + w/2, y + h/2); ctx.lineTo(x, y + h); ctx.stroke();
-  ctx.restore();
-}
-
-const MAT = {
-  floorA: ['#252838','#181a26','#1e2030'], floorB: ['#1e2030','#13152a','#191c2d'],
-  desk:   ['#3a2515','#1e110a','#2e1c0f'], deskLeg:['#221308','#110904','#1c1006'],
-  pc:     ['#1e2e1a','#0d160a','#18280f'], mon:    ['#0d1f30','#06101a','#0a1a28'],
-  spkr:   ['#141422','#0a0a14','#10101e']
-};
 
 let deskClickZone = null, isHoveringDesk = false;
 
-
-
 function drawRoom() {
   const canvas = document.getElementById('room-canvas');
+  if(!canvas) return;
   const W = canvas.width, H = canvas.height, ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, W, H);
   const t = Date.now() / 1000;
-  const floatY = Math.sin(t * 1.5) * 8; // Effet flottant FPV
+  const floatY = Math.sin(t * 1.5) * 8; 
 
-  // Ajustement de l'origine pour que la vue soit bien centrée
   ISO.originX = W / 2;
   ISO.originY = H * 0.75 - (ISO.tileH * 1.5) + floatY;
 
-  // --- 1. LE SOL ---
+  // 1. SOL
   for (let gx = -1; gx <= 6; gx++) {
     for (let gy = -1; gy <= 6; gy++) {
       const { x, y } = ISO.toScreen(gx, gy);
@@ -817,45 +782,49 @@ function drawRoom() {
     }
   }
 
-  // --- 2. LES MURS ---
-  // Mur Nord (droite)
+  // 2. MURS NORD (le long de gy = -1) - Corrections géométriques pour monter verticalement
   for (let gx = -1; gx <= 6; gx++) {
     for (let lev = 0; lev < 3; lev++) {
         const { x, y } = ISO.toScreen(gx, -1);
-        const d = hz2px(lev);
-        const pts = [[x, y-d], [x+ISO.tileW/2, y-d+ISO.tileH/2], [x, y-d+ISO.tileH], [x-ISO.tileW/2, y-d+ISO.tileH/2]];
+        const baseZ = hz2px(lev);
+        const topZ = hz2px(lev + 1);
+        const pts = [
+            [x - ISO.tileW/2, y - topZ + ISO.tileH/2], 
+            [x,               y - topZ + ISO.tileH],   
+            [x,               y - baseZ + ISO.tileH],       
+            [x - ISO.tileW/2, y - baseZ + ISO.tileH/2]      
+        ];
         fillImageFace(ctx, pts, ASSETS.tex_wall_north, '#2e2a3c');
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1; ctx.stroke();
     }
   }
-  // Mur Ouest (gauche)
+  
+  // 2. MURS OUEST (le long de gx = -1)
   for (let gy = -1; gy <= 6; gy++) {
     for (let lev = 0; lev < 3; lev++) {
         const { x, y } = ISO.toScreen(-1, gy);
-        const d = hz2px(lev);
-        const pts = [[x, y-d], [x+ISO.tileW/2, y-d+ISO.tileH/2], [x, y-d+ISO.tileH], [x-ISO.tileW/2, y-d+ISO.tileH/2]];
+        const baseZ = hz2px(lev);
+        const topZ = hz2px(lev + 1);
+        const pts = [
+            [x,               y - topZ + ISO.tileH],   
+            [x + ISO.tileW/2, y - topZ + ISO.tileH/2], 
+            [x + ISO.tileW/2, y - baseZ + ISO.tileH/2],     
+            [x,               y - baseZ + ISO.tileH]        
+        ];
         fillImageFace(ctx, pts, ASSETS.tex_wall_west, '#1a1828');
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1; ctx.stroke();
     }
   }
 
-  // --- 3. MOBILIER (Ordre crucial pour le calquage) ---
-  
-  // Tour PC (au sol, à côté du bureau)
-  drawSprite(ctx, ASSETS.spr_pc_tower, 3.2, 1.2, 80); 
-  
-  // Bureau (Centre)
-  drawSprite(ctx, ASSETS.spr_desk, 1.5, 1.5, 280); 
-  
-  // Écrans (Sur le bureau - on augmente un peu gy pour le reculer sur la table)
-  drawSprite(ctx, ASSETS.spr_monitors, 1.5, 1.2, 180);
+  // 3. MOBILIER (Ordre calculé en profondeur Y)
+  drawSprite(ctx, ASSETS.spr_pc_tower, 3.2, 1.2, 80, 0, 'PC'); 
+  drawSprite(ctx, ASSETS.spr_desk, 1.5, 1.5, 280, 0, 'BUREAU'); 
+  drawSprite(ctx, ASSETS.spr_speaker, 0.6, 1.1, 70, 0, 'ENC G'); 
+  drawSprite(ctx, ASSETS.spr_speaker, 2.4, 1.1, 70, 0, 'ENC D'); 
+  drawSprite(ctx, ASSETS.spr_monitors, 1.5, 1.2, 180, 0, 'ECRANS');
+  drawSprite(ctx, ASSETS.spr_chair, 1.5, 3.0, 130, 0, 'CHAISE');
 
-  // Enceintes (Posées de chaque côté des écrans)
-  drawSprite(ctx, ASSETS.spr_speaker, 0.6, 1.1, 70); // Gauche
-  drawSprite(ctx, ASSETS.spr_speaker, 2.4, 1.1, 70); // Droite
-
-  // Chaise (Bien devant le bureau)
-  drawSprite(ctx, ASSETS.spr_chair, 1.5, 3.0, 130);
-
-  // --- 4. INTERACTION ---
+  // 4. INTERACTION BUREAU
   const { x: dxZone, y: dyZone } = ISO.toScreen(1.5, 1.5);
   deskClickZone = { x: dxZone, y: dyZone - 40, r: 160 };
 
@@ -870,23 +839,10 @@ function drawRoom() {
   }
 }
  
-function drawSprite(ctx, img, gx, gy, targetWidth, yOffset = 0) {
-    if (!img.complete || img.naturalWidth === 0) return;
-    const { x, y } = ISO.toScreen(gx, gy);
-    const ratio = targetWidth / img.width;
-    const h = img.height * ratio;
-    
-    // x - targetWidth/2 : centre l'image horizontalement sur le point
-    // y - h : pose le bas de l'image sur le sol
-    // + yOffset : ajustement manuel si l'image a du vide en bas
-    ctx.drawImage(img, x - targetWidth/2, (y - h) + yOffset, targetWidth, h);
-}
-
-
 function resizeRoomCanvas() {
   const canvas = document.getElementById('room-canvas');
-  canvas.width  = canvas.offsetWidth  || window.innerWidth;
-  canvas.height = canvas.offsetHeight || (window.innerHeight - 48);
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight - 48;
 }
 
 let roomAnimId = null;
@@ -920,12 +876,14 @@ function animateWaveform() {
   requestAnimationFrame(animateWaveform);
 }
 
-// Windows
+// ============================================================
+//  WINDOWS & UI LOGIC
+// ============================================================
 function openWindow(id, tabEl) {
   document.querySelector('#' + id).classList.add('visible');
   document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
   if (tabEl) tabEl.classList.add('active');
-  if(id === 'browser-window') loadBrowserTab('crack'); // Default
+  if(id === 'browser-window') loadBrowserTab(STATE.studioLevel >= 2 ? 'store' : 'crack'); 
   if(id === 'social-window') buildCollabs();
 }
 function closeWindow(id, tabId) {
@@ -1014,28 +972,25 @@ function finishExport(wrap, fill, stat) {
   const roll = Math.random();
   let rMult = 1; let msgType = 'success'; let title = 'Sortie Normale';
   
-  if (roll < 0.002) { // 1/500
+  if (roll < 0.002) { 
     rMult = 15; title = 'CLASSIQUE MONUMENTAL !'; msgType = 'legend';
-  } else if (roll < 0.01) { // ~1/100
+  } else if (roll < 0.01) { 
     rMult = 4; title = 'BANGER ABSOLU !'; msgType = 'legend';
-  } else if (roll < 0.03) { // ~1/50
+  } else if (roll < 0.03) { 
     rMult = 0.2; title = 'BIDE TOTAL...'; msgType = 'danger';
   }
 
   const money = Math.floor(baseMoney * genre.bonus * pluginMult * rMult);
   let rep = Math.floor(baseRep * genre.bonus * (rMult > 1 ? rMult : (rMult < 1 ? -0.5 : 1)));
   
-  // Flop punishes reputation
   if (rMult < 1) rep = -Math.abs(Math.floor(baseRep * 0.5));
 
   STATE.money += money; 
   STATE.reputation = Math.max(0, Math.min(STATE.reputation + rep, 9999));
   STATE.tracksProduced++;
   
-  // Followers gain based on rep gain
   if(rep > 0) STATE.followers += Math.floor(rep * (Math.random() * 5 + 5));
 
-  // Check unlocks
   GENRES.forEach(g => {
     if (!STATE.unlockedGenres.includes(g.id) && STATE.reputation >= g.reqRep) {
       STATE.unlockedGenres.push(g.id); notify(`Genre débloqué: ${g.label}!`, 'info', 5000);
@@ -1050,7 +1005,8 @@ function finishExport(wrap, fill, stat) {
   updateHUD(); updateStatsWindow(); buildGenreGrid(); buildCollabs();
   if(rMult > 1) spawnPixels(600, 300, '#a4f', 20);
 
-  startDAWCooldown(8); // 8 secondes de cooldown
+  startDAWCooldown(8); 
+  saveGame();
 }
 
 // ============================================================
@@ -1157,6 +1113,7 @@ function finishDownload(plugin, wrap) {
     notify(`Installation réussie: ${plugin.name}`, 'success', 5000);
     updateHUD(); updateStatsWindow();
     Audio.playBeep(550, 0.12, 0.2); Audio.playBeep(770, 0.08, 0.15);
+    saveGame();
   }
 }
 
@@ -1191,14 +1148,13 @@ function acceptCollab(id) {
   
   STATE.money += c.reward;
   STATE.collabsDone++;
-  
-  // Petite pénalité de street cred (rep baisse légèrement)
-  STATE.reputation = Math.max(0, STATE.reputation - 5);
+  STATE.reputation = Math.max(0, STATE.reputation - 5); // street cred penalty
   
   Audio.playBeep(900, 0.1); setTimeout(() => Audio.playBeep(1200, 0.15), 100);
-  notify(`Contrat signé ! +$${c.reward} (Gagne-pain...)`, 'info');
+  notify(`Contrat signé ! +$${c.reward}`, 'info');
   
   updateHUD(); buildCollabs(); updateStatsWindow();
+  saveGame();
 }
 
 // ============================================================
@@ -1213,7 +1169,12 @@ function triggerVirus() {
   let prog = 0; const bar = document.getElementById('bsod-bar-fill'), txt = document.getElementById('bsod-recovery');
   const intv = setInterval(() => {
     prog += 1; bar.style.width = prog + '%'; txt.textContent = `Recuperation: ${prog}%`;
-    if (prog >= 100) { clearInterval(intv); document.getElementById('bsod').classList.remove('active'); STATE.virusActive = false; notify('Systeme recupere.', 'info'); }
+    if (prog >= 100) { 
+      clearInterval(intv); 
+      document.getElementById('bsod').classList.remove('active'); 
+      STATE.virusActive = false; 
+      notify('Systeme recupere.', 'info'); 
+    }
   }, 100);
 }
 
@@ -1258,16 +1219,26 @@ roomCanvas.addEventListener('click', e => {
 
 document.getElementById('back-btn').addEventListener('click', () => { switchView('ROOM_VIEW'); setTimeout(() => roomLoop(), 350); });
 
-// INIT
-window.addEventListener('resize', resizeRoomCanvas);
-(function init() {
-  (); buildGenreGrid(); buildSequencer(); updateHUD(); updateStatsWindow();
+// ============================================================
+//  INIT THE GAME (Called by the Login Button)
+// ============================================================
+function initGame() {
+  resizeRoomCanvas(); 
+  buildGenreGrid(); 
+  buildSequencer(); 
+  updateHUD(); 
+  updateStatsWindow();
+  
   makeDraggable(document.getElementById('daw-window'),     document.getElementById('daw-titlebar'));
   makeDraggable(document.getElementById('browser-window'), document.getElementById('browser-titlebar'));
   makeDraggable(document.getElementById('social-window'),  document.getElementById('social-titlebar'));
   makeDraggable(document.getElementById('stats-window'),   document.getElementById('stats-titlebar'));
-  roomLoop(); setInterval(updateClock, 1000); setInterval(updateHUD, 2000);
-})();
+  
+  roomLoop(); 
+  setInterval(updateClock, 1000); 
+  setInterval(updateHUD, 2000);
+  setInterval(saveGame, 10000); // Auto-save toutes les 10 secondes
+}
 </script>
 </body>
 </html>
