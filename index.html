@@ -152,8 +152,8 @@
   .window-body { flex: 1; overflow-y: auto; padding: 12px; scrollbar-width: thin; scrollbar-color: #333 transparent; }
 
   /* ===== DAW WINDOW ===== */
-  #daw-window { left: 20px; top: 20px; width: 520px; height: 480px; }
-  .section-label { font-size: 9px; color: #556; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #222; }
+  #daw-window { left: 20px; top: 20px; width: 520px; height: 620px; }
+  .section-label { font-size: 12px; color: #556; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #222; }
   .genre-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 16px; }
   .genre-btn { padding: 10px 6px; background: rgba(255,255,255,0.03); border: 1px solid #2a2a3a; color: #888; font-size: 11px; cursor: pointer; text-align: center; border-radius: 3px; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
   .genre-btn .genre-icon { font-size: 18px; }
@@ -995,27 +995,92 @@ function startExport() {
   }, 100);
 }
 
+
+
+ 
+const COMBO_RULES = {
+  trap: {
+    idealBpmMin: 135,
+    idealBpmMax: 155,
+    bestVocal: 'M',
+    worstVocal: 'None'
+  },
+  lofi: {
+    idealBpmMin: 70,
+    idealBpmMax: 90,
+    bestVocal: 'None',
+    worstVocal: 'M'
+  },
+  pop: {
+    idealBpmMin: 95,
+    idealBpmMax: 120,
+    bestVocal: 'F',
+    worstVocal: 'M'
+  },
+  hiphop: {
+    idealBpmMin: 80,
+    idealBpmMax: 115,
+    bestVocal: 'M',
+    worstVocal: 'None'
+  },
+  house: {
+    idealBpmMin: 119,
+    idealBpmMax: 125,
+    bestVocal: 'None',
+    worstVocal: 'M' // Changé en 'M' pour éviter un conflit avec le bestVocal
+  }
+};
+
 function finishExport(wrap, fill, stat) {
   wrap.style.display = 'none'; fill.style.width = '0%'; STATE.exporting = false;
   
   const genre = GENRES.find(g => g.id === STATE.selectedGenre) || GENRES[0];
-  const baseMoney = 80 + Math.random() * 120;
-  const baseRep = 5 + Math.random() * 10;
+  const baseMoney = 9 + (Math.random() * 21); // Retourne entre 9$ et 30$
+  const baseRep = 5 + (Math.random() * 10);
   const pluginMult = 1 + (STATE.pluginsInstalled * 0.15);
 
-  const roll = Math.random();
+  // === CALCUL DU SCORE DE COMBO ===
+  const rules = COMBO_RULES[STATE.selectedGenre];
+  let comboBonus = 1; // Multiplicateur de base
+  
+  if (rules) {
+    // Vérification du tempo
+    if (STATE.bpm >= rules.idealBpmMin && STATE.bpm <= rules.idealBpmMax) {
+      comboBonus += 0.5; // +50% bonus
+    } else {
+      comboBonus -= 0.3; // Malus hors tempo
+    }
+    
+    // Vérification de la voix
+    if (STATE.vocal === rules.bestVocal) {
+      comboBonus += 0.5; // +50% bonus
+    } else if (STATE.vocal === rules.worstVocal) {
+      comboBonus -= 0.4; // Pénalité sévère
+    }
+  }
+  
+  // Limite pour ne pas descendre dans les négatifs si tout est faux
+  comboBonus = Math.max(0.2, comboBonus); 
+  // ==================================
+
+  // Le roll est influencé par le combo (un bon combo abaisse le chiffre vers 0)
+  let roll = Math.random();
+  roll = roll / comboBonus; 
+
   let rMult = 1; let msgType = 'success'; let title = 'Sortie Normale';
   
-  if (roll < 0.002) { 
+  // Les seuils ont été ajustés pour prendre en compte le comboBonus
+  if (roll < 0.01) { 
     rMult = 15; title = 'CLASSIQUE MONUMENTAL !'; msgType = 'legend';
-  } else if (roll < 0.01) { 
+  } else if (roll < 0.05) { 
     rMult = 4; title = 'BANGER ABSOLU !'; msgType = 'legend';
-  } else if (roll < 0.03) { 
+  } else if (roll > 0.8) { // Si le roll est resté très haut = mauvais combo
     rMult = 0.2; title = 'BIDE TOTAL...'; msgType = 'danger';
   }
 
-  const money = Math.floor(baseMoney * genre.bonus * pluginMult * rMult);
-  let rep = Math.floor(baseRep * genre.bonus * (rMult > 1 ? rMult : (rMult < 1 ? -0.5 : 1)));
+  // On applique le comboBonus aux gains finaux
+  const money = Math.floor(baseMoney * genre.bonus * pluginMult * rMult * comboBonus);
+  let rep = Math.floor(baseRep * genre.bonus * (rMult > 1 ? rMult : (rMult < 1 ? -0.5 : 1)) * comboBonus);
   
   if (rMult < 1) rep = -Math.abs(Math.floor(baseRep * 0.5));
 
@@ -1042,7 +1107,6 @@ function finishExport(wrap, fill, stat) {
   startDAWCooldown(8); 
   saveGame();
 }
-
 // ============================================================
 //  BROWSER & PLUGINS
 // ============================================================
