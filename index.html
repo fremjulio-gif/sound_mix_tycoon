@@ -6,6 +6,10 @@
 <title>Sound Mix Tycoon</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  canvas, div, img {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
   body {
     background: #0a0a0f;
     font-family: 'Courier New', monospace;
@@ -811,7 +815,7 @@ function switchView(target) {
 }
 
 // ============================================================
-//  ROOM VIEW — ISOMETRIC CANVAS
+//  ROOM VIEW — ISOMETRIC ENGINE v2 (pixel-art textures)
 // ============================================================
 const ISO = {
   tileW: 64, tileH: 32,
@@ -824,60 +828,215 @@ const ISO = {
   }
 };
 
-function drawIsoCube(ctx, gx, gy, gz, topColor, leftColor, rightColor, label) {
-  const { x, y } = ISO.toScreen(gx, gy);
-  const w = ISO.tileW, h = ISO.tileH, d = hz2px(gz);
+function hz2px(h) { return h * ISO.tileH * 0.55; }
 
-  // Top face
+// ── Seeded noise helper for stable per-pixel grain ──
+function noise2(x, y) {
+  const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+  return n - Math.floor(n);
+}
+
+// ── Paint a tiled checkerboard/dirt texture onto a face polygon ──
+function fillTexturedFace(ctx, pts, baseHex, tileSize, variant) {
+  ctx.save();
   ctx.beginPath();
-  ctx.moveTo(x,         y - d);
-  ctx.lineTo(x + w/2,   y - d + h/2);
-  ctx.lineTo(x,         y - d + h);
-  ctx.lineTo(x - w/2,   y - d + h/2);
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
   ctx.closePath();
-  ctx.fillStyle = topColor;
+  ctx.clip();
+
+  // Base fill
+  ctx.fillStyle = baseHex;
   ctx.fill();
-  ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 0.5; ctx.stroke();
 
-  // Left face
-  ctx.beginPath();
-  ctx.moveTo(x - w/2, y - d + h/2);
-  ctx.lineTo(x,       y - d + h);
-  ctx.lineTo(x,       y + h);
-  ctx.lineTo(x - w/2, y + h/2);
-  ctx.closePath();
-  ctx.fillStyle = leftColor; ctx.fill(); ctx.stroke();
+  // Tiny pixel-grain overlay — drawn as small rects for crisp-edge look
+  const bx = Math.min(...pts.map(p => p[0]));
+  const by = Math.min(...pts.map(p => p[1]));
+  const bw = Math.max(...pts.map(p => p[0])) - bx;
+  const bh = Math.max(...pts.map(p => p[1])) - by;
+  const gs = 2; // grain size in px
+  for (let px = 0; px < bw; px += gs) {
+    for (let py = 0; py < bh; py += gs) {
+      const n = noise2(Math.floor((bx + px) / gs) + variant * 17, Math.floor((by + py) / gs));
+      if (n > 0.72) {
+        const bright = n > 0.88 ? 0.18 : 0.08;
+        ctx.fillStyle = `rgba(255,255,255,${bright})`;
+        ctx.fillRect(bx + px, by + py, gs, gs);
+      } else if (n < 0.14) {
+        ctx.fillStyle = `rgba(0,0,0,0.22)`;
+        ctx.fillRect(bx + px, by + py, gs, gs);
+      }
+    }
+  }
+  ctx.restore();
+}
 
-  // Right face
+// ── Draw floor tile with repeating 4-sub-tile pattern ──
+function fillFloorTile(ctx, pts, col1, col2) {
+  // Split diamond into 4 quadrants to simulate 32×32 sub-tiles
+  const [tl, tr, br, bl] = pts; // top, right, bottom, left of diamond
+  const cx = (tl[0] + tr[0] + br[0] + bl[0]) / 4;
+  const cy = (tl[1] + tr[1] + br[1] + bl[1]) / 4;
+  const quads = [
+    [tl, [(tl[0]+tr[0])/2,(tl[1]+tr[1])/2], [cx,cy], [(tl[0]+bl[0])/2,(tl[1]+bl[1])/2]],
+    [[(tl[0]+tr[0])/2,(tl[1]+tr[1])/2], tr, [(tr[0]+br[0])/2,(tr[1]+br[1])/2], [cx,cy]],
+    [[cx,cy], [(tr[0]+br[0])/2,(tr[1]+br[1])/2], br, [(br[0]+bl[0])/2,(br[1]+bl[1])/2]],
+    [[(tl[0]+bl[0])/2,(tl[1]+bl[1])/2], [cx,cy], [(br[0]+bl[0])/2,(br[1]+bl[1])/2], bl],
+  ];
+  quads.forEach((q, i) => {
+    const c = i % 2 === 0 ? col1 : col2;
+    fillTexturedFace(ctx, q, c, 8, i);
+  });
+}
+
+// ── Master cube draw: 3 distinct textured faces + hard outlines ──
+function drawIsoCube(ctx, gx, gy, gz, colors, opts = {}) {
+  const { x, y } = ISO.toScreen(gx, gy);
+  const w = ISO.tileW, h = ISO.tileH;
+  const d = hz2px(gz);
+  const { topA = 1.0, leftA = 0.7, rightA = 0.85, label, shadow = true, variant = 0 } = opts;
+
+  // Light source: upper-left. Faces get brightened/darkened accordingly.
+  const [topC, leftC, rightC] = colors;
+
+  // Shadow on floor (painted before cube)
+  if (shadow && gz > 0) {
+    ctx.save();
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.moveTo(x,       y + h);
+    ctx.lineTo(x + w/2, y + h/2);
+    ctx.lineTo(x + w/2 + 4, y + h/2 + 2);
+    ctx.lineTo(x + 4,   y + h + 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 0.12;
+    ctx.beginPath();
+    ctx.moveTo(x - w/2, y + h/2);
+    ctx.lineTo(x,       y + h);
+    ctx.lineTo(x + 4,   y + h + 2);
+    ctx.lineTo(x - w/2 + 4, y + h/2 + 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // TOP face diamond points: top, right, bottom, left
+  const topPts = [
+    [x,       y - d],
+    [x + w/2, y - d + h/2],
+    [x,       y - d + h],
+    [x - w/2, y - d + h/2],
+  ];
+  ctx.save();
+  ctx.globalAlpha = topA;
+  fillTexturedFace(ctx, topPts, topC, 4, variant);
+  ctx.restore();
+
+  // LEFT face (west, darker — in shadow)
+  const leftPts = [
+    [x - w/2, y - d + h/2],
+    [x,       y - d + h],
+    [x,       y + h],
+    [x - w/2, y + h/2],
+  ];
+  ctx.save();
+  ctx.globalAlpha = leftA;
+  fillTexturedFace(ctx, leftPts, leftC, 4, variant + 7);
+  ctx.restore();
+
+  // RIGHT face (east, medium — partial light)
+  const rightPts = [
+    [x + w/2, y - d + h/2],
+    [x,       y - d + h],
+    [x,       y + h],
+    [x + w/2, y + h/2],
+  ];
+  ctx.save();
+  ctx.globalAlpha = rightA;
+  fillTexturedFace(ctx, rightPts, rightC, 4, variant + 13);
+  ctx.restore();
+
+  // Hard pixel outlines — 1px borders between faces
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  ctx.lineWidth = 1;
+  // Top silhouette
   ctx.beginPath();
-  ctx.moveTo(x + w/2, y - d + h/2);
-  ctx.lineTo(x,       y - d + h);
-  ctx.lineTo(x,       y + h);
-  ctx.lineTo(x + w/2, y + h/2);
+  ctx.moveTo(x, y - d);
+  ctx.lineTo(x + w/2, y - d + h/2);
+  ctx.lineTo(x, y - d + h);
+  ctx.lineTo(x - w/2, y - d + h/2);
   ctx.closePath();
-  ctx.fillStyle = rightColor; ctx.fill(); ctx.stroke();
+  ctx.stroke();
+  // Vertical edges
+  ctx.beginPath(); ctx.moveTo(x, y - d + h); ctx.lineTo(x, y + h); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x - w/2, y - d + h/2); ctx.lineTo(x - w/2, y + h/2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + w/2, y - d + h/2); ctx.lineTo(x + w/2, y + h/2); ctx.stroke();
+  // Bottom edges
+  ctx.beginPath(); ctx.moveTo(x - w/2, y + h/2); ctx.lineTo(x, y + h); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + w/2, y + h/2); ctx.lineTo(x, y + h); ctx.stroke();
+  ctx.restore();
 
   if (label) {
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = '7px Courier New';
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = '6px Courier New';
     ctx.textAlign = 'center';
     ctx.fillText(label, x, y - d + h/2 + 3);
+    ctx.restore();
   }
 }
 
-function hz2px(h) { return h * ISO.tileH * 0.5; }
-
-// Simple palette
-const P = {
-  floor_top:   '#1e2030', floor_left:  '#14162a', floor_right: '#191c2e',
-  wall_top:    '#252535', wall_left:   '#1a1a28', wall_right:  '#1e1e30',
-  desk_top:    '#2d1f12', desk_left:   '#1c1208', desk_right:  '#241a0f',
-  pc_top:      '#1a2a1a', pc_left:     '#0d1a0d', pc_right:    '#142014',
-  monitor_top: '#0a1a2a', monitor_left:'#060f18', monitor_right:'#0a162a',
-  chair_top:   '#1a0a0a', chair_left:  '#120606', chair_right: '#160808',
-  shelf_top:   '#2a1a08', shelf_left:  '#180f05', shelf_right: '#221508',
-  speaker_top: '#0a0a18', speaker_left:'#060610', speaker_right:'#08081a',
+// ── Colour palette: [top, left, right] per material ──
+// Light from upper-left: top = brightest, right = mid, left = darkest
+const MAT = {
+  // Floor tiles — grimy concrete
+  floorA: ['#252838','#181a26','#1e2030'],
+  floorB: ['#1e2030','#13152a','#191c2d'],
+  // Walls — cracked plaster / dirty wallpaper
+  wallN:  ['#2e2a3c','#1a1828','#252238'],  // north (back)
+  wallW:  ['#2a2638','#181523','#222035'],  // west (side)
+  // Desk — worn dark wood
+  desk:   ['#3a2515','#1e110a','#2e1c0f'],
+  deskLeg:['#221308','#110904','#1c1006'],
+  // PC tower — matte black chassis
+  pc:     ['#1e2e1a','#0d160a','#18280f'],
+  // Monitor — dark plastic / screen
+  mon:    ['#0d1f30','#06101a','#0a1a28'],
+  // Chair — cracked faux leather
+  chair:  ['#2a0d0d','#160606','#220a0a'],
+  // Shelf — old pine
+  shelf:  ['#3a2010','#1e1008','#2e180c'],
+  // Speakers — brushed metal/dark
+  spkr:   ['#141422','#0a0a14','#10101e'],
+  // Small items
+  vinyl:  ['#4a3a7a','#2a1e5e','#3a2a6e'],
+  cdcase: ['#7a2a2a','#4e1818','#6a2020'],
+  // Radiator
+  rad:    ['#3a3a2e','#22221a','#2e2e24'],
 };
+
+// ── Random floor stains + cable details (seeded, stable) ──
+const FLOOR_DETAILS = (() => {
+  const d = [];
+  const rng = (seed) => { const s = Math.sin(seed * 9301 + 49297) * 233280; return s - Math.floor(s); };
+  // stains
+  for (let i = 0; i < 12; i++) {
+    d.push({ type: 'stain', gx: rng(i*3)   * 4, gy: rng(i*3+1) * 4,
+             r: 3 + rng(i*3+2) * 8, alpha: 0.04 + rng(i*7) * 0.08,
+             col: rng(i) > 0.5 ? '#4a3010' : '#1a0a0a' });
+  }
+  // cable segments
+  for (let i = 0; i < 5; i++) {
+    d.push({ type: 'cable',
+             x1: rng(i*5+20), y1: rng(i*5+21),
+             x2: rng(i*5+22), y2: rng(i*5+23),
+             col: i % 2 === 0 ? '#1a1a2e' : '#2a1010' });
+  }
+  return d;
+})();
 
 let deskClickZone = null;
 
@@ -888,136 +1047,361 @@ function drawRoom() {
   ctx.clearRect(0, 0, W, H);
 
   ISO.originX = W / 2;
-  ISO.originY = H * 0.55;
+  ISO.originY = H * 0.52;
 
-  // Background gradient
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, '#08080f');
-  bg.addColorStop(1, '#10101a');
-  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  const t = Date.now() / 1000;
 
-  // Stars
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  const stars = [[50,30],[120,60],[200,20],[320,45],[450,15],[560,70],[640,35],[720,55],[50,80],[180,90]];
-  stars.forEach(([sx,sy]) => { ctx.fillRect(sx, sy * (H/200), 1, 1); });
+  // ── Sky / ceiling gradient (Gardé mais assombri pour le fond) ──
+  const sky = ctx.createLinearGradient(0, 0, W, H);
+  sky.addColorStop(0,   '#07070e');
+  sky.addColorStop(0.4, '#0c0c18');
+  sky.addColorStop(1,   '#121220');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
 
-  // Floor tiles
+  // Stars (static pixel dots)
+  const STARS = [[42,22],[118,55],[195,18],[315,42],[448,12],[558,68],[637,32],[718,52],[48,78],[176,88],[290,30],[520,44]];
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  STARS.forEach(([sx, sy]) => ctx.fillRect(Math.round(sx), Math.round(sy * H / 200), 1, 1));
+
+  // ── FLOOR ──
   for (let gx = -1; gx <= 4; gx++) {
     for (let gy = -1; gy <= 4; gy++) {
-      const baseCol = (gx + gy) % 2 === 0 ? '#1e2030' : '#1c1e2e';
-      const lc = (gx + gy) % 2 === 0 ? '#14162a' : '#12142a';
-      const rc = (gx + gy) % 2 === 0 ? '#191c2e' : '#17192c';
-      drawIsoCube(ctx, gx, gy, 0, baseCol, lc, rc);
+      const even = (gx + gy) % 2 === 0;
+      const mat = even ? MAT.floorA : MAT.floorB;
+      const { x, y } = ISO.toScreen(gx, gy);
+      const w = ISO.tileW, h = ISO.tileH;
+      const pts = [[x, y], [x+w/2, y+h/2], [x, y+h], [x-w/2, y+h/2]];
+      if (even) {
+        fillFloorTile(ctx, pts, mat[0], '#1b1d2e');
+      } else {
+        fillTexturedFace(ctx, pts, mat[0], 4, gx * 7 + gy);
+      }
+      ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, y); ctx.lineTo(x+w/2, y+h/2);
+      ctx.lineTo(x, y+h); ctx.lineTo(x-w/2, y+h/2);
+      ctx.closePath(); ctx.stroke();
     }
   }
 
-  // Back wall (north)
+  // ── FLOOR DETAILS: stains + cables ──
+  FLOOR_DETAILS.forEach(d => {
+    const sx = ISO.originX + (d.gx - d.gy) * (ISO.tileW / 2);
+    const sy = ISO.originY + (d.gx + d.gy) * (ISO.tileH / 2);
+    if (d.type === 'stain') {
+      ctx.save();
+      ctx.globalAlpha = d.alpha;
+      ctx.fillStyle = d.col;
+      ctx.beginPath();
+      ctx.ellipse(sx, sy + ISO.tileH / 2, d.r, d.r * 0.4, 0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    } else {
+      const x1 = ISO.originX + (d.x1 * 4 - d.y1 * 4) * (ISO.tileW / 2);
+      const y1 = ISO.originY + (d.x1 * 4 + d.y1 * 4) * (ISO.tileH / 2);
+      const x2 = ISO.originX + (d.x2 * 4 - d.y2 * 4) * (ISO.tileW / 2);
+      const y2 = ISO.originY + (d.x2 * 4 + d.y2 * 4) * (ISO.tileH / 2);
+      ctx.save();
+      ctx.globalAlpha = 0.55;
+      ctx.strokeStyle = d.col;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+  });
+
+  // ── NORTH WALL ──
   for (let gx = -1; gx <= 4; gx++) {
     for (let lev = 0; lev < 3; lev++) {
-      const lt = ctx.createLinearGradient(0,0,10,0);
-      drawIsoCube(ctx, gx, -1, lev, '#252535', '#1a1a28', '#1e1e30');
+      const stripe = (gx + lev) % 3 === 0;
+      const wc = stripe
+        ? ['#2e2840','#1a1528','#262038']
+        : ['#28243a','#161228','#201c32'];
+      drawIsoCube(ctx, gx, -1, lev, wc, { shadow: false, variant: gx * 3 + lev });
     }
   }
-  // Side wall (west)
-  for (let gy = -1; gy <= 4; gy++) {
+
+  // ── WEST WALL ──
+  for (let gy = 0; gy <= 4; gy++) {
     for (let lev = 0; lev < 3; lev++) {
-      drawIsoCube(ctx, -1, gy, lev, '#252535', '#1a1a28', '#1e1e30');
+      const stripe = (gy + lev) % 3 === 0;
+      const wc = stripe
+        ? ['#2a2838','#171525','#222030']
+        : ['#252235','#141222','#1e1c2e'];
+      drawIsoCube(ctx, -1, gy, lev, wc, { shadow: false, variant: gy * 3 + lev + 40 });
     }
   }
 
-  // Shelf on wall
-  drawIsoCube(ctx, 0, -1, 3, '#2a1a08', '#180f05', '#221508', 'SHELF');
-  drawIsoCube(ctx, 1, -1, 3, '#2a1a08', '#180f05', '#221508');
-  // Items on shelf (small cubes)
-  drawIsoCube(ctx, 0, -1, 4, '#3a2a6a', '#28185a', '#301e62', 'VNL');
-  drawIsoCube(ctx, 1, -1, 4, '#6a2a2a', '#5a1818', '#6a2020', 'CD');
+  // ── RADIATOR (west wall) ──
+  for (let seg = 0; seg < 3; seg++) {
+    drawIsoCube(ctx, -1, 1 + seg, 3, MAT.rad, { shadow: false, variant: seg });
+    const { x: rx, y: ry } = ISO.toScreen(-1, 1 + seg);
+    ctx.save(); ctx.strokeStyle = 'rgba(100,100,80,0.4)'; ctx.lineWidth = 1;
+    for (let f = 0; f < 4; f++) {
+      const fy = ry - hz2px(3) + f * 5 + 4;
+      ctx.beginPath();
+      ctx.moveTo(rx - ISO.tileW/2, fy + ISO.tileH/2);
+      ctx.lineTo(rx - ISO.tileW/2 + 8, fy + ISO.tileH/2 - 3);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 
-  // Desk
-  drawIsoCube(ctx, 1, 1, 1, P.desk_top, P.desk_left, P.desk_right);
-  drawIsoCube(ctx, 2, 1, 1, P.desk_top, P.desk_left, P.desk_right);
-  drawIsoCube(ctx, 1, 2, 1, P.desk_top, P.desk_left, P.desk_right);
-  drawIsoCube(ctx, 2, 2, 1, P.desk_top, P.desk_left, P.desk_right);
+  // ── SHELF ──
+  drawIsoCube(ctx, 0, -1, 3, MAT.shelf, { shadow: false, variant: 1 });
+  drawIsoCube(ctx, 1, -1, 3, MAT.shelf, { shadow: false, variant: 2 });
+  drawIsoCube(ctx, 2, -1, 3, MAT.shelf, { shadow: false, variant: 3 });
+  drawIsoCube(ctx, 0, -1, 4, MAT.vinyl, { shadow: false, variant: 5, label:'VNL' });
+  drawIsoCube(ctx, 1, -1, 4, MAT.cdcase, { shadow: false, variant: 6, label:'CDs' });
+  drawIsoCube(ctx, 2, -1, 4, MAT.spkr, { shadow: false, variant: 8, label:'AMP' });
 
-  // Desk legs
-  drawIsoCube(ctx, 1, 1, 0, '#1a0e06', '#0e0904', '#140b05');
-  drawIsoCube(ctx, 2, 2, 0, '#1a0e06', '#0e0904', '#140b05');
+  // ── DESK (2x2 surface, height 1) ──
+  for (let dx = 1; dx <= 2; dx++) {
+    for (let dy = 1; dy <= 2; dy++) {
+      drawIsoCube(ctx, dx, dy, 1, MAT.desk, { variant: dx + dy });
+    }
+  }
+  drawIsoCube(ctx, 1, 1, 0, MAT.deskLeg, { variant: 10 });
+  drawIsoCube(ctx, 2, 2, 0, MAT.deskLeg, { variant: 11 });
 
-  // PC tower
-  drawIsoCube(ctx, 3, 1, 1, P.pc_top, P.pc_left, P.pc_right);
-  drawIsoCube(ctx, 3, 1, 2, P.pc_top, P.pc_left, P.pc_right, 'PC');
-  // Blinking LED
-  const t = Date.now() / 500;
-  const ledAlpha = (Math.sin(t) + 1) / 2;
-  const { x: lcx, y: lcy } = ISO.toScreen(3, 1);
-  ctx.beginPath();
-  ctx.arc(lcx + 20, lcy - hz2px(2) + 5, 3, 0, Math.PI * 2);
-  ctx.fillStyle = `rgba(0,255,100,${ledAlpha})`;
-  ctx.fill();
+  // ── KEYBOARD on desk surface ──
+  {
+    const { x: kx, y: ky } = ISO.toScreen(1.5, 1.5);
+    const kd = hz2px(1);
+    ctx.save();
+    ctx.fillStyle = '#252535';
+    ctx.beginPath();
+    ctx.moveTo(kx,      ky - kd - 4);
+    ctx.lineTo(kx + 22, ky - kd + 7);
+    ctx.lineTo(kx,      ky - kd + 11);
+    ctx.lineTo(kx - 22, ky - kd + 7);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#1a1a2e'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = 'rgba(80,80,120,0.5)'; ctx.lineWidth = 0.5;
+    for (let row = 0; row < 3; row++) {
+      ctx.beginPath();
+      ctx.moveTo(kx - 18 + row * 3, ky - kd + 7 - row * 1.5);
+      ctx.lineTo(kx + 19 + row * 1, ky - kd + 8 - row * 1.5);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 
-  // Monitor
-  drawIsoCube(ctx, 2, 1, 2, P.monitor_top, P.monitor_left, P.monitor_right);
-  drawIsoCube(ctx, 1, 1, 2, P.monitor_top, P.monitor_left, P.monitor_right, 'MON');
-  // Screen glow
-  const { x: mx, y: my } = ISO.toScreen(1.5, 1);
-  const glow = ctx.createRadialGradient(mx, my - hz2px(2), 0, mx, my - hz2px(2), 40);
-  glow.addColorStop(0, 'rgba(0,150,255,0.15)');
-  glow.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = glow;
-  ctx.fillRect(mx - 50, my - hz2px(2) - 40, 100, 80);
+  // ── MOUSE on desk ──
+  {
+    const { x: mx2, y: my2 } = ISO.toScreen(2.2, 1.3);
+    ctx.save();
+    ctx.fillStyle = '#1e1e2e';
+    ctx.beginPath();
+    ctx.ellipse(mx2, my2 - hz2px(1) + 6, 6, 4, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#111'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+  }
 
-  // Speakers
-  drawIsoCube(ctx, 0, 1, 2, P.speaker_top, P.speaker_left, P.speaker_right, 'SPK');
-  drawIsoCube(ctx, 3, 2, 2, P.speaker_top, P.speaker_left, P.speaker_right, 'SPK');
+  // ── PC TOWER ──
+  drawIsoCube(ctx, 3, 1, 1, MAT.pc, { variant: 20 });
+  drawIsoCube(ctx, 3, 1, 2, MAT.pc, { variant: 21, label: 'PC' });
+  {
+    const { x: px, y: py } = ISO.toScreen(3, 1);
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0,180,80,0.5)'; ctx.lineWidth = 1;
+    for (let b = 0; b < 3; b++) {
+      ctx.strokeRect(px + 4, py - hz2px(2) + 4 + b * 5, 12, 3);
+    }
+    ctx.restore();
+  }
+  {
+    const { x: lcx, y: lcy } = ISO.toScreen(3, 1);
+    const ledAlpha = (Math.sin(t * 2.5) + 1) / 2;
+    ctx.beginPath();
+    ctx.arc(lcx + 18, lcy - hz2px(2) + 6, 3, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,255,100,${0.4 + ledAlpha * 0.6})`;
+    ctx.fill();
+  }
 
-  // Chair
-  drawIsoCube(ctx, 2, 3, 0, P.chair_top, P.chair_left, P.chair_right);
-  drawIsoCube(ctx, 2, 3, 1, P.chair_top, P.chair_left, P.chair_right, 'CHR');
+  // ── MONITOR (wide, 2 cubes) ──
+  drawIsoCube(ctx, 2, 1, 2, MAT.mon, { variant: 30 });
+  drawIsoCube(ctx, 1, 1, 2, MAT.mon, { variant: 31 });
+  {
+    const { x: scx, y: scy } = ISO.toScreen(1.5, 1);
+    const sd = hz2px(2);
+    ctx.save();
+    ctx.globalAlpha = 0.7;
+    ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = -18; i < 18; i++) {
+      const wx = scx + i * 2;
+      const wy = scy - sd + ISO.tileH/2 + Math.sin(i * 0.6 + t * 4) * 4;
+      i === -18 ? ctx.moveTo(wx, wy) : ctx.lineTo(wx, wy);
+    }
+    ctx.stroke();
+    const ph = scx - 18 + ((t * 2) % 1) * 36;
+    ctx.strokeStyle = 'rgba(0,200,255,0.6)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(ph, scy - sd + 6); ctx.lineTo(ph, scy - sd + ISO.tileH - 4); ctx.stroke();
+    ctx.restore();
+  }
 
-  // Keyboard on desk
-  const { x: kx, y: ky } = ISO.toScreen(1.5, 1.5);
-  ctx.fillStyle = '#2a2a3a';
-  ctx.fillRect(kx - 20, ky - hz2px(1) + 5, 40, 10);
-  ctx.strokeStyle = '#333';
-  ctx.strokeRect(kx - 20, ky - hz2px(1) + 5, 40, 10);
+  // ── SPEAKERS ──
+  drawIsoCube(ctx, 0, 1, 2, MAT.spkr, { variant: 40, label: 'L' });
+  drawIsoCube(ctx, 3, 2, 2, MAT.spkr, { variant: 41, label: 'R' });
+  [ISO.toScreen(0,1), ISO.toScreen(3,2)].forEach(({ x: sx, y: sy }, si) => {
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = si === 0 ? '#2a2a5a' : '#2a2a5a';
+    ctx.lineWidth = 1;
+    for (let r = 2; r < 8; r += 2) {
+      ctx.beginPath();
+      ctx.arc(sx + ISO.tileW * 0.22, sy - hz2px(2) + ISO.tileH * 0.38, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  });
 
-  // Vinyl record on floor corner
-  const { x: vx, y: vy } = ISO.toScreen(0, 3);
-  ctx.beginPath();
-  ctx.arc(vx, vy, 14, 0, Math.PI * 2);
-  ctx.fillStyle = '#1a1a1a'; ctx.fill();
-  ctx.beginPath();
-  ctx.arc(vx, vy, 5, 0, Math.PI * 2);
-  ctx.fillStyle = '#333'; ctx.fill();
-  ctx.beginPath();
-  ctx.arc(vx, vy, 2, 0, Math.PI * 2);
-  ctx.fillStyle = '#555'; ctx.fill();
+  // ── CHAIR ──
+  drawIsoCube(ctx, 2, 3, 0, MAT.chair, { variant: 50 });
+  drawIsoCube(ctx, 2, 3, 1, MAT.chair, { variant: 51 });
+  {
+    const { x: chx, y: chy } = ISO.toScreen(2, 3);
+    const cols = ['#3a0f0f','#220808','#2e0c0c'];
+    drawIsoCube(ctx, 1, 3, 2, cols, { variant: 52 });
+  }
 
-  // Posters on wall
-  const { x: px1, y: py1 } = ISO.toScreen(2, -1);
-  ctx.fillStyle = '#3a0a0a';
-  ctx.fillRect(px1 - 12, py1 - hz2px(2) - 20, 24, 18);
-  ctx.strokeStyle = '#5a1a1a'; ctx.lineWidth = 0.5;
-  ctx.strokeRect(px1 - 12, py1 - hz2px(2) - 20, 24, 18);
-  ctx.fillStyle = '#ff4444'; ctx.font = '5px Courier New'; ctx.textAlign = 'center';
-  ctx.fillText('BEATS', px1, py1 - hz2px(2) - 9);
+  // ── VINYL RECORD on floor ──
+  {
+    const { x: vx, y: vy } = ISO.toScreen(0.5, 3.5);
+    ctx.save();
+    ctx.globalAlpha = 0.2; ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.ellipse(vx + 2, vy + 14, 15, 5, 0, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+    for (let r = 14; r > 2; r -= 2) {
+      ctx.beginPath(); ctx.arc(vx, vy, r, 0, Math.PI*2);
+      const alpha = r > 10 ? 0.08 : 0.05;
+      ctx.strokeStyle = `rgba(80,40,80,${alpha})`; ctx.lineWidth = 1; ctx.stroke();
+    }
+    ctx.beginPath(); ctx.arc(vx, vy, 14, 0, Math.PI*2);
+    ctx.fillStyle = '#150e1e'; ctx.fill();
+    ctx.strokeStyle = '#2a1a3a'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.beginPath(); ctx.arc(vx, vy, 4, 0, Math.PI*2);
+    ctx.fillStyle = '#c8384a'; ctx.fill();
+    ctx.beginPath(); ctx.arc(vx, vy, 1.5, 0, Math.PI*2);
+    ctx.fillStyle = '#222'; ctx.fill();
+    ctx.restore();
+  }
 
-  // Compute desk click zone
+  // ── PIZZA BOX on floor ──
+  {
+    const { x: pbx, y: pby } = ISO.toScreen(3.4, 3.2);
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = '#3a2808';
+    ctx.beginPath();
+    ctx.moveTo(pbx, pby - 3);
+    ctx.lineTo(pbx + 14, pby + 4);
+    ctx.lineTo(pbx, pby + 9);
+    ctx.lineTo(pbx - 14, pby + 4);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#221508'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = '#c85a18'; ctx.font = '5px Courier New'; ctx.textAlign = 'center';
+    ctx.fillText('PIZZA', pbx, pby + 6);
+    ctx.restore();
+  }
+
+  // ── ENERGY CAN on desk ──
+  {
+    const { x: ecx, y: ecy } = ISO.toScreen(1.2, 2.2);
+    ctx.save();
+    ctx.fillStyle = '#1a2a08';
+    ctx.beginPath();
+    ctx.moveTo(ecx, ecy - hz2px(1) - 10);
+    ctx.lineTo(ecx + 5, ecy - hz2px(1) + 2);
+    ctx.lineTo(ecx, ecy - hz2px(1) + 8);
+    ctx.lineTo(ecx - 5, ecy - hz2px(1) + 2);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#0a1804'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = '#4aff00'; ctx.font = '4px Courier New'; ctx.textAlign = 'center';
+    ctx.fillText('NRG', ecx, ecy - hz2px(1) + 2);
+    ctx.restore();
+  }
+
+  // ── POSTERS on north wall ──
+  {
+    const { x: px1, y: py1 } = ISO.toScreen(2, -1);
+    ctx.fillStyle = '#3a0808';
+    ctx.fillRect(px1 - 14, py1 - hz2px(2.5) - 18, 26, 20);
+    ctx.strokeStyle = '#6a1010'; ctx.lineWidth = 1;
+    ctx.strokeRect(px1 - 14, py1 - hz2px(2.5) - 18, 26, 20);
+    for (let b = 0; b < 6; b++) {
+      const bh = 3 + Math.floor(Math.sin(b * 1.3) * 4 + 4);
+      ctx.fillStyle = `rgba(200,40,40,0.7)`;
+      ctx.fillRect(px1 - 12 + b * 4, py1 - hz2px(2.5) - 4 - bh, 3, bh);
+    }
+    ctx.fillStyle = '#ff6666'; ctx.font = '4px Courier New'; ctx.textAlign = 'center';
+    ctx.fillText('TRAP GOD', px1, py1 - hz2px(2.5) - 20);
+  }
+  {
+    const { x: px2, y: py2 } = ISO.toScreen(3.5, -1);
+    ctx.fillStyle = '#081830';
+    ctx.fillRect(px2 - 14, py2 - hz2px(1.5) - 18, 26, 20);
+    ctx.strokeStyle = '#0a3060'; ctx.lineWidth = 1;
+    ctx.strokeRect(px2 - 14, py2 - hz2px(1.5) - 18, 26, 20);
+    ctx.fillStyle = '#4488ff'; ctx.font = '4px Courier New'; ctx.textAlign = 'center';
+    ctx.fillText('808 MAFIA', px2, py2 - hz2px(1.5) - 20);
+    for (let c = 0; c < 3; c++) {
+      ctx.beginPath();
+      ctx.arc(px2, py2 - hz2px(1.5) - 8, 3 + c * 3, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(40,100,220,${0.6 - c * 0.15})`; ctx.stroke();
+    }
+  }
+
+  // ── WINDOW (sans le filtre moonlight) ──
+  {
+    const { x: wx, y: wy } = ISO.toScreen(3, -1);
+    ctx.fillStyle = '#0a1020';
+    ctx.fillRect(wx - 10, wy - hz2px(2.2) - 22, 20, 24);
+    ctx.strokeStyle = '#1a2a3a'; ctx.lineWidth = 1;
+    ctx.strokeRect(wx - 10, wy - hz2px(2.2) - 22, 20, 24);
+    ctx.strokeStyle = 'rgba(100,140,200,0.4)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(wx, wy - hz2px(2.2) - 22); ctx.lineTo(wx, wy - hz2px(2.2) + 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(wx - 10, wy - hz2px(2.2) - 10); ctx.lineTo(wx + 10, wy - hz2px(2.2) - 10); ctx.stroke();
+  }
+
+  // ── FILM GRAIN overlay pass (Maintenu car ça donne le grain de la texture) ──
+  {
+    const grainSeed = Math.floor(t * 12);
+    ctx.save();
+    ctx.globalAlpha = 0.025;
+    for (let gx2 = 0; gx2 < W; gx2 += 2) {
+      for (let gy2 = 0; gy2 < H; gy2 += 2) {
+        if (noise2(gx2 / 2 + grainSeed * 73, gy2 / 2 + grainSeed * 37) > 0.55) {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(gx2, gy2, 2, 2);
+        }
+      }
+    }
+    ctx.restore();
+  }
+
+  // ── DESK CLICK ZONE ──
   const { x: dx, y: dy } = ISO.toScreen(1.5, 1.5);
-  deskClickZone = { x: dx, y: dy - hz2px(1), r: 50 };
+  deskClickZone = { x: dx, y: dy - hz2px(1), r: 52 };
 
-  // Hint text
-  ctx.fillStyle = 'rgba(0,200,100,0.6)';
-  ctx.font = '11px Courier New';
+  ctx.save();
+  ctx.globalAlpha = 0.75;
+  ctx.fillStyle = '#00ff88';
+  ctx.font = 'bold 11px Courier New';
   ctx.textAlign = 'center';
-  ctx.fillText('[ Clique sur le bureau ]', dx, dy - hz2px(1) - 30);
-
-  // Pulsing ring around desk
-  const ringR = 40 + Math.sin(Date.now() / 400) * 5;
-  ctx.beginPath();
-  ctx.arc(dx, dy - hz2px(1), ringR, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(0,200,100,0.3)';
+  ctx.fillText('[ Clique sur le bureau ]', dx, dy - hz2px(1) - 34);
+  const ringR = 44 + Math.sin(t * 2.5) * 5;
+  ctx.strokeStyle = 'rgba(0,255,136,0.35)';
   ctx.lineWidth = 2;
-  ctx.stroke();
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.arc(dx, dy - hz2px(1), ringR, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
 }
 
 function resizeRoomCanvas() {
