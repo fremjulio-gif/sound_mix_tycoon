@@ -502,6 +502,35 @@ const STATE = {
   reputationMax: 1000, // Objectif visuel
 };
 
+// ============================================================
+//  ASSET LOADER
+// ============================================================
+const ASSETS = {
+  // Textures 64x64
+  tex_floor_a: new Image(),
+  tex_floor_b: new Image(),
+  tex_wall_north: new Image(),
+  tex_wall_west: new Image(),
+  
+  // Sprites Iso
+  spr_desk: new Image(),
+  spr_chair: new Image(),
+  spr_monitors: new Image(),
+  spr_pc_tower: new Image(),
+  spr_speaker: new Image()
+};
+
+// Attribution des sources (assure-toi que les fichiers sont dans le même dossier)
+ASSETS.tex_floor_a.src = 'tex_floor_a.png';
+ASSETS.tex_floor_b.src = 'tex_floor_b.png';
+ASSETS.tex_wall_north.src = 'tex_wall_north.png';
+ASSETS.tex_wall_west.src = 'tex_wall_west.png';
+ASSETS.spr_desk.src = 'spr_desk.png';
+ASSETS.spr_chair.src = 'spr_chair.png';
+ASSETS.spr_monitors.src = 'spr_monitors.png';
+ASSETS.spr_pc_tower.src = 'spr_pc_tower.png';
+ASSETS.spr_speaker.src = 'spr_speaker.png';
+ 
 const GENRES = [
   { id: 'trap',      label: 'Trap',      icon: '&#129309;', reqRep: 0,   bonus: 1.0 },
   { id: 'lofi',      label: 'Lo-Fi',     icon: '&#9749;',   reqRep: 0,   bonus: 0.9 },
@@ -650,6 +679,27 @@ function switchView(target) {
 // ============================================================
 //  ROOM VIEW — ISOMETRIC ENGINE (Medium FPV)
 // ============================================================
+
+function fillImageFace(ctx, pts, img, fallbackHex) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.closePath();
+
+  if (img.complete && img.naturalWidth > 0) {
+    const pattern = ctx.createPattern(img, 'repeat');
+    // On translate le pattern pour qu'il soit ancré au point de départ de la face
+    ctx.translate(pts[0][0], pts[0][1]);
+    ctx.fillStyle = pattern;
+    ctx.fill();
+  } else {
+    ctx.fillStyle = fallbackHex;
+    ctx.fill();
+  }
+  ctx.restore();
+}
+ 
 const ISO = {
   tileW: 140, // Zoom intermédiaire
   tileH: 70,
@@ -746,85 +796,78 @@ const MAT = {
 
 let deskClickZone = null, isHoveringDesk = false;
 
-function drawRoom() {
+ffunction drawRoom() {
   const canvas = document.getElementById('room-canvas');
   const W = canvas.width, H = canvas.height, ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, W, H);
-
   const t = Date.now() / 1000;
-  const floatY = Math.sin(t * 1.5) * 8; // Float subtil
+  const floatY = Math.sin(t * 1.5) * 8;
 
   ISO.originX = W / 2;
   ISO.originY = H * 0.70 - (ISO.tileH * 1.5) + floatY;
 
-  const sky = ctx.createLinearGradient(0, 0, W, H);
-  sky.addColorStop(0, '#07070e'); sky.addColorStop(1, '#121220');
-  ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
-
-  // Sol
+  // 1. SOL (TEXTURES)
   for (let gx = -1; gx <= 5; gx++) {
     for (let gy = -1; gy <= 5; gy++) {
-      const even = (gx + gy) % 2 === 0, mat = even ? MAT.floorA : MAT.floorB;
-      const { x, y } = ISO.toScreen(gx, gy), w = ISO.tileW, h = ISO.tileH;
+      const { x, y } = ISO.toScreen(gx, gy);
+      const w = ISO.tileW, h = ISO.tileH;
       const pts = [[x, y], [x+w/2, y+h/2], [x, y+h], [x-w/2, y+h/2]];
-      if (even) fillFloorTile(ctx, pts, mat[0], '#1b1d2e');
-      else fillTexturedFace(ctx, pts, mat[0], gx*10+gy);
-      
-      ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x+w/2, y+h/2); ctx.lineTo(x, y+h); ctx.lineTo(x-w/2, y+h/2); ctx.closePath(); ctx.stroke();
+      const img = (gx + gy) % 2 === 0 ? ASSETS.tex_floor_a : ASSETS.tex_floor_b;
+      fillImageFace(ctx, pts, img, '#252838');
     }
   }
 
-  // Murs
+  // 2. MURS (TEXTURES)
   for (let gx = -1; gx <= 5; gx++) {
-    for (let lev = 0; lev < 5; lev++) {
-      const wc = (gx + lev) % 3 === 0 ? ['#2e2840','#1a1528','#262038'] : ['#28243a','#161228','#201c32'];
-      drawIsoCube(ctx, gx, -1, lev, wc, { shadow: false, variant: gx+lev*5 });
-    }
-  }
-  for (let gy = 0; gy <= 5; gy++) {
-    for (let lev = 0; lev < 5; lev++) {
-      const wc = (gy + lev) % 3 === 0 ? ['#2a2838','#171525','#222030'] : ['#252235','#141222','#1e1c2e'];
-      drawIsoCube(ctx, -1, gy, lev, wc, { shadow: false, variant: gy+lev*7 });
+    for (let lev = 0; lev < 3; lev++) {
+        const { x, y } = ISO.toScreen(gx, -1);
+        const d = hz2px(lev);
+        const pts = [[x, y-d], [x+ISO.tileW/2, y-d+ISO.tileH/2], [x, y-d+ISO.tileH], [x-ISO.tileW/2, y-d+ISO.tileH/2]];
+        fillImageFace(ctx, pts, ASSETS.tex_wall_north, '#2e2a3c');
     }
   }
 
-  // Bureau & PC
-  for (let dx = 1; dx <= 2; dx++) {
-    for (let dy = 1; dy <= 2; dy++) { drawIsoCube(ctx, dx, dy, 1, MAT.desk, {variant:dx+dy*3}); }
-  }
-  drawIsoCube(ctx, 1, 1, 0, MAT.deskLeg); drawIsoCube(ctx, 2, 2, 0, MAT.deskLeg);
-
-  drawIsoCube(ctx, 3, 1, 1, MAT.pc); drawIsoCube(ctx, 3, 1, 2, MAT.pc);
+  // 3. MOBILIER (SPRITES ISO)
+  // L'ordre est crucial : on dessine du fond vers le devant (Y croissant)
   
-  // Ecrans
-  drawIsoCube(ctx, 2, 1, 2, MAT.mon); drawIsoCube(ctx, 1, 1, 2, MAT.mon);
-  {
-    const { x: scx, y: scy } = ISO.toScreen(1.5, 1);
-    const sd = hz2px(2);
-    ctx.save(); ctx.globalAlpha = 0.7; ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 1; ctx.beginPath();
-    for (let i = -24; i < 24; i++) {
-      const wx = scx + i * 2, wy = scy - sd + ISO.tileH/2 + Math.sin(i * 0.2 + t * 4) * 8;
-      i === -24 ? ctx.moveTo(wx, wy) : ctx.lineTo(wx, wy);
-    }
-    ctx.stroke(); ctx.restore();
-  }
+  // Tour PC (Position gx:3, gy:1)
+  drawSprite(ctx, ASSETS.spr_pc_tower, 3, 1, 128); 
+  
+  // Bureau (Position gx:1.5, gy:1.5)
+  drawSprite(ctx, ASSETS.spr_desk, 1.5, 1.5, 256);
+  
+  // Enceintes (G et D)
 
-  // Enceintes
-  drawIsoCube(ctx, 0, 1, 2, MAT.spkr); drawIsoCube(ctx, 3, 2, 2, MAT.spkr);
+  drawSprite(ctx, ASSETS.spr_speaker, 3, 2, 256);
+  
+  // Écrans (Sur le bureau)
+  drawSprite(ctx, ASSETS.spr_monitors, 1.5, 1.1, 200);
 
-  // Hover Effect
+  // Chaise (Devant le bureau)
+  drawSprite(ctx, ASSETS.spr_chair, 1.5, 3.2, 140);
+
+  // 4. ZONE DE CLIC (Restaurée sur le bureau)
   const { x: dxZone, y: dyZone } = ISO.toScreen(1.5, 1.5);
-  deskClickZone = { x: dxZone, y: dyZone - hz2px(1), r: 120 };
+  deskClickZone = { x: dxZone, y: dyZone - 60, r: 150 };
 
   if (isHoveringDesk) {
     ctx.save();
-    const grad = ctx.createRadialGradient(dxZone, dyZone - hz2px(1.5), 0, dxZone, dyZone - hz2px(1.5), 180);
-    grad.addColorStop(0, 'rgba(0, 255, 136, 0.15)');
+    const grad = ctx.createRadialGradient(dxZone, dyZone - 100, 0, dxZone, dyZone - 100, 200);
+    grad.addColorStop(0, 'rgba(0, 255, 136, 0.1)');
     grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
     ctx.restore();
   }
+}
+
+// Fonction utilitaire pour dessiner les sprites
+function drawSprite(ctx, img, gx, gy, targetWidth) {
+    if (!img.complete || img.naturalWidth === 0) return;
+    const { x, y } = ISO.toScreen(gx, gy);
+    // On centre l'image horizontalement et on pose le bas sur le point (x,y)
+    const ratio = targetWidth / img.width;
+    const h = img.height * ratio;
+    ctx.drawImage(img, x - targetWidth/2, y - h, targetWidth, h);
 }
 
 function resizeRoomCanvas() {
