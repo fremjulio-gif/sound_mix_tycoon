@@ -152,8 +152,8 @@
   .window-body { flex: 1; overflow-y: auto; padding: 12px; scrollbar-width: thin; scrollbar-color: #333 transparent; }
 
   /* ===== DAW WINDOW ===== */
-  #daw-window { left: 20px; top: 20px; width: 520px; height: 620px; }
-  .section-label { font-size: 12px; color: #556; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #222; }
+  #daw-window { left: 20px; top: 20px; width: 520px; height: 480px; }
+  .section-label { font-size: 9px; color: #556; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #222; }
   .genre-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 16px; }
   .genre-btn { padding: 10px 6px; background: rgba(255,255,255,0.03); border: 1px solid #2a2a3a; color: #888; font-size: 11px; cursor: pointer; text-align: center; border-radius: 3px; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
   .genre-btn .genre-icon { font-size: 18px; }
@@ -227,18 +227,23 @@
   #dl-status { font-size: 10px; color: #446; margin-top: 4px; text-align: center; }
 
   /* ===== SOCIAL NETWORK (SOUNDNET) ===== */
-  #social-window { left: 400px; top: 150px; width: 360px; height: 380px; }
+  #social-window { left: 400px; top: 150px; width: 360px; height: 420px; }
   .social-header { display: flex; justify-content: space-between; align-items: center; background: #1a1a2e; padding: 12px; border-radius: 4px; margin-bottom: 16px; border: 1px solid #2a2a4a; }
   .social-stats-box { text-align: center; }
   .social-val { font-size: 18px; color: #a4f; font-weight: bold; }
   .social-lbl { font-size: 9px; color: #668; text-transform: uppercase; }
   
+  .social-actions { margin-bottom: 16px; }
+  #btn-story { width: 100%; padding: 10px; background: rgba(160, 64, 255, 0.15); border: 1px dashed #a4f; color: #a4f; font-family: monospace; font-size: 12px; cursor: pointer; transition: 0.2s; border-radius: 3px; }
+  #btn-story:hover { background: rgba(160, 64, 255, 0.3); }
+  #btn-story:disabled { background: #111; border-color: #333; color: #555; cursor: not-allowed; }
+
   .collab-list { display: flex; flex-direction: column; gap: 8px; }
   .collab-item { background: #11111a; border: 1px solid #222; padding: 10px; border-radius: 4px; display: flex; flex-direction: column; gap: 6px; }
   .collab-title { font-size: 12px; color: #fff; }
   .collab-req { font-size: 10px; color: #888; }
-  .collab-btn { background: rgba(160, 64, 255, 0.15); border: 1px solid #a4f; color: #a4f; padding: 6px; border-radius: 2px; cursor: pointer; font-size: 11px; transition: 0.2s; }
-  .collab-btn:hover { background: rgba(160, 64, 255, 0.3); }
+  .collab-btn { background: #a4f; border: 1px solid #82f; color: #000; font-weight: bold; padding: 6px; border-radius: 2px; cursor: pointer; font-size: 11px; transition: 0.2s; }
+  .collab-btn:hover { background: #b5f; }
   .collab-btn:disabled { background: #222; border-color: #444; color: #666; cursor: not-allowed; }
 
   /* ===== VIRUS / BSOD ===== */
@@ -426,6 +431,10 @@
             </div>
           </div>
           
+          <div class="social-actions">
+            <button id="btn-story" onclick="postStory()">📱 POSTER UNE STORY</button>
+          </div>
+
           <div class="section-label">Offres de Marques</div>
           <div class="collab-list" id="collab-list"></div>
         </div>
@@ -482,7 +491,9 @@ let STATE = {
   virusActive: false,
   day: 1,
   timeMin: 8 * 60, // 08:00
-  reputationMax: 1000
+  reputationMax: 1000,
+  lastStoryDay: 0,
+  collabsCooldown: {}
 };
 
 function checkUser() {
@@ -499,10 +510,12 @@ function checkUser() {
       const parsedData = JSON.parse(savedData);
       STATE = { ...STATE, ...parsedData };
       
-      // ---- CORRECTION DE L'ÉCRAN NOIR ICI ----
+      if(!STATE.collabsCooldown) STATE.collabsCooldown = {};
+      if(!STATE.lastStoryDay) STATE.lastStoryDay = 0;
+      
       STATE.exporting = false; 
       STATE.virusActive = false;
-      STATE.view = 'ROOM_VIEW'; // On force la vue chambre au démarrage, peu importe où on a quitté
+      STATE.view = 'ROOM_VIEW'; 
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById('room-view').classList.add('active');
       
@@ -556,6 +569,15 @@ const GENRES = [
   { id: 'house',     label: 'House',     icon: '&#128266;', reqRep: 250, bonus: 1.7 },
   { id: 'drill',     label: 'Drill',     icon: '&#128163;', reqRep: 600, bonus: 2.2 },
 ];
+
+const COMBO_RULES = {
+  trap: { idealBpmMin: 135, idealBpmMax: 155, bestVocal: 'M', worstVocal: 'None' },
+  lofi: { idealBpmMin: 70,  idealBpmMax: 90,  bestVocal: 'None', worstVocal: 'M' },
+  pop: { idealBpmMin: 95,  idealBpmMax: 120, bestVocal: 'F', worstVocal: 'M' },
+  hiphop: { idealBpmMin: 80,  idealBpmMax: 115, bestVocal: 'M', worstVocal: 'None' },
+  house: { idealBpmMin: 119, idealBpmMax: 125, bestVocal: 'None', worstVocal: 'M' },
+  drill: { idealBpmMin: 138, idealBpmMax: 145, bestVocal: 'M', worstVocal: 'F' }
+};
 
 const PLUGINS = [
   { id: 'eq_pro',   name: 'EQ-Pro X64',     version:'2.1.3', risk: 0.20, price: 0,    store: 'crack', bonus: '+15% Gain', bonusVal: 0.15, desc: 'Egaliseur professionnel piraté. Risque de virus élevé.' },
@@ -612,7 +634,11 @@ function updateHUD() {
 
 function updateClock() {
   STATE.timeMin += 2; 
-  if (STATE.timeMin >= 1440) { STATE.timeMin -= 1440; STATE.day++; }
+  if (STATE.timeMin >= 1440) { 
+    STATE.timeMin -= 1440; 
+    STATE.day++; 
+    onNewDay();
+  }
   
   const hh = Math.floor(STATE.timeMin / 60).toString().padStart(2, '0');
   const mm = Math.floor(STATE.timeMin % 60).toString().padStart(2, '0');
@@ -629,6 +655,7 @@ function updateClock() {
     saveGame();
   }
 
+  // GESTION DU COOLDOWN (Résout le bouton bloqué sur MIXAGE)
   if (STATE.dawCooldown > 0) {
     STATE.dawCooldown--;
     const btn = document.getElementById('export-btn');
@@ -641,6 +668,25 @@ function updateClock() {
       btn.disabled = true;
       document.getElementById('export-btn-text').innerHTML = `&#10711; REPOS (${STATE.dawCooldown}s)`;
     }
+  }
+}
+
+function onNewDay() {
+  let updated = false;
+  for(let id in STATE.collabsCooldown) {
+      if(STATE.collabsCooldown[id] > 0) {
+          STATE.collabsCooldown[id]--;
+          updated = true;
+      }
+  }
+  if(updated && document.getElementById('social-window').classList.contains('visible')) {
+    buildCollabs();
+  }
+  
+  const btnStory = document.getElementById('btn-story');
+  if(btnStory && STATE.day > STATE.lastStoryDay) {
+      btnStory.disabled = false;
+      btnStory.textContent = "📱 POSTER UNE STORY";
   }
 }
 
@@ -721,7 +767,6 @@ function fillImageFace(ctx, pts, img, fallbackHex) {
   } else {
     ctx.fillStyle = fallbackHex;
     ctx.fill();
-    // Petites lignes pour habiller le fallback des murs
     ctx.strokeStyle = 'rgba(0,0,0,0.15)';
     ctx.lineWidth = 1;
     ctx.stroke();
@@ -729,14 +774,12 @@ function fillImageFace(ctx, pts, img, fallbackHex) {
   ctx.restore();
 }
 
-// Moteur de rendu de secours pour les meubles
 function drawFallbackSprite(ctx, x, y, targetWidth, label) {
     ctx.save();
     ctx.strokeStyle = 'rgba(0,0,0,0.6)';
     ctx.lineWidth = 1;
     ctx.lineJoin = 'round';
     
-    // Helper pour dessiner des cubes 3D à la volée
     const drawBox = (bx, by, bw, bh, bd, cols) => {
         ctx.fillStyle = cols[0];
         ctx.beginPath(); ctx.moveTo(bx, by - bd); ctx.lineTo(bx + bw/2, by - bd + bh/2); ctx.lineTo(bx, by - bd + bh); ctx.lineTo(bx - bw/2, by - bd + bh/2); ctx.closePath(); ctx.fill(); ctx.stroke();
@@ -749,41 +792,37 @@ function drawFallbackSprite(ctx, x, y, targetWidth, label) {
     const w = targetWidth;
 
     if (label === 'BUREAU') {
-        drawBox(x - w/3, y, w/6, w/12, w*0.4, ['#222','#111','#1a1a1a']); // Pied G
-        drawBox(x + w/3, y, w/6, w/12, w*0.4, ['#222','#111','#1a1a1a']); // Pied D
-        drawBox(x, y - w*0.4, w, w/2, 10, ['#3a2515','#1e110a','#2e1c0f']); // Plateau
+        drawBox(x - w/3, y, w/6, w/12, w*0.4, ['#222','#111','#1a1a1a']); 
+        drawBox(x + w/3, y, w/6, w/12, w*0.4, ['#222','#111','#1a1a1a']); 
+        drawBox(x, y - w*0.4, w, w/2, 10, ['#3a2515','#1e110a','#2e1c0f']); 
     } else if (label === 'PC') {
         drawBox(x, y, w, w/2, w*1.2, ['#1e2e1a','#0d160a','#18280f']);
-        ctx.fillStyle = '#0fa'; ctx.beginPath(); ctx.ellipse(x + w/3, y - w*0.8, 3, 2, 0, 0, Math.PI*2); ctx.fill(); // LED
+        ctx.fillStyle = '#0fa'; ctx.beginPath(); ctx.ellipse(x + w/3, y - w*0.8, 3, 2, 0, 0, Math.PI*2); ctx.fill(); 
     } else if (label === 'ECRANS') {
-        drawBox(x, y, w/3, w/6, 5, ['#222','#111','#1a1a1a']); // Base
-        drawBox(x, y - 5, w/8, w/16, w*0.3, ['#333','#222','#111']); // Pied central
-        drawBox(x, y - w*0.3, w, w/4, w*0.4, ['#0d1f30','#06101a','#0a1a28']); // Ecrans
-        ctx.fillStyle = 'rgba(0, 255, 136, 0.15)'; // Fausses ondes DAW
+        drawBox(x, y, w/3, w/6, 5, ['#222','#111','#1a1a1a']); 
+        drawBox(x, y - 5, w/8, w/16, w*0.3, ['#333','#222','#111']); 
+        drawBox(x, y - w*0.3, w, w/4, w*0.4, ['#0d1f30','#06101a','#0a1a28']); 
+        ctx.fillStyle = 'rgba(0, 255, 136, 0.15)'; 
         ctx.beginPath(); ctx.moveTo(x - w*0.4, y - w*0.3 + 5); ctx.lineTo(x - 5, y - w*0.3 + w/8 + 5); ctx.lineTo(x - 5, y - w*0.3 + w/4 - 5); ctx.lineTo(x - w*0.4, y - w*0.3 + w/8 - 5); ctx.closePath(); ctx.fill();
     } else if (label === 'CHAISE') {
-        drawBox(x, y, w/2, w/4, 10, ['#222','#111','#1a1a1a']); // Base
-        drawBox(x, y - 10, w/8, w/16, w*0.3, ['#111','#050505','#0a0a0a']); // Verin
-        drawBox(x, y - w*0.3, w*0.7, w*0.4, 8, ['#2a0d0d','#160606','#220a0a']); // Assise
-        drawBox(x - w*0.25, y - w*0.3, w*0.2, w*0.3, w*0.6, ['#3a0f0f','#220808','#2e0c0c']); // Dossier
+        drawBox(x, y, w/2, w/4, 10, ['#222','#111','#1a1a1a']); 
+        drawBox(x, y - 10, w/8, w/16, w*0.3, ['#111','#050505','#0a0a0a']); 
+        drawBox(x, y - w*0.3, w*0.7, w*0.4, 8, ['#2a0d0d','#160606','#220a0a']); 
+        drawBox(x - w*0.25, y - w*0.3, w*0.2, w*0.3, w*0.6, ['#3a0f0f','#220808','#2e0c0c']); 
     } else if (label.includes('ENC')) {
-        drawBox(x, y, w, w/2, w*1.2, ['#141422','#0a0a14','#10101e']); // Caisse
-        ctx.fillStyle = '#ddd'; ctx.beginPath(); ctx.ellipse(x + w/4, y - w*0.6, w/6, w/10, Math.PI/6, 0, Math.PI*2); ctx.fill(); // HP
-        ctx.fillStyle = '#222'; ctx.beginPath(); ctx.ellipse(x + w/4, y - w*0.6, w/12, w/20, Math.PI/6, 0, Math.PI*2); ctx.fill(); // Centre HP
+        drawBox(x, y, w, w/2, w*1.2, ['#141422','#0a0a14','#10101e']); 
+        ctx.fillStyle = '#ddd'; ctx.beginPath(); ctx.ellipse(x + w/4, y - w*0.6, w/6, w/10, Math.PI/6, 0, Math.PI*2); ctx.fill(); 
+        ctx.fillStyle = '#222'; ctx.beginPath(); ctx.ellipse(x + w/4, y - w*0.6, w/12, w/20, Math.PI/6, 0, Math.PI*2); ctx.fill(); 
     }
-
     ctx.restore();
 }
 
 function drawSprite(ctx, img, gx, gy, targetWidth, yOffset = 0, label = 'OBJ') {
     const { x, y } = ISO.toScreen(gx, gy);
-    
     if (!img.complete || img.naturalWidth === 0) {
-        // Fallback pro-grade qui simule des vrais meubles 3D si les PNG manquent !
         drawFallbackSprite(ctx, x, y + yOffset, targetWidth, label);
         return;
     }
-
     const ratio = targetWidth / img.width;
     const h = img.height * ratio;
     ctx.drawImage(img, x - targetWidth/2, (y - h) + yOffset, targetWidth, h);
@@ -802,7 +841,6 @@ function drawRoom() {
   ISO.originX = W / 2;
   ISO.originY = H * 0.45 + floatY;
 
-  // 1. SOL
   for (let gx = -1; gx <= 6; gx++) {
     for (let gy = -1; gy <= 6; gy++) {
       const { x, y } = ISO.toScreen(gx, gy);
@@ -812,53 +850,32 @@ function drawRoom() {
     }
   }
 
-  // 2. MURS NORD (Côté droit, le long de gy = -1)
   for (let gx = 0; gx <= 6; gx++) {
     for (let lev = 0; lev < 3; lev++) {
         const { x, y } = ISO.toScreen(gx, -1);
-        const baseZ = hz2px(lev);
-        const topZ = hz2px(lev + 1);
-        
-        const pts = [
-            [x, y - topZ],
-            [x + ISO.tileW/2, y + ISO.tileH/2 - topZ],
-            [x + ISO.tileW/2, y + ISO.tileH/2 - baseZ],
-            [x, y - baseZ]
-        ];
+        const baseZ = hz2px(lev), topZ = hz2px(lev + 1);
+        const pts = [[x, y - topZ], [x + ISO.tileW/2, y + ISO.tileH/2 - topZ], [x + ISO.tileW/2, y + ISO.tileH/2 - baseZ], [x, y - baseZ]];
         fillImageFace(ctx, pts, ASSETS.tex_wall_north, '#2e2a3c');
     }
   }
   
-  // 2. MURS OUEST (Côté gauche, le long de gx = -1)
   for (let gy = -1; gy <= 6; gy++) {
     for (let lev = 0; lev < 3; lev++) {
         const { x, y } = ISO.toScreen(-1, gy);
-        const baseZ = hz2px(lev);
-        const topZ = hz2px(lev + 1);
-        
-        const pts = [
-            [x, y - topZ],
-            [x, y - baseZ],
-            [x - ISO.tileW/2, y + ISO.tileH/2 - baseZ],
-            [x - ISO.tileW/2, y + ISO.tileH/2 - topZ]
-        ];
+        const baseZ = hz2px(lev), topZ = hz2px(lev + 1);
+        const pts = [[x, y - topZ], [x, y - baseZ], [x - ISO.tileW/2, y + ISO.tileH/2 - baseZ], [x - ISO.tileW/2, y + ISO.tileH/2 - topZ]];
         fillImageFace(ctx, pts, ASSETS.tex_wall_west, '#1a1828');
     }
   }
 
-  // 3. MOBILIER Z-SORTING (Arrière vers l'avant)
-  
   drawSprite(ctx, ASSETS.spr_pc_tower, 2.8, 1.0, 90, 0, 'PC'); 
   drawSprite(ctx, ASSETS.spr_desk, 1.5, 1.5, 320, 0, 'BUREAU'); 
-  
   const deskHeight = -90; 
   drawSprite(ctx, ASSETS.spr_monitors, 1.5, 1.5, 160, deskHeight, 'ECRANS');
   drawSprite(ctx, ASSETS.spr_speaker, 0.8, 1.5, 60, deskHeight, 'ENC G'); 
   drawSprite(ctx, ASSETS.spr_speaker, 2.2, 1.5, 60, deskHeight, 'ENC D'); 
-  
   drawSprite(ctx, ASSETS.spr_chair, 1.5, 2.5, 120, 0, 'CHAISE');
 
-  // 4. INTERACTION BUREAU
   const { x: dxZone, y: dyZone } = ISO.toScreen(1.5, 1.5);
   deskClickZone = { x: dxZone, y: dyZone - 60, r: 160 };
 
@@ -887,7 +904,6 @@ function roomLoop() {
   roomAnimId = requestAnimationFrame(roomLoop);
 }
 
-// Waveform DAW
 function animateWaveform() {
   if (STATE.view !== 'PC_VIEW') return;
   const canvas = document.getElementById('waveform-canvas'), ctx = canvas.getContext('2d');
@@ -919,8 +935,19 @@ function openWindow(id, tabEl) {
   document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
   if (tabEl) tabEl.classList.add('active');
   if(id === 'browser-window') loadBrowserTab(STATE.studioLevel >= 2 ? 'store' : 'crack'); 
-  if(id === 'social-window') buildCollabs();
+  if(id === 'social-window') {
+    buildCollabs();
+    const btnStory = document.getElementById('btn-story');
+    if (STATE.day <= STATE.lastStoryDay) {
+        btnStory.disabled = true;
+        btnStory.textContent = "⏳ STORY EN LIGNE...";
+    } else {
+        btnStory.disabled = false;
+        btnStory.textContent = "📱 POSTER UNE STORY";
+    }
+  }
 }
+
 function closeWindow(id, tabId) {
   document.querySelector('#' + id).classList.remove('visible');
   document.getElementById(tabId).classList.remove('active');
@@ -995,90 +1022,37 @@ function startExport() {
   }, 100);
 }
 
-
-
- 
-const COMBO_RULES = {
-  trap: {
-    idealBpmMin: 135,
-    idealBpmMax: 155,
-    bestVocal: 'M',
-    worstVocal: 'None'
-  },
-  lofi: {
-    idealBpmMin: 70,
-    idealBpmMax: 90,
-    bestVocal: 'None',
-    worstVocal: 'M'
-  },
-  pop: {
-    idealBpmMin: 95,
-    idealBpmMax: 120,
-    bestVocal: 'F',
-    worstVocal: 'M'
-  },
-  hiphop: {
-    idealBpmMin: 80,
-    idealBpmMax: 115,
-    bestVocal: 'M',
-    worstVocal: 'None'
-  },
-  house: {
-    idealBpmMin: 119,
-    idealBpmMax: 125,
-    bestVocal: 'None',
-    worstVocal: 'M' // Changé en 'M' pour éviter un conflit avec le bestVocal
-  }
-};
-
 function finishExport(wrap, fill, stat) {
   wrap.style.display = 'none'; fill.style.width = '0%'; STATE.exporting = false;
   
   const genre = GENRES.find(g => g.id === STATE.selectedGenre) || GENRES[0];
-  const baseMoney = 9 + (Math.random() * 21); // Retourne entre 9$ et 30$
+  const baseMoney = 9 + (Math.random() * 21);
   const baseRep = 5 + (Math.random() * 10);
   const pluginMult = 1 + (STATE.pluginsInstalled * 0.15);
 
-  // === CALCUL DU SCORE DE COMBO ===
   const rules = COMBO_RULES[STATE.selectedGenre];
-  let comboBonus = 1; // Multiplicateur de base
-  
+  let comboBonus = 1; 
   if (rules) {
-    // Vérification du tempo
-    if (STATE.bpm >= rules.idealBpmMin && STATE.bpm <= rules.idealBpmMax) {
-      comboBonus += 0.1; // +50% bonus
-    } else {
-      comboBonus -= 0.2; // Malus hors tempo
-    }
-    
-    // Vérification de la voix
-    if (STATE.vocal === rules.bestVocal) {
-      comboBonus += 0.2; // +50% bonus
-    } else if (STATE.vocal === rules.worstVocal) {
-      comboBonus -= 0.1; // Pénalité sévère
-    }
+    if (STATE.bpm >= rules.idealBpmMin && STATE.bpm <= rules.idealBpmMax) comboBonus += 0.1;
+    else comboBonus -= 0.2;
+    if (STATE.vocal === rules.bestVocal) comboBonus += 0.2;
+    else if (STATE.vocal === rules.worstVocal) comboBonus -= 0.1;
   }
-  
-  // Limite pour ne pas descendre dans les négatifs si tout est faux
   comboBonus = Math.max(0.15, comboBonus); 
-  // ==================================
 
-  // Le roll est influencé par le combo (un bon combo abaisse le chiffre vers 0)
   let roll = Math.random();
   roll = roll / comboBonus; 
 
   let rMult = 1; let msgType = 'success'; let title = 'Sortie Normale';
   
-  // Les seuils ont été ajustés pour prendre en compte le comboBonus
   if (roll < 0.01) { 
     rMult = 8; title = 'CLASSIQUE MONUMENTAL !'; msgType = 'legend';
   } else if (roll < 0.05) { 
     rMult = 2; title = 'BANGER ABSOLU !'; msgType = 'legend';
-  } else if (roll > 0.8) { // Si le roll est resté très haut = mauvais combo
+  } else if (roll > 0.8) { 
     rMult = 0.15; title = 'BIDE TOTAL...'; msgType = 'danger';
   }
 
-  // On applique le comboBonus aux gains finaux
   const money = Math.floor(baseMoney * genre.bonus * pluginMult * rMult * comboBonus);
   let rep = Math.floor(baseRep * genre.bonus * (rMult > 1 ? rMult : (rMult < 1 ? -0.5 : 1)) * comboBonus);
   
@@ -1107,6 +1081,7 @@ function finishExport(wrap, fill, stat) {
   startDAWCooldown(8); 
   saveGame();
 }
+
 // ============================================================
 //  BROWSER & PLUGINS
 // ============================================================
@@ -1218,7 +1193,6 @@ function finishDownload(plugin, wrap) {
 // ============================================================
 //  SOCIAL NETWORK (SOUNDNET)
 // ============================================================
-
 function postStory() {
     if (STATE.day <= STATE.lastStoryDay) return;
     STATE.lastStoryDay = STATE.day;
@@ -1284,10 +1258,9 @@ function acceptCollab(id) {
   STATE.money += c.reward;
   STATE.collabsDone++;
   
-  // Malus Vendu
   const repLoss = Math.floor(STATE.reputation * 0.15);
   STATE.reputation = Math.max(0, STATE.reputation - repLoss); 
-  STATE.collabsCooldown[id] = 7; // Cooldown 7 jours in-game
+  STATE.collabsCooldown[id] = 7; 
   
   Audio.playBeep(900, 0.1); setTimeout(() => Audio.playBeep(1200, 0.15), 100);
   notify(`Contrat signé ! +$${c.reward} | -${repLoss} Rep (Vendu !)`, 'danger');
@@ -1296,46 +1269,6 @@ function acceptCollab(id) {
   saveGame();
 }
 
-// ============================================================
-//  VIRUS
-// ============================================================
-function triggerVirus() {
-  STATE.virusActive = true;
-  document.getElementById('bsod').classList.add('active');
-  notify('VIRUS DETECTE!', 'danger', 10000);
-  Audio.playBeep(80, 1.5, 0.4);
-
-  let prog = 0; const bar = document.getElementById('bsod-bar-fill'), txt = document.getElementById('bsod-recovery');
-  const intv = setInterval(() => {
-    prog += 1; bar.style.width = prog + '%'; txt.textContent = `Recuperation: ${prog}%`;
-    if (prog >= 100) { 
-      clearInterval(intv); 
-      document.getElementById('bsod').classList.remove('active'); 
-      STATE.virusActive = false; 
-      notify('Systeme recupere.', 'info'); 
-    }
-  }, 100);
-}
-
-// ============================================================
-//  STATS
-// ============================================================
-function updateStatsWindow() {
-  const body = document.getElementById('stats-body');
-  const repPct = Math.min((STATE.reputation / STATE.reputationMax) * 100, 100).toFixed(0);
-  body.innerHTML = `
-    <div class="stat-row"><span class="stat-name">Argent</span><span class="stat-val">$${STATE.money.toLocaleString('fr-FR')}</span></div>
-    <div class="stat-row"><span class="stat-name">Reputation</span>
-      <div class="rep-bar"><div class="rep-bar-fill" style="width:${repPct}%"></div></div>
-      <span class="stat-val">${STATE.reputation}</span>
-    </div>
-    <div class="stat-row"><span class="stat-name">Abonnés</span><span class="stat-val" style="color:#a4f;">${STATE.followers.toLocaleString('fr-FR')}</span></div>
-    <div class="stat-row"><span class="stat-name">Tracks</span><span class="stat-val">${STATE.tracksProduced}</span></div>
-    <div class="stat-row"><span class="stat-name">Plugins</span><span class="stat-val">${STATE.pluginsInstalled}</span></div>
-    <div class="stat-row"><span class="stat-name">Journee</span><span class="stat-val">${STATE.day}</span></div>
-  `;
-}
- 
 // ============================================================
 //  VIRUS
 // ============================================================
