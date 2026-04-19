@@ -801,24 +801,25 @@ function drawRoom() {
   const W = canvas.width, H = canvas.height, ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, W, H);
   const t = Date.now() / 1000;
-  const floatY = Math.sin(t * 1.5) * 8;
+  const floatY = Math.sin(t * 1.5) * 8; // Effet flottant FPV
 
+  // Ajustement de l'origine pour que la vue soit bien centrée
   ISO.originX = W / 2;
-  ISO.originY = H * 0.70 - (ISO.tileH * 1.5) + floatY;
+  ISO.originY = H * 0.75 - (ISO.tileH * 1.5) + floatY;
 
-  // 1. SOL (TEXTURES)
-  for (let gx = -1; gx <= 5; gx++) {
-    for (let gy = -1; gy <= 5; gy++) {
+  // --- 1. LE SOL ---
+  for (let gx = -1; gx <= 6; gx++) {
+    for (let gy = -1; gy <= 6; gy++) {
       const { x, y } = ISO.toScreen(gx, gy);
-      const w = ISO.tileW, h = ISO.tileH;
-      const pts = [[x, y], [x+w/2, y+h/2], [x, y+h], [x-w/2, y+h/2]];
+      const pts = [[x, y], [x + ISO.tileW/2, y + ISO.tileH/2], [x, y + ISO.tileH], [x - ISO.tileW/2, y + ISO.tileH/2]];
       const img = (gx + gy) % 2 === 0 ? ASSETS.tex_floor_a : ASSETS.tex_floor_b;
       fillImageFace(ctx, pts, img, '#252838');
     }
   }
 
-  // 2. MURS (TEXTURES)
-  for (let gx = -1; gx <= 5; gx++) {
+  // --- 2. LES MURS ---
+  // Mur Nord (droite)
+  for (let gx = -1; gx <= 6; gx++) {
     for (let lev = 0; lev < 3; lev++) {
         const { x, y } = ISO.toScreen(gx, -1);
         const d = hz2px(lev);
@@ -826,48 +827,47 @@ function drawRoom() {
         fillImageFace(ctx, pts, ASSETS.tex_wall_north, '#2e2a3c');
     }
   }
+  // Mur Ouest (gauche)
+  for (let gy = -1; gy <= 6; gy++) {
+    for (let lev = 0; lev < 3; lev++) {
+        const { x, y } = ISO.toScreen(-1, gy);
+        const d = hz2px(lev);
+        const pts = [[x, y-d], [x+ISO.tileW/2, y-d+ISO.tileH/2], [x, y-d+ISO.tileH], [x-ISO.tileW/2, y-d+ISO.tileH/2]];
+        fillImageFace(ctx, pts, ASSETS.tex_wall_west, '#1a1828');
+    }
+  }
 
-  // 3. MOBILIER (SPRITES ISO)
-  // L'ordre est crucial : on dessine du fond vers le devant (Y croissant)
+  // --- 3. MOBILIER (Ordre crucial pour le calquage) ---
   
-  // Tour PC (Position gx:3, gy:1)
-  drawSprite(ctx, ASSETS.spr_pc_tower, 3, 1, 128); 
+  // Tour PC (au sol, à côté du bureau)
+  drawSprite(ctx, ASSETS.spr_pc_tower, 3.2, 1.2, 80); 
   
-  // Bureau (Position gx:1.5, gy:1.5)
-  drawSprite(ctx, ASSETS.spr_desk, 1.5, 1.5, 256);
+  // Bureau (Centre)
+  drawSprite(ctx, ASSETS.spr_desk, 1.5, 1.5, 280); 
   
-  // Enceintes (G et D)
+  // Écrans (Sur le bureau - on augmente un peu gy pour le reculer sur la table)
+  drawSprite(ctx, ASSETS.spr_monitors, 1.5, 1.2, 180);
 
-  drawSprite(ctx, ASSETS.spr_speaker, 3, 2, 256);
-  
-  // Écrans (Sur le bureau)
-  drawSprite(ctx, ASSETS.spr_monitors, 1.5, 1.1, 200);
+  // Enceintes (Posées de chaque côté des écrans)
+  drawSprite(ctx, ASSETS.spr_speaker, 0.6, 1.1, 70); // Gauche
+  drawSprite(ctx, ASSETS.spr_speaker, 2.4, 1.1, 70); // Droite
 
-  // Chaise (Devant le bureau)
-  drawSprite(ctx, ASSETS.spr_chair, 1.5, 3.2, 140);
+  // Chaise (Bien devant le bureau)
+  drawSprite(ctx, ASSETS.spr_chair, 1.5, 3.0, 130);
 
-  // 4. ZONE DE CLIC (Restaurée sur le bureau)
+  // --- 4. INTERACTION ---
   const { x: dxZone, y: dyZone } = ISO.toScreen(1.5, 1.5);
-  deskClickZone = { x: dxZone, y: dyZone - 60, r: 150 };
+  deskClickZone = { x: dxZone, y: dyZone - 40, r: 160 };
 
   if (isHoveringDesk) {
     ctx.save();
-    const grad = ctx.createRadialGradient(dxZone, dyZone - 100, 0, dxZone, dyZone - 100, 200);
-    grad.addColorStop(0, 'rgba(0, 255, 136, 0.1)');
+    ctx.globalCompositeOperation = 'lighter';
+    const grad = ctx.createRadialGradient(dxZone, dyZone - 80, 0, dxZone, dyZone - 80, 200);
+    grad.addColorStop(0, 'rgba(0, 255, 136, 0.2)');
     grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
     ctx.restore();
   }
-}
-
-// Fonction utilitaire pour dessiner les sprites
-function drawSprite(ctx, img, gx, gy, targetWidth) {
-    if (!img.complete || img.naturalWidth === 0) return;
-    const { x, y } = ISO.toScreen(gx, gy);
-    // On centre l'image horizontalement et on pose le bas sur le point (x,y)
-    const ratio = targetWidth / img.width;
-    const h = img.height * ratio;
-    ctx.drawImage(img, x - targetWidth/2, y - h, targetWidth, h);
 }
 
 function resizeRoomCanvas() {
@@ -1248,7 +1248,7 @@ document.getElementById('back-btn').addEventListener('click', () => { switchView
 // INIT
 window.addEventListener('resize', resizeRoomCanvas);
 (function init() {
-  resizeRoomCanvas(); buildGenreGrid(); buildSequencer(); updateHUD(); updateStatsWindow();
+  (); buildGenreGrid(); buildSequencer(); updateHUD(); updateStatsWindow();
   makeDraggable(document.getElementById('daw-window'),     document.getElementById('daw-titlebar'));
   makeDraggable(document.getElementById('browser-window'), document.getElementById('browser-titlebar'));
   makeDraggable(document.getElementById('social-window'),  document.getElementById('social-titlebar'));
