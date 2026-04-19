@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sound Mix Tycoon</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0f;
+    font-family: 'Courier New', monospace;
+    color: #e0e0e0;
+    overflow: hidden;
+    user-select: none;
+  }
+  #game-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ===== HUD ===== */
+  #hud {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 48px;
+    background: rgba(10,10,20,0.92);
+    border-bottom: 1px solid #2a2a3a;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 24px;
+    z-index: 100;
+  }
+  .hud-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+  }
+  .hud-label { color: #666; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+  .hud-value { color: #00ff88; font-size: 14px; font-weight: bold; }
+  #hud-title {
+    margin-left: auto;
+    font-size: 11px;
+    color: #444;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ===== VIEWS ===== */
+  .view {
+    position: absolute;
+    top: 48px; left: 0; right: 0; bottom: 0;
+    display: none;
+  }
+  .view.active { display: block; }
+
+  /* ===== ROOM VIEW ===== */
+  #room-view { background: #0d0d1a; }
+  #room-canvas {
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    cursor: default;
+  }
+
+  /* ===== PC VIEW ===== */
+  #pc-view {
+    background: #111118;
+    display: none;
+    flex-direction: column;
+  }
+  #pc-view.active { display: flex; }
+
+  #pc-taskbar {
+    height: 36px;
+    background: #1a1a2e;
+    border-bottom: 1px solid #2a2a4a;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .taskbar-btn {
+    padding: 4px 12px;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #333;
+    color: #ccc;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s;
+  }
+  .taskbar-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  .taskbar-btn.active { background: rgba(0,200,100,0.15); border-color: #0c6; color: #0fa; }
+  #taskbar-time {
+    margin-left: auto;
+    font-size: 11px;
+    color: #556;
+  }
+  #back-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    background: rgba(255,80,80,0.1);
+    border: 1px solid #522;
+    color: #f88;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-right: 8px;
+  }
+  #back-btn:hover { background: rgba(255,80,80,0.2); }
+
+  #pc-workspace {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ===== WINDOWS ===== */
+  .window {
+    position: absolute;
+    background: #16161e;
+    border: 1px solid #2a2a3a;
+    border-radius: 4px;
+    display: none;
+    flex-direction: column;
+    min-width: 300px;
+    min-height: 200px;
+    z-index: 10;
+    box-shadow: 4px 4px 0 #000;
+  }
+  .window.visible { display: flex; }
+  .window-titlebar {
+    height: 28px;
+    background: #1e1e2e;
+    border-bottom: 1px solid #2a2a3a;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    cursor: move;
+    flex-shrink: 0;
+    gap: 8px;
+  }
+  .window-title { font-size: 11px; color: #aaa; letter-spacing: 1px; flex: 1; }
+  .win-close {
+    width: 14px; height: 14px;
+    background: #5a1a1a;
+    border: 1px solid #8a2a2a;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 9px;
+    display: flex; align-items: center; justify-content: center;
+    color: #f88;
+  }
+  .win-close:hover { background: #8a2a2a; }
+  .window-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: #333 transparent;
+  }
+
+  /* ===== DAW WINDOW ===== */
+  #daw-window { left: 20px; top: 20px; width: 520px; height: 480px; }
+
+  .section-label {
+    font-size: 9px;
+    color: #556;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #222;
+  }
+
+  .genre-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .genre-btn {
+    padding: 10px 6px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #2a2a3a;
+    color: #888;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 3px;
+    transition: all 0.15s;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .genre-btn .genre-icon { font-size: 18px; }
+  .genre-btn:hover { border-color: #444; color: #ccc; background: rgba(255,255,255,0.06); }
+  .genre-btn.selected { border-color: #0c6; color: #0fa; background: rgba(0,200,100,0.1); }
+  .genre-btn.locked { opacity: 0.3; cursor: not-allowed; }
+  .genre-btn.locked:hover { border-color: #2a2a3a; color: #888; background: rgba(255,255,255,0.03); }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .slider-row label { font-size: 10px; color: #667; width: 60px; text-transform: uppercase; }
+  .slider-row input[type=range] {
+    flex: 1;
+    height: 4px;
+    -webkit-appearance: none;
+    background: #222;
+    border-radius: 2px;
+    outline: none;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    background: #0c6;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .slider-val { font-size: 12px; color: #0fa; min-width: 36px; text-align: right; }
+
+  .toggle-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .toggle-btn {
+    flex: 1;
+    padding: 8px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #2a2a3a;
+    color: #666;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s;
+  }
+  .toggle-btn.active { border-color: #06a; color: #4af; background: rgba(0,100,200,0.15); }
+
+  #sequencer {
+    display: grid;
+    grid-template-columns: 60px repeat(16, 1fr);
+    gap: 2px;
+    margin-bottom: 16px;
+  }
+  .seq-label { font-size: 9px; color: #445; display: flex; align-items: center; justify-content: flex-end; padding-right: 4px; }
+  .seq-cell {
+    height: 22px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #1e1e2e;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .seq-cell.active { background: #0c6; border-color: #0fa; }
+  .seq-cell.playing { background: #0fa !important; }
+  .seq-cell:nth-child(4n+2) { border-color: #2a2a3a; }
+
+  #waveform-display {
+    height: 50px;
+    background: #0a0a10;
+    border: 1px solid #1e1e2e;
+    border-radius: 3px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  #waveform-canvas { width: 100%; height: 100%; }
+
+  #export-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(0,200,100,0.2), rgba(0,150,80,0.2));
+    border: 1px solid #0c6;
+    color: #0fa;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 3px;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+  }
+  #export-btn:hover { background: linear-gradient(135deg, rgba(0,200,100,0.35), rgba(0,150,80,0.35)); }
+  #export-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  #export-progress-wrap {
+    display: none;
+    margin-top: 8px;
+  }
+  #export-progress-bar {
+    height: 6px;
+    background: #111;
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid #222;
+  }
+  #export-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #0c6;
+    transition: width 0.1s linear;
+    box-shadow: 0 0 8px #0c6;
+  }
+  #export-status { font-size: 10px; color: #666; margin-top: 4px; text-align: center; }
+
+  /* ===== BROWSER WINDOW ===== */
+  #browser-window { left: 560px; top: 20px; width: 420px; height: 460px; }
+
+  #browser-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    padding: 6px 8px;
+    background: #0d0d14;
+    border-radius: 3px;
+    border: 1px solid #222;
+  }
+  #browser-url {
+    flex: 1;
+    font-size: 11px;
+    color: #667;
+    font-family: 'Courier New', monospace;
+  }
+
+  .browser-page { display: none; }
+  .browser-page.active { display: block; }
+
+  .browser-search-results { font-size: 12px; }
+  .search-result {
+    padding: 8px;
+    border-bottom: 1px solid #1a1a22;
+    cursor: pointer;
+  }
+  .search-result:hover { background: rgba(255,255,255,0.04); }
+  .result-title { color: #4af; font-size: 12px; }
+  .result-url { color: #446; font-size: 10px; margin: 2px 0; }
+  .result-desc { color: #667; font-size: 11px; }
+
+  .plugin-page { padding: 4px; }
+  .plugin-header { margin-bottom: 12px; }
+  .plugin-name { font-size: 16px; color: #0fa; margin-bottom: 4px; }
+  .plugin-meta { font-size: 10px; color: #556; }
+  .plugin-desc { font-size: 11px; color: #889; line-height: 1.5; margin: 8px 0; }
+  .plugin-warning { font-size: 10px; color: #a64; background: rgba(160,80,0,0.1); border: 1px solid #542; padding: 6px 8px; border-radius: 3px; margin-bottom: 10px; }
+
+  .dl-btn {
+    width: 100%;
+    padding: 10px;
+    background: rgba(0,100,200,0.15);
+    border: 1px solid #06a;
+    color: #4af;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s;
+  }
+  .dl-btn:hover { background: rgba(0,100,200,0.25); }
+  .dl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  #dl-progress-wrap { display: none; margin-top: 8px; }
+  #dl-progress-bar {
+    height: 6px;
+    background: #111;
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid #222;
+  }
+  #dl-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #06a;
+    transition: width 0.1s linear;
+  }
+  #dl-status { font-size: 10px; color: #446; margin-top: 4px; text-align: center; }
+
+  /* ===== VIRUS / BSOD ===== */
+  #bsod {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #0000aa;
+    z-index: 9999;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Courier New', monospace;
+    padding: 60px;
+  }
+  #bsod.active { display: flex; }
+  .bsod-face { font-size: 64px; margin-bottom: 24px; }
+  .bsod-title { font-size: 28px; font-weight: bold; color: #fff; margin-bottom: 24px; }
+  .bsod-text { font-size: 14px; color: #ccc; line-height: 1.8; max-width: 600px; text-align: center; margin-bottom: 32px; }
+  .bsod-bar { width: 300px; height: 20px; background: #fff; border-radius: 2px; overflow: hidden; }
+  .bsod-bar-fill { height: 100%; background: #0000aa; transition: width 0.5s; }
+  .bsod-recovery { font-size: 12px; color: #88a; margin-top: 12px; }
+
+  /* ===== NOTIFICATIONS ===== */
+  #notif-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .notif {
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    border-radius: 4px;
+    padding: 10px 16px;
+    font-size: 12px;
+    min-width: 220px;
+    animation: slideIn 0.2s ease;
+    transition: opacity 0.3s;
+  }
+  .notif.success { border-left: 3px solid #0c6; color: #0fa; }
+  .notif.danger { border-left: 3px solid #c33; color: #f88; }
+  .notif.info { border-left: 3px solid #06a; color: #4af; }
+  @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* ===== DESKTOP ICONS ===== */
+  #desktop-icons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    z-index: 5;
+  }
+  .desktop-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .desktop-icon:hover { background: rgba(255,255,255,0.08); }
+  .desktop-icon .icon-img {
+    width: 40px; height: 40px;
+    background: #1a1a2e;
+    border: 1px solid #2a2a3a;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .desktop-icon .icon-label { font-size: 10px; color: #aaa; text-align: center; max-width: 56px; }
+
+  /* ===== STATS WINDOW ===== */
+  #stats-window { left: 20px; top: 520px; width: 340px; height: 220px; }
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #1a1a22; font-size: 11px; }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-name { color: #667; }
+  .stat-val { color: #0fa; font-weight: bold; }
+  .rep-bar { height: 6px; background: #111; border-radius: 3px; overflow: hidden; width: 120px; border: 1px solid #222; }
+  .rep-bar-fill { height: 100%; background: #06a; transition: width 0.5s; }
+
+  /* ===== TRANSITION OVERLAY ===== */
+  #transition-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #000;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  #transition-overlay.fading { opacity: 1; pointer-events: all; }
+
+  /* ===== PIXEL PARTICLES ===== */
+  .pixel-fx {
+    position: absolute;
+    width: 4px; height: 4px;
+    background: #0fa;
+    pointer-events: none;
+    animation: pixelFall 0.6s ease-out forwards;
+  }
+  @keyframes pixelFall {
+    0% { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div id="game-container">
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-item">
+      <span class="hud-label">$</span>
+      <span class="hud-value" id="hud-money">0</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Rep</span>
+      <span class="hud-value" id="hud-rep">0</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Tracks</span>
+      <span class="hud-value" id="hud-tracks">0</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Plugins</span>
+      <span class="hud-value" id="hud-plugins">0</span>
+    </div>
+    <div id="hud-title">Sound Mix Tycoon v0.1</div>
+  </div>
+
+  <!-- ROOM VIEW -->
+  <div id="room-view" class="view active">
+    <canvas id="room-canvas"></canvas>
+  </div>
+
+  <!-- PC VIEW -->
+  <div id="pc-view" class="view">
+
+    <div id="pc-taskbar">
+      <button id="back-btn">&#x2190; Room</button>
+      <button class="taskbar-btn active" id="tab-daw" onclick="openWindow('daw-window', this)">&#9835; DAW Pro</button>
+      <button class="taskbar-btn" id="tab-browser" onclick="openWindow('browser-window', this)">&#127760; Browser</button>
+      <button class="taskbar-btn" id="tab-stats" onclick="openWindow('stats-window', this)">&#9998; Stats</button>
+      <span id="taskbar-time">00:00</span>
+    </div>
+
+    <div id="pc-workspace">
+
+      <!-- Desktop Icons -->
+      <div id="desktop-icons">
+        <div class="desktop-icon" onclick="openWindow('daw-window', document.getElementById('tab-daw'))">
+          <div class="icon-img">&#9835;</div>
+          <div class="icon-label">DAW Pro</div>
+        </div>
+        <div class="desktop-icon" onclick="openWindow('browser-window', document.getElementById('tab-browser'))">
+          <div class="icon-img">&#127760;</div>
+          <div class="icon-label">Browser</div>
+        </div>
+        <div class="desktop-icon" onclick="openWindow('stats-window', document.getElementById('tab-stats'))">
+          <div class="icon-img">&#9998;</div>
+          <div class="icon-label">Stats</div>
+        </div>
+      </div>
+
+      <!-- DAW Window -->
+      <div class="window visible" id="daw-window">
+        <div class="window-titlebar" id="daw-titlebar">
+          <span class="win-close" onclick="closeWindow('daw-window', 'tab-daw')">&#x2715;</span>
+          <span class="window-title">DAW PRO 2.0 — BEAT STUDIO</span>
+        </div>
+        <div class="window-body">
+
+          <div class="section-label">Genre</div>
+          <div class="genre-grid" id="genre-grid"></div>
+
+          <div class="section-label">BPM</div>
+          <div class="slider-row">
+            <label>Tempo</label>
+            <input type="range" min="60" max="200" value="120" id="bpm-slider" oninput="updateBPM(this.value)">
+            <span class="slider-val" id="bpm-val">120</span>
+          </div>
+
+          <div class="section-label">Vocal</div>
+          <div class="toggle-row">
+            <button class="toggle-btn active" id="vocal-m" onclick="setVocal('M')">&#9794; Masculin</button>
+            <button class="toggle-btn" id="vocal-f" onclick="setVocal('F')">&#9792; Feminin</button>
+            <button class="toggle-btn" id="vocal-none" onclick="setVocal('None')">&#9866; Instru</button>
+          </div>
+
+          <div class="section-label">Sequencer</div>
+          <div id="sequencer"></div>
+
+          <div class="section-label">Apercu</div>
+          <div id="waveform-display">
+            <canvas id="waveform-canvas"></canvas>
+          </div>
+
+          <button id="export-btn" onclick="startExport()">&#9654; EXPORT MIX</button>
+          <div id="export-progress-wrap">
+            <div id="export-progress-bar">
+              <div id="export-progress-fill"></div>
+            </div>
+            <div id="export-status">Initialisation...</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Browser Window -->
+      <div class="window" id="browser-window">
+        <div class="window-titlebar" id="browser-titlebar">
+          <span class="win-close" onclick="closeWindow('browser-window', 'tab-browser')">&#x2715;</span>
+          <span class="window-title">NETSCAPE X — NAVIGATOR</span>
+        </div>
+        <div class="window-body">
+          <div id="browser-bar">
+            <span style="color:#446;font-size:10px;">URL:</span>
+            <span id="browser-url">about:crackz</span>
+          </div>
+          <div id="browser-content">
+
+            <!-- Search page -->
+            <div class="browser-page active" id="page-search">
+              <div style="font-size:10px;color:#446;margin-bottom:8px;">Resultats pour: "VST plugins free crack"</div>
+              <div class="browser-search-results" id="search-results"></div>
+            </div>
+
+            <!-- Plugin page -->
+            <div class="browser-page" id="page-plugin">
+              <div class="plugin-page" id="plugin-detail"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Window -->
+      <div class="window" id="stats-window">
+        <div class="window-titlebar" id="stats-titlebar">
+          <span class="win-close" onclick="closeWindow('stats-window', 'tab-stats')">&#x2715;</span>
+          <span class="window-title">PRODUCER STATS</span>
+        </div>
+        <div class="window-body" id="stats-body"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BSOD -->
+  <div id="bsod">
+    <div class="bsod-face">:(</div>
+    <div class="bsod-title">Votre PC a rencontre un probleme</div>
+    <div class="bsod-text">
+      VIRUS_TROJAN_DETECTED<br>
+      Un logiciel malveillant a ete detecte lors du telechargement.<br>
+      Votre systeme est en cours de nettoyage...
+    </div>
+    <div class="bsod-bar"><div class="bsod-bar-fill" id="bsod-bar-fill" style="width:0%"></div></div>
+    <div class="bsod-recovery" id="bsod-recovery">Recuperation en cours: 0%</div>
+  </div>
+
+  <!-- Notifications -->
+  <div id="notif-container"></div>
+
+  <!-- Transition overlay -->
+  <div id="transition-overlay"></div>
+
+</div>
+
+<script>
+// ============================================================
+//  GAME STATE
+// ============================================================
+const STATE = {
+  view: 'ROOM_VIEW',
+  money: 0,
+  reputation: 0,
+  tracksProduced: 0,
+  pluginsInstalled: 0,
+  unlockedGenres: ['trap', 'lofi', 'pop'],
+  selectedGenre: 'trap',
+  bpm: 120,
+  vocal: 'M',
+  sequencer: {},
+  exporting: false,
+  virusActive: false,
+  sessionStart: Date.now(),
+  reputationMax: 100,
+};
+
+const GENRES = [
+  { id: 'trap',      label: 'Trap',      icon: '&#129309;', reqRep: 0,   bonus: 1.0 },
+  { id: 'lofi',      label: 'Lo-Fi',     icon: '&#9749;',   reqRep: 0,   bonus: 0.9 },
+  { id: 'pop',       label: 'Pop',       icon: '&#127775;', reqRep: 0,   bonus: 1.1 },
+  { id: 'hiphop',    label: 'Hip-Hop',   icon: '&#127911;', reqRep: 15,  bonus: 1.3 },
+  { id: 'house',     label: 'House',     icon: '&#128266;', reqRep: 25,  bonus: 1.5 },
+  { id: 'drill',     label: 'Drill',     icon: '&#128163;', reqRep: 40,  bonus: 1.8 },
+];
+
+const PLUGINS = [
+  { id: 'eq_pro',   name: 'EQ-Pro X64',  version:'2.1.3', risk: 0.10, price: 0,   bonus: '+15% quality',   bonusVal: 0.15, desc: 'Egaliseur professionnel avec 32 bandes parametriques. Largement utilise dans les studios top.' },
+  { id: 'comp_vst', name: 'CompFX Ultra', version:'1.8.0', risk: 0.10, price: 0,   bonus: '+20% money',     bonusVal: 0.20, desc: 'Compresseur multi-bande de reference. Incremente significativement les gains.' },
+  { id: 'reverb3',  name: 'SpaceVerb 3',  version:'3.0.1', risk: 0.10, price: 0,   bonus: '+10% reputation',bonusVal: 0.10, desc: 'Reverb algorithmique de haute qualite. Ideal pour les ambiances cinematiques.' },
+];
+
+// ============================================================
+//  AUDIO MANAGER (placeholder — insert your .wav/.mp3 URLs)
+// ============================================================
+class AudioManager {
+  constructor() {
+    this.ctx = null;
+    this.sounds = {};
+    this.SOUND_URLS = {
+      kick:   null,  // ex: './samples/kick.wav'
+      snare:  null,
+      hihat:  null,
+      bass:   null,
+      melody: null,
+    };
+  }
+  init() {
+    try {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e) { console.warn('AudioContext non disponible'); }
+  }
+  async loadSound(name, url) {
+    if (!this.ctx || !url) return;
+    try {
+      const resp = await fetch(url);
+      const buf  = await resp.arrayBuffer();
+      this.sounds[name] = await this.ctx.decodeAudioData(buf);
+    } catch(e) { console.warn(`Son "${name}" non charge:`, e); }
+  }
+  playSound(name, time = 0) {
+    if (!this.ctx || !this.sounds[name]) return;
+    const src = this.ctx.createBufferSource();
+    src.buffer = this.sounds[name];
+    src.connect(this.ctx.destination);
+    src.start(this.ctx.currentTime + time);
+  }
+  playBeep(freq = 440, dur = 0.08, vol = 0.15) {
+    if (!this.ctx) return;
+    const osc  = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.connect(gain); gain.connect(this.ctx.destination);
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+    osc.start(); osc.stop(this.ctx.currentTime + dur);
+  }
+  resume() { if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); }
+}
+
+const Audio = new AudioManager();
+
+// ============================================================
+//  HUD UPDATE
+// ============================================================
+function updateHUD() {
+  document.getElementById('hud-money').textContent  = '$' + STATE.money.toLocaleString('fr-FR');
+  document.getElementById('hud-rep').textContent    = STATE.reputation;
+  document.getElementById('hud-tracks').textContent = STATE.tracksProduced;
+  document.getElementById('hud-plugins').textContent= STATE.pluginsInstalled;
+}
+
+// ============================================================
+//  NOTIFICATIONS
+// ============================================================
+function notify(msg, type = 'info', duration = 3000) {
+  const c = document.getElementById('notif-container');
+  const n = document.createElement('div');
+  n.className = 'notif ' + type;
+  n.textContent = msg;
+  c.appendChild(n);
+  setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 300); }, duration);
+}
+
+// ============================================================
+//  PIXEL PARTICLES
+// ============================================================
+function spawnPixels(x, y, color = '#0fa', count = 8) {
+  const cont = document.getElementById('game-container');
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'pixel-fx';
+    p.style.left = x + 'px';
+    p.style.top  = y + 'px';
+    p.style.background = color;
+    const angle = (Math.PI * 2 * i) / count;
+    const dist  = 20 + Math.random() * 30;
+    p.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+    p.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+    cont.appendChild(p);
+    setTimeout(() => p.remove(), 600);
+  }
+}
+
+// ============================================================
+//  STATE MACHINE — VIEW TRANSITIONS
+// ============================================================
+function switchView(target) {
+  const overlay = document.getElementById('transition-overlay');
+  overlay.classList.add('fading');
+  setTimeout(() => {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(target === 'PC_VIEW' ? 'pc-view' : 'room-view').classList.add('active');
+    STATE.view = target;
+    overlay.classList.remove('fading');
+    if (target === 'PC_VIEW') updateStatsWindow();
+  }, 300);
+}
+
+// ============================================================
+//  ROOM VIEW — ISOMETRIC CANVAS
+// ============================================================
+const ISO = {
+  tileW: 64, tileH: 32,
+  originX: 0, originY: 0,
+  toScreen(gx, gy) {
+    return {
+      x: ISO.originX + (gx - gy) * (ISO.tileW / 2),
+      y: ISO.originY + (gx + gy) * (ISO.tileH / 2),
+    };
+  }
+};
+
+function drawIsoCube(ctx, gx, gy, gz, topColor, leftColor, rightColor, label) {
+  const { x, y } = ISO.toScreen(gx, gy);
+  const w = ISO.tileW, h = ISO.tileH, d = hz2px(gz);
+
+  // Top face
+  ctx.beginPath();
+  ctx.moveTo(x,         y - d);
+  ctx.lineTo(x + w/2,   y - d + h/2);
+  ctx.lineTo(x,         y - d + h);
+  ctx.lineTo(x - w/2,   y - d + h/2);
+  ctx.closePath();
+  ctx.fillStyle = topColor;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 0.5; ctx.stroke();
+
+  // Left face
+  ctx.beginPath();
+  ctx.moveTo(x - w/2, y - d + h/2);
+  ctx.lineTo(x,       y - d + h);
+  ctx.lineTo(x,       y + h);
+  ctx.lineTo(x - w/2, y + h/2);
+  ctx.closePath();
+  ctx.fillStyle = leftColor; ctx.fill(); ctx.stroke();
+
+  // Right face
+  ctx.beginPath();
+  ctx.moveTo(x + w/2, y - d + h/2);
+  ctx.lineTo(x,       y - d + h);
+  ctx.lineTo(x,       y + h);
+  ctx.lineTo(x + w/2, y + h/2);
+  ctx.closePath();
+  ctx.fillStyle = rightColor; ctx.fill(); ctx.stroke();
+
+  if (label) {
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '7px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x, y - d + h/2 + 3);
+  }
+}
+
+function hz2px(h) { return h * ISO.tileH * 0.5; }
+
+// Simple palette
+const P = {
+  floor_top:   '#1e2030', floor_left:  '#14162a', floor_right: '#191c2e',
+  wall_top:    '#252535', wall_left:   '#1a1a28', wall_right:  '#1e1e30',
+  desk_top:    '#2d1f12', desk_left:   '#1c1208', desk_right:  '#241a0f',
+  pc_top:      '#1a2a1a', pc_left:     '#0d1a0d', pc_right:    '#142014',
+  monitor_top: '#0a1a2a', monitor_left:'#060f18', monitor_right:'#0a162a',
+  chair_top:   '#1a0a0a', chair_left:  '#120606', chair_right: '#160808',
+  shelf_top:   '#2a1a08', shelf_left:  '#180f05', shelf_right: '#221508',
+  speaker_top: '#0a0a18', speaker_left:'#060610', speaker_right:'#08081a',
+};
+
+let deskClickZone = null;
+
+function drawRoom() {
+  const canvas = document.getElementById('room-canvas');
+  const W = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  ISO.originX = W / 2;
+  ISO.originY = H * 0.55;
+
+  // Background gradient
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#08080f');
+  bg.addColorStop(1, '#10101a');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  // Stars
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  const stars = [[50,30],[120,60],[200,20],[320,45],[450,15],[560,70],[640,35],[720,55],[50,80],[180,90]];
+  stars.forEach(([sx,sy]) => { ctx.fillRect(sx, sy * (H/200), 1, 1); });
+
+  // Floor tiles
+  for (let gx = -1; gx <= 4; gx++) {
+    for (let gy = -1; gy <= 4; gy++) {
+      const baseCol = (gx + gy) % 2 === 0 ? '#1e2030' : '#1c1e2e';
+      const lc = (gx + gy) % 2 === 0 ? '#14162a' : '#12142a';
+      const rc = (gx + gy) % 2 === 0 ? '#191c2e' : '#17192c';
+      drawIsoCube(ctx, gx, gy, 0, baseCol, lc, rc);
+    }
+  }
+
+  // Back wall (north)
+  for (let gx = -1; gx <= 4; gx++) {
+    for (let lev = 0; lev < 3; lev++) {
+      const lt = ctx.createLinearGradient(0,0,10,0);
+      drawIsoCube(ctx, gx, -1, lev, '#252535', '#1a1a28', '#1e1e30');
+    }
+  }
+  // Side wall (west)
+  for (let gy = -1; gy <= 4; gy++) {
+    for (let lev = 0; lev < 3; lev++) {
+      drawIsoCube(ctx, -1, gy, lev, '#252535', '#1a1a28', '#1e1e30');
+    }
+  }
+
+  // Shelf on wall
+  drawIsoCube(ctx, 0, -1, 3, '#2a1a08', '#180f05', '#221508', 'SHELF');
+  drawIsoCube(ctx, 1, -1, 3, '#2a1a08', '#180f05', '#221508');
+  // Items on shelf (small cubes)
+  drawIsoCube(ctx, 0, -1, 4, '#3a2a6a', '#28185a', '#301e62', 'VNL');
+  drawIsoCube(ctx, 1, -1, 4, '#6a2a2a', '#5a1818', '#6a2020', 'CD');
+
+  // Desk
+  drawIsoCube(ctx, 1, 1, 1, P.desk_top, P.desk_left, P.desk_right);
+  drawIsoCube(ctx, 2, 1, 1, P.desk_top, P.desk_left, P.desk_right);
+  drawIsoCube(ctx, 1, 2, 1, P.desk_top, P.desk_left, P.desk_right);
+  drawIsoCube(ctx, 2, 2, 1, P.desk_top, P.desk_left, P.desk_right);
+
+  // Desk legs
+  drawIsoCube(ctx, 1, 1, 0, '#1a0e06', '#0e0904', '#140b05');
+  drawIsoCube(ctx, 2, 2, 0, '#1a0e06', '#0e0904', '#140b05');
+
+  // PC tower
+  drawIsoCube(ctx, 3, 1, 1, P.pc_top, P.pc_left, P.pc_right);
+  drawIsoCube(ctx, 3, 1, 2, P.pc_top, P.pc_left, P.pc_right, 'PC');
+  // Blinking LED
+  const t = Date.now() / 500;
+  const ledAlpha = (Math.sin(t) + 1) / 2;
+  const { x: lcx, y: lcy } = ISO.toScreen(3, 1);
+  ctx.beginPath();
+  ctx.arc(lcx + 20, lcy - hz2px(2) + 5, 3, 0, Math.PI * 2);
+  ctx.fillStyle = `rgba(0,255,100,${ledAlpha})`;
+  ctx.fill();
+
+  // Monitor
+  drawIsoCube(ctx, 2, 1, 2, P.monitor_top, P.monitor_left, P.monitor_right);
+  drawIsoCube(ctx, 1, 1, 2, P.monitor_top, P.monitor_left, P.monitor_right, 'MON');
+  // Screen glow
+  const { x: mx, y: my } = ISO.toScreen(1.5, 1);
+  const glow = ctx.createRadialGradient(mx, my - hz2px(2), 0, mx, my - hz2px(2), 40);
+  glow.addColorStop(0, 'rgba(0,150,255,0.15)');
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(mx - 50, my - hz2px(2) - 40, 100, 80);
+
+  // Speakers
+  drawIsoCube(ctx, 0, 1, 2, P.speaker_top, P.speaker_left, P.speaker_right, 'SPK');
+  drawIsoCube(ctx, 3, 2, 2, P.speaker_top, P.speaker_left, P.speaker_right, 'SPK');
+
+  // Chair
+  drawIsoCube(ctx, 2, 3, 0, P.chair_top, P.chair_left, P.chair_right);
+  drawIsoCube(ctx, 2, 3, 1, P.chair_top, P.chair_left, P.chair_right, 'CHR');
+
+  // Keyboard on desk
+  const { x: kx, y: ky } = ISO.toScreen(1.5, 1.5);
+  ctx.fillStyle = '#2a2a3a';
+  ctx.fillRect(kx - 20, ky - hz2px(1) + 5, 40, 10);
+  ctx.strokeStyle = '#333';
+  ctx.strokeRect(kx - 20, ky - hz2px(1) + 5, 40, 10);
+
+  // Vinyl record on floor corner
+  const { x: vx, y: vy } = ISO.toScreen(0, 3);
+  ctx.beginPath();
+  ctx.arc(vx, vy, 14, 0, Math.PI * 2);
+  ctx.fillStyle = '#1a1a1a'; ctx.fill();
+  ctx.beginPath();
+  ctx.arc(vx, vy, 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#333'; ctx.fill();
+  ctx.beginPath();
+  ctx.arc(vx, vy, 2, 0, Math.PI * 2);
+  ctx.fillStyle = '#555'; ctx.fill();
+
+  // Posters on wall
+  const { x: px1, y: py1 } = ISO.toScreen(2, -1);
+  ctx.fillStyle = '#3a0a0a';
+  ctx.fillRect(px1 - 12, py1 - hz2px(2) - 20, 24, 18);
+  ctx.strokeStyle = '#5a1a1a'; ctx.lineWidth = 0.5;
+  ctx.strokeRect(px1 - 12, py1 - hz2px(2) - 20, 24, 18);
+  ctx.fillStyle = '#ff4444'; ctx.font = '5px Courier New'; ctx.textAlign = 'center';
+  ctx.fillText('BEATS', px1, py1 - hz2px(2) - 9);
+
+  // Compute desk click zone
+  const { x: dx, y: dy } = ISO.toScreen(1.5, 1.5);
+  deskClickZone = { x: dx, y: dy - hz2px(1), r: 50 };
+
+  // Hint text
+  ctx.fillStyle = 'rgba(0,200,100,0.6)';
+  ctx.font = '11px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText('[ Clique sur le bureau ]', dx, dy - hz2px(1) - 30);
+
+  // Pulsing ring around desk
+  const ringR = 40 + Math.sin(Date.now() / 400) * 5;
+  ctx.beginPath();
+  ctx.arc(dx, dy - hz2px(1), ringR, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(0,200,100,0.3)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function resizeRoomCanvas() {
+  const canvas = document.getElementById('room-canvas');
+  canvas.width  = canvas.offsetWidth  || window.innerWidth;
+  canvas.height = canvas.offsetHeight || (window.innerHeight - 48);
+}
+
+// Room animation loop
+let roomAnimId = null;
+function roomLoop() {
+  if (STATE.view !== 'ROOM_VIEW') return;
+  drawRoom();
+  roomAnimId = requestAnimationFrame(roomLoop);
+}
+
+// Waveform display
+function animateWaveform() {
+  if (STATE.view !== 'PC_VIEW') return;
+  const canvas = document.getElementById('waveform-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width  = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#0a0a10';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const seqRow = STATE.sequencer['kick'] || [];
+  const t = Date.now() / 1000;
+  const bpmMult = STATE.bpm / 120;
+
+  ctx.strokeStyle = '#0c6';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let i = 0; i < canvas.width; i++) {
+    const phase = (i / canvas.width) * Math.PI * 8 * bpmMult + t * 3;
+    const h = Math.sin(phase) * 14 + Math.sin(phase * 2.3 + 1) * 6 + Math.sin(phase * 0.5) * 4;
+    const y = canvas.height / 2 + h;
+    i === 0 ? ctx.moveTo(i, y) : ctx.lineTo(i, y);
+  }
+  ctx.stroke();
+
+  // Playhead
+  const playX = ((t * bpmMult * 2) % 1) * canvas.width;
+  ctx.strokeStyle = 'rgba(0,255,130,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(playX, 0); ctx.lineTo(playX, canvas.height); ctx.stroke();
+
+  requestAnimationFrame(animateWaveform);
+}
+
+// ============================================================
+//  WINDOW MANAGEMENT
+// ============================================================
+function openWindow(id, tabEl) {
+  document.querySelector('#' + id).classList.add('visible');
+  document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+}
+
+function closeWindow(id, tabId) {
+  document.querySelector('#' + id).classList.remove('visible');
+  document.getElementById(tabId).classList.remove('active');
+}
+
+// Drag logic
+function makeDraggable(win, titlebar) {
+  let ox = 0, oy = 0, dragging = false;
+  titlebar.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('win-close')) return;
+    dragging = true;
+    ox = e.clientX - win.offsetLeft;
+    oy = e.clientY - win.offsetTop;
+    win.style.zIndex = 20;
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    win.style.left = (e.clientX - ox) + 'px';
+    win.style.top  = (e.clientY - oy) + 'px';
+  });
+  document.addEventListener('mouseup', () => { dragging = false; win.style.zIndex = 10; });
+}
+
+// ============================================================
+//  DAW — GENRE GRID
+// ============================================================
+function buildGenreGrid() {
+  const grid = document.getElementById('genre-grid');
+  grid.innerHTML = '';
+  GENRES.forEach(g => {
+    const btn = document.createElement('button');
+    const locked = !STATE.unlockedGenres.includes(g.id);
+    btn.className = 'genre-btn' + (locked ? ' locked' : '') + (STATE.selectedGenre === g.id ? ' selected' : '');
+    btn.innerHTML = `<span class="genre-icon">${g.icon}</span>${g.label}${locked ? '<br><span style="font-size:9px;color:#444">Rep '+g.reqRep+'</span>' : ''}`;
+    if (!locked) {
+      btn.onclick = () => {
+        STATE.selectedGenre = g.id;
+        Audio.playBeep(660, 0.05);
+        buildGenreGrid();
+      };
+    }
+    grid.appendChild(btn);
+  });
+}
+
+// ============================================================
+//  DAW — SEQUENCER
+// ============================================================
+const SEQ_ROWS = ['kick', 'snare', 'hihat', 'bass'];
+const SEQ_STEPS = 16;
+
+function buildSequencer() {
+  const grid = document.getElementById('sequencer');
+  grid.innerHTML = '';
+  SEQ_ROWS.forEach(row => {
+    if (!STATE.sequencer[row]) {
+      STATE.sequencer[row] = Array(SEQ_STEPS).fill(false);
+      // Default patterns
+      if (row === 'kick')  [0,4,8,12].forEach(i => STATE.sequencer[row][i] = true);
+      if (row === 'snare') [4,12].forEach(i => STATE.sequencer[row][i] = true);
+      if (row === 'hihat') [0,2,4,6,8,10,12,14].forEach(i => STATE.sequencer[row][i] = true);
+      if (row === 'bass')  [0,3,6,9].forEach(i => STATE.sequencer[row][i] = true);
+    }
+    const lbl = document.createElement('div');
+    lbl.className = 'seq-label'; lbl.textContent = row.toUpperCase();
+    grid.appendChild(lbl);
+
+    for (let s = 0; s < SEQ_STEPS; s++) {
+      const cell = document.createElement('div');
+      cell.className = 'seq-cell' + (STATE.sequencer[row][s] ? ' active' : '');
+      cell.dataset.row = row; cell.dataset.step = s;
+      cell.onclick = () => {
+        STATE.sequencer[row][s] = !STATE.sequencer[row][s];
+        cell.classList.toggle('active');
+        Audio.playBeep(STATE.sequencer[row][s] ? 440 : 220, 0.04, 0.08);
+      };
+      grid.appendChild(cell);
+    }
+  });
+}
+
+function updateBPM(v) {
+  STATE.bpm = parseInt(v);
+  document.getElementById('bpm-val').textContent = v;
+}
+
+function setVocal(v) {
+  STATE.vocal = v;
+  ['M','F','None'].forEach(x => {
+    document.getElementById('vocal-' + x.toLowerCase()).classList.toggle('active', STATE.vocal === x);
+  });
+}
+
+// ============================================================
+//  EXPORT MIX
+// ============================================================
+function calcPayout() {
+  const genre = GENRES.find(g => g.id === STATE.selectedGenre) || GENRES[0];
+  const pluginMult = 1 + (STATE.pluginsInstalled * 0.1);
+  const base = 80 + Math.random() * 120;
+  const money = Math.floor(base * genre.bonus * pluginMult);
+  const rep   = Math.floor((5 + Math.random() * 10) * genre.bonus);
+  return { money, rep };
+}
+
+function startExport() {
+  if (STATE.exporting || STATE.virusActive) return;
+  STATE.exporting = true;
+  Audio.resume(); Audio.init();
+
+  const btn  = document.getElementById('export-btn');
+  const wrap = document.getElementById('export-progress-wrap');
+  const fill = document.getElementById('export-progress-fill');
+  const stat = document.getElementById('export-status');
+  const msgs = ['Bounce audio...','Normalisation...','Mastering...','Encoding mp3...','Upload Distrib...'];
+
+  btn.disabled = true;
+  wrap.style.display = 'block';
+  fill.style.width = '0%';
+
+  let prog = 0;
+  let msgIdx = 0;
+  const intv = setInterval(() => {
+    prog += 2 + Math.random() * 3;
+    if (prog > 100) prog = 100;
+    fill.style.width = prog + '%';
+    stat.textContent = msgs[Math.min(msgIdx, msgs.length - 1)];
+    if (prog % 20 < 3) msgIdx++;
+    Audio.playBeep(200 + prog * 3, 0.04, 0.05);
+    if (prog >= 100) {
+      clearInterval(intv);
+      finishExport(btn, wrap, fill, stat);
+    }
+  }, 100);
+}
+
+function finishExport(btn, wrap, fill, stat) {
+  const { money, rep } = calcPayout();
+  STATE.money      += money;
+  STATE.reputation  = Math.min(STATE.reputation + rep, 999);
+  STATE.tracksProduced++;
+
+  unlockGenres();
+
+  btn.disabled = false;
+  wrap.style.display = 'none';
+  fill.style.width = '0%';
+  STATE.exporting = false;
+
+  Audio.playBeep(880, 0.15, 0.3);
+  setTimeout(() => Audio.playBeep(1100, 0.1, 0.25), 120);
+
+  notify(`+$${money} | +${rep} Rep — Track ${STATE.tracksProduced} released!`, 'success', 4000);
+  updateHUD();
+  updateStatsWindow();
+  buildGenreGrid();
+  spawnPixels(600, 300, '#0fa', 12);
+}
+
+function unlockGenres() {
+  GENRES.forEach(g => {
+    if (!STATE.unlockedGenres.includes(g.id) && STATE.reputation >= g.reqRep) {
+      STATE.unlockedGenres.push(g.id);
+      notify(`Nouveau genre debloque: ${g.label}!`, 'info', 5000);
+    }
+  });
+}
+
+// ============================================================
+//  BROWSER & PLUGINS
+// ============================================================
+function buildBrowserSearchResults() {
+  const cont = document.getElementById('search-results');
+  cont.innerHTML = '';
+  PLUGINS.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'search-result';
+    div.innerHTML = `
+      <div class="result-title">[FREE] ${p.name} v${p.version} - CRACK</div>
+      <div class="result-url">http://vstz-crack.ru/${p.id}/download</div>
+      <div class="result-desc">${p.bonus} — Telechargement direct sans virus (mention douteuse)</div>
+    `;
+    div.onclick = () => showPluginPage(i);
+    cont.appendChild(div);
+  });
+}
+
+function showPluginPage(idx) {
+  const p = PLUGINS[idx];
+  const alreadyInstalled = STATE.pluginsInstalled > 0;
+  document.getElementById('page-search').classList.remove('active');
+  document.getElementById('page-plugin').classList.add('active');
+  document.getElementById('browser-url').textContent = `http://vstz-crack.ru/${p.id}/download`;
+
+  const installed = false; // track per plugin if needed
+  document.getElementById('plugin-detail').innerHTML = `
+    <div class="plugin-header">
+      <div class="plugin-name">${p.name}</div>
+      <div class="plugin-meta">Version ${p.version} | Taille: ${(Math.random()*50+10).toFixed(1)} MB | NOTE: ${(Math.random()*2+3).toFixed(1)}/5</div>
+    </div>
+    <div class="plugin-desc">${p.desc}</div>
+    <div class="plugin-warning">
+      &#9888; Ce fichier provient d'une source non verifiee. Risque potentiel de logiciels malveillants (${(p.risk*100).toFixed(0)}%).
+    </div>
+    <button class="dl-btn" id="dl-btn-${p.id}" onclick="startDownload('${p.id}')">
+      &#11015; TELECHARGER ${p.name} (GRATUIT/CRACK)
+    </button>
+    <div id="dl-progress-wrap" style="display:none;margin-top:8px;">
+      <div id="dl-progress-bar" style="height:6px;background:#111;border-radius:3px;overflow:hidden;border:1px solid #222;">
+        <div id="dl-progress-fill" style="height:100%;width:0%;background:#06a;transition:width 0.1s linear;"></div>
+      </div>
+      <div id="dl-status" style="font-size:10px;color:#446;margin-top:4px;text-align:center;"></div>
+    </div>
+    <br><button class="dl-btn" style="background:rgba(255,255,255,0.03);border-color:#333;color:#556;" onclick="backToSearch()">&#8592; Retour aux resultats</button>
+  `;
+}
+
+function backToSearch() {
+  document.getElementById('page-plugin').classList.remove('active');
+  document.getElementById('page-search').classList.add('active');
+  document.getElementById('browser-url').textContent = 'about:crackz';
+}
+
+function startDownload(pluginId) {
+  const plugin = PLUGINS.find(p => p.id === pluginId);
+  const dlBtn  = document.getElementById('dl-btn-' + pluginId);
+  const wrap   = document.getElementById('dl-progress-wrap');
+  const fill   = document.getElementById('dl-progress-fill');
+  const stat   = document.getElementById('dl-status');
+
+  if (dlBtn) dlBtn.disabled = true;
+  wrap.style.display = 'block';
+  fill.style.width = '0%';
+  stat.textContent = 'Connexion au serveur...';
+
+  let prog = 0;
+  const statMsgs = ['Connexion...','Download...','Verification...','Extraction...'];
+  let sIdx = 0;
+
+  const intv = setInterval(() => {
+    prog += 1.5 + Math.random() * 4;
+    if (prog > 100) prog = 100;
+    fill.style.width = prog + '%';
+    stat.textContent = statMsgs[Math.min(Math.floor(prog / 25), 3)];
+    if (prog >= 100) {
+      clearInterval(intv);
+      finishDownload(plugin, wrap);
+    }
+  }, 80);
+}
+
+function finishDownload(plugin, wrap) {
+  const isVirus = Math.random() < plugin.risk;
+
+  if (isVirus) {
+    wrap.style.display = 'none';
+    triggerVirus();
+  } else {
+    wrap.style.display = 'none';
+    STATE.pluginsInstalled++;
+    notify(`Plugin installe: ${plugin.name} (${plugin.bonus})`, 'success', 5000);
+    updateHUD();
+    updateStatsWindow();
+    Audio.playBeep(550, 0.12, 0.2);
+    Audio.playBeep(770, 0.08, 0.15);
+  }
+}
+
+// ============================================================
+//  VIRUS / BSOD
+// ============================================================
+function triggerVirus() {
+  STATE.virusActive = true;
+  const bsod = document.getElementById('bsod');
+  bsod.classList.add('active');
+
+  notify('VIRUS DETECTE! Systeme compromis!', 'danger', 10000);
+  Audio.playBeep(80, 1.5, 0.4);
+
+  let prog = 0;
+  const bar  = document.getElementById('bsod-bar-fill');
+  const txt  = document.getElementById('bsod-recovery');
+  const intv = setInterval(() => {
+    prog += 1;
+    bar.style.width = prog + '%';
+    txt.textContent = `Recuperation en cours: ${prog}%`;
+    if (prog >= 100) {
+      clearInterval(intv);
+      recoverFromVirus(bsod);
+    }
+  }, 100);
+}
+
+function recoverFromVirus(bsod) {
+  bsod.classList.remove('active');
+  STATE.virusActive = false;
+  document.getElementById('bsod-bar-fill').style.width = '0%';
+  notify('Systeme recupere. Soyez plus prudent!', 'info', 4000);
+}
+
+// ============================================================
+//  STATS WINDOW
+// ============================================================
+function updateStatsWindow() {
+  const body = document.getElementById('stats-body');
+  const repPct = Math.min((STATE.reputation / STATE.reputationMax) * 100, 100).toFixed(0);
+  body.innerHTML = `
+    <div class="stat-row"><span class="stat-name">Argent</span><span class="stat-val">$${STATE.money.toLocaleString('fr-FR')}</span></div>
+    <div class="stat-row">
+      <span class="stat-name">Reputation</span>
+      <div class="rep-bar"><div class="rep-bar-fill" style="width:${repPct}%"></div></div>
+      <span class="stat-val">${STATE.reputation}</span>
+    </div>
+    <div class="stat-row"><span class="stat-name">Tracks sorties</span><span class="stat-val">${STATE.tracksProduced}</span></div>
+    <div class="stat-row"><span class="stat-name">Plugins installes</span><span class="stat-val">${STATE.pluginsInstalled}</span></div>
+    <div class="stat-row"><span class="stat-name">Genre actif</span><span class="stat-val">${STATE.selectedGenre.toUpperCase()}</span></div>
+    <div class="stat-row"><span class="stat-name">BPM</span><span class="stat-val">${STATE.bpm}</span></div>
+    <div class="stat-row"><span class="stat-name">Genres debloques</span><span class="stat-val">${STATE.unlockedGenres.length} / ${GENRES.length}</span></div>
+  `;
+}
+
+// ============================================================
+//  TASKBAR CLOCK
+// ============================================================
+function updateClock() {
+  const elapsed = Math.floor((Date.now() - STATE.sessionStart) / 1000);
+  const h = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+  const m = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
+  const s = (elapsed % 60).toString().padStart(2, '0');
+  document.getElementById('taskbar-time').textContent = `SESSION ${h}:${m}:${s}`;
+}
+
+// ============================================================
+//  CLICK HANDLERS
+// ============================================================
+document.getElementById('room-canvas').addEventListener('click', e => {
+  if (!deskClickZone || STATE.virusActive) return;
+  const rect = e.target.getBoundingClientRect();
+  const cx = e.clientX - rect.left;
+  const cy = e.clientY - rect.top;
+  const dx = cx - deskClickZone.x;
+  const dy = cy - deskClickZone.y;
+  if (Math.sqrt(dx*dx + dy*dy) < deskClickZone.r + 20) {
+    Audio.resume(); Audio.init();
+    Audio.playBeep(440, 0.08); Audio.playBeep(660, 0.06);
+    spawnPixels(e.clientX, e.clientY - 48, '#4af', 10);
+    if (roomAnimId) cancelAnimationFrame(roomAnimId);
+    switchView('PC_VIEW');
+    setTimeout(animateWaveform, 350);
+  }
+});
+
+document.getElementById('back-btn').addEventListener('click', () => {
+  switchView('ROOM_VIEW');
+  setTimeout(() => roomLoop(), 350);
+});
+
+// ============================================================
+//  INIT
+// ============================================================
+window.addEventListener('resize', () => {
+  resizeRoomCanvas();
+});
+
+(function init() {
+  resizeRoomCanvas();
+  buildGenreGrid();
+  buildSequencer();
+  buildBrowserSearchResults();
+  updateHUD();
+  updateStatsWindow();
+  makeDraggable(document.getElementById('daw-window'),     document.getElementById('daw-titlebar'));
+  makeDraggable(document.getElementById('browser-window'), document.getElementById('browser-titlebar'));
+  makeDraggable(document.getElementById('stats-window'),   document.getElementById('stats-titlebar'));
+  roomLoop();
+  setInterval(updateClock, 1000);
+  setInterval(updateHUD, 2000);
+})();
+</script>
+</body>
+</html>
