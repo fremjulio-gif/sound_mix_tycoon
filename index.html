@@ -497,9 +497,15 @@ function checkUser() {
   if (savedData) {
     try {
       const parsedData = JSON.parse(savedData);
-      STATE = { ...STATE, ...parsedData }; // Fusion pour garder les nouvelles variables du code
-      STATE.exporting = false; // Reset au cas où
+      STATE = { ...STATE, ...parsedData };
+      
+      // ---- CORRECTION DE L'ÉCRAN NOIR ICI ----
+      STATE.exporting = false; 
       STATE.virusActive = false;
+      STATE.view = 'ROOM_VIEW'; // On force la vue chambre au démarrage, peu importe où on a quitté
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('room-view').classList.add('active');
+      
       notify("Session chargée. Bon retour " + STATE.pseudo + " !", "success");
     } catch (e) {
       console.error("Erreur de lecture de la sauvegarde", e);
@@ -510,7 +516,7 @@ function checkUser() {
   }
   
   document.getElementById('login-overlay').style.display = 'none';
-  initGame(); // Démarrage du jeu uniquement après le login
+  initGame(); 
 }
 
 function saveGame() {
@@ -522,16 +528,13 @@ function saveGame() {
 //  ASSET LOADER
 // ============================================================
 const ASSETS = {
-  // Textures
   tex_floor_a: new Image(), tex_floor_b: new Image(),
   tex_wall_north: new Image(), tex_wall_west: new Image(),
-  // Sprites
   spr_desk: new Image(), spr_chair: new Image(),
   spr_monitors: new Image(), spr_pc_tower: new Image(),
   spr_speaker: new Image()
 };
 
-// Chemins des images
 ASSETS.tex_floor_a.src = 'tex_floor_a.png';
 ASSETS.tex_floor_b.src = 'tex_floor_b.png';
 ASSETS.tex_wall_north.src = 'tex_wall_north.png';
@@ -718,39 +721,66 @@ function fillImageFace(ctx, pts, img, fallbackHex) {
   } else {
     ctx.fillStyle = fallbackHex;
     ctx.fill();
+    // Petites lignes pour habiller le fallback des murs
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
   }
   ctx.restore();
+}
+
+// Moteur de rendu de secours pour les meubles
+function drawFallbackSprite(ctx, x, y, targetWidth, label) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+    ctx.lineWidth = 1;
+    ctx.lineJoin = 'round';
+    
+    // Helper pour dessiner des cubes 3D à la volée
+    const drawBox = (bx, by, bw, bh, bd, cols) => {
+        ctx.fillStyle = cols[0];
+        ctx.beginPath(); ctx.moveTo(bx, by - bd); ctx.lineTo(bx + bw/2, by - bd + bh/2); ctx.lineTo(bx, by - bd + bh); ctx.lineTo(bx - bw/2, by - bd + bh/2); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = cols[1];
+        ctx.beginPath(); ctx.moveTo(bx - bw/2, by - bd + bh/2); ctx.lineTo(bx, by - bd + bh); ctx.lineTo(bx, by + bh); ctx.lineTo(bx - bw/2, by + bh/2); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = cols[2];
+        ctx.beginPath(); ctx.moveTo(bx, by - bd + bh); ctx.lineTo(bx + bw/2, by - bd + bh/2); ctx.lineTo(bx + bw/2, by + bh/2); ctx.lineTo(bx, by + bh); ctx.closePath(); ctx.fill(); ctx.stroke();
+    };
+
+    const w = targetWidth;
+
+    if (label === 'BUREAU') {
+        drawBox(x - w/3, y, w/6, w/12, w*0.4, ['#222','#111','#1a1a1a']); // Pied G
+        drawBox(x + w/3, y, w/6, w/12, w*0.4, ['#222','#111','#1a1a1a']); // Pied D
+        drawBox(x, y - w*0.4, w, w/2, 10, ['#3a2515','#1e110a','#2e1c0f']); // Plateau
+    } else if (label === 'PC') {
+        drawBox(x, y, w, w/2, w*1.2, ['#1e2e1a','#0d160a','#18280f']);
+        ctx.fillStyle = '#0fa'; ctx.beginPath(); ctx.ellipse(x + w/3, y - w*0.8, 3, 2, 0, 0, Math.PI*2); ctx.fill(); // LED
+    } else if (label === 'ECRANS') {
+        drawBox(x, y, w/3, w/6, 5, ['#222','#111','#1a1a1a']); // Base
+        drawBox(x, y - 5, w/8, w/16, w*0.3, ['#333','#222','#111']); // Pied central
+        drawBox(x, y - w*0.3, w, w/4, w*0.4, ['#0d1f30','#06101a','#0a1a28']); // Ecrans
+        ctx.fillStyle = 'rgba(0, 255, 136, 0.15)'; // Fausses ondes DAW
+        ctx.beginPath(); ctx.moveTo(x - w*0.4, y - w*0.3 + 5); ctx.lineTo(x - 5, y - w*0.3 + w/8 + 5); ctx.lineTo(x - 5, y - w*0.3 + w/4 - 5); ctx.lineTo(x - w*0.4, y - w*0.3 + w/8 - 5); ctx.closePath(); ctx.fill();
+    } else if (label === 'CHAISE') {
+        drawBox(x, y, w/2, w/4, 10, ['#222','#111','#1a1a1a']); // Base
+        drawBox(x, y - 10, w/8, w/16, w*0.3, ['#111','#050505','#0a0a0a']); // Verin
+        drawBox(x, y - w*0.3, w*0.7, w*0.4, 8, ['#2a0d0d','#160606','#220a0a']); // Assise
+        drawBox(x - w*0.25, y - w*0.3, w*0.2, w*0.3, w*0.6, ['#3a0f0f','#220808','#2e0c0c']); // Dossier
+    } else if (label.includes('ENC')) {
+        drawBox(x, y, w, w/2, w*1.2, ['#141422','#0a0a14','#10101e']); // Caisse
+        ctx.fillStyle = '#ddd'; ctx.beginPath(); ctx.ellipse(x + w/4, y - w*0.6, w/6, w/10, Math.PI/6, 0, Math.PI*2); ctx.fill(); // HP
+        ctx.fillStyle = '#222'; ctx.beginPath(); ctx.ellipse(x + w/4, y - w*0.6, w/12, w/20, Math.PI/6, 0, Math.PI*2); ctx.fill(); // Centre HP
+    }
+
+    ctx.restore();
 }
 
 function drawSprite(ctx, img, gx, gy, targetWidth, yOffset = 0, label = 'OBJ') {
     const { x, y } = ISO.toScreen(gx, gy);
     
-    // Fallback robuste au cas où l'image n'est pas trouvée (ex: tests locaux)
     if (!img.complete || img.naturalWidth === 0) {
-        ctx.save();
-        const hBox = targetWidth * 0.8;
-        const wBox = targetWidth;
-        
-        // Face Haut
-        ctx.fillStyle = 'rgba(255, 0, 128, 0.5)';
-        ctx.beginPath(); ctx.moveTo(x, y - hBox); ctx.lineTo(x + wBox/2, y - hBox + wBox/4); ctx.lineTo(x, y - hBox + wBox/2); ctx.lineTo(x - wBox/2, y - hBox + wBox/4); ctx.closePath();
-        ctx.fill(); ctx.stroke();
-        
-        // Face Gauche
-        ctx.fillStyle = 'rgba(200, 0, 100, 0.7)';
-        ctx.beginPath(); ctx.moveTo(x - wBox/2, y - hBox + wBox/4); ctx.lineTo(x, y - hBox + wBox/2); ctx.lineTo(x, y); ctx.lineTo(x - wBox/2, y - wBox/4); ctx.closePath();
-        ctx.fill(); ctx.stroke();
-        
-        // Face Droite
-        ctx.fillStyle = 'rgba(150, 0, 80, 0.9)';
-        ctx.beginPath(); ctx.moveTo(x, y - hBox + wBox/2); ctx.lineTo(x + wBox/2, y - hBox + wBox/4); ctx.lineTo(x + wBox/2, y - wBox/4); ctx.lineTo(x, y); ctx.closePath();
-        ctx.fill(); ctx.stroke();
-        
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 12px Courier New';
-        ctx.textAlign = 'center';
-        ctx.fillText(label, x, y - hBox/2);
-        ctx.restore();
+        // Fallback pro-grade qui simule des vrais meubles 3D si les PNG manquent !
+        drawFallbackSprite(ctx, x, y + yOffset, targetWidth, label);
         return;
     }
 
@@ -770,7 +800,7 @@ function drawRoom() {
   const floatY = Math.sin(t * 1.5) * 8; 
 
   ISO.originX = W / 2;
-  ISO.originY = H * 0.75 - (ISO.tileH * 1.5) + floatY;
+  ISO.originY = H * 0.45 + floatY;
 
   // 1. SOL
   for (let gx = -1; gx <= 6; gx++) {
@@ -782,51 +812,55 @@ function drawRoom() {
     }
   }
 
-  // 2. MURS NORD (le long de gy = -1) - Corrections géométriques pour monter verticalement
-  for (let gx = -1; gx <= 6; gx++) {
+  // 2. MURS NORD (Côté droit, le long de gy = -1)
+  for (let gx = 0; gx <= 6; gx++) {
     for (let lev = 0; lev < 3; lev++) {
         const { x, y } = ISO.toScreen(gx, -1);
         const baseZ = hz2px(lev);
         const topZ = hz2px(lev + 1);
+        
         const pts = [
-            [x - ISO.tileW/2, y - topZ + ISO.tileH/2], 
-            [x,               y - topZ + ISO.tileH],   
-            [x,               y - baseZ + ISO.tileH],       
-            [x - ISO.tileW/2, y - baseZ + ISO.tileH/2]      
+            [x, y - topZ],
+            [x + ISO.tileW/2, y + ISO.tileH/2 - topZ],
+            [x + ISO.tileW/2, y + ISO.tileH/2 - baseZ],
+            [x, y - baseZ]
         ];
         fillImageFace(ctx, pts, ASSETS.tex_wall_north, '#2e2a3c');
-        ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1; ctx.stroke();
     }
   }
   
-  // 2. MURS OUEST (le long de gx = -1)
+  // 2. MURS OUEST (Côté gauche, le long de gx = -1)
   for (let gy = -1; gy <= 6; gy++) {
     for (let lev = 0; lev < 3; lev++) {
         const { x, y } = ISO.toScreen(-1, gy);
         const baseZ = hz2px(lev);
         const topZ = hz2px(lev + 1);
+        
         const pts = [
-            [x,               y - topZ + ISO.tileH],   
-            [x + ISO.tileW/2, y - topZ + ISO.tileH/2], 
-            [x + ISO.tileW/2, y - baseZ + ISO.tileH/2],     
-            [x,               y - baseZ + ISO.tileH]        
+            [x, y - topZ],
+            [x, y - baseZ],
+            [x - ISO.tileW/2, y + ISO.tileH/2 - baseZ],
+            [x - ISO.tileW/2, y + ISO.tileH/2 - topZ]
         ];
         fillImageFace(ctx, pts, ASSETS.tex_wall_west, '#1a1828');
-        ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1; ctx.stroke();
     }
   }
 
-  // 3. MOBILIER (Ordre calculé en profondeur Y)
-  drawSprite(ctx, ASSETS.spr_pc_tower, 3.2, 1.2, 80, 0, 'PC'); 
-  drawSprite(ctx, ASSETS.spr_desk, 1.5, 1.5, 280, 0, 'BUREAU'); 
-  drawSprite(ctx, ASSETS.spr_speaker, 0.6, 1.1, 70, 0, 'ENC G'); 
-  drawSprite(ctx, ASSETS.spr_speaker, 2.4, 1.1, 70, 0, 'ENC D'); 
-  drawSprite(ctx, ASSETS.spr_monitors, 1.5, 1.2, 180, 0, 'ECRANS');
-  drawSprite(ctx, ASSETS.spr_chair, 1.5, 3.0, 130, 0, 'CHAISE');
+  // 3. MOBILIER Z-SORTING (Arrière vers l'avant)
+  
+  drawSprite(ctx, ASSETS.spr_pc_tower, 2.8, 1.0, 90, 0, 'PC'); 
+  drawSprite(ctx, ASSETS.spr_desk, 1.5, 1.5, 320, 0, 'BUREAU'); 
+  
+  const deskHeight = -90; 
+  drawSprite(ctx, ASSETS.spr_monitors, 1.5, 1.5, 160, deskHeight, 'ECRANS');
+  drawSprite(ctx, ASSETS.spr_speaker, 0.8, 1.5, 60, deskHeight, 'ENC G'); 
+  drawSprite(ctx, ASSETS.spr_speaker, 2.2, 1.5, 60, deskHeight, 'ENC D'); 
+  
+  drawSprite(ctx, ASSETS.spr_chair, 1.5, 2.5, 120, 0, 'CHAISE');
 
   // 4. INTERACTION BUREAU
   const { x: dxZone, y: dyZone } = ISO.toScreen(1.5, 1.5);
-  deskClickZone = { x: dxZone, y: dyZone - 40, r: 160 };
+  deskClickZone = { x: dxZone, y: dyZone - 60, r: 160 };
 
   if (isHoveringDesk) {
     ctx.save();
@@ -841,6 +875,7 @@ function drawRoom() {
  
 function resizeRoomCanvas() {
   const canvas = document.getElementById('room-canvas');
+  if(!canvas) return;
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight - 48;
 }
@@ -968,7 +1003,6 @@ function finishExport(wrap, fill, stat) {
   const baseRep = 5 + Math.random() * 10;
   const pluginMult = 1 + (STATE.pluginsInstalled * 0.15);
 
-  // RNG Dice Roll
   const roll = Math.random();
   let rMult = 1; let msgType = 'success'; let title = 'Sortie Normale';
   
@@ -1148,7 +1182,7 @@ function acceptCollab(id) {
   
   STATE.money += c.reward;
   STATE.collabsDone++;
-  STATE.reputation = Math.max(0, STATE.reputation - 5); // street cred penalty
+  STATE.reputation = Math.max(0, STATE.reputation - 5); 
   
   Audio.playBeep(900, 0.1); setTimeout(() => Audio.playBeep(1200, 0.15), 100);
   notify(`Contrat signé ! +$${c.reward}`, 'info');
@@ -1220,7 +1254,7 @@ roomCanvas.addEventListener('click', e => {
 document.getElementById('back-btn').addEventListener('click', () => { switchView('ROOM_VIEW'); setTimeout(() => roomLoop(), 350); });
 
 // ============================================================
-//  INIT THE GAME (Called by the Login Button)
+//  INIT THE GAME
 // ============================================================
 function initGame() {
   resizeRoomCanvas(); 
@@ -1237,8 +1271,10 @@ function initGame() {
   roomLoop(); 
   setInterval(updateClock, 1000); 
   setInterval(updateHUD, 2000);
-  setInterval(saveGame, 10000); // Auto-save toutes les 10 secondes
+  setInterval(saveGame, 10000); 
 }
+
+window.addEventListener('resize', resizeRoomCanvas);
 </script>
 </body>
 </html>
