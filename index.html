@@ -1218,22 +1218,59 @@ function finishDownload(plugin, wrap) {
 // ============================================================
 //  SOCIAL NETWORK (SOUNDNET)
 // ============================================================
+
+function postStory() {
+    if (STATE.day <= STATE.lastStoryDay) return;
+    STATE.lastStoryDay = STATE.day;
+    
+    const baseFollowers = Math.floor(5 + (STATE.reputation * 0.2));
+    const randomBoost = Math.floor(Math.random() * 15);
+    const gain = baseFollowers + randomBoost;
+    
+    STATE.followers += gain;
+    
+    Audio.playBeep(700, 0.05); setTimeout(() => Audio.playBeep(900, 0.1), 80);
+    notify(`Story publiée ! +${gain} Abonnés`, 'info');
+    
+    updateHUD();
+    updateStatsWindow();
+    saveGame();
+    
+    const btn = document.getElementById('btn-story');
+    btn.disabled = true;
+    btn.textContent = "⏳ STORY EN LIGNE...";
+}
+
 function buildCollabs() {
   const list = document.getElementById('collab-list');
   list.innerHTML = '';
   
   COLLABS.forEach(c => {
+    const cd = STATE.collabsCooldown[c.id] || 0;
     const locked = STATE.followers < c.reqFollowers;
+    
     const item = document.createElement('div');
     item.className = 'collab-item';
+    
+    let btnText = "ACCEPTER LE CONTRAT";
+    let btnDisabled = false;
+    
+    if (cd > 0) {
+        btnText = `⏳ DISPO DANS ${cd} JOURS`;
+        btnDisabled = true;
+    } else if (locked) {
+        btnText = "NON ÉLIGIBLE";
+        btnDisabled = true;
+    }
+
     item.innerHTML = `
       <div style="display:flex; justify-content:space-between;">
         <span class="collab-title">${c.name}</span>
         <span style="color:#0fa; font-weight:bold;">+$${c.reward}</span>
       </div>
       <div class="collab-req">${locked ? '🔒 Requis : '+c.reqFollowers.toLocaleString()+' abonnés' : c.desc}</div>
-      <button class="collab-btn" ${locked ? 'disabled' : ''} onclick="acceptCollab('${c.id}')">
-        ${locked ? 'NON ÉLIGIBLE' : 'ACCEPTER LE CONTRAT'}
+      <button class="collab-btn" ${btnDisabled ? 'disabled' : ''} onclick="acceptCollab('${c.id}')">
+        ${btnText}
       </button>
     `;
     list.appendChild(item);
@@ -1246,15 +1283,59 @@ function acceptCollab(id) {
   
   STATE.money += c.reward;
   STATE.collabsDone++;
-  STATE.reputation = Math.max(0, STATE.reputation - 5); 
+  
+  // Malus Vendu
+  const repLoss = Math.floor(STATE.reputation * 0.15);
+  STATE.reputation = Math.max(0, STATE.reputation - repLoss); 
+  STATE.collabsCooldown[id] = 7; // Cooldown 7 jours in-game
   
   Audio.playBeep(900, 0.1); setTimeout(() => Audio.playBeep(1200, 0.15), 100);
-  notify(`Contrat signé ! +$${c.reward}`, 'info');
+  notify(`Contrat signé ! +$${c.reward} | -${repLoss} Rep (Vendu !)`, 'danger');
   
   updateHUD(); buildCollabs(); updateStatsWindow();
   saveGame();
 }
 
+// ============================================================
+//  VIRUS
+// ============================================================
+function triggerVirus() {
+  STATE.virusActive = true;
+  document.getElementById('bsod').classList.add('active');
+  notify('VIRUS DETECTE!', 'danger', 10000);
+  Audio.playBeep(80, 1.5, 0.4);
+
+  let prog = 0; const bar = document.getElementById('bsod-bar-fill'), txt = document.getElementById('bsod-recovery');
+  const intv = setInterval(() => {
+    prog += 1; bar.style.width = prog + '%'; txt.textContent = `Recuperation: ${prog}%`;
+    if (prog >= 100) { 
+      clearInterval(intv); 
+      document.getElementById('bsod').classList.remove('active'); 
+      STATE.virusActive = false; 
+      notify('Systeme recupere.', 'info'); 
+    }
+  }, 100);
+}
+
+// ============================================================
+//  STATS
+// ============================================================
+function updateStatsWindow() {
+  const body = document.getElementById('stats-body');
+  const repPct = Math.min((STATE.reputation / STATE.reputationMax) * 100, 100).toFixed(0);
+  body.innerHTML = `
+    <div class="stat-row"><span class="stat-name">Argent</span><span class="stat-val">$${STATE.money.toLocaleString('fr-FR')}</span></div>
+    <div class="stat-row"><span class="stat-name">Reputation</span>
+      <div class="rep-bar"><div class="rep-bar-fill" style="width:${repPct}%"></div></div>
+      <span class="stat-val">${STATE.reputation}</span>
+    </div>
+    <div class="stat-row"><span class="stat-name">Abonnés</span><span class="stat-val" style="color:#a4f;">${STATE.followers.toLocaleString('fr-FR')}</span></div>
+    <div class="stat-row"><span class="stat-name">Tracks</span><span class="stat-val">${STATE.tracksProduced}</span></div>
+    <div class="stat-row"><span class="stat-name">Plugins</span><span class="stat-val">${STATE.pluginsInstalled}</span></div>
+    <div class="stat-row"><span class="stat-name">Journee</span><span class="stat-val">${STATE.day}</span></div>
+  `;
+}
+ 
 // ============================================================
 //  VIRUS
 // ============================================================
