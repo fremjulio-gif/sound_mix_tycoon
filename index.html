@@ -564,7 +564,7 @@ const COLLABS = [
 class AudioManager {
   constructor() { this.ctx = null; }
   init() {
-    try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } 
+    try { this.ctx = new (window.AudioContext || window.webkitAudioContext); } 
     catch(e) {}
   }
   playBeep(freq = 440, dur = 0.08, vol = 0.15) {
@@ -796,6 +796,8 @@ const MAT = {
 
 let deskClickZone = null, isHoveringDesk = false;
 
+
+
 function drawRoom() {
   const canvas = document.getElementById('room-canvas');
   const W = canvas.width, H = canvas.height, ctx = canvas.getContext('2d');
@@ -870,6 +872,19 @@ function drawRoom() {
   }
 }
  
+function drawSprite(ctx, img, gx, gy, targetWidth, yOffset = 0) {
+    if (!img.complete || img.naturalWidth === 0) return;
+    const { x, y } = ISO.toScreen(gx, gy);
+    const ratio = targetWidth / img.width;
+    const h = img.height * ratio;
+    
+    // x - targetWidth/2 : centre l'image horizontalement sur le point
+    // y - h : pose le bas de l'image sur le sol
+    // + yOffset : ajustement manuel si l'image a du vide en bas
+    ctx.drawImage(img, x - targetWidth/2, (y - h) + yOffset, targetWidth, h);
+}
+
+
 function resizeRoomCanvas() {
   const canvas = document.getElementById('room-canvas');
   canvas.width  = canvas.offsetWidth  || window.innerWidth;
