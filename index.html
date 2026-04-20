@@ -129,25 +129,6 @@
   .win-close:active { background: #8a2a2a; }
   .window-body { flex: 1; overflow-y: auto; padding: 12px; scrollbar-width: thin; scrollbar-color: #333 transparent; -webkit-overflow-scrolling: touch; }
 
-// Fonction pour changer de personnage depuis la console ou un bouton
-// Exemple d'utilisation : changeCharacter('char_3');
-function changeCharacter(charId) {
-    if (['char_1', 'char_2', 'char_3', 'char_4'].includes(charId)) {
-        STATE.activeCharacter = charId;
-        notify(`Personnage ${charId.slice(-1)} activé !`, 'success');
-        
-        // Force le redessin de la chambre pour voir le changement
-        if (STATE.view === 'ROOM_VIEW') {
-            if (roomAnimId) cancelAnimationFrame(roomAnimId);
-            roomLoop();
-        }
-        
-        saveGame(); // Sauvegarde le choix
-    } else {
-        notify("ID de personnage invalide.", "danger");
-    }
-}
- 
   /* ===== DAW ===== */
   #daw-window { left: 10px; top: 10px; width: min(520px, calc(100vw - 20px)); height: min(480px, calc(100dvh - 44px - 40px - 20px)); }
   .section-label { font-size: 9px; color: #556; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #222; }
@@ -325,7 +306,6 @@ function changeCharacter(charId) {
     #desktop-icons { display: none; }
     #mobile-nav { display: block; }
     #pc-workspace { padding-bottom: 52px; }
-    /* Windows become full-width stacked cards controlled by mobile nav */
     .window {
       position: relative !important;
       left: auto !important; top: auto !important;
@@ -335,7 +315,6 @@ function changeCharacter(charId) {
       min-height: unset;
       margin: 8px auto 0;
     }
-    /* Only the active mobile tab is shown */
     .window { display: none !important; }
     .window.mobile-active { display: flex !important; }
     #hud { gap: 6px; padding: 0 8px; }
@@ -406,7 +385,6 @@ function changeCharacter(charId) {
         </div>
       </div>
 
-      <!-- DAW -->
       <div class="window visible mobile-active" id="daw-window">
         <div class="window-titlebar" id="daw-titlebar">
           <span class="win-close" onclick="closeWindowPC('daw-window','tab-daw')">&#x2715;</span>
@@ -442,7 +420,6 @@ function changeCharacter(charId) {
         </div>
       </div>
 
-      <!-- BROWSER -->
       <div class="window" id="browser-window">
         <div class="window-titlebar" id="browser-titlebar">
           <span class="win-close" onclick="closeWindowPC('browser-window','tab-browser')">&#x2715;</span>
@@ -469,7 +446,6 @@ function changeCharacter(charId) {
         </div>
       </div>
 
-      <!-- SOUNDNET -->
       <div class="window" id="social-window">
         <div class="window-titlebar" id="social-titlebar">
           <span class="win-close" onclick="closeWindowPC('social-window','tab-social')">&#x2715;</span>
@@ -488,7 +464,6 @@ function changeCharacter(charId) {
         </div>
       </div>
 
-      <!-- STATS -->
       <div class="window" id="stats-window">
         <div class="window-titlebar" id="stats-titlebar">
           <span class="win-close" onclick="closeWindowPC('stats-window','tab-stats')">&#x2715;</span>
@@ -496,11 +471,7 @@ function changeCharacter(charId) {
         </div>
         <div class="window-body" id="stats-body"></div>
       </div>
-    </div><!-- /pc-workspace -->
-  </div><!-- /pc-view -->
-
-  <!-- BSOD -->
-  <div id="bsod">
+    </div></div><div id="bsod">
     <div class="bsod-face">:(</div>
     <div class="bsod-title">Votre PC a rencontre un probleme</div>
     <div class="bsod-text">VIRUS_TROJAN_DETECTED<br>Un logiciel malveillant a ete detecte.<br>Votre systeme est en cours de nettoyage...</div>
@@ -508,7 +479,6 @@ function changeCharacter(charId) {
     <div class="bsod-recovery" id="bsod-recovery">Recuperation en cours: 0%</div>
   </div>
 
-  <!-- MOBILE BOTTOM NAV -->
   <div id="mobile-nav">
     <div class="mnav-inner">
       <button class="mnav-btn active" id="mnav-daw"     onclick="mobileNav('daw')"><span class="mnav-icon">&#9835;</span><span>DAW</span></button>
@@ -520,64 +490,24 @@ function changeCharacter(charId) {
 
   <div id="notif-container"></div>
   <div id="transition-overlay"></div>
-</div><!-- /game-container -->
-
-<script>
-// ─── Mobile detection ─────────────────────────────────────────
+</div><script>
+// ─── UTILITAIRES & ETATS ───────────────────────────────────────
 const isMobile = () => window.innerWidth <= 600;
 
 const WIN_MAP = { daw:'daw-window', browser:'browser-window', social:'social-window', stats:'stats-window' };
 const TAB_MAP = { daw:'tab-daw', browser:'tab-browser', social:'tab-social', stats:'tab-stats' };
 let currentMobileTab = 'daw';
 
-function mobileNav(key) {
-  currentMobileTab = key;
-  document.querySelectorAll('.mnav-btn').forEach(b => b.classList.remove('active'));
-  const mb = document.getElementById('mnav-' + key); if (mb) mb.classList.add('active');
-  document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
-  const tb = document.getElementById(TAB_MAP[key]); if (tb) tb.classList.add('active');
-  Object.keys(WIN_MAP).forEach(k => {
-    const w = document.getElementById(WIN_MAP[k]); if (!w) return;
-    w.classList.remove('mobile-active');
-    if (k === key) w.classList.add('mobile-active');
-  });
-  if (key === 'browser') loadBrowserTab(STATE.studioLevel >= 2 ? 'store' : 'crack');
-  if (key === 'social')  { buildCollabs(); refreshStoryBtn(); }
-  if (key === 'stats')   updateStatsWindow();
-}
-
-function openWindowPC(id, tabEl, key) {
-  if (isMobile()) { mobileNav(key); return; }
-  // Desktop: floating windows
-  document.getElementById(id).classList.add('visible');
-  document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
-  if (tabEl) tabEl.classList.add('active');
-  if (id === 'browser-window') loadBrowserTab(STATE.studioLevel >= 2 ? 'store' : 'crack');
-  if (id === 'social-window')  { buildCollabs(); refreshStoryBtn(); }
-  if (id === 'stats-window')   updateStatsWindow();
-}
-function closeWindowPC(id, tabId) {
-  if (isMobile()) return;
-  document.getElementById(id).classList.remove('visible');
-  document.getElementById(tabId).classList.remove('active');
-}
-
-function refreshStoryBtn() {
-  const btn = document.getElementById('btn-story'); if (!btn) return;
-  if (STATE.day <= STATE.lastStoryDay) { btn.disabled = true; btn.textContent = "⏳ STORY EN LIGNE..."; }
-  else { btn.disabled = false; btn.textContent = "📱 POSTER UNE STORY"; }
-}
-
-// ─── STATE & SAVE ──────────────────────────────────────────────
 let STATE = {
   pseudo:"", view:'ROOM_VIEW', money:50, reputation:0, followers:0,
   studioLevel:1, tracksProduced:0, pluginsInstalled:0, collabsDone:0,
   unlockedGenres:['trap','lofi','pop'], selectedGenre:'trap', bpm:120, vocal:'M',
   sequencer:{}, exporting:false, dawCooldown:0, virusActive:false,
-  day:1, timeMin:480, reputationMax:1000, lastStoryDay:0, collabsCooldown:{}
-  activeCharacter: 'char_1', // Peut être 'char_1', 'char_2', 'char_3', 'char_4'
+  day:1, timeMin:480, reputationMax:1000, lastStoryDay:0, collabsCooldown:{},
+  activeCharacter: 'char_1' 
 };
 
+// ─── GESTION SAUVEGARDE & PERSO ──────────────────────────────
 function checkUser() {
   const input = document.getElementById('username-input').value.trim().toUpperCase();
   if (input.length < 3) { notify("Pseudo trop court (3 lettres min.)","danger"); return; }
@@ -599,28 +529,52 @@ function checkUser() {
   document.getElementById('login-overlay').style.display = 'none';
   initGame();
 }
-function saveGame() { if (!STATE.pseudo) return; localStorage.setItem('SMT_SAVE_' + STATE.pseudo, JSON.stringify(STATE)); }
 
-// ─── ASSETS ───────────────────────────────────────────────────
-const ASSETS = {};
-['tex_floor_a','tex_floor_b','tex_wall_north','tex_wall_west',
- 'spr_desk','spr_chair','spr_monitors','spr_pc_tower','spr_speaker','spr_char_1','spr_char_2','spr_char_2','spr_char_3','spr_char_4'].forEach(n => {
-  ASSETS[n] = new Image(); ASSETS[n].src = n + '.png';
+function saveGame() { 
+  if (!STATE.pseudo) return; 
+  localStorage.setItem('SMT_SAVE_' + STATE.pseudo, JSON.stringify(STATE)); 
+}
 
-// ============================================================
-//  ASSET LOADER
-// ============================================================
+function changeCharacter(charId) {
+    if (['char_1', 'char_2', 'char_3', 'char_4'].includes(charId)) {
+        STATE.activeCharacter = charId;
+        notify(`Personnage ${charId.slice(-1)} activé !`, 'success');
+        if (STATE.view === 'ROOM_VIEW') {
+            if (roomAnimId) cancelAnimationFrame(roomAnimId);
+            roomLoop();
+        }
+        saveGame();
+    } else {
+        notify("ID de personnage invalide.", "danger");
+    }
+}
+
+// ─── CHARGEMENT ASSETS ────────────────────────────────────────
 const ASSETS = {
-  spr_char_1: new Image(),
-  spr_char_2: new Image(),
-  spr_char_3: new Image(),
-  spr_char_4: new Image(),
-
+  tex_floor_a: new Image(), tex_floor_b: new Image(),
+  tex_wall_north: new Image(), tex_wall_west: new Image(),
+  spr_desk: new Image(), spr_chair: new Image(),
+  spr_monitors: new Image(), spr_pc_tower: new Image(),
+  spr_speaker: new Image(), 
+  spr_char_1: new Image(), spr_char_2: new Image(),
+  spr_char_3: new Image(), spr_char_4: new Image()
 };
-  
-});
 
-// ─── DATA ─────────────────────────────────────────────────────
+ASSETS.tex_floor_a.src = 'tex_floor_a.png';
+ASSETS.tex_floor_b.src = 'tex_floor_b.png';
+ASSETS.tex_wall_north.src = 'tex_wall_north.png';
+ASSETS.tex_wall_west.src = 'tex_wall_west.png';
+ASSETS.spr_desk.src = 'spr_desk.png';
+ASSETS.spr_chair.src = 'spr_chair.png';
+ASSETS.spr_monitors.src = 'spr_monitors.png';
+ASSETS.spr_pc_tower.src = 'spr_pc_tower.png';
+ASSETS.spr_speaker.src = 'spr_speaker.png';
+ASSETS.spr_char_1.src = 'spr_char_1.png';
+ASSETS.spr_char_2.src = 'spr_char_2.png';
+ASSETS.spr_char_3.src = 'spr_char_3.png';
+ASSETS.spr_char_4.src = 'spr_char_4.png';
+
+// ─── DONNÉES DU JEU ───────────────────────────────────────────
 const GENRES = [
   { id:'trap',   label:'Trap',    icon:'&#129309;', reqRep:0,   bonus:1.0 },
   { id:'lofi',   label:'Lo-Fi',   icon:'&#9749;',   reqRep:0,   bonus:0.9 },
@@ -651,8 +605,6 @@ const COLLABS = [
   {id:'plugin',   name:'Promo Plugin',     reqFollowers:10000, reward:12000,desc:'Tutoriel sponsorisé YouTube.'}
 ];
 
-
- 
 // ─── AUDIO ───────────────────────────────────────────────────
 class AudioManager {
   constructor() { this.ctx = null; }
@@ -669,7 +621,7 @@ class AudioManager {
 }
 const Audio = new AudioManager();
 
-// ─── HUD & CLOCK ─────────────────────────────────────────────
+// ─── HUD & HORLOGE ─────────────────────────────────────────────
 function updateHUD() {
   document.getElementById('hud-money').textContent = '$'+STATE.money.toLocaleString('fr-FR');
   document.getElementById('hud-rep').textContent = STATE.reputation;
@@ -680,6 +632,7 @@ function updateHUD() {
   const sf = document.getElementById('sn-followers'); if (sf) sf.textContent = STATE.followers.toLocaleString('fr-FR');
   const sc = document.getElementById('sn-collabs'); if (sc) sc.textContent = STATE.collabsDone;
 }
+
 function updateClock() {
   STATE.timeMin += 2;
   if (STATE.timeMin >= 1440) { STATE.timeMin -= 1440; STATE.day++; onNewDay(); }
@@ -687,6 +640,7 @@ function updateClock() {
   const mm = Math.floor(STATE.timeMin%60).toString().padStart(2,'0');
   document.getElementById('hud-clock').textContent = `J${STATE.day} ${hh}:${mm}`;
   document.getElementById('taskbar-time').textContent = `${hh}:${mm}`;
+  
   if (STATE.studioLevel===1 && STATE.reputation>=500) {
     STATE.studioLevel=2;
     const st = document.getElementById('nav-store');
@@ -694,6 +648,7 @@ function updateClock() {
     notify('LEVEL UP ! Accès au Store Légal !','legend',6000);
     updateHUD(); saveGame();
   }
+  
   if (STATE.dawCooldown > 0) {
     STATE.dawCooldown--;
     const btn=document.getElementById('export-btn'), fill=document.getElementById('export-cooldown-fill');
@@ -704,21 +659,40 @@ function updateClock() {
     }
   }
 }
+
 function onNewDay() {
-  for (let id in STATE.collabsCooldown) if (STATE.collabsCooldown[id]>0) STATE.collabsCooldown[id]--;
-  buildCollabs(); refreshStoryBtn();
+  let updated = false;
+  for (let id in STATE.collabsCooldown) {
+      if (STATE.collabsCooldown[id]>0) {
+          STATE.collabsCooldown[id]--;
+          updated = true;
+      }
+  }
+  if (updated && document.getElementById('social-window').classList.contains('visible')) {
+      buildCollabs();
+  }
+  refreshStoryBtn();
 }
+
+function refreshStoryBtn() {
+  const btn = document.getElementById('btn-story'); if (!btn) return;
+  if (STATE.day <= STATE.lastStoryDay) { btn.disabled = true; btn.textContent = "⏳ STORY EN LIGNE..."; }
+  else { btn.disabled = false; btn.textContent = "📱 POSTER UNE STORY"; }
+}
+
 function startDAWCooldown(s) {
   STATE.dawCooldown=s;
   const btn=document.getElementById('export-btn'), fill=document.getElementById('export-cooldown-fill');
   btn.disabled=true; fill.style.width='100%'; fill.style.transition='none';
   setTimeout(()=>{ fill.style.transition=`width ${s}s linear`; fill.style.width='0%'; },50);
 }
+
 function notify(msg,type='info',dur=3000) {
   const c=document.getElementById('notif-container'), n=document.createElement('div');
   n.className='notif '+type; n.textContent=msg; c.appendChild(n);
   setTimeout(()=>{ n.style.opacity='0'; setTimeout(()=>n.remove(),300); },dur);
 }
+
 function spawnPixels(x,y,col='#0fa',count=8) {
   const cont=document.getElementById('game-container');
   for (let i=0;i<count;i++) {
@@ -729,6 +703,7 @@ function spawnPixels(x,y,col='#0fa',count=8) {
     cont.appendChild(p); setTimeout(()=>p.remove(),600);
   }
 }
+
 function switchView(target) {
   const ov=document.getElementById('transition-overlay'); ov.classList.add('fading');
   setTimeout(()=>{
@@ -739,7 +714,53 @@ function switchView(target) {
   },300);
 }
 
-// ─── ROOM / ISO ───────────────────────────────────────────────
+// ─── NAV MOBILE ET FENÊTRES ────────────────────────────────────
+function mobileNav(key) {
+  currentMobileTab = key;
+  document.querySelectorAll('.mnav-btn').forEach(b => b.classList.remove('active'));
+  const mb = document.getElementById('mnav-' + key); if (mb) mb.classList.add('active');
+  document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
+  const tb = document.getElementById(TAB_MAP[key]); if (tb) tb.classList.add('active');
+  Object.keys(WIN_MAP).forEach(k => {
+    const w = document.getElementById(WIN_MAP[k]); if (!w) return;
+    w.classList.remove('mobile-active');
+    if (k === key) w.classList.add('mobile-active');
+  });
+  if (key === 'browser') loadBrowserTab(STATE.studioLevel >= 2 ? 'store' : 'crack');
+  if (key === 'social')  { buildCollabs(); refreshStoryBtn(); }
+  if (key === 'stats')   updateStatsWindow();
+}
+
+function openWindowPC(id, tabEl, key) {
+  if (isMobile()) { mobileNav(key); return; }
+  document.getElementById(id).classList.add('visible');
+  document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+  if (id === 'browser-window') loadBrowserTab(STATE.studioLevel >= 2 ? 'store' : 'crack');
+  if (id === 'social-window')  { buildCollabs(); refreshStoryBtn(); }
+  if (id === 'stats-window')   updateStatsWindow();
+}
+
+function closeWindowPC(id, tabId) {
+  if (isMobile()) return;
+  document.getElementById(id).classList.remove('visible');
+  document.getElementById(tabId).classList.remove('active');
+}
+
+function makeDraggable(win,bar) {
+  let ox=0,oy=0,drag=false;
+  const down=(cx,cy)=>{ drag=true; ox=cx-win.offsetLeft; oy=cy-win.offsetTop; win.style.zIndex=20; };
+  const move=(cx,cy)=>{ if (!drag||isMobile()) return; win.style.left=(cx-ox)+'px'; win.style.top=(cy-oy)+'px'; };
+  const up=()=>{ drag=false; win.style.zIndex=10; };
+  bar.addEventListener('mousedown',e=>{ if (e.target.classList.contains('win-close')) return; down(e.clientX,e.clientY); });
+  document.addEventListener('mousemove',e=>move(e.clientX,e.clientY));
+  document.addEventListener('mouseup',up);
+  bar.addEventListener('touchstart',e=>{ if (isMobile()||e.target.classList.contains('win-close')) return; const t=e.touches[0]; down(t.clientX,t.clientY); },{passive:true});
+  bar.addEventListener('touchmove',e=>{ if (!drag||isMobile()) return; e.preventDefault(); const t=e.touches[0]; move(t.clientX,t.clientY); },{passive:false});
+  bar.addEventListener('touchend',up);
+}
+
+// ─── ROOM / ISOMÉTRIE ─────────────────────────────────────────
 const ISO = { tileW:140, tileH:70, originX:0, originY:0,
   toScreen(gx,gy) { return { x:ISO.originX+(gx-gy)*(ISO.tileW/2), y:ISO.originY+(gx+gy)*(ISO.tileH/2) }; }
 };
@@ -773,7 +794,7 @@ function drawFallbackSprite(ctx,x,y,w,label) {
     box(x,y-w*0.3,w,w/4,w*0.4,['#0d1f30','#06101a','#0a1a28']);
     ctx.fillStyle='rgba(0,255,136,0.15)';
     ctx.beginPath(); ctx.moveTo(x-w*0.4,y-w*0.3+5); ctx.lineTo(x-5,y-w*0.3+w/8+5); ctx.lineTo(x-5,y-w*0.3+w/4-5); ctx.lineTo(x-w*0.4,y-w*0.3+w/8-5); ctx.closePath(); ctx.fill();
-  } else if (label==='CHAISE') {
+  } else if (label==='CHAISE' || label==='JOUEUR') {
     box(x,y,w/2,w/4,10,['#222','#111','#1a1a1a']);
     box(x,y-10,w/8,w/16,w*0.3,['#111','#050505','#0a0a0a']);
     box(x,y-w*0.3,w*0.7,w*0.4,8,['#2a0d0d','#160606','#220a0a']);
@@ -781,6 +802,7 @@ function drawFallbackSprite(ctx,x,y,w,label) {
   }
   ctx.restore();
 }
+
 function drawSprite(ctx,img,gx,gy,tw,yo=0,label='OBJ') {
   const {x,y}=ISO.toScreen(gx,gy);
   if (!img||!img.complete||img.naturalWidth===0) { drawFallbackSprite(ctx,x,y+yo,tw,label); return; }
@@ -812,21 +834,34 @@ function drawRoom() {
     const {x,y}=ISO.toScreen(-1,gy); const bZ=hz2px(lev),tZ=hz2px(lev+1);
     fillImageFace(ctx,[[x,y-tZ],[x,y-bZ],[x-ISO.tileW/2,y+ISO.tileH/2-bZ],[x-ISO.tileW/2,y+ISO.tileH/2-tZ]],ASSETS.tex_wall_west,'#1a1828');
   }
-const activeCharImg = ASSETS['spr_' + STATE.activeCharacter];
-  if (activeCharImg) {
-    // Petit mouvement de respiration fluide
-    const breatheOffset = Math.sin(t * 3) * 2;
-drawSprite(ctx, activeCharImg, 1.5, 2.5, 110, -40 + breatheOffset, 'JOUEUR');
-  }
- 
-  const sw=Math.round(320*scale);
-  drawSprite(ctx,ASSETS.spr_desk,1.5,2.8,sw,0,'BUREAU');
-  const dH=Math.round(-90*scale);
-  drawSprite(ctx,ASSETS.spr_monitors,0,1.6,Math.round(140*scale),dH,'ECRANS');
-  drawSprite(ctx,ASSETS.spr_chair,1.5,1.5,Math.round(120*scale),0,'CHAISE');
   
-  const {x:dx,y:dy}=ISO.toScreen(0,1.6);
-  deskClickZone={x:dx, y:dy-100*scale, r:200*scale};
+  // Z-SORTING Mobilier
+  const sw=Math.round(320*scale);
+  
+  // PC Fond
+  drawSprite(ctx,ASSETS.spr_pc_tower,2.8,1.0,Math.round(90*scale),0,'PC');
+  
+  // Chaise au fond
+  drawSprite(ctx,ASSETS.spr_chair,1.5,2.5,Math.round(120*scale),0,'CHAISE');
+  
+  // Personnage sur la chaise
+  const activeCharImg = ASSETS['spr_' + STATE.activeCharacter];
+  if (activeCharImg) {
+    const breatheOffset = Math.sin(t * 3) * 2;
+    drawSprite(ctx, activeCharImg, 1.5, 2.5, Math.round(110*scale), Math.round(-40*scale) + breatheOffset, 'JOUEUR');
+  }
+  
+  // Bureau (Cache les jambes du joueur)
+  drawSprite(ctx,ASSETS.spr_desk,1.5,1.5,sw,0,'BUREAU');
+  
+  // Sur le bureau
+  const dH=Math.round(-90*scale);
+  drawSprite(ctx,ASSETS.spr_monitors,1.5,1.5,Math.round(160*scale),dH,'ECRANS');
+  drawSprite(ctx,ASSETS.spr_speaker,0.8,1.5,Math.round(60*scale),dH,'ENC G');
+  drawSprite(ctx,ASSETS.spr_speaker,2.2,1.5,Math.round(60*scale),dH,'ENC D');
+  
+  const {x:dx,y:dy}=ISO.toScreen(1.5,1.5);
+  deskClickZone={x:dx, y:dy-60*scale, r:160*scale};
 
   if (isHoveringDesk) {
     ctx.save(); ctx.globalCompositeOperation='lighter';
@@ -835,7 +870,6 @@ drawSprite(ctx, activeCharImg, 1.5, 2.5, 110, -40 + breatheOffset, 'JOUEUR');
     ctx.fillStyle=g; ctx.fillRect(0,0,W,H); ctx.restore();
   }
 
-  // Interaction hint
   ctx.save(); ctx.globalAlpha=0.7+Math.sin(t*3)*0.3; ctx.fillStyle='#0fa';
   ctx.font=`bold ${Math.round(13*scale)}px Courier New`; ctx.textAlign='center';
   ctx.fillText(isMobile()?'[ Toucher le bureau ]':'[ Cliquer sur le bureau ]', dx, dy-120*scale);
@@ -869,7 +903,7 @@ function animateWaveform() {
   requestAnimationFrame(animateWaveform);
 }
 
-// ─── DAW ──────────────────────────────────────────────────────
+// ─── DAW LOGIQUE ──────────────────────────────────────────────
 function buildGenreGrid() {
   const g=document.getElementById('genre-grid'); g.innerHTML='';
   GENRES.forEach(gen=>{
@@ -1062,9 +1096,7 @@ function updateStatsWindow() {
   `;
 }
 
-// ─── INTERACTIONS ─────────────────────────────────────────────
-const roomCanvas=document.getElementById('room-canvas');
-
+// ─── INTERACTIONS CHROME/MOBILE ───────────────────────────────
 function hitTest(cx,cy) {
   if (!deskClickZone||STATE.view!=='ROOM_VIEW'||STATE.virusActive) return false;
   const rect=roomCanvas.getBoundingClientRect();
@@ -1087,31 +1119,16 @@ roomCanvas.addEventListener('touchend',e=>{ e.preventDefault(); const t=e.change
 document.getElementById('back-btn').addEventListener('click',()=>{ switchView('ROOM_VIEW'); setTimeout(roomLoop,350); });
 document.getElementById('back-btn').addEventListener('touchend',e=>{ e.preventDefault(); switchView('ROOM_VIEW'); setTimeout(roomLoop,350); },{passive:false});
 
-// ─── DRAGGABLE WINDOWS (desktop only) ──────────────────────────
-function makeDraggable(win,bar) {
-  let ox=0,oy=0,drag=false;
-  const down=(cx,cy)=>{ drag=true; ox=cx-win.offsetLeft; oy=cy-win.offsetTop; win.style.zIndex=20; };
-  const move=(cx,cy)=>{ if (!drag||isMobile()) return; win.style.left=(cx-ox)+'px'; win.style.top=(cy-oy)+'px'; };
-  const up=()=>{ drag=false; win.style.zIndex=10; };
-  bar.addEventListener('mousedown',e=>{ if (e.target.classList.contains('win-close')) return; down(e.clientX,e.clientY); });
-  document.addEventListener('mousemove',e=>move(e.clientX,e.clientY));
-  document.addEventListener('mouseup',up);
-  bar.addEventListener('touchstart',e=>{ if (isMobile()||e.target.classList.contains('win-close')) return; const t=e.touches[0]; down(t.clientX,t.clientY); },{passive:true});
-  bar.addEventListener('touchmove',e=>{ if (!drag||isMobile()) return; e.preventDefault(); const t=e.touches[0]; move(t.clientX,t.clientY); },{passive:false});
-  bar.addEventListener('touchend',up);
-}
-
 // ─── INIT ────────────────────────────────────────────────────
 function initGame() {
   resizeRoomCanvas(); buildGenreGrid(); buildSequencer(); updateHUD(); updateStatsWindow(); buildBrowserSearchResults();
-  ['daw','browser','social','stats'].forEach(k=>{
-    makeDraggable(document.getElementById(WIN_MAP[k]), document.getElementById(WIN_MAP[k].replace('-window','-titlebar').replace('daw','daw').replace('browser','browser').replace('social','social').replace('stats','stats')));
-  });
-  // Correct titlebar IDs
+  
+  // Correction ici pour l'attachement du drag
   makeDraggable(document.getElementById('daw-window'),     document.getElementById('daw-titlebar'));
   makeDraggable(document.getElementById('browser-window'), document.getElementById('browser-titlebar'));
   makeDraggable(document.getElementById('social-window'),  document.getElementById('social-titlebar'));
   makeDraggable(document.getElementById('stats-window'),   document.getElementById('stats-titlebar'));
+
   if (isMobile()) mobileNav('daw');
   roomLoop();
   setInterval(updateClock,1000); setInterval(updateHUD,2000); setInterval(saveGame,10000);
