@@ -42,7 +42,7 @@
     background: #1a1a2e; border: 1px solid #333; padding: 12px; color: #fff;
     font-family: 'Courier New', monospace; width: 100%; margin-bottom: 16px;
     text-align: center; outline: none; border-radius: 2px;
-    font-size: 16px; /* prevents iOS auto-zoom */ text-transform: uppercase;
+    font-size: 16px; text-transform: uppercase;
   }
   #username-input:focus { border-color: #0fa; }
   .login-btn {
@@ -518,6 +518,7 @@ function checkUser() {
       const p = JSON.parse(saved);
       STATE = { ...STATE, ...p };
       if (!STATE.collabsCooldown) STATE.collabsCooldown = {};
+      if (!STATE.activeCharacter) STATE.activeCharacter = 'char_1';
       STATE.exporting = false; STATE.virusActive = false; STATE.view = 'ROOM_VIEW';
       document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
       document.getElementById('room-view').classList.add('active');
@@ -543,36 +544,19 @@ function changeCharacter(charId) {
             if (roomAnimId) cancelAnimationFrame(roomAnimId);
             roomLoop();
         }
-        saveGame();
+        saveGame(); 
     } else {
         notify("ID de personnage invalide.", "danger");
     }
 }
 
 // ─── CHARGEMENT ASSETS ────────────────────────────────────────
-const ASSETS = {
-  tex_floor_a: new Image(), tex_floor_b: new Image(),
-  tex_wall_north: new Image(), tex_wall_west: new Image(),
-  spr_desk: new Image(), spr_chair: new Image(),
-  spr_monitors: new Image(), spr_pc_tower: new Image(),
-  spr_speaker: new Image(), 
-  spr_char_1: new Image(), spr_char_2: new Image(),
-  spr_char_3: new Image(), spr_char_4: new Image()
-};
-
-ASSETS.tex_floor_a.src = 'tex_floor_a.png';
-ASSETS.tex_floor_b.src = 'tex_floor_b.png';
-ASSETS.tex_wall_north.src = 'tex_wall_north.png';
-ASSETS.tex_wall_west.src = 'tex_wall_west.png';
-ASSETS.spr_desk.src = 'spr_desk.png';
-ASSETS.spr_chair.src = 'spr_chair.png';
-ASSETS.spr_monitors.src = 'spr_monitors.png';
-ASSETS.spr_pc_tower.src = 'spr_pc_tower.png';
-ASSETS.spr_speaker.src = 'spr_speaker.png';
-ASSETS.spr_char_1.src = 'spr_char_1.png';
-ASSETS.spr_char_2.src = 'spr_char_2.png';
-ASSETS.spr_char_3.src = 'spr_char_3.png';
-ASSETS.spr_char_4.src = 'spr_char_4.png';
+const ASSETS = {};
+['tex_floor_a','tex_floor_b','tex_wall_north','tex_wall_west',
+ 'spr_desk','spr_chair','spr_monitors','spr_pc_tower','spr_speaker',
+ 'spr_char_1','spr_char_2','spr_char_3','spr_char_4'].forEach(n => {
+  ASSETS[n] = new Image(); ASSETS[n].src = n + '.png';
+});
 
 // ─── DONNÉES DU JEU ───────────────────────────────────────────
 const GENRES = [
@@ -661,14 +645,12 @@ function updateClock() {
 }
 
 function onNewDay() {
-  let updated = false;
   for (let id in STATE.collabsCooldown) {
       if (STATE.collabsCooldown[id]>0) {
           STATE.collabsCooldown[id]--;
-          updated = true;
       }
   }
-  if (updated && document.getElementById('social-window').classList.contains('visible')) {
+  if (document.getElementById('social-window').classList.contains('visible') || document.getElementById('social-window').classList.contains('mobile-active')) {
       buildCollabs();
   }
   refreshStoryBtn();
@@ -799,6 +781,12 @@ function drawFallbackSprite(ctx,x,y,w,label) {
     box(x,y-10,w/8,w/16,w*0.3,['#111','#050505','#0a0a0a']);
     box(x,y-w*0.3,w*0.7,w*0.4,8,['#2a0d0d','#160606','#220a0a']);
     box(x-w*0.25,y-w*0.3,w*0.2,w*0.3,w*0.6,['#3a0f0f','#220808','#2e0c0c']);
+  } else if (label.includes('ENC')) {
+    box(x, y, w, w/2, w*1.2, ['#141422','#0a0a14','#10101e']); 
+    ctx.fillStyle = '#ddd'; ctx.beginPath(); ctx.ellipse(x + w/4, y - w*0.6, w/6, w/10, Math.PI/6, 0, Math.PI*2); ctx.fill(); 
+    ctx.fillStyle = '#222'; ctx.beginPath(); ctx.ellipse(x + w/4, y - w*0.6, w/12, w/20, Math.PI/6, 0, Math.PI*2); ctx.fill(); 
+  } else {
+    box(x, y, w, w/2, w, ['#1e2e1a','#0d160a','#18280f']);
   }
   ctx.restore();
 }
@@ -834,32 +822,25 @@ function drawRoom() {
     const {x,y}=ISO.toScreen(-1,gy); const bZ=hz2px(lev),tZ=hz2px(lev+1);
     fillImageFace(ctx,[[x,y-tZ],[x,y-bZ],[x-ISO.tileW/2,y+ISO.tileH/2-bZ],[x-ISO.tileW/2,y+ISO.tileH/2-tZ]],ASSETS.tex_wall_west,'#1a1828');
   }
-  
-  // Z-SORTING Mobilier
-  const sw=Math.round(320*scale);
-  
-  // PC Fond
+
+  // Z-SORTING
   drawSprite(ctx,ASSETS.spr_pc_tower,2.8,1.0,Math.round(90*scale),0,'PC');
-  
-  // Chaise au fond
   drawSprite(ctx,ASSETS.spr_chair,1.5,2.5,Math.round(120*scale),0,'CHAISE');
   
-  // Personnage sur la chaise
   const activeCharImg = ASSETS['spr_' + STATE.activeCharacter];
   if (activeCharImg) {
     const breatheOffset = Math.sin(t * 3) * 2;
     drawSprite(ctx, activeCharImg, 1.5, 2.5, Math.round(110*scale), Math.round(-40*scale) + breatheOffset, 'JOUEUR');
   }
   
-  // Bureau (Cache les jambes du joueur)
+  const sw=Math.round(320*scale);
   drawSprite(ctx,ASSETS.spr_desk,1.5,1.5,sw,0,'BUREAU');
   
-  // Sur le bureau
   const dH=Math.round(-90*scale);
   drawSprite(ctx,ASSETS.spr_monitors,1.5,1.5,Math.round(160*scale),dH,'ECRANS');
   drawSprite(ctx,ASSETS.spr_speaker,0.8,1.5,Math.round(60*scale),dH,'ENC G');
   drawSprite(ctx,ASSETS.spr_speaker,2.2,1.5,Math.round(60*scale),dH,'ENC D');
-  
+
   const {x:dx,y:dy}=ISO.toScreen(1.5,1.5);
   deskClickZone={x:dx, y:dy-60*scale, r:160*scale};
 
@@ -903,7 +884,7 @@ function animateWaveform() {
   requestAnimationFrame(animateWaveform);
 }
 
-// ─── DAW LOGIQUE ──────────────────────────────────────────────
+// ─── DAW ──────────────────────────────────────────────────────
 function buildGenreGrid() {
   const g=document.getElementById('genre-grid'); g.innerHTML='';
   GENRES.forEach(gen=>{
@@ -1114,7 +1095,15 @@ function enterPC(x,y) {
 roomCanvas.addEventListener('mousemove',e=>{ if (isMobile()) return; const h=hitTest(e.clientX,e.clientY); isHoveringDesk=h; roomCanvas.style.cursor=h?'pointer':'default'; });
 roomCanvas.addEventListener('click',e=>{ if (hitTest(e.clientX,e.clientY)) enterPC(e.clientX,e.clientY); });
 // Touch
-roomCanvas.addEventListener('touchend',e=>{ e.preventDefault(); const t=e.changedTouches[0]; if (hitTest(t.clientX,t.clientY)) enterPC(t.clientX,t.clientY); },{passive:false});
+roomCanvas.addEventListener('touchstart',e=>{
+  const t=e.changedTouches[0];
+  isHoveringDesk=hitTest(t.clientX,t.clientY); 
+},{passive:true});
+roomCanvas.addEventListener('touchend',e=>{ 
+  const t=e.changedTouches[0]; 
+  if (hitTest(t.clientX,t.clientY)) { e.preventDefault(); enterPC(t.clientX,t.clientY); }
+  isHoveringDesk=false;
+},{passive:false});
 
 document.getElementById('back-btn').addEventListener('click',()=>{ switchView('ROOM_VIEW'); setTimeout(roomLoop,350); });
 document.getElementById('back-btn').addEventListener('touchend',e=>{ e.preventDefault(); switchView('ROOM_VIEW'); setTimeout(roomLoop,350); },{passive:false});
@@ -1123,12 +1112,11 @@ document.getElementById('back-btn').addEventListener('touchend',e=>{ e.preventDe
 function initGame() {
   resizeRoomCanvas(); buildGenreGrid(); buildSequencer(); updateHUD(); updateStatsWindow(); buildBrowserSearchResults();
   
-  // Correction ici pour l'attachement du drag
   makeDraggable(document.getElementById('daw-window'),     document.getElementById('daw-titlebar'));
   makeDraggable(document.getElementById('browser-window'), document.getElementById('browser-titlebar'));
   makeDraggable(document.getElementById('social-window'),  document.getElementById('social-titlebar'));
   makeDraggable(document.getElementById('stats-window'),   document.getElementById('stats-titlebar'));
-
+  
   if (isMobile()) mobileNav('daw');
   roomLoop();
   setInterval(updateClock,1000); setInterval(updateHUD,2000); setInterval(saveGame,10000);
