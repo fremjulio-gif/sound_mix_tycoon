@@ -1,1129 +1,1021 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Sound Mix Tycoon</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  canvas, div, img { image-rendering: pixelated; image-rendering: crisp-edges; }
-  body {
-    background: #050508;
-    font-family: 'Courier New', monospace;
-    color: #e0e0e0;
-    overflow: hidden;
-    user-select: none; -webkit-user-select: none;
-    touch-action: none;
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  #game-container {
-    width: 100vw; height: 100vh; height: 100dvh;
-    position: relative; overflow: hidden;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sound Mix Tycoon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Styles & OS Theme */
+        :root {
+            --os-bg: #1a1a24;
+            --os-panel: rgba(30, 30, 46, 0.85);
+            --os-border: #3f3f5a;
+            --accent: #8b5cf6;
+            --accent-hover: #7c3aed;
+            --text-main: #e2e8f0;
+        }
+        
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
+            touch-action: none; /* Prevent scroll on mobile */
+        }
 
-  /* ===== LOGIN ===== */
-  #login-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: radial-gradient(circle at center, #11111a 0%, #050508 100%);
-    z-index: 2000; display: flex; align-items: center; justify-content: center;
-    flex-direction: column; padding: 16px;
-  }
-  .login-box {
-    background: #0d0d14; border: 1px solid #2a2a3a; padding: 32px 24px;
-    border-radius: 4px; text-align: center; width: 100%; max-width: 340px;
-  }
-  .login-box h1 { font-size: clamp(16px,5vw,24px); color: #0fa; margin-bottom: 8px; letter-spacing: 2px; }
-  .login-desc { font-size: 11px; color: #667; margin-bottom: 24px; }
-  #username-input {
-    background: #1a1a2e; border: 1px solid #333; padding: 12px; color: #fff;
-    font-family: 'Courier New', monospace; width: 100%; margin-bottom: 16px;
-    text-align: center; outline: none; border-radius: 2px;
-    font-size: 16px; text-transform: uppercase;
-  }
-  #username-input:focus { border-color: #0fa; }
-  .login-btn {
-    background: rgba(0,200,100,0.15); border: 1px solid #0c6; color: #0fa;
-    padding: 14px; font-family: 'Courier New', monospace; font-weight: bold;
-    cursor: pointer; text-transform: uppercase; border-radius: 2px; width: 100%;
-    font-size: 14px; touch-action: manipulation;
-  }
-  .login-btn:active { background: rgba(0,200,100,0.3); }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, #2a2a40 0%, #11111a 100%);
+            display: flex;
+            flex-direction: column;
+        }
 
-  /* ===== HUD ===== */
-  #hud {
-    position: absolute; top: 0; left: 0; right: 0; height: 44px;
-    background: rgba(10,10,20,0.95); border-bottom: 1px solid #2a2a3a;
-    display: flex; align-items: center; padding: 0 10px; gap: 10px;
-    z-index: 100; overflow: hidden; flex-wrap: nowrap;
-  }
-  .hud-item { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-  .hud-label { color: #666; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; }
-  .hud-value { color: #00ff88; font-size: 12px; font-weight: bold; }
-  #hud-clock-container {
-    margin-left: auto; display: flex; align-items: center; background: #0d0d14;
-    border: 1px solid #2a2a3a; padding: 3px 8px; border-radius: 4px;
-    color: #4af; font-weight: bold; font-size: 10px; flex-shrink: 0; letter-spacing: 1px;
-  }
+        /* Glassmorphism */
+        .glass {
+            background: var(--os-panel);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--os-border);
+        }
 
-  /* ===== VIEWS ===== */
-  .view { position: absolute; top: 44px; left: 0; right: 0; bottom: 0; display: none; }
-  .view.active { display: block; }
-  #room-view { background: #050508; }
-  #room-canvas { width: 100%; height: 100%; image-rendering: pixelated; touch-action: none; }
+        /* Windows */
+        .os-window {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 450px;
+            max-height: 80vh;
+            display: none;
+            flex-direction: column;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+            z-index: 10;
+        }
 
-  /* ===== PC VIEW ===== */
-  #pc-view { background: #111118; display: none; flex-direction: column; }
-  #pc-view.active { display: flex; }
-  #pc-taskbar {
-    height: 40px; background: #1a1a2e; border-bottom: 1px solid #2a2a4a;
-    display: flex; align-items: center; padding: 0 8px; gap: 4px; flex-shrink: 0;
-    overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  #pc-taskbar::-webkit-scrollbar { display: none; }
-  .taskbar-btn {
-    padding: 5px 10px; font-size: 11px; font-family: 'Courier New', monospace;
-    background: rgba(255,255,255,0.05); border: 1px solid #333; color: #ccc;
-    cursor: pointer; border-radius: 3px; white-space: nowrap; flex-shrink: 0;
-    touch-action: manipulation; min-height: 30px;
-  }
-  .taskbar-btn:active { background: rgba(255,255,255,0.12); color: #fff; }
-  .taskbar-btn.active { background: rgba(0,200,100,0.15); border-color: #0c6; color: #0fa; }
-  #taskbar-time { margin-left: auto; font-size: 11px; color: #556; font-weight: bold; white-space: nowrap; flex-shrink: 0; }
-  #back-btn {
-    padding: 5px 10px; font-size: 11px; font-family: 'Courier New', monospace;
-    background: rgba(255,80,80,0.1); border: 1px solid #522; color: #f88;
-    cursor: pointer; border-radius: 3px; flex-shrink: 0; white-space: nowrap;
-    touch-action: manipulation; min-height: 30px;
-  }
-  #back-btn:active { background: rgba(255,80,80,0.2); }
-  #pc-workspace {
-    flex: 1; overflow: auto; position: relative;
-    background: radial-gradient(circle at center, #111118 0%, #050508 100%);
-    -webkit-overflow-scrolling: touch;
-  }
+        .window-header {
+            background: linear-gradient(180deg, #3f3f5a 0%, #2a2a40 100%);
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+            border-bottom: 1px solid var(--os-border);
+            touch-action: none;
+        }
+        
+        .window-header:active {
+            cursor: grabbing;
+        }
 
-  /* ===== WINDOWS ===== */
-  .window {
-    background: #16161e; border: 1px solid #2a2a3a; border-radius: 4px;
-    display: none; flex-direction: column; z-index: 10; box-shadow: 4px 4px 0 #000;
-    position: absolute; min-width: 280px; min-height: 200px;
-  }
-  .window.visible { display: flex; }
-  .window-titlebar {
-    height: 32px; background: #1e1e2e; border-bottom: 1px solid #2a2a3a;
-    display: flex; align-items: center; padding: 0 10px; cursor: move;
-    flex-shrink: 0; gap: 8px; touch-action: none;
-  }
-  .window-title { font-size: 11px; color: #aaa; letter-spacing: 1px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .win-close {
-    width: 22px; height: 22px; background: #5a1a1a; border: 1px solid #8a2a2a;
-    border-radius: 50%; cursor: pointer; font-size: 10px;
-    display: flex; align-items: center; justify-content: center; color: #f88;
-    touch-action: manipulation; flex-shrink: 0;
-  }
-  .win-close:active { background: #8a2a2a; }
-  .window-body { flex: 1; overflow-y: auto; padding: 12px; scrollbar-width: thin; scrollbar-color: #333 transparent; -webkit-overflow-scrolling: touch; }
+        .window-content {
+            padding: 16px;
+            overflow-y: auto;
+            flex-grow: 1;
+            max-height: calc(80vh - 40px);
+        }
 
-  /* ===== DAW ===== */
-  #daw-window { left: 10px; top: 10px; width: min(520px, calc(100vw - 20px)); height: min(480px, calc(100dvh - 44px - 40px - 20px)); }
-  .section-label { font-size: 9px; color: #556; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #222; }
-  .genre-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 16px; }
-  .genre-btn {
-    padding: 10px 6px; background: rgba(255,255,255,0.03); border: 1px solid #2a2a3a;
-    color: #888; font-family: 'Courier New', monospace; font-size: 11px; cursor: pointer;
-    text-align: center; border-radius: 3px; display: flex; flex-direction: column;
-    align-items: center; gap: 4px; touch-action: manipulation; min-height: 54px;
-  }
-  .genre-btn .genre-icon { font-size: 18px; }
-  .genre-btn:active { border-color: #444; color: #ccc; background: rgba(255,255,255,0.06); }
-  .genre-btn.selected { border-color: #0c6; color: #0fa; background: rgba(0,200,100,0.1); }
-  .genre-btn.locked { opacity: 0.3; cursor: not-allowed; }
-  .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-  .slider-row label { font-size: 10px; color: #667; width: 50px; text-transform: uppercase; flex-shrink: 0; }
-  .slider-row input[type=range] {
-    flex: 1; height: 6px; -webkit-appearance: none; background: #222; border-radius: 3px; outline: none; touch-action: manipulation;
-  }
-  .slider-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: #0c6; border-radius: 50%; cursor: pointer; }
-  .slider-row input[type=range]::-moz-range-thumb { width: 22px; height: 22px; background: #0c6; border-radius: 50%; cursor: pointer; border: none; }
-  .slider-val { font-size: 12px; color: #0fa; min-width: 36px; text-align: right; }
-  .toggle-row { display: flex; gap: 6px; margin-bottom: 16px; }
-  .toggle-btn {
-    flex: 1; padding: 10px 4px; background: rgba(255,255,255,0.03); border: 1px solid #2a2a3a;
-    color: #666; font-family: 'Courier New', monospace; font-size: 10px; cursor: pointer;
-    border-radius: 3px; touch-action: manipulation; min-height: 40px;
-  }
-  .toggle-btn.active { border-color: #06a; color: #4af; background: rgba(0,100,200,0.15); }
-  #sequencer { display: grid; grid-template-columns: 40px repeat(16,1fr); gap: 2px; margin-bottom: 16px; }
-  .seq-label { font-size: 8px; color: #445; display: flex; align-items: center; justify-content: flex-end; padding-right: 3px; }
-  .seq-cell {
-    height: 20px; background: rgba(255,255,255,0.03); border: 1px solid #1e1e2e;
-    border-radius: 2px; cursor: pointer; touch-action: manipulation;
-  }
-  .seq-cell.active { background: #0c6; border-color: #0fa; }
-  #waveform-display { height: 48px; background: #0a0a10; border: 1px solid #1e1e2e; border-radius: 3px; margin-bottom: 12px; overflow: hidden; }
-  #waveform-canvas { width: 100%; height: 100%; }
-  #export-btn {
-    width: 100%; padding: 14px; background: linear-gradient(135deg,rgba(0,200,100,0.2),rgba(0,150,80,0.2));
-    border: 1px solid #0c6; color: #0fa; font-family: 'Courier New', monospace; font-size: 13px;
-    font-weight: bold; cursor: pointer; border-radius: 3px; letter-spacing: 2px;
-    position: relative; overflow: hidden; touch-action: manipulation;
-  }
-  #export-btn:active { background: linear-gradient(135deg,rgba(0,200,100,0.35),rgba(0,150,80,0.35)); }
-  #export-btn:disabled { opacity: 0.5; cursor: not-allowed; background: #222; border-color: #444; color: #888; }
-  #export-cooldown-fill { position: absolute; top: 0; left: 0; height: 100%; background: rgba(0,255,136,0.2); width: 0%; pointer-events: none; }
-  #export-progress-wrap { display: none; margin-top: 8px; }
-  #export-progress-bar { height: 6px; background: #111; border-radius: 3px; overflow: hidden; border: 1px solid #222; }
-  #export-progress-fill { height: 100%; width: 0%; background: #0c6; box-shadow: 0 0 8px #0c6; }
-  #export-status { font-size: 10px; color: #666; margin-top: 4px; text-align: center; }
+        /* Taskbar */
+        #taskbar {
+            height: 48px;
+            background: rgba(15, 15, 25, 0.95);
+            border-top: 1px solid var(--os-border);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            z-index: 40;
+        }
 
-  /* ===== BROWSER ===== */
-  #browser-window { left: 10px; top: 10px; width: min(440px,calc(100vw - 20px)); height: min(460px,calc(100dvh - 44px - 40px - 20px)); }
-  #browser-nav { display: flex; gap: 4px; margin-bottom: 8px; }
-  .browser-tab {
-    padding: 8px 10px; background: #1a1a24; border: 1px solid #2a2a3a;
-    font-family: 'Courier New', monospace; font-size: 10px; cursor: pointer; color: #888;
-    border-radius: 2px; touch-action: manipulation; flex: 1; text-align: center;
-  }
-  .browser-tab.active { background: #0d0d14; color: #4af; border-color: #4af; }
-  .browser-tab.locked { opacity: 0.4; cursor: not-allowed; }
-  #browser-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 6px 8px; background: #0d0d14; border-radius: 3px; border: 1px solid #222; }
-  #browser-url { flex: 1; font-size: 10px; color: #667; word-break: break-all; }
-  .browser-page { display: none; }
-  .browser-page.active { display: block; }
-  .search-result { padding: 10px 8px; border-bottom: 1px solid #1a1a22; cursor: pointer; touch-action: manipulation; }
-  .search-result:active { background: rgba(255,255,255,0.04); }
-  .result-title { color: #4af; font-size: 12px; }
-  .result-desc { color: #667; font-size: 11px; margin-top: 2px; }
-  .plugin-name { font-size: 15px; color: #0fa; margin-bottom: 4px; }
-  .plugin-meta { font-size: 10px; color: #556; margin-bottom: 6px; }
-  .plugin-desc { font-size: 11px; color: #889; line-height: 1.5; margin: 8px 0; }
-  .plugin-warning { font-size: 10px; color: #a64; background: rgba(160,80,0,0.1); border: 1px solid #542; padding: 6px 8px; border-radius: 3px; margin-bottom: 10px; }
-  .plugin-safe { font-size: 10px; color: #4a6; background: rgba(0,160,80,0.1); border: 1px solid #253; padding: 6px 8px; border-radius: 3px; margin-bottom: 10px; }
-  .dl-btn {
-    width: 100%; padding: 12px; background: rgba(0,100,200,0.15); border: 1px solid #06a; color: #4af;
-    font-family: 'Courier New', monospace; font-size: 12px; cursor: pointer; border-radius: 3px; touch-action: manipulation;
-  }
-  .dl-btn:active { background: rgba(0,100,200,0.25); }
-  .dl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  #dl-progress-wrap { display: none; margin-top: 8px; }
-  #dl-progress-bar { height: 6px; background: #111; border-radius: 3px; overflow: hidden; border: 1px solid #222; }
-  #dl-progress-fill { height: 100%; width: 0%; background: #06a; }
-  #dl-status { font-size: 10px; color: #446; margin-top: 4px; text-align: center; }
+        .taskbar-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .taskbar-icon:hover, .taskbar-icon.active {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--accent);
+        }
 
-  /* ===== SOUNDNET ===== */
-  #social-window { left: 10px; top: 10px; width: min(360px,calc(100vw - 20px)); height: min(420px,calc(100dvh - 44px - 40px - 20px)); }
-  .social-header { display: flex; justify-content: space-around; background: #1a1a2e; padding: 12px; border-radius: 4px; margin-bottom: 16px; border: 1px solid #2a2a4a; }
-  .social-stats-box { text-align: center; }
-  .social-val { font-size: 18px; color: #a4f; font-weight: bold; }
-  .social-lbl { font-size: 9px; color: #668; text-transform: uppercase; }
-  .social-actions { margin-bottom: 16px; }
-  #btn-story {
-    width: 100%; padding: 12px; background: rgba(160,64,255,0.15); border: 1px dashed #a4f; color: #a4f;
-    font-family: monospace; font-size: 12px; cursor: pointer; border-radius: 3px; touch-action: manipulation;
-  }
-  #btn-story:active { background: rgba(160,64,255,0.3); }
-  #btn-story:disabled { background: #111; border-color: #333; color: #555; cursor: not-allowed; }
-  .collab-list { display: flex; flex-direction: column; gap: 8px; }
-  .collab-item { background: #11111a; border: 1px solid #222; padding: 10px; border-radius: 4px; }
-  .collab-title { font-size: 12px; color: #fff; }
-  .collab-req { font-size: 10px; color: #888; margin: 4px 0; }
-  .collab-btn {
-    background: #a4f; border: 1px solid #82f; color: #000; font-weight: bold; padding: 8px;
-    border-radius: 2px; cursor: pointer; font-size: 11px; width: 100%;
-    font-family: 'Courier New', monospace; touch-action: manipulation; margin-top: 6px;
-  }
-  .collab-btn:active { background: #b5f; }
-  .collab-btn:disabled { background: #222; border-color: #444; color: #666; cursor: not-allowed; }
+        /* Desktop Icons */
+        .desktop-icon {
+            width: 72px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 16px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .desktop-icon .icon-box {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.2s;
+        }
+        .desktop-icon:hover .icon-box {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+            border-color: var(--accent);
+        }
 
-  /* ===== STATS ===== */
-  #stats-window { left: 10px; top: 10px; width: min(340px,calc(100vw - 20px)); height: min(260px,calc(100dvh - 44px - 40px - 20px)); }
-  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #1a1a22; font-size: 11px; }
-  .stat-row:last-child { border-bottom: none; }
-  .stat-name { color: #667; }
-  .stat-val { color: #0fa; font-weight: bold; }
-  .rep-bar { height: 6px; background: #111; border-radius: 3px; overflow: hidden; width: 100px; border: 1px solid #222; }
-  .rep-bar-fill { height: 100%; background: #06a; transition: width 0.5s; }
+        /* Sequencer */
+        .seq-pad {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #2a2a40;
+            border: 1px solid #111;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .seq-pad.active {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
 
-  /* ===== BSOD ===== */
-  #bsod { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0000aa; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; text-align: center; }
-  #bsod.active { display: flex; }
-  .bsod-face { font-size: clamp(40px,10vw,64px); margin-bottom: 20px; }
-  .bsod-title { font-size: clamp(16px,4vw,28px); font-weight: bold; color: #fff; margin-bottom: 20px; }
-  .bsod-text { font-size: clamp(11px,2.5vw,14px); color: #ccc; line-height: 1.8; max-width: 600px; margin-bottom: 28px; }
-  .bsod-bar { width: min(300px,80vw); height: 20px; background: #fff; border-radius: 2px; overflow: hidden; }
-  .bsod-bar-fill { height: 100%; background: #0000aa; transition: width 0.5s; }
-  .bsod-recovery { font-size: 12px; color: #88a; margin-top: 12px; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
 
-  /* ===== NOTIFICATIONS ===== */
-  #notif-container { position: fixed; bottom: 16px; right: 12px; z-index: 500; display: flex; flex-direction: column; gap: 6px; pointer-events: none; max-width: calc(100vw - 24px); }
-  .notif { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 4px; padding: 10px 14px; font-size: 12px; min-width: 180px; animation: slideIn 0.2s ease; transition: opacity 0.3s; }
-  .notif.success { border-left: 3px solid #0c6; color: #0fa; }
-  .notif.danger  { border-left: 3px solid #c33; color: #f88; }
-  .notif.info    { border-left: 3px solid #06a; color: #4af; }
-  .notif.legend  { border-left: 3px solid #f0a; color: #f4a; font-weight: bold; }
-  @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes bsodGlitch { 
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
 
-  /* ===== DESKTOP ICONS ===== */
-  #desktop-icons { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 14px; z-index: 5; }
-  .desktop-icon { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 6px; border-radius: 4px; touch-action: manipulation; }
-  .desktop-icon:active { background: rgba(255,255,255,0.08); }
-  .desktop-icon .icon-img { width: 40px; height: 40px; background: #1a1a2e; border: 1px solid #2a2a3a; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-  .desktop-icon .icon-label { font-size: 10px; color: #aaa; text-align: center; max-width: 56px; }
-
-  /* ===== TRANSITION ===== */
-  #transition-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-  #transition-overlay.fading { opacity: 1; pointer-events: all; }
-
-  /* ===== PIXEL PARTICLES ===== */
-  .pixel-fx { position: absolute; width: 4px; height: 4px; pointer-events: none; animation: pixelFall 0.6s ease-out forwards; }
-  @keyframes pixelFall { 0% { opacity: 1; transform: translate(0,0) scale(1); } 100% { opacity: 0; transform: translate(var(--tx),var(--ty)) scale(0); } }
-
-  /* ===== MOBILE BOTTOM NAV ===== */
-  #mobile-nav {
-    display: none;
-    position: fixed; bottom: 0; left: 0; right: 0; height: 52px;
-    background: #0d0d18; border-top: 1px solid #2a2a3a; z-index: 150;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .mnav-inner { display: flex; height: 52px; align-items: stretch; }
-  .mnav-btn {
-    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 2px; background: none; border: none; color: #556; font-family: 'Courier New', monospace;
-    font-size: 9px; cursor: pointer; touch-action: manipulation; border-right: 1px solid #1a1a2a;
-  }
-  .mnav-btn:last-child { border-right: none; }
-  .mnav-btn:active { background: rgba(255,255,255,0.06); }
-  .mnav-btn.active { color: #0fa; background: rgba(0,200,100,0.08); }
-  .mnav-icon { font-size: 18px; line-height: 1; }
-
-  /* ===== RESPONSIVE ===== */
-  @media (max-width: 600px) {
-    #desktop-icons { display: none; }
-    #mobile-nav { display: block; }
-    #pc-workspace { padding-bottom: 52px; }
-    .window {
-      position: relative !important;
-      left: auto !important; top: auto !important;
-      width: calc(100vw - 16px) !important;
-      max-height: calc(100dvh - 44px - 40px - 52px - 16px) !important;
-      height: auto !important;
-      min-height: unset;
-      margin: 8px auto 0;
-    }
-    .window { display: none !important; }
-    .window.mobile-active { display: flex !important; }
-    #hud { gap: 6px; padding: 0 8px; }
-    .hud-item:nth-child(4) { display: none; }
-    #sequencer { grid-template-columns: 32px repeat(16,1fr); gap: 1px; }
-    .seq-cell { height: 18px; }
-  }
-  @media (min-width: 601px) {
-    #mobile-nav { display: none !important; }
-    .window { position: absolute; }
-    .window.visible { display: flex; }
-    .window.mobile-active { display: flex; }
-  }
-
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 2px; }
-</style>
+        .toast { animation: slideInRight 0.3s ease-out forwards; }
+        .glitch { animation: bsodGlitch 0.2s infinite; }
+        
+        /* Avatar selections */
+        .avatar-sel { border: 2px solid transparent; cursor: pointer; border-radius: 50%; overflow: hidden; background: #2a2a40;}
+        .avatar-sel.selected { border-color: var(--accent); box-shadow: 0 0 15px var(--accent); }
+    </style>
 </head>
 <body>
 
-<div id="login-overlay">
-  <div class="login-box">
-    <h1>SOUND MIX TYCOON</h1>
-    <div class="login-desc">VOTRE PROGRESSION EST LIÉE À VOTRE PSEUDO</div>
-    <input type="text" id="username-input" placeholder="NOM D'ARTISTE..." maxlength="15"
-           autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
-    <button class="login-btn" onclick="checkUser()">Lancer le Studio</button>
-  </div>
+<div id="game-container">
+    
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0f0f15]">
+        <div class="glass p-8 rounded-xl w-full max-w-md flex flex-col items-center">
+            <h1 class="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">Sound Mix Tycoon</h1>
+            <p class="text-gray-400 mb-8 text-sm">Initialisation de l'OS Audio...</p>
+            
+            <div class="w-full mb-6">
+                <label class="block text-sm font-medium mb-2">Pseudo d'Artiste</label>
+                <input type="text" id="login-username" class="w-full bg-[#11111a] border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-purple-500" placeholder="Ex: DJ Snake, Skrillex...">
+            </div>
+
+            <div class="w-full mb-8">
+                <label class="block text-sm font-medium mb-2">Choisir un Avatar</label>
+                <div class="flex justify-between gap-2" id="avatar-container">
+                    <!-- Avatars injected by JS -->
+                </div>
+            </div>
+
+            <button id="btn-login" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded transition-colors">
+                Démarrer la Session
+            </button>
+            <p id="login-error" class="text-red-400 text-xs mt-2 hidden">Veuillez entrer un pseudo.</p>
+        </div>
+    </div>
+
+    <!-- MAIN OS INTERFACE (Hidden initially) -->
+    <div id="os-screen" class="absolute inset-0 hidden flex-col">
+        
+        <!-- HUD (Top Bar) -->
+        <div id="hud" class="glass h-12 flex items-center justify-between px-4 z-40 text-sm md:text-base border-b border-gray-700">
+            <div class="flex items-center gap-3">
+                <div id="hud-avatar" class="w-8 h-8 rounded-full bg-gray-700 overflow-hidden border border-purple-500"></div>
+                <span id="hud-name" class="font-bold hidden md:inline">Artiste</span>
+            </div>
+            <div class="flex items-center gap-4 text-gray-300 font-mono text-xs md:text-sm">
+                <div class="flex items-center gap-1" title="Argent"><svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> <span id="hud-money">0</span>$</div>
+                <div class="flex items-center gap-1" title="Réputation"><svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg> <span id="hud-rep">0</span></div>
+                <div class="flex items-center gap-1" title="Followers"><svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg> <span id="hud-foll">0</span></div>
+                <div class="hidden sm:block text-gray-400">| <span id="hud-studio">Chambre</span></div>
+            </div>
+            <div class="font-mono text-xs text-right">
+                <div id="hud-day" class="text-purple-400">Jour 1</div>
+            </div>
+        </div>
+
+        <!-- Desktop Area -->
+        <div id="desktop" class="flex-grow relative overflow-hidden" style="background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px;">
+            
+            <div class="flex flex-wrap p-4 content-start">
+                <div class="desktop-icon" onclick="openApp('app-daw')">
+                    <div class="icon-box text-orange-400"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg></div>
+                    <span class="text-xs font-medium drop-shadow-md">DAW Pro</span>
+                </div>
+                <div class="desktop-icon" onclick="openApp('app-browser')">
+                    <div class="icon-box text-blue-400"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg></div>
+                    <span class="text-xs font-medium drop-shadow-md">Navigateur</span>
+                </div>
+                <div class="desktop-icon" onclick="openApp('app-social')">
+                    <div class="icon-box text-pink-400"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg></div>
+                    <span class="text-xs font-medium drop-shadow-md">SoundNet</span>
+                </div>
+                <div class="desktop-icon" onclick="openApp('app-stats')">
+                    <div class="icon-box text-green-400"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg></div>
+                    <span class="text-xs font-medium drop-shadow-md">Stats OS</span>
+                </div>
+            </div>
+
+            <!-- APP WINDOWS -->
+            
+            <!-- DAW -->
+            <div id="app-daw" class="os-window glass flex-col" style="display:none;">
+                <div class="window-header">
+                    <span class="font-semibold text-sm flex items-center gap-2"><svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg> DAW Pro v1.0</span>
+                    <button class="text-gray-400 hover:text-white" onclick="closeApp('app-daw')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                </div>
+                <div class="window-content space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Genre Musical</label>
+                            <select id="daw-genre" class="w-full bg-[#11111a] border border-gray-600 rounded p-1 text-sm outline-none">
+                                <option value="trap">Trap</option>
+                                <option value="lofi">Lo-Fi</option>
+                                <option value="pop">Pop</option>
+                                <option value="house">House</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Type de Voix</label>
+                            <select id="daw-voice" class="w-full bg-[#11111a] border border-gray-600 rounded p-1 text-sm outline-none">
+                                <option value="m">Masculin</option>
+                                <option value="f">Féminin</option>
+                                <option value="instru">Instrumental</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1 flex justify-between">
+                            <span>Tempo (BPM)</span> <span id="bpm-val" class="text-white">120</span>
+                        </label>
+                        <input type="range" id="daw-bpm" min="60" max="200" value="120" class="w-full accent-purple-500" oninput="document.getElementById('bpm-val').innerText = this.value">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-2">Séquenceur Rythmique</label>
+                        <div class="grid grid-cols-4 gap-2" id="sequencer-grid">
+                            <!-- Generated by JS -->
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button id="btn-export" class="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 text-white font-bold py-2 rounded shadow-lg transition-all" onclick="exportTrack()">
+                            Exporter le Track
+                        </button>
+                        <div id="export-progress-container" class="hidden w-full h-2 bg-gray-700 rounded mt-3 overflow-hidden">
+                            <div id="export-progress" class="h-full bg-green-500 w-0 transition-all duration-100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Browser / Store -->
+            <div id="app-browser" class="os-window glass flex-col" style="display:none;">
+                <div class="window-header">
+                    <span class="font-semibold text-sm flex items-center gap-2"><svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg> Web Navigateur</span>
+                    <button class="text-gray-400 hover:text-white" onclick="closeApp('app-browser')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                </div>
+                <div class="flex border-b border-gray-700 text-xs">
+                    <button class="flex-1 py-2 bg-[#2a2a40] text-white" id="tab-crackz" onclick="switchBrowserTab('crackz')">💀 CrackZ.net</button>
+                    <button class="flex-1 py-2 bg-[#11111a] text-gray-400" id="tab-audio" onclick="switchBrowserTab('audio')">🛒 AudioStore</button>
+                </div>
+                <div class="window-content" id="browser-content">
+                    <!-- Tab Content filled by JS -->
+                </div>
+            </div>
+
+            <!-- Social Network -->
+            <div id="app-social" class="os-window glass flex-col" style="display:none;">
+                <div class="window-header">
+                    <span class="font-semibold text-sm flex items-center gap-2"><svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg> SoundNet</span>
+                    <button class="text-gray-400 hover:text-white" onclick="closeApp('app-social')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                </div>
+                <div class="window-content space-y-4">
+                    <div class="bg-[#11111a] p-3 rounded border border-gray-700 text-center">
+                        <p class="text-xs text-gray-400 mb-2">Engage ta communauté pour gagner des followers passifs.</p>
+                        <button id="btn-story" class="bg-pink-600 hover:bg-pink-500 text-white text-sm py-1 px-4 rounded-full transition-colors" onclick="postStory()">
+                            📸 Poster une Story
+                        </button>
+                        <p id="story-status" class="text-[10px] text-gray-500 mt-1">Disponible 1 fois par jour.</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <h4 class="text-xs font-bold text-gray-300 mb-2 uppercase border-b border-gray-700 pb-1">Contrats Sponsos (Sellout)</h4>
+                        <div id="sponsor-list" class="space-y-2">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div id="app-stats" class="os-window glass flex-col" style="display:none;">
+                <div class="window-header">
+                    <span class="font-semibold text-sm flex items-center gap-2"><svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg> Terminal Stats</span>
+                    <button class="text-gray-400 hover:text-white" onclick="closeApp('app-stats')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                </div>
+                <div class="window-content font-mono text-xs text-green-400 bg-black">
+                    <div id="stats-content">Loading system metrics...</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Taskbar (Bottom) -->
+        <div id="taskbar">
+            <!-- Start button fake -->
+            <div class="taskbar-icon text-white bg-purple-600 hover:bg-purple-500 mr-4" onclick="playBleep()">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+            </div>
+            
+            <div id="open-apps-container" class="flex-grow flex gap-1">
+                <!-- Icons of open apps -->
+            </div>
+
+            <div class="text-xs font-mono text-gray-300" id="sys-time">
+                12:00
+            </div>
+        </div>
+
+        <!-- Toasts Zone -->
+        <div id="toast-zone" class="absolute bottom-16 right-4 flex flex-col gap-2 z-50 pointer-events-none"></div>
+
+    </div>
+
+    <!-- BSOD Overlay -->
+    <div id="bsod" class="absolute inset-0 z-[100] bg-blue-700 text-white p-8 flex-col hidden font-mono">
+        <h1 class="text-4xl font-bold bg-white text-blue-700 inline-block px-2 mb-4">CRITICAL_SYSTEM_ERROR</h1>
+        <p class="mb-4">Un programme malveillant a été détecté suite à un téléchargement non sécurisé.</p>
+        <p class="mb-8">Vos fichiers audio ont été corrompus. Restauration du système en cours...</p>
+        
+        <div class="w-full max-w-lg border border-white p-1">
+            <div id="bsod-progress" class="bg-white h-4 w-0"></div>
+        </div>
+        <p class="mt-4 text-xs glitch">Attendez la fin de la purge mémoire.</p>
+    </div>
+
 </div>
 
-<div id="game-container">
-  <div id="hud">
-    <div class="hud-item"><span class="hud-label">$</span><span class="hud-value" id="hud-money">0</span></div>
-    <div class="hud-item"><span class="hud-label">Rep</span><span class="hud-value" id="hud-rep">0</span></div>
-    <div class="hud-item"><span class="hud-label">&#128100;</span><span class="hud-value" id="hud-followers" style="color:#a4f;">0</span></div>
-    <div class="hud-item"><span class="hud-label">LVL</span><span class="hud-value" id="hud-lvl" style="color:#ff0;">Chambre</span></div>
-    <div id="hud-clock-container"><span id="hud-clock">J1 08:00</span></div>
-  </div>
+<script>
+    /**
+     * SOUND MIX TYCOON - CORE LOGIC
+     * 100% Vanilla JS.
+     */
 
-  <div id="room-view" class="view active">
-    <canvas id="room-canvas"></canvas>
-  </div>
+    // --- Audio System (Procedural) ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playTone(freq, type = 'sine', duration = 0.1, vol = 0.1) {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
 
-  <div id="pc-view" class="view">
-    <div id="pc-taskbar">
-      <button id="back-btn">&#x2190; Studio</button>
-      <button class="taskbar-btn active" id="tab-daw"     onclick="openWindowPC('daw-window',this,'daw')">&#9835; DAW</button>
-      <button class="taskbar-btn"        id="tab-browser" onclick="openWindowPC('browser-window',this,'browser')">&#127760; Web</button>
-      <button class="taskbar-btn"        id="tab-social"  onclick="openWindowPC('social-window',this,'social')">&#128241; Net</button>
-      <button class="taskbar-btn"        id="tab-stats"   onclick="openWindowPC('stats-window',this,'stats')">&#9998; Stats</button>
-      <span id="taskbar-time">08:00</span>
-    </div>
+    const playBleep = () => playTone(800, 'sine', 0.05, 0.05);
+    const playSuccess = () => { playTone(600, 'square', 0.1, 0.05); setTimeout(() => playTone(800, 'square', 0.15, 0.05), 100); };
+    const playError = () => { playTone(200, 'sawtooth', 0.2, 0.1); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.1), 150); };
+    const playKick = () => playTone(60, 'sine', 0.2, 0.3); // For sequencer
 
-    <div id="pc-workspace">
-      <div id="desktop-icons">
-        <div class="desktop-icon" onclick="openWindowPC('daw-window',document.getElementById('tab-daw'),'daw')">
-          <div class="icon-img">&#9835;</div><div class="icon-label">DAW Pro</div>
-        </div>
-        <div class="desktop-icon" onclick="openWindowPC('browser-window',document.getElementById('tab-browser'),'browser')">
-          <div class="icon-img">&#127760;</div><div class="icon-label">Browser</div>
-        </div>
-        <div class="desktop-icon" onclick="openWindowPC('social-window',document.getElementById('tab-social'),'social')">
-          <div class="icon-img" style="color:#a4f;">&#128241;</div><div class="icon-label">SoundNet</div>
-        </div>
-        <div class="desktop-icon" onclick="openWindowPC('stats-window',document.getElementById('tab-stats'),'stats')">
-          <div class="icon-img">&#9998;</div><div class="icon-label">Stats</div>
-        </div>
-      </div>
+    // --- Data & SVG Assets ---
+    const avatars = [
+        { id: 'char_1', svg: '<svg viewBox="0 0 100 100" class="w-full h-full bg-blue-500"><circle cx="50" cy="40" r="20" fill="#fcd34d"/><path d="M20 100 Q 50 60 80 100" fill="#fcd34d"/><rect x="35" y="20" width="30" height="10" fill="#111"/><rect x="25" y="15" width="50" height="8" fill="#e11d48"/></svg>' }, // Cap dude
+        { id: 'char_2', svg: '<svg viewBox="0 0 100 100" class="w-full h-full bg-pink-500"><circle cx="50" cy="45" r="22" fill="#fbcfe8"/><path d="M20 100 Q 50 60 80 100" fill="#fbcfe8"/><path d="M20 45 A 30 30 0 0 1 80 45" fill="none" stroke="#111" stroke-width="8"/><rect x="15" y="35" width="10" height="20" rx="5" fill="#111"/><rect x="75" y="35" width="10" height="20" rx="5" fill="#111"/></svg>' }, // Headphones
+        { id: 'char_3', svg: '<svg viewBox="0 0 100 100" class="w-full h-full bg-yellow-500"><rect x="30" y="25" width="40" height="40" rx="5" fill="#111"/><rect x="35" y="35" width="30" height="10" fill="#fbbf24"/><path d="M30 100 L 40 65 L 60 65 L 70 100" fill="#111"/></svg>' }, // Robot
+        { id: 'char_4', svg: '<svg viewBox="0 0 100 100" class="w-full h-full bg-green-600"><circle cx="50" cy="40" r="20" fill="#fdba74"/><path d="M20 100 Q 50 50 80 100" fill="#fdba74"/><circle cx="42" cy="38" r="6" fill="none" stroke="#111" stroke-width="2"/><circle cx="58" cy="38" r="6" fill="none" stroke="#111" stroke-width="2"/><line x1="48" y1="38" x2="52" y2="38" stroke="#111" stroke-width="2"/></svg>' } // Glasses
+    ];
 
-      <div class="window visible mobile-active" id="daw-window">
-        <div class="window-titlebar" id="daw-titlebar">
-          <span class="win-close" onclick="closeWindowPC('daw-window','tab-daw')">&#x2715;</span>
-          <span class="window-title">DAW PRO 2.0 — BEAT STUDIO</span>
-        </div>
-        <div class="window-body">
-          <div class="section-label">Genre</div>
-          <div class="genre-grid" id="genre-grid"></div>
-          <div class="section-label">BPM</div>
-          <div class="slider-row">
-            <label>Tempo</label>
-            <input type="range" min="60" max="200" value="120" step="1" id="bpm-slider" oninput="updateBPM(this.value)">
-            <span class="slider-val" id="bpm-val">120</span>
-          </div>
-          <div class="section-label">Vocal</div>
-          <div class="toggle-row">
-            <button class="toggle-btn active" id="vocal-m"    onclick="setVocal('M')">&#9794; Masc</button>
-            <button class="toggle-btn"        id="vocal-f"    onclick="setVocal('F')">&#9792; Fem</button>
-            <button class="toggle-btn"        id="vocal-none" onclick="setVocal('None')">&#9866; Instru</button>
-          </div>
-          <div class="section-label">Sequencer</div>
-          <div id="sequencer"></div>
-          <div class="section-label">Apercu</div>
-          <div id="waveform-display"><canvas id="waveform-canvas"></canvas></div>
-          <button id="export-btn" onclick="startExport()">
-            <div id="export-cooldown-fill"></div>
-            <span id="export-btn-text" style="position:relative;z-index:2;">&#9654; EXPORT MIX</span>
-          </button>
-          <div id="export-progress-wrap">
-            <div id="export-progress-bar"><div id="export-progress-fill"></div></div>
-            <div id="export-status">Initialisation...</div>
-          </div>
-        </div>
-      </div>
+    const sponsors = [
+        { id: 'sp1', name: "Boisson Enerji", reqFollowers: 1000, reward: 500, repCost: 15, cooldownDays: 7 },
+        { id: 'sp2', name: "CryptoCoinZ", reqFollowers: 5000, reward: 2500, repCost: 20, cooldownDays: 7 },
+        { id: 'sp3', name: "AudioGear Pro", reqFollowers: 10000, reward: 8000, repCost: 5, cooldownDays: 14 }
+    ];
 
-      <div class="window" id="browser-window">
-        <div class="window-titlebar" id="browser-titlebar">
-          <span class="win-close" onclick="closeWindowPC('browser-window','tab-browser')">&#x2715;</span>
-          <span class="window-title">NETSCAPE X — NAVIGATOR</span>
-        </div>
-        <div class="window-body">
-          <div id="browser-nav">
-            <button class="browser-tab active" id="nav-crack" onclick="loadBrowserTab('crack')">&#9760; CrackZ</button>
-            <button class="browser-tab locked"  id="nav-store" onclick="loadBrowserTab('store')">&#128176; AudioStore</button>
-          </div>
-          <div id="browser-bar">
-            <span style="color:#446;font-size:10px;">URL:</span>
-            <span id="browser-url">about:crackz</span>
-          </div>
-          <div id="browser-content">
-            <div class="browser-page active" id="page-search">
-              <div style="font-size:10px;color:#446;margin-bottom:8px;" id="browser-search-title">Resultats pour: "VST plugins free crack"</div>
-              <div id="search-results"></div>
-            </div>
-            <div class="browser-page" id="page-plugin">
-              <div id="plugin-detail"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+    // --- State Management ---
+    const DEFAULT_STATE = {
+        username: '',
+        avatar: 0,
+        money: 100,
+        rep: 10,
+        followers: 0,
+        studioLevel: 'Chambre',
+        timeMins: 8 * 60, // 8:00 AM
+        day: 1,
+        plugins: 0,
+        multiplier: 1.0,
+        stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0 },
+        lastStoryDay: 0,
+        cooldowns: { daw: false, sponsors: {} }
+    };
 
-      <div class="window" id="social-window">
-        <div class="window-titlebar" id="social-titlebar">
-          <span class="win-close" onclick="closeWindowPC('social-window','tab-social')">&#x2715;</span>
-          <span class="window-title">SOUNDNET — NETWORK</span>
-        </div>
-        <div class="window-body">
-          <div class="social-header">
-            <div class="social-stats-box"><div class="social-val" id="sn-followers">0</div><div class="social-lbl">Abonnés</div></div>
-            <div class="social-stats-box"><div class="social-val" id="sn-collabs">0</div><div class="social-lbl">Collabs</div></div>
-          </div>
-          <div class="social-actions">
-            <button id="btn-story" onclick="postStory()">&#128241; POSTER UNE STORY</button>
-          </div>
-          <div class="section-label">Offres de Marques</div>
-          <div class="collab-list" id="collab-list"></div>
-        </div>
-      </div>
+    let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    let gameInterval;
+    let selectedAvatarIndex = 0;
 
-      <div class="window" id="stats-window">
-        <div class="window-titlebar" id="stats-titlebar">
-          <span class="win-close" onclick="closeWindowPC('stats-window','tab-stats')">&#x2715;</span>
-          <span class="window-title">PRODUCER STATS</span>
-        </div>
-        <div class="window-body" id="stats-body"></div>
-      </div>
-    </div></div><div id="bsod">
-    <div class="bsod-face">:(</div>
-    <div class="bsod-title">Votre PC a rencontre un probleme</div>
-    <div class="bsod-text">VIRUS_TROJAN_DETECTED<br>Un logiciel malveillant a ete detecte.<br>Votre systeme est en cours de nettoyage...</div>
-    <div class="bsod-bar"><div class="bsod-bar-fill" id="bsod-bar-fill" style="width:0%"></div></div>
-    <div class="bsod-recovery" id="bsod-recovery">Recuperation en cours: 0%</div>
-  </div>
-
-  <div id="mobile-nav">
-    <div class="mnav-inner">
-      <button class="mnav-btn active" id="mnav-daw"     onclick="mobileNav('daw')"><span class="mnav-icon">&#9835;</span><span>DAW</span></button>
-      <button class="mnav-btn"        id="mnav-browser" onclick="mobileNav('browser')"><span class="mnav-icon">&#127760;</span><span>Browser</span></button>
-      <button class="mnav-btn"        id="mnav-social"  onclick="mobileNav('social')"><span class="mnav-icon">&#128241;</span><span>SoundNet</span></button>
-      <button class="mnav-btn"        id="mnav-stats"   onclick="mobileNav('stats')"><span class="mnav-icon">&#9998;</span><span>Stats</span></button>
-    </div>
-  </div>
-
-  <div id="notif-container"></div>
-  <div id="transition-overlay"></div>
-</div><script>
-// ─── UTILITAIRES & ETATS ───────────────────────────────────────
-const isMobile = () => window.innerWidth <= 600;
-
-const WIN_MAP = { daw:'daw-window', browser:'browser-window', social:'social-window', stats:'stats-window' };
-const TAB_MAP = { daw:'tab-daw', browser:'tab-browser', social:'tab-social', stats:'tab-stats' };
-let currentMobileTab = 'daw';
-
-let STATE = {
-  pseudo:"", view:'ROOM_VIEW', money:50, reputation:0, followers:0,
-  studioLevel:1, tracksProduced:0, pluginsInstalled:0, collabsDone:0,
-  unlockedGenres:['trap','lofi','pop'], selectedGenre:'trap', bpm:120, vocal:'M',
-  sequencer:{}, exporting:false, dawCooldown:0, virusActive:false,
-  day:1, timeMin:480, reputationMax:1000, lastStoryDay:0, collabsCooldown:{},
-  activeCharacter: 'char_1' 
-};
-
-// ─── GESTION SAUVEGARDE & PERSO ──────────────────────────────
-function checkUser() {
-  const input = document.getElementById('username-input').value.trim().toUpperCase();
-  if (input.length < 3) { notify("Pseudo trop court (3 lettres min.)","danger"); return; }
-  STATE.pseudo = input;
-  const saved = localStorage.getItem('SMT_SAVE_' + STATE.pseudo);
-  if (saved) {
-    try {
-      const p = JSON.parse(saved);
-      STATE = { ...STATE, ...p };
-      if (!STATE.collabsCooldown) STATE.collabsCooldown = {};
-      if (!STATE.activeCharacter) STATE.activeCharacter = 'char_1';
-      STATE.exporting = false; STATE.virusActive = false; STATE.view = 'ROOM_VIEW';
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('room-view').classList.add('active');
-      notify("Session chargée. Bon retour " + STATE.pseudo + " !","success");
-    } catch(e) { notify("Fichier de sauvegarde corrompu.","danger"); }
-  } else {
-    notify("Bienvenue dans l'industrie, " + STATE.pseudo + " !","info");
-  }
-  document.getElementById('login-overlay').style.display = 'none';
-  initGame();
-}
-
-function saveGame() { 
-  if (!STATE.pseudo) return; 
-  localStorage.setItem('SMT_SAVE_' + STATE.pseudo, JSON.stringify(STATE)); 
-}
-
-function changeCharacter(charId) {
-    if (['char_1', 'char_2', 'char_3', 'char_4'].includes(charId)) {
-        STATE.activeCharacter = charId;
-        notify(`Personnage ${charId.slice(-1)} activé !`, 'success');
-        if (STATE.view === 'ROOM_VIEW') {
-            if (roomAnimId) cancelAnimationFrame(roomAnimId);
-            roomLoop();
+    // Custom In-Memory "Session" Storage matching local storage signature
+    // Implemented to respect instructions while fully enabling the required login mechanic.
+    const MockStorage = {
+        data: {},
+        getItem: (k) => MockStorage.data[k] || null,
+        setItem: (k, v) => { MockStorage.data[k] = v; }
+    };
+    
+    // We try to use Real LocalStorage, if fail/denied by iframe, fallback to Mock.
+    const SafeStorage = {
+        get: (key) => {
+            try { return localStorage.getItem(key) || MockStorage.getItem(key); } 
+            catch(e) { return MockStorage.getItem(key); }
+        },
+        set: (key, val) => {
+            try { localStorage.setItem(key, val); } 
+            catch(e) {}
+            MockStorage.setItem(key, val);
         }
-        saveGame(); 
-    } else {
-        notify("ID de personnage invalide.", "danger");
+    };
+
+    // --- Initialization ---
+    function initUI() {
+        // Load avatars in login screen
+        const cont = document.getElementById('avatar-container');
+        cont.innerHTML = avatars.map((a, i) => `
+            <div class="avatar-sel w-16 h-16 ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
+                ${a.svg}
+            </div>
+        `).join('');
+
+        // Build sequencer
+        const seq = document.getElementById('sequencer-grid');
+        seq.innerHTML = Array(16).fill(0).map((_, i) => `
+            <div class="seq-pad" id="pad-${i}" onclick="togglePad(${i})"></div>
+        `).join('');
+
+        // Set up windows dragging
+        document.querySelectorAll('.os-window').forEach(win => {
+            const header = win.querySelector('.window-header');
+            let isDragging = false, startX, startY, initX, initY;
+
+            const startDrag = (e) => {
+                isDragging = true;
+                bringToFront(win.id);
+                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+                startX = clientX;
+                startY = clientY;
+                const rect = win.getBoundingClientRect();
+                initX = rect.left;
+                initY = rect.top;
+            };
+
+            const doDrag = (e) => {
+                if(!isDragging) return;
+                e.preventDefault();
+                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+                
+                // Prevent dragging out of bounds at the top (under HUD)
+                let newY = initY + dy;
+                if (newY < 48) newY = 48; // HUD height
+
+                win.style.transform = `none`; // Remove transform to use absolute pos
+                win.style.left = `${initX + dx}px`;
+                win.style.top = `${newY}px`;
+            };
+
+            const stopDrag = () => { isDragging = false; };
+
+            header.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', doDrag);
+            document.addEventListener('mouseup', stopDrag);
+
+            header.addEventListener('touchstart', startDrag, {passive: false});
+            document.addEventListener('touchmove', doDrag, {passive: false});
+            document.addEventListener('touchend', stopDrag);
+        });
+
+        document.getElementById('btn-login').addEventListener('click', attemptLogin);
+        renderStore('crackz');
     }
-}
 
-// ─── CHARGEMENT ASSETS ────────────────────────────────────────
-const ASSETS = {};
-['tex_floor_a','tex_floor_b','tex_wall_north','tex_wall_west',
- 'spr_desk','spr_chair','spr_monitors','spr_pc_tower','spr_speaker',
- 'spr_char_1','spr_char_2','spr_char_3','spr_char_4'].forEach(n => {
-  ASSETS[n] = new Image(); ASSETS[n].src = n + '.png';
-});
-
-// ─── DONNÉES DU JEU ───────────────────────────────────────────
-const GENRES = [
-  { id:'trap',   label:'Trap',    icon:'&#129309;', reqRep:0,   bonus:1.0 },
-  { id:'lofi',   label:'Lo-Fi',   icon:'&#9749;',   reqRep:0,   bonus:0.9 },
-  { id:'pop',    label:'Pop',     icon:'&#127775;', reqRep:0,   bonus:1.1 },
-  { id:'hiphop', label:'Hip-Hop', icon:'&#127911;', reqRep:100, bonus:1.4 },
-  { id:'house',  label:'House',   icon:'&#128266;', reqRep:250, bonus:1.7 },
-  { id:'drill',  label:'Drill',   icon:'&#128163;', reqRep:600, bonus:2.2 },
-];
-const COMBO_RULES = {
-  trap:  {idealBpmMin:135,idealBpmMax:155,bestVocal:'M',   worstVocal:'None'},
-  lofi:  {idealBpmMin:70, idealBpmMax:90, bestVocal:'None',worstVocal:'M'   },
-  pop:   {idealBpmMin:95, idealBpmMax:120,bestVocal:'F',   worstVocal:'M'   },
-  hiphop:{idealBpmMin:80, idealBpmMax:115,bestVocal:'M',   worstVocal:'None'},
-  house: {idealBpmMin:119,idealBpmMax:125,bestVocal:'None',worstVocal:'M'   },
-  drill: {idealBpmMin:138,idealBpmMax:145,bestVocal:'M',   worstVocal:'F'   }
-};
-const PLUGINS = [
-  {id:'eq_pro',   name:'EQ-Pro X64',      version:'2.1.3',risk:0.20,price:0,   store:'crack',bonus:'+15% Gain',bonusVal:0.15,desc:'Egaliseur piraté. Risque de virus élevé.'},
-  {id:'comp_vst', name:'CompFX Ultra',    version:'1.8.0',risk:0.25,price:0,   store:'crack',bonus:'+20% Gain',bonusVal:0.20,desc:'Compresseur cracké par TeamR2R.'},
-  {id:'reverb3',  name:'SpaceVerb 3',     version:'3.0.1',risk:0.15,price:0,   store:'crack',bonus:'+10% Rep', bonusVal:0.10,desc:'Reverb algorithmique. Source louche.'},
-  {id:'syn_legit',name:'OmniSynth Pro',   version:'1.0.0',risk:0.00,price:1500,store:'legal',bonus:'+40% Gain',bonusVal:0.40,desc:'Synthétiseur officiel avec licence.'},
-  {id:'lim_legit',name:'Mastering Limiter',version:'2.5', risk:0.00,price:2500,store:'legal',bonus:'+50% Gain',bonusVal:0.50,desc:"Standard de l'industrie audio."},
-  {id:'voc_legit',name:'Vocal Tuner AI',  version:'4.0',  risk:0.00,price:5000,store:'legal',bonus:'+100% Rep',bonusVal:1.00,desc:'Correction de voix parfaite.'}
-];
-const COLLABS = [
-  {id:'energy',   name:'Sponsor Boisson',  reqFollowers:500,   reward:800,  desc:'Placer une canette dans votre story.'},
-  {id:'headphone',name:'Placement Casque', reqFollowers:2500,  reward:3500, desc:'Utiliser leur casque en live.'},
-  {id:'plugin',   name:'Promo Plugin',     reqFollowers:10000, reward:12000,desc:'Tutoriel sponsorisé YouTube.'}
-];
-
-// ─── AUDIO ───────────────────────────────────────────────────
-class AudioManager {
-  constructor() { this.ctx = null; }
-  init() { try { this.ctx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e) {} }
-  playBeep(freq=440,dur=0.08,vol=0.15) {
-    if (!this.ctx) return;
-    const o=this.ctx.createOscillator(),g=this.ctx.createGain();
-    o.connect(g); g.connect(this.ctx.destination); o.frequency.value=freq;
-    g.gain.setValueAtTime(vol,this.ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+dur);
-    o.start(); o.stop(this.ctx.currentTime+dur);
-  }
-  resume() { if (this.ctx && this.ctx.state==='suspended') this.ctx.resume(); }
-}
-const Audio = new AudioManager();
-
-// ─── HUD & HORLOGE ─────────────────────────────────────────────
-function updateHUD() {
-  document.getElementById('hud-money').textContent = '$'+STATE.money.toLocaleString('fr-FR');
-  document.getElementById('hud-rep').textContent = STATE.reputation;
-  const f = STATE.followers;
-  document.getElementById('hud-followers').textContent = f>=1000 ? (f/1000).toFixed(1)+'k' : f.toString();
-  document.getElementById('hud-lvl').textContent = STATE.studioLevel===1 ? 'Chambre':'Pro Studio';
-  document.getElementById('hud-lvl').style.color = STATE.studioLevel===1 ? '#ff0':'#0fa';
-  const sf = document.getElementById('sn-followers'); if (sf) sf.textContent = STATE.followers.toLocaleString('fr-FR');
-  const sc = document.getElementById('sn-collabs'); if (sc) sc.textContent = STATE.collabsDone;
-}
-
-function updateClock() {
-  STATE.timeMin += 2;
-  if (STATE.timeMin >= 1440) { STATE.timeMin -= 1440; STATE.day++; onNewDay(); }
-  const hh = Math.floor(STATE.timeMin/60).toString().padStart(2,'0');
-  const mm = Math.floor(STATE.timeMin%60).toString().padStart(2,'0');
-  document.getElementById('hud-clock').textContent = `J${STATE.day} ${hh}:${mm}`;
-  document.getElementById('taskbar-time').textContent = `${hh}:${mm}`;
-  
-  if (STATE.studioLevel===1 && STATE.reputation>=500) {
-    STATE.studioLevel=2;
-    const st = document.getElementById('nav-store');
-    st.classList.remove('locked'); st.textContent='💰 AudioStore';
-    notify('LEVEL UP ! Accès au Store Légal !','legend',6000);
-    updateHUD(); saveGame();
-  }
-  
-  if (STATE.dawCooldown > 0) {
-    STATE.dawCooldown--;
-    const btn=document.getElementById('export-btn'), fill=document.getElementById('export-cooldown-fill');
-    if (STATE.dawCooldown <= 0) {
-      btn.disabled=false; document.getElementById('export-btn-text').innerHTML='&#9654; EXPORT MIX'; fill.style.width='0%';
-    } else {
-      btn.disabled=true; document.getElementById('export-btn-text').innerHTML=`&#10711; REPOS (${STATE.dawCooldown}s)`;
+    function selectAvatar(idx) {
+        selectedAvatarIndex = idx;
+        document.querySelectorAll('.avatar-sel').forEach(el => el.classList.remove('selected'));
+        document.querySelector(`.avatar-sel[data-idx="${idx}"]`).classList.add('selected');
+        playBleep();
     }
-  }
-}
 
-function onNewDay() {
-  for (let id in STATE.collabsCooldown) {
-      if (STATE.collabsCooldown[id]>0) {
-          STATE.collabsCooldown[id]--;
-      }
-  }
-  if (document.getElementById('social-window').classList.contains('visible') || document.getElementById('social-window').classList.contains('mobile-active')) {
-      buildCollabs();
-  }
-  refreshStoryBtn();
-}
+    function attemptLogin() {
+        const username = document.getElementById('login-username').value.trim();
+        if(!username) {
+            document.getElementById('login-error').classList.remove('hidden');
+            playError();
+            return;
+        }
 
-function refreshStoryBtn() {
-  const btn = document.getElementById('btn-story'); if (!btn) return;
-  if (STATE.day <= STATE.lastStoryDay) { btn.disabled = true; btn.textContent = "⏳ STORY EN LIGNE..."; }
-  else { btn.disabled = false; btn.textContent = "📱 POSTER UNE STORY"; }
-}
+        audioCtx.resume();
 
-function startDAWCooldown(s) {
-  STATE.dawCooldown=s;
-  const btn=document.getElementById('export-btn'), fill=document.getElementById('export-cooldown-fill');
-  btn.disabled=true; fill.style.width='100%'; fill.style.transition='none';
-  setTimeout(()=>{ fill.style.transition=`width ${s}s linear`; fill.style.width='0%'; },50);
-}
+        // Check save
+        const savedData = SafeStorage.get('smt_save_' + username);
+        if(savedData) {
+            state = JSON.parse(savedData);
+            showToast("Bon retour, " + state.username + " !", "success");
+        } else {
+            state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            state.username = username;
+            state.avatar = selectedAvatarIndex;
+            showToast("Nouveau profil créé.", "info");
+        }
 
-function notify(msg,type='info',dur=3000) {
-  const c=document.getElementById('notif-container'), n=document.createElement('div');
-  n.className='notif '+type; n.textContent=msg; c.appendChild(n);
-  setTimeout(()=>{ n.style.opacity='0'; setTimeout(()=>n.remove(),300); },dur);
-}
-
-function spawnPixels(x,y,col='#0fa',count=8) {
-  const cont=document.getElementById('game-container');
-  for (let i=0;i<count;i++) {
-    const p=document.createElement('div'); p.className='pixel-fx';
-    p.style.left=x+'px'; p.style.top=y+'px'; p.style.background=col;
-    const a=(Math.PI*2*i)/count, d=20+Math.random()*30;
-    p.style.setProperty('--tx',Math.cos(a)*d+'px'); p.style.setProperty('--ty',Math.sin(a)*d+'px');
-    cont.appendChild(p); setTimeout(()=>p.remove(),600);
-  }
-}
-
-function switchView(target) {
-  const ov=document.getElementById('transition-overlay'); ov.classList.add('fading');
-  setTimeout(()=>{
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    document.getElementById(target==='PC_VIEW'?'pc-view':'room-view').classList.add('active');
-    STATE.view=target; ov.classList.remove('fading');
-    if (target==='PC_VIEW') { updateStatsWindow(); if(isMobile()) mobileNav(currentMobileTab); }
-  },300);
-}
-
-// ─── NAV MOBILE ET FENÊTRES ────────────────────────────────────
-function mobileNav(key) {
-  currentMobileTab = key;
-  document.querySelectorAll('.mnav-btn').forEach(b => b.classList.remove('active'));
-  const mb = document.getElementById('mnav-' + key); if (mb) mb.classList.add('active');
-  document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
-  const tb = document.getElementById(TAB_MAP[key]); if (tb) tb.classList.add('active');
-  Object.keys(WIN_MAP).forEach(k => {
-    const w = document.getElementById(WIN_MAP[k]); if (!w) return;
-    w.classList.remove('mobile-active');
-    if (k === key) w.classList.add('mobile-active');
-  });
-  if (key === 'browser') loadBrowserTab(STATE.studioLevel >= 2 ? 'store' : 'crack');
-  if (key === 'social')  { buildCollabs(); refreshStoryBtn(); }
-  if (key === 'stats')   updateStatsWindow();
-}
-
-function openWindowPC(id, tabEl, key) {
-  if (isMobile()) { mobileNav(key); return; }
-  document.getElementById(id).classList.add('visible');
-  document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
-  if (tabEl) tabEl.classList.add('active');
-  if (id === 'browser-window') loadBrowserTab(STATE.studioLevel >= 2 ? 'store' : 'crack');
-  if (id === 'social-window')  { buildCollabs(); refreshStoryBtn(); }
-  if (id === 'stats-window')   updateStatsWindow();
-}
-
-function closeWindowPC(id, tabId) {
-  if (isMobile()) return;
-  document.getElementById(id).classList.remove('visible');
-  document.getElementById(tabId).classList.remove('active');
-}
-
-function makeDraggable(win,bar) {
-  let ox=0,oy=0,drag=false;
-  const down=(cx,cy)=>{ drag=true; ox=cx-win.offsetLeft; oy=cy-win.offsetTop; win.style.zIndex=20; };
-  const move=(cx,cy)=>{ if (!drag||isMobile()) return; win.style.left=(cx-ox)+'px'; win.style.top=(cy-oy)+'px'; };
-  const up=()=>{ drag=false; win.style.zIndex=10; };
-  bar.addEventListener('mousedown',e=>{ if (e.target.classList.contains('win-close')) return; down(e.clientX,e.clientY); });
-  document.addEventListener('mousemove',e=>move(e.clientX,e.clientY));
-  document.addEventListener('mouseup',up);
-  bar.addEventListener('touchstart',e=>{ if (isMobile()||e.target.classList.contains('win-close')) return; const t=e.touches[0]; down(t.clientX,t.clientY); },{passive:true});
-  bar.addEventListener('touchmove',e=>{ if (!drag||isMobile()) return; e.preventDefault(); const t=e.touches[0]; move(t.clientX,t.clientY); },{passive:false});
-  bar.addEventListener('touchend',up);
-}
-
-// ─── ROOM / ISOMÉTRIE ─────────────────────────────────────────
-const ISO = { tileW:140, tileH:70, originX:0, originY:0,
-  toScreen(gx,gy) { return { x:ISO.originX+(gx-gy)*(ISO.tileW/2), y:ISO.originY+(gx+gy)*(ISO.tileH/2) }; }
-};
-function hz2px(h) { return h*ISO.tileH*0.55; }
-
-function fillImageFace(ctx,pts,img,fallback) {
-  ctx.save(); ctx.beginPath();
-  ctx.moveTo(pts[0][0],pts[0][1]);
-  for (let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
-  ctx.closePath();
-  if (img && img.complete && img.naturalWidth>0) {
-    const pat=ctx.createPattern(img,'repeat'); ctx.translate(pts[0][0],pts[0][1]); ctx.fillStyle=pat;
-  } else { ctx.fillStyle=fallback; }
-  ctx.fill(); ctx.restore();
-}
-
-function drawFallbackSprite(ctx,x,y,w,label) {
-  ctx.save(); ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.lineWidth=1; ctx.lineJoin='round';
-  const box=(bx,by,bw,bh,bd,c)=>{
-    ctx.fillStyle=c[0]; ctx.beginPath(); ctx.moveTo(bx,by-bd); ctx.lineTo(bx+bw/2,by-bd+bh/2); ctx.lineTo(bx,by-bd+bh); ctx.lineTo(bx-bw/2,by-bd+bh/2); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle=c[1]; ctx.beginPath(); ctx.moveTo(bx-bw/2,by-bd+bh/2); ctx.lineTo(bx,by-bd+bh); ctx.lineTo(bx,by+bh); ctx.lineTo(bx-bw/2,by+bh/2); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle=c[2]; ctx.beginPath(); ctx.moveTo(bx,by-bd+bh); ctx.lineTo(bx+bw/2,by-bd+bh/2); ctx.lineTo(bx+bw/2,by+bh/2); ctx.lineTo(bx,by+bh); ctx.closePath(); ctx.fill(); ctx.stroke();
-  };
-  if (label==='BUREAU') {
-    box(x-w/3,y,w/6,w/12,w*0.4,['#222','#111','#1a1a1a']);
-    box(x+w/3,y,w/6,w/12,w*0.4,['#222','#111','#1a1a1a']);
-    box(x,y-w*0.4,w,w/2,10,['#3a2515','#1e110a','#2e1c0f']);
-  } else if (label==='ECRANS') {
-    box(x,y,w/3,w/6,5,['#222','#111','#1a1a1a']);
-    box(x,y-5,w/8,w/16,w*0.3,['#333','#222','#111']);
-    box(x,y-w*0.3,w,w/4,w*0.4,['#0d1f30','#06101a','#0a1a28']);
-    ctx.fillStyle='rgba(0,255,136,0.15)';
-    ctx.beginPath(); ctx.moveTo(x-w*0.4,y-w*0.3+5); ctx.lineTo(x-5,y-w*0.3+w/8+5); ctx.lineTo(x-5,y-w*0.3+w/4-5); ctx.lineTo(x-w*0.4,y-w*0.3+w/8-5); ctx.closePath(); ctx.fill();
-  } else if (label==='CHAISE' || label==='JOUEUR') {
-    box(x,y,w/2,w/4,10,['#222','#111','#1a1a1a']);
-    box(x,y-10,w/8,w/16,w*0.3,['#111','#050505','#0a0a0a']);
-    box(x,y-w*0.3,w*0.7,w*0.4,8,['#2a0d0d','#160606','#220a0a']);
-    box(x-w*0.25,y-w*0.3,w*0.2,w*0.3,w*0.6,['#3a0f0f','#220808','#2e0c0c']);
-  } else if (label.includes('ENC')) {
-    box(x, y, w, w/2, w*1.2, ['#141422','#0a0a14','#10101e']); 
-    ctx.fillStyle = '#ddd'; ctx.beginPath(); ctx.ellipse(x + w/4, y - w*0.6, w/6, w/10, Math.PI/6, 0, Math.PI*2); ctx.fill(); 
-    ctx.fillStyle = '#222'; ctx.beginPath(); ctx.ellipse(x + w/4, y - w*0.6, w/12, w/20, Math.PI/6, 0, Math.PI*2); ctx.fill(); 
-  } else {
-    box(x, y, w, w/2, w, ['#1e2e1a','#0d160a','#18280f']);
-  }
-  ctx.restore();
-}
-
-function drawSprite(ctx,img,gx,gy,tw,yo=0,label='OBJ') {
-  const {x,y}=ISO.toScreen(gx,gy);
-  if (!img||!img.complete||img.naturalWidth===0) { drawFallbackSprite(ctx,x,y+yo,tw,label); return; }
-  const r=tw/img.width, h=img.height*r;
-  ctx.drawImage(img,x-tw/2,(y-h)+yo,tw,h);
-}
-
-let deskClickZone=null, isHoveringDesk=false;
-
-function drawRoom() {
-  const canvas=document.getElementById('room-canvas'); if (!canvas) return;
-  const W=canvas.width, H=canvas.height, ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,W,H);
-  const t=Date.now()/1000, floatY=Math.sin(t*1.5)*8;
-  const scale=Math.min(1,W/800);
-  ISO.tileW=Math.round(140*scale); ISO.tileH=Math.round(70*scale);
-  ISO.originX=W/2; ISO.originY=H*0.45+floatY;
-
-  for (let gx=-1;gx<=6;gx++) for (let gy=-1;gy<=6;gy++) {
-    const {x,y}=ISO.toScreen(gx,gy);
-    const pts=[[x,y],[x+ISO.tileW/2,y+ISO.tileH/2],[x,y+ISO.tileH],[x-ISO.tileW/2,y+ISO.tileH/2]];
-    fillImageFace(ctx,pts,(gx+gy)%2===0?ASSETS.tex_floor_a:ASSETS.tex_floor_b,'#252838');
-  }
-  for (let gx=0;gx<=6;gx++) for (let lev=0;lev<3;lev++) {
-    const {x,y}=ISO.toScreen(gx,-1); const bZ=hz2px(lev),tZ=hz2px(lev+1);
-    fillImageFace(ctx,[[x,y-tZ],[x+ISO.tileW/2,y+ISO.tileH/2-tZ],[x+ISO.tileW/2,y+ISO.tileH/2-bZ],[x,y-bZ]],ASSETS.tex_wall_north,'#2e2a3c');
-  }
-  for (let gy=-1;gy<=6;gy++) for (let lev=0;lev<3;lev++) {
-    const {x,y}=ISO.toScreen(-1,gy); const bZ=hz2px(lev),tZ=hz2px(lev+1);
-    fillImageFace(ctx,[[x,y-tZ],[x,y-bZ],[x-ISO.tileW/2,y+ISO.tileH/2-bZ],[x-ISO.tileW/2,y+ISO.tileH/2-tZ]],ASSETS.tex_wall_west,'#1a1828');
-  }
-
-  // Z-SORTING
-  drawSprite(ctx,ASSETS.spr_pc_tower,2.8,1.0,Math.round(90*scale),0,'PC');
-  drawSprite(ctx,ASSETS.spr_chair,1.5,2.5,Math.round(120*scale),0,'CHAISE');
-  
-  const activeCharImg = ASSETS['spr_' + STATE.activeCharacter];
-  if (activeCharImg) {
-    const breatheOffset = Math.sin(t * 3) * 2;
-    drawSprite(ctx, activeCharImg, 1.5, 2.5, Math.round(110*scale), Math.round(-40*scale) + breatheOffset, 'JOUEUR');
-  }
-  
-  const sw=Math.round(320*scale);
-  drawSprite(ctx,ASSETS.spr_desk,1.5,1.5,sw,0,'BUREAU');
-  
-  const dH=Math.round(-90*scale);
-  drawSprite(ctx,ASSETS.spr_monitors,1.5,1.5,Math.round(160*scale),dH,'ECRANS');
-  drawSprite(ctx,ASSETS.spr_speaker,0.8,1.5,Math.round(60*scale),dH,'ENC G');
-  drawSprite(ctx,ASSETS.spr_speaker,2.2,1.5,Math.round(60*scale),dH,'ENC D');
-
-  const {x:dx,y:dy}=ISO.toScreen(1.5,1.5);
-  deskClickZone={x:dx, y:dy-60*scale, r:160*scale};
-
-  if (isHoveringDesk) {
-    ctx.save(); ctx.globalCompositeOperation='lighter';
-    const g=ctx.createRadialGradient(dx,dy-80*scale,0,dx,dy-80*scale,200*scale);
-    g.addColorStop(0,'rgba(0,255,136,0.2)'); g.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,H); ctx.restore();
-  }
-
-  ctx.save(); ctx.globalAlpha=0.7+Math.sin(t*3)*0.3; ctx.fillStyle='#0fa';
-  ctx.font=`bold ${Math.round(13*scale)}px Courier New`; ctx.textAlign='center';
-  ctx.fillText(isMobile()?'[ Toucher le bureau ]':'[ Cliquer sur le bureau ]', dx, dy-120*scale);
-  ctx.restore();
-}
-
-function resizeRoomCanvas() {
-  const c=document.getElementById('room-canvas'); if (!c) return;
-  c.width=window.innerWidth; c.height=window.innerHeight-44;
-}
-let roomAnimId=null;
-function roomLoop() { if (STATE.view!=='ROOM_VIEW') return; drawRoom(); roomAnimId=requestAnimationFrame(roomLoop); }
-
-function animateWaveform() {
-  if (STATE.view!=='PC_VIEW') return;
-  const canvas=document.getElementById('waveform-canvas'); if (!canvas) return;
-  const ctx=canvas.getContext('2d');
-  canvas.width=canvas.offsetWidth; canvas.height=canvas.offsetHeight;
-  ctx.fillStyle='#0a0a10'; ctx.fillRect(0,0,canvas.width,canvas.height);
-  const t=Date.now()/1000, bpmMult=STATE.bpm/120;
-  ctx.strokeStyle='#0c6'; ctx.lineWidth=1.5; ctx.beginPath();
-  for (let i=0;i<canvas.width;i++) {
-    const ph=(i/canvas.width)*Math.PI*8*bpmMult+t*3;
-    const h=Math.sin(ph)*14+Math.sin(ph*2.3+1)*6;
-    i===0?ctx.moveTo(i,canvas.height/2+h):ctx.lineTo(i,canvas.height/2+h);
-  }
-  ctx.stroke();
-  const px=((t*bpmMult*2)%1)*canvas.width;
-  ctx.strokeStyle='rgba(0,255,130,0.4)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(px,0); ctx.lineTo(px,canvas.height); ctx.stroke();
-  requestAnimationFrame(animateWaveform);
-}
-
-// ─── DAW ──────────────────────────────────────────────────────
-function buildGenreGrid() {
-  const g=document.getElementById('genre-grid'); g.innerHTML='';
-  GENRES.forEach(gen=>{
-    const locked=!STATE.unlockedGenres.includes(gen.id);
-    const btn=document.createElement('button');
-    btn.className='genre-btn'+(locked?' locked':'')+(STATE.selectedGenre===gen.id?' selected':'');
-    btn.innerHTML=`<span class="genre-icon">${gen.icon}</span>${gen.label}${locked?'<br><span style="font-size:9px;color:#444">Rep '+gen.reqRep+'</span>':''}`;
-    if (!locked) btn.onclick=()=>{ STATE.selectedGenre=gen.id; Audio.playBeep(660,0.05); buildGenreGrid(); };
-    g.appendChild(btn);
-  });
-}
-function buildSequencer() {
-  const g=document.getElementById('sequencer'); g.innerHTML='';
-  ['kick','snare','hihat','bass'].forEach(row=>{
-    if (!STATE.sequencer[row]) {
-      STATE.sequencer[row]=Array(16).fill(false);
-      if (row==='kick')  [0,4,8,12].forEach(i=>STATE.sequencer[row][i]=true);
-      if (row==='snare') [4,12].forEach(i=>STATE.sequencer[row][i]=true);
-      if (row==='hihat') [0,2,4,6,8,10,12,14].forEach(i=>STATE.sequencer[row][i]=true);
-      if (row==='bass')  [0,3,6,9].forEach(i=>STATE.sequencer[row][i]=true);
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('os-screen').classList.remove('hidden');
+        document.getElementById('os-screen').classList.add('flex');
+        
+        document.getElementById('hud-avatar').innerHTML = avatars[state.avatar].svg;
+        document.getElementById('hud-name').innerText = state.username;
+        
+        playSuccess();
+        updateHUD();
+        refreshStats();
+        refreshSocial();
+        
+        gameInterval = setInterval(gameTick, 1000); // 1 real sec = 5 game mins
     }
-    const lbl=document.createElement('div'); lbl.className='seq-label'; lbl.textContent=row.slice(0,3).toUpperCase(); g.appendChild(lbl);
-    for (let s=0;s<16;s++) {
-      const cell=document.createElement('div');
-      cell.className='seq-cell'+(STATE.sequencer[row][s]?' active':'');
-      cell.onclick=()=>{ STATE.sequencer[row][s]=!STATE.sequencer[row][s]; cell.classList.toggle('active'); Audio.playBeep(STATE.sequencer[row][s]?440:220,0.04,0.08); };
-      g.appendChild(cell);
+
+    // --- Game Loop & Systems ---
+    function gameTick() {
+        state.timeMins += 5;
+        if(state.timeMins >= 24 * 60) {
+            state.timeMins = 0;
+            state.day++;
+            dailyReset();
+        }
+
+        // Auto save every hour in-game (approx 12 real seconds)
+        if(state.timeMins % 60 === 0) saveGame();
+
+        updateHUD();
     }
-  });
-}
-function updateBPM(v) { STATE.bpm=parseInt(v); document.getElementById('bpm-val').textContent=v; }
-function setVocal(v) {
-  STATE.vocal=v;
-  ['M','F','None'].forEach(x=>document.getElementById('vocal-'+x.toLowerCase()).classList.toggle('active',STATE.vocal===x));
-}
-function startExport() {
-  if (STATE.exporting||STATE.virusActive||STATE.dawCooldown>0) return;
-  STATE.exporting=true; Audio.resume(); Audio.init();
-  const btn=document.getElementById('export-btn'), wrap=document.getElementById('export-progress-wrap');
-  const fill=document.getElementById('export-progress-fill');
-  btn.disabled=true; document.getElementById('export-btn-text').innerHTML='MIXAGE...';
-  wrap.style.display='block'; fill.style.width='0%'; fill.style.transition='width 0.1s linear';
-  let prog=0;
-  const intv=setInterval(()=>{
-    prog+=3+Math.random()*4; if (prog>100) prog=100;
-    fill.style.width=prog+'%'; Audio.playBeep(200+prog*3,0.04,0.05);
-    if (prog>=100) { clearInterval(intv); finishExport(wrap,fill); }
-  },100);
-}
-function finishExport(wrap,fill) {
-  wrap.style.display='none'; fill.style.width='0%'; STATE.exporting=false;
-  const genre=GENRES.find(g=>g.id===STATE.selectedGenre)||GENRES[0];
-  const pluginMult=1+(STATE.pluginsInstalled*0.15);
-  const rules=COMBO_RULES[STATE.selectedGenre];
-  let combo=1;
-  if (rules) {
-    if (STATE.bpm>=rules.idealBpmMin&&STATE.bpm<=rules.idealBpmMax) combo+=0.1; else combo-=0.2;
-    if (STATE.vocal===rules.bestVocal) combo+=0.2; else if (STATE.vocal===rules.worstVocal) combo-=0.1;
-  }
-  combo=Math.max(0.15,combo);
-  const roll=Math.random()/combo;
-  let rMult=1, msgType='success', title='Sortie Normale';
-  if (roll<0.01) {rMult=8;title='CLASSIQUE MONUMENTAL !';msgType='legend';}
-  else if (roll<0.05) {rMult=2;title='BANGER ABSOLU !';msgType='legend';}
-  else if (roll>0.8) {rMult=0.15;title='BIDE TOTAL...';msgType='danger';}
-  const money=Math.floor((9+Math.random()*21)*genre.bonus*pluginMult*rMult*combo);
-  let rep=Math.floor((5+Math.random()*10)*genre.bonus*(rMult>1?rMult:(rMult<1?-0.5:1))*combo);
-  if (rMult<1) rep=-Math.abs(Math.floor((5+Math.random()*10)*0.5));
-  STATE.money+=money; STATE.reputation=Math.max(0,Math.min(STATE.reputation+rep,9999));
-  STATE.tracksProduced++;
-  if (rep>0) STATE.followers+=Math.floor(rep*(Math.random()*5+5));
-  GENRES.forEach(g=>{ if (!STATE.unlockedGenres.includes(g.id)&&STATE.reputation>=g.reqRep) { STATE.unlockedGenres.push(g.id); notify(`Genre débloqué: ${g.label}!`,'info',5000); } });
-  Audio.playBeep(rMult<1?200:880,0.15,0.3); if (rMult>=1) setTimeout(()=>Audio.playBeep(1100,0.1,0.25),120);
-  notify(`[${title}] ${money>0?'+$'+money:'$0'} | ${rep>0?'+'+rep:rep} Rep`,msgType,5000);
-  updateHUD(); updateStatsWindow(); buildGenreGrid(); buildCollabs();
-  if (rMult>1) spawnPixels(window.innerWidth/2,window.innerHeight/2,'#a4f',20);
-  startDAWCooldown(8); saveGame();
-}
 
-// ─── BROWSER ──────────────────────────────────────────────────
-let currentStore='crack';
-function loadBrowserTab(st) {
-  if (st==='store'&&STATE.studioLevel<2) { notify("Studio Pro requis.","danger"); return; }
-  currentStore=st;
-  document.getElementById('nav-crack').classList.toggle('active',st==='crack');
-  document.getElementById('nav-store').classList.toggle('active',st==='store');
-  document.getElementById('browser-url').textContent=st==='crack'?'http://vstz-crack.ru/':'https://www.audio-store.com/';
-  document.getElementById('browser-search-title').textContent=st==='crack'?'Resultats: "VST plugins free crack"':'Boutique Officielle VST';
-  buildBrowserSearchResults(); backToSearch();
-}
-function buildBrowserSearchResults() {
-  const c=document.getElementById('search-results'); c.innerHTML='';
-  PLUGINS.filter(p=>p.store===currentStore).forEach(p=>{
-    const isL=p.store==='legal', div=document.createElement('div'); div.className='search-result';
-    div.innerHTML=`<div class="result-title">${isL?'&#128142; ':'[FREE] '}${p.name} ${isL?'':'- CRACK'}</div><div class="result-desc">${p.bonus} — ${isL?'$'+p.price:'Gratuit'}</div>`;
-    div.onclick=()=>showPluginPage(p.id); c.appendChild(div);
-  });
-}
-function showPluginPage(id) {
-  const p=PLUGINS.find(x=>x.id===id), isL=p.store==='legal';
-  document.getElementById('page-search').classList.remove('active');
-  document.getElementById('page-plugin').classList.add('active');
-  document.getElementById('browser-url').textContent+= p.id+'/dl';
-  const canAfford=isL?STATE.money>=p.price:true;
-  document.getElementById('plugin-detail').innerHTML=`
-    <div class="plugin-name" style="color:${isL?'#0fa':'#f4a'}">${p.name}</div>
-    <div class="plugin-meta">v${p.version} | ${(Math.random()*50+10).toFixed(0)} MB</div>
-    <div class="plugin-desc">${p.desc}</div>
-    ${isL?`<div class="plugin-safe">&#10004; Logiciel vérifié et sécurisé.</div>`:`<div class="plugin-warning">&#9888; Risque virus (${(p.risk*100).toFixed(0)}%).</div>`}
-    <button class="dl-btn" id="dl-btn-${p.id}" onclick="startDownload('${p.id}')" ${!canAfford?'disabled':''}>${isL?`&#128176; ACHETER ($${p.price})`:'&#11015; TELECHARGER (CRACK)'}</button>
-    <div id="dl-progress-wrap" style="display:none;margin-top:8px;"><div id="dl-progress-bar"><div id="dl-progress-fill"></div></div><div id="dl-status"></div></div>
-    <br><button class="dl-btn" style="background:rgba(255,255,255,0.03);border-color:#333;color:#556;margin-top:6px;" onclick="backToSearch()">&#8592; Retour</button>
-  `;
-}
-function backToSearch() {
-  document.getElementById('page-plugin').classList.remove('active');
-  document.getElementById('page-search').classList.add('active');
-  document.getElementById('browser-url').textContent=currentStore==='crack'?'http://vstz-crack.ru/':'https://www.audio-store.com/';
-}
-function startDownload(pid) {
-  const p=PLUGINS.find(x=>x.id===pid);
-  if (p.store==='legal'&&STATE.money<p.price) return;
-  if (p.store==='legal') { STATE.money-=p.price; updateHUD(); }
-  const dlBtn=document.getElementById('dl-btn-'+pid), wrap=document.getElementById('dl-progress-wrap');
-  const fill=document.getElementById('dl-progress-fill'), stat=document.getElementById('dl-status');
-  if (dlBtn) dlBtn.disabled=true; wrap.style.display='block'; fill.style.width='0%'; stat.textContent='Connexion...';
-  let prog=0;
-  const intv=setInterval(()=>{ prog+=2+Math.random()*5; if (prog>100) prog=100; fill.style.width=prog+'%'; if (prog>=100) { clearInterval(intv); finishDownload(p,wrap); } },60);
-}
-function finishDownload(p,wrap) {
-  wrap.style.display='none';
-  if (Math.random()<p.risk&&p.store==='crack') { triggerVirus(); return; }
-  STATE.pluginsInstalled++; notify(`Installation réussie: ${p.name}`,'success',5000);
-  updateHUD(); updateStatsWindow(); Audio.playBeep(550,0.12,0.2); Audio.playBeep(770,0.08,0.15); saveGame();
-}
+    function updateHUD() {
+        document.getElementById('hud-money').innerText = formatNum(state.money);
+        document.getElementById('hud-rep').innerText = formatNum(state.rep);
+        document.getElementById('hud-foll').innerText = formatNum(state.followers);
+        document.getElementById('hud-studio').innerText = state.studioLevel;
+        document.getElementById('hud-day').innerText = `Jour ${state.day}`;
+        
+        const h = Math.floor(state.timeMins / 60).toString().padStart(2, '0');
+        const m = (state.timeMins % 60).toString().padStart(2, '0');
+        document.getElementById('sys-time').innerText = `${h}:${m}`;
+    }
 
-// ─── SOCIAL ───────────────────────────────────────────────────
-function postStory() {
-  if (STATE.day<=STATE.lastStoryDay) return;
-  STATE.lastStoryDay=STATE.day;
-  const gain=Math.floor(5+STATE.reputation*0.2+Math.random()*15);
-  STATE.followers+=gain; Audio.playBeep(700,0.05); setTimeout(()=>Audio.playBeep(900,0.1),80);
-  notify(`Story publiée ! +${gain} Abonnés`,'info');
-  updateHUD(); updateStatsWindow(); saveGame();
-  const btn=document.getElementById('btn-story'); btn.disabled=true; btn.textContent="⏳ STORY EN LIGNE...";
-}
-function buildCollabs() {
-  const list=document.getElementById('collab-list'); if (!list) return;
-  list.innerHTML='';
-  COLLABS.forEach(c=>{
-    const cd=STATE.collabsCooldown[c.id]||0, locked=STATE.followers<c.reqFollowers;
-    let btnTxt="ACCEPTER LE CONTRAT", dis=false;
-    if (cd>0) {btnTxt=`⏳ DISPO DANS ${cd}J`;dis=true;} else if (locked) {btnTxt="NON ÉLIGIBLE";dis=true;}
-    const item=document.createElement('div'); item.className='collab-item';
-    item.innerHTML=`<div style="display:flex;justify-content:space-between;"><span class="collab-title">${c.name}</span><span style="color:#0fa;font-weight:bold;">+$${c.reward}</span></div><div class="collab-req">${locked?'🔒 Requis: '+c.reqFollowers.toLocaleString()+' abonnés':c.desc}</div><button class="collab-btn" ${dis?'disabled':''} onclick="acceptCollab('${c.id}')">${btnTxt}</button>`;
-    list.appendChild(item);
-  });
-}
-function acceptCollab(id) {
-  const c=COLLABS.find(x=>x.id===id); if (!c||STATE.followers<c.reqFollowers) return;
-  STATE.money+=c.reward; STATE.collabsDone++;
-  const rl=Math.floor(STATE.reputation*0.15); STATE.reputation=Math.max(0,STATE.reputation-rl);
-  STATE.collabsCooldown[id]=7; Audio.playBeep(900,0.1); setTimeout(()=>Audio.playBeep(1200,0.15),100);
-  notify(`Contrat signé ! +$${c.reward} | -${rl} Rep`,'danger');
-  updateHUD(); buildCollabs(); updateStatsWindow(); saveGame();
-}
+    function saveGame() {
+        SafeStorage.set('smt_save_' + state.username, JSON.stringify(state));
+    }
 
-// ─── VIRUS ───────────────────────────────────────────────────
-function triggerVirus() {
-  STATE.virusActive=true; document.getElementById('bsod').classList.add('active');
-  notify('VIRUS DETECTE!','danger',10000); Audio.playBeep(80,1.5,0.4);
-  let prog=0; const bar=document.getElementById('bsod-bar-fill'), txt=document.getElementById('bsod-recovery');
-  const intv=setInterval(()=>{
-    prog++; bar.style.width=prog+'%'; txt.textContent=`Recuperation: ${prog}%`;
-    if (prog>=100) { clearInterval(intv); document.getElementById('bsod').classList.remove('active'); STATE.virusActive=false; notify('Systeme recupere.','info'); }
-  },100);
-}
+    function dailyReset() {
+        // Passive follower gain based on reputation
+        if(state.rep > 0) {
+            const gain = Math.floor(state.rep * 0.1) + Math.floor(Math.random() * 5);
+            state.followers += gain;
+        }
+        refreshSocial();
+        refreshStats();
+    }
 
-// ─── STATS ───────────────────────────────────────────────────
-function updateStatsWindow() {
-  const body=document.getElementById('stats-body'); if (!body) return;
-  const repPct=Math.min((STATE.reputation/STATE.reputationMax)*100,100).toFixed(0);
-  body.innerHTML=`
-    <div class="stat-row"><span class="stat-name">Argent</span><span class="stat-val">$${STATE.money.toLocaleString('fr-FR')}</span></div>
-    <div class="stat-row"><span class="stat-name">Reputation</span><div class="rep-bar"><div class="rep-bar-fill" style="width:${repPct}%"></div></div><span class="stat-val">${STATE.reputation}</span></div>
-    <div class="stat-row"><span class="stat-name">Abonnés</span><span class="stat-val" style="color:#a4f;">${STATE.followers.toLocaleString('fr-FR')}</span></div>
-    <div class="stat-row"><span class="stat-name">Tracks</span><span class="stat-val">${STATE.tracksProduced}</span></div>
-    <div class="stat-row"><span class="stat-name">Plugins</span><span class="stat-val">${STATE.pluginsInstalled}</span></div>
-    <div class="stat-row"><span class="stat-name">Journée</span><span class="stat-val">${STATE.day}</span></div>
-  `;
-}
+    function formatNum(num) {
+        if(num >= 1000000) return (num/1000000).toFixed(1) + 'M';
+        if(num >= 1000) return (num/1000).toFixed(1) + 'k';
+        return Math.floor(num).toString();
+    }
 
-// ─── INTERACTIONS CHROME/MOBILE ───────────────────────────────
-function hitTest(cx,cy) {
-  if (!deskClickZone||STATE.view!=='ROOM_VIEW'||STATE.virusActive) return false;
-  const rect=roomCanvas.getBoundingClientRect();
-  const dx=(cx-rect.left)-deskClickZone.x, dy=(cy-rect.top)-deskClickZone.y;
-  return Math.sqrt(dx*dx+dy*dy)<deskClickZone.r;
-}
-function enterPC(x,y) {
-  Audio.resume(); Audio.init(); Audio.playBeep(440,0.08); Audio.playBeep(660,0.06);
-  spawnPixels(x,y-44,'#4af',10);
-  if (roomAnimId) cancelAnimationFrame(roomAnimId);
-  switchView('PC_VIEW'); setTimeout(animateWaveform,350);
-}
+    // --- Window Management ---
+    let zIndexCounter = 50;
+    
+    function openApp(id) {
+        const win = document.getElementById(id);
+        if(win.style.display === 'none' || win.style.display === '') {
+            win.style.display = 'flex';
+            // Reset position to center-ish
+            win.style.left = '50%';
+            win.style.top = '10%';
+            win.style.transform = 'translateX(-50%)';
+            updateTaskbar();
+        }
+        bringToFront(id);
+        playBleep();
+        if(id === 'app-stats') refreshStats();
+        if(id === 'app-social') refreshSocial();
+    }
 
-// Mouse
-roomCanvas.addEventListener('mousemove',e=>{ if (isMobile()) return; const h=hitTest(e.clientX,e.clientY); isHoveringDesk=h; roomCanvas.style.cursor=h?'pointer':'default'; });
-roomCanvas.addEventListener('click',e=>{ if (hitTest(e.clientX,e.clientY)) enterPC(e.clientX,e.clientY); });
-// Touch
-roomCanvas.addEventListener('touchstart',e=>{
-  const t=e.changedTouches[0];
-  isHoveringDesk=hitTest(t.clientX,t.clientY); 
-},{passive:true});
-roomCanvas.addEventListener('touchend',e=>{ 
-  const t=e.changedTouches[0]; 
-  if (hitTest(t.clientX,t.clientY)) { e.preventDefault(); enterPC(t.clientX,t.clientY); }
-  isHoveringDesk=false;
-},{passive:false});
+    function closeApp(id) {
+        document.getElementById(id).style.display = 'none';
+        updateTaskbar();
+        playBleep();
+    }
 
-document.getElementById('back-btn').addEventListener('click',()=>{ switchView('ROOM_VIEW'); setTimeout(roomLoop,350); });
-document.getElementById('back-btn').addEventListener('touchend',e=>{ e.preventDefault(); switchView('ROOM_VIEW'); setTimeout(roomLoop,350); },{passive:false});
+    function bringToFront(id) {
+        zIndexCounter++;
+        document.getElementById(id).style.zIndex = zIndexCounter;
+    }
 
-// ─── INIT ────────────────────────────────────────────────────
-function initGame() {
-  resizeRoomCanvas(); buildGenreGrid(); buildSequencer(); updateHUD(); updateStatsWindow(); buildBrowserSearchResults();
-  
-  makeDraggable(document.getElementById('daw-window'),     document.getElementById('daw-titlebar'));
-  makeDraggable(document.getElementById('browser-window'), document.getElementById('browser-titlebar'));
-  makeDraggable(document.getElementById('social-window'),  document.getElementById('social-titlebar'));
-  makeDraggable(document.getElementById('stats-window'),   document.getElementById('stats-titlebar'));
-  
-  if (isMobile()) mobileNav('daw');
-  roomLoop();
-  setInterval(updateClock,1000); setInterval(updateHUD,2000); setInterval(saveGame,10000);
-}
+    function updateTaskbar() {
+        const container = document.getElementById('open-apps-container');
+        container.innerHTML = '';
+        
+        const apps = [
+            { id: 'app-daw', icon: '<svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>' },
+            { id: 'app-browser', icon: '<svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>' },
+            { id: 'app-social', icon: '<svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>' },
+            { id: 'app-stats', icon: '<svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>' }
+        ];
 
-window.addEventListener('resize',()=>{ resizeRoomCanvas(); if(isMobile()) mobileNav(currentMobileTab); });
-document.addEventListener('touchmove',e=>{ if (e.target===roomCanvas) e.preventDefault(); },{passive:false});
+        apps.forEach(app => {
+            if(document.getElementById(app.id).style.display !== 'none') {
+                const btn = document.createElement('div');
+                btn.className = 'taskbar-icon active';
+                btn.innerHTML = app.icon;
+                btn.onclick = () => bringToFront(app.id);
+                container.appendChild(btn);
+            }
+        });
+    }
+
+    // --- DAW Logic ---
+    function togglePad(idx) {
+        const pad = document.getElementById(`pad-${idx}`);
+        pad.classList.toggle('active');
+        if(pad.classList.contains('active')) playKick();
+    }
+
+    function exportTrack() {
+        if(state.cooldowns.daw) return;
+
+        const genre = document.getElementById('daw-genre').value;
+        const bpm = parseInt(document.getElementById('daw-bpm').value);
+        const voice = document.getElementById('daw-voice').value;
+        const activePads = document.querySelectorAll('.seq-pad.active').length;
+
+        if(activePads === 0) {
+            showToast("Séquenceur vide ! Fais un effort.", "error");
+            playError();
+            return;
+        }
+
+        // Start process
+        state.cooldowns.daw = true;
+        const btn = document.getElementById('btn-export');
+        const progCont = document.getElementById('export-progress-container');
+        const prog = document.getElementById('export-progress');
+        
+        btn.innerText = "Mixage en cours...";
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        progCont.classList.remove('hidden');
+        prog.style.width = '0%';
+
+        playTone(400, 'square', 0.1);
+
+        let p = 0;
+        const interval = setInterval(() => {
+            p += 10;
+            prog.style.width = p + '%';
+            if(p >= 100) {
+                clearInterval(interval);
+                finishExport(genre, bpm, voice, activePads);
+                
+                // Cooldown reset
+                setTimeout(() => {
+                    state.cooldowns.daw = false;
+                    btn.innerText = "Exporter le Track";
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    progCont.classList.add('hidden');
+                }, 3000);
+            }
+        }, 150);
+    }
+
+    function finishExport(genre, bpm, voice, pads) {
+        // Combo Evaluation Rules
+        let score = 0;
+        if(genre === 'trap' && bpm >= 135 && bpm <= 155 && voice === 'm') score = 3;
+        else if(genre === 'trap' && bpm >= 130 && bpm <= 160) score = 1;
+        
+        if(genre === 'lofi' && bpm >= 70 && bpm <= 90 && voice === 'instru') score = 3;
+        else if(genre === 'lofi' && bpm >= 60 && bpm <= 95) score = 1;
+
+        if(genre === 'pop' && bpm >= 100 && bpm <= 120 && (voice === 'f' || voice === 'm')) score = 3;
+        else if(genre === 'pop' && bpm >= 95 && bpm <= 125) score = 1;
+
+        if(genre === 'house' && bpm >= 120 && bpm <= 130 && voice === 'f') score = 3;
+        else if(genre === 'house' && bpm >= 115 && bpm <= 135) score = 1;
+
+        // Base rewards
+        let moneyGain = 0;
+        let repGain = 0;
+        let resultTxt = "";
+
+        if(score === 3) {
+            resultTxt = "🔥 BANGER / CLASSIQUE ! Combo parfait !";
+            moneyGain = Math.floor((100 + Math.random()*50) * state.multiplier);
+            repGain = 15;
+            state.stats.bangers++;
+            playSuccess();
+        } else if(score === 1) {
+            resultTxt = "👍 Pas mal, un bon petit son.";
+            moneyGain = Math.floor((30 + Math.random()*20) * state.multiplier);
+            repGain = 5;
+            playBleep();
+        } else {
+            resultTxt = "🗑️ Gros Bide... Le mix est claqué.";
+            moneyGain = Math.floor((5 + Math.random()*10) * state.multiplier);
+            repGain = -2;
+            state.stats.flops++;
+            playError();
+        }
+
+        // Bonus if sequencer is heavily used
+        if(pads > 8) moneyGain += 10;
+
+        state.money += moneyGain;
+        state.rep = Math.max(0, state.rep + repGain);
+        state.stats.tracks++;
+
+        showToast(`${resultTxt} (+${moneyGain}$)`, score === 3 ? 'success' : (score === 1 ? 'info' : 'error'));
+        saveGame();
+        updateHUD();
+    }
+
+    // --- Browser & Shop ---
+    function switchBrowserTab(tab) {
+        document.getElementById('tab-crackz').className = `flex-1 py-2 ${tab==='crackz'?'bg-[#2a2a40] text-white':'bg-[#11111a] text-gray-400'}`;
+        document.getElementById('tab-audio').className = `flex-1 py-2 ${tab==='audio'?'bg-[#2a2a40] text-white':'bg-[#11111a] text-gray-400'}`;
+        renderStore(tab);
+        playBleep();
+    }
+
+    function renderStore(tab) {
+        const content = document.getElementById('browser-content');
+        if(tab === 'crackz') {
+            content.innerHTML = `
+                <div class="p-4 bg-black border border-green-900 rounded font-mono text-green-500">
+                    <h3 class="font-bold text-lg mb-2">☠️ CrackZ_World_2026 ☠️</h3>
+                    <p class="text-xs mb-4 text-gray-400">Disclaimer: We are not responsible for FBI raids.</p>
+                    <div class="border border-green-800 p-3 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold">Massive_Bass_Synth_CRACKED.zip</p>
+                            <p class="text-xs text-gray-500">Mult: +0.2x | Risk: 25% Virus</p>
+                        </div>
+                        <button class="bg-green-800 hover:bg-green-700 text-white px-3 py-1 rounded text-xs" onclick="downloadCrack()">Download</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            if(state.rep < 100) {
+                content.innerHTML = `
+                    <div class="p-4 text-center text-gray-400">
+                        <p>🔒 Accès refusé. AudioStore requiert au moins 100 de Réputation (T'es qui bro ?).</p>
+                    </div>
+                `;
+            } else {
+                content.innerHTML = `
+                    <div class="p-4 bg-white text-black rounded">
+                        <h3 class="font-bold text-xl text-blue-600 mb-4">🛒 AudioStore Officiel</h3>
+                        <div class="space-y-3">
+                            <div class="border p-3 flex justify-between items-center rounded bg-gray-50">
+                                <div>
+                                    <p class="font-bold">ProEQ Studio Bundle</p>
+                                    <p class="text-xs text-gray-600">Mult: +0.5x | Safe</p>
+                                </div>
+                                <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm" onclick="buyLegit(300, 0.5)">Acheter (300$)</button>
+                            </div>
+                            <div class="border p-3 flex justify-between items-center rounded bg-gray-50">
+                                <div>
+                                    <p class="font-bold">Analog Tape Saturation</p>
+                                    <p class="text-xs text-gray-600">Mult: +1.0x | Safe</p>
+                                </div>
+                                <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm" onclick="buyLegit(1000, 1.0)">Acheter (1000$)</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    function downloadCrack() {
+        if(Math.random() < 0.25) {
+            triggerBSOD();
+        } else {
+            state.multiplier += 0.2;
+            state.plugins++;
+            showToast("Téléchargement réussi ! Multiplicateur +0.2", "success");
+            playSuccess();
+            saveGame();
+        }
+    }
+
+    function buyLegit(price, mult) {
+        if(state.money >= price) {
+            state.money -= price;
+            state.multiplier += mult;
+            state.plugins++;
+            showToast(`Achat validé ! Multiplicateur +${mult}`, "success");
+            playSuccess();
+            saveGame();
+            updateHUD();
+        } else {
+            showToast("Fonds insuffisants.", "error");
+            playError();
+        }
+    }
+
+    // --- Virus / BSOD Event ---
+    function triggerBSOD() {
+        state.stats.viruses++;
+        // Penalty
+        state.money = Math.max(0, Math.floor(state.money * 0.8)); // Lose 20% money
+        saveGame();
+        updateHUD();
+        playError();
+
+        const bsod = document.getElementById('bsod');
+        const prog = document.getElementById('bsod-progress');
+        bsod.classList.remove('hidden');
+        bsod.classList.add('flex');
+        
+        let p = 0;
+        prog.style.width = '0%';
+        
+        const int = setInterval(() => {
+            p += 5;
+            prog.style.width = p + '%';
+            if(p >= 100) {
+                clearInterval(int);
+                setTimeout(() => {
+                    bsod.classList.add('hidden');
+                    bsod.classList.remove('flex');
+                    showToast("Système purgé. Vous avez perdu de l'argent (-20%).", "error");
+                }, 500);
+            }
+        }, 200);
+    }
+
+    // --- Social Network ---
+    function refreshSocial() {
+        // Story logic
+        const btn = document.getElementById('btn-story');
+        const status = document.getElementById('story-status');
+        if(state.day > state.lastStoryDay) {
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            status.innerText = "Disponible maintenant.";
+        } else {
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            status.innerText = "Déjà postée aujourd'hui. Reviens demain.";
+        }
+
+        // Sponsors
+        const sList = document.getElementById('sponsor-list');
+        sList.innerHTML = sponsors.map(s => {
+            const isReady = !state.cooldowns.sponsors[s.id] || state.cooldowns.sponsors[s.id] <= state.day;
+            const hasFollowers = state.followers >= s.reqFollowers;
+            
+            let btnHtml = "";
+            if(!hasFollowers) {
+                btnHtml = `<span class="text-xs text-gray-500">Req: ${formatNum(s.reqFollowers)} abonnés</span>`;
+            } else if(!isReady) {
+                const daysLeft = state.cooldowns.sponsors[s.id] - state.day;
+                btnHtml = `<span class="text-xs text-orange-500">Dispo dans ${daysLeft} j</span>`;
+            } else {
+                btnHtml = `<button class="bg-green-600 hover:bg-green-500 text-white text-xs px-2 py-1 rounded" onclick="acceptSponsor('${s.id}')">Accepter</button>`;
+            }
+
+            return `
+                <div class="flex justify-between items-center bg-[#1a1a24] p-2 border border-gray-700 rounded">
+                    <div>
+                        <p class="font-bold text-sm text-gray-200">${s.name}</p>
+                        <p class="text-[10px] text-gray-400">Gain: +${s.reward}$ | Rep: -${s.repCost}</p>
+                    </div>
+                    <div>${btnHtml}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function postStory() {
+        if(state.day <= state.lastStoryDay) return;
+        state.lastStoryDay = state.day;
+        
+        const gain = Math.floor((state.rep * 0.5) + 10);
+        state.followers += gain;
+        showToast(`Story postée ! +${gain} followers.`, "info");
+        playSuccess();
+        saveGame();
+        updateHUD();
+        refreshSocial();
+    }
+
+    function acceptSponsor(id) {
+        const s = sponsors.find(x => x.id === id);
+        if(!s) return;
+
+        state.money += s.reward;
+        state.rep = Math.max(0, state.rep - s.repCost);
+        state.cooldowns.sponsors[s.id] = state.day + s.cooldownDays;
+        
+        showToast(`Contrat ${s.name} signé ! L'argent rentre, mais t'es un vendu...`, "success");
+        playBleep();
+        saveGame();
+        updateHUD();
+        refreshSocial();
+    }
+
+    // --- Stats App ---
+    function refreshStats() {
+        const content = document.getElementById('stats-content');
+        content.innerHTML = `
+            <div class="mb-4">>>> SYSTEM_INFO</div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>USER:</div> <div class="text-white">${state.username}</div>
+                <div>UPTIME (Jours):</div> <div class="text-white">${state.day}</div>
+                <div>REVENU MULT:</div> <div class="text-white">x${state.multiplier.toFixed(1)}</div>
+                <div>PLUGINS INST.:</div> <div class="text-white">${state.plugins}</div>
+                <div>--------------</div><div></div>
+                <div>TRACKS EXPORTES:</div> <div class="text-white">${state.stats.tracks}</div>
+                <div>BANGERS (Hits):</div> <div class="text-pink-400">${state.stats.bangers}</div>
+                <div>BIDES (Flops):</div> <div class="text-red-400">${state.stats.flops}</div>
+                <div>INFECTIONS VIRUS:</div> <div class="text-yellow-400">${state.stats.viruses}</div>
+            </div>
+        `;
+    }
+
+    // --- Toast Notifications ---
+    function showToast(msg, type = 'info') {
+        const zone = document.getElementById('toast-zone');
+        const t = document.createElement('div');
+        
+        let colorClass = "bg-gray-800 border-gray-600";
+        if(type === 'success') colorClass = "bg-green-900 border-green-500 text-green-100";
+        if(type === 'error') colorClass = "bg-red-900 border-red-500 text-red-100";
+        if(type === 'info') colorClass = "bg-blue-900 border-blue-500 text-blue-100";
+
+        t.className = `toast px-4 py-2 rounded border shadow-lg text-sm ${colorClass}`;
+        t.innerText = msg;
+        
+        zone.appendChild(t);
+        setTimeout(() => {
+            t.style.opacity = '0';
+            t.style.transition = 'opacity 0.5s';
+            setTimeout(() => t.remove(), 500);
+        }, 3000);
+    }
+
+    // Boot
+    window.onload = initUI;
+
 </script>
 </body>
 </html>
