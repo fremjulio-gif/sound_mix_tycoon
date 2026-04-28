@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sound Mix Tycoon - OS Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Import d'une police Retro/Code -->
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         /* =========================================
@@ -27,7 +26,6 @@
             overflow: hidden;
             background-color: var(--os-bg);
             color: var(--text-main);
-            /* Mix police moderne + monospace pour les datas */
             font-family: 'Segoe UI', system-ui, sans-serif;
             user-select: none;
             touch-action: none;
@@ -41,7 +39,6 @@
             position: relative;
             width: 100vw;
             height: 100vh;
-            /* Scanlines et grille subtiles */
             background: 
                 linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
                 radial-gradient(circle at center, #2a2a44 0%, #0d0d12 100%);
@@ -50,7 +47,6 @@
             flex-direction: column;
         }
 
-        /* Apple iOS Liquid Glass Transparent Effect */
         .glass-retro {
             background: var(--glass-bg);
             backdrop-filter: blur(16px) saturate(180%);
@@ -60,12 +56,10 @@
             border-radius: 12px;
         }
 
-        /* Windows */
         .os-window {
             position: absolute;
-            /* Le top/left est géré par JS pour la cascade */
             width: 90%;
-            max-width: 500px; /* Par défaut. Le DAW sera plus grand via JS/CSS */
+            max-width: 500px;
             max-height: 85vh;
             display: none;
             flex-direction: column;
@@ -79,7 +73,6 @@
             border-color: rgba(139, 92, 246, 0.4);
         }
 
-        /* DAW Window Specific */
         #app-daw {
             max-width: 850px;
             width: 95%;
@@ -98,13 +91,12 @@
         .window-header:active { cursor: grabbing; }
 
         .window-content {
-            padding: 0; /* Réinitialisé pour le DAW */
+            padding: 0;
             overflow-y: auto;
             flex-grow: 1;
             max-height: calc(85vh - 45px);
         }
 
-        /* Taskbar */
         #taskbar {
             height: 52px;
             background: rgba(10, 10, 15, 0.85);
@@ -136,7 +128,6 @@
             box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
         }
 
-        /* Desktop Icons */
         .desktop-icon {
             width: 80px;
             display: flex;
@@ -186,7 +177,6 @@
             border-color: #fff;
         }
 
-        /* Timeline Fausse */
         .tl-track {
             height: 32px;
             border-bottom: 1px solid #333;
@@ -215,7 +205,6 @@
             box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
         }
 
-        /* Fake Knobs */
         .knob-container { display: flex; flex-direction: column; items-center; gap: 4px; }
         .knob {
             width: 32px; height: 32px;
@@ -223,7 +212,7 @@
             background: conic-gradient(from 215deg, #444 0%, #222 70%, transparent 70%, transparent 100%);
             border: 2px solid #111;
             position: relative;
-            transform: rotate(45deg); /* Default value */
+            transform: rotate(45deg);
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
         .knob::after {
@@ -232,7 +221,6 @@
             top: 2px; left: 12px; border-radius: 2px;
         }
 
-        /* Vu-Meter */
         .vu-led {
             width: 100%; height: 6px; margin-bottom: 2px;
             background: #111; border-radius: 1px;
@@ -242,13 +230,11 @@
         .vu-led.on-yellow { background: #facc15; box-shadow: 0 0 5px #facc15; }
         .vu-led.on-red { background: #f87171; box-shadow: 0 0 5px #f87171; }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
         ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.5); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.8); }
 
-        /* Animations */
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes bsodGlitch { 
             0% { transform: translate(0) }
@@ -262,7 +248,6 @@
         .toast { animation: slideInRight 0.3s ease-out forwards; }
         .glitch { animation: bsodGlitch 0.2s infinite; }
         
-        /* Avatar selections (Pixel art crispness) */
         .avatar-sel { 
             border: 2px solid rgba(255,255,255,0.1); 
             cursor: pointer; 
@@ -276,6 +261,7 @@
             box-shadow: 0 0 20px rgba(74, 222, 128, 0.4); 
             transform: scale(1.1);
         }
+        /* Pour garder le style "pixel art" net si l'image est petite */
         .pixelated { image-rendering: pixelated; }
     </style>
 </head>
@@ -297,7 +283,7 @@
             <div class="w-full mb-8 text-left">
                 <label class="block text-sm font-bold text-gray-300 mb-2 font-retro">> SELECT_SPRITE_</label>
                 <div class="grid grid-cols-4 gap-3" id="avatar-container">
-                    <!-- Avatars injected by JS (spr_char_X.png simulated) -->
+                    <!-- Avatars injected by JS -->
                 </div>
             </div>
 
@@ -314,7 +300,8 @@
         <!-- HUD (Top Bar) -->
         <div id="hud" class="glass-retro h-14 flex items-center justify-between px-4 z-40 text-sm md:text-base rounded-none border-t-0 border-l-0 border-r-0">
             <div class="flex items-center gap-3">
-                <div id="hud-avatar" class="w-10 h-10 rounded-lg bg-black border border-purple-500 overflow-hidden pixelated flex items-center justify-center p-1"></div>
+                <!-- Avatar affiché dans le HUD -->
+                <div id="hud-avatar" class="w-10 h-10 rounded-lg bg-black border border-purple-500 overflow-hidden flex items-center justify-center p-0.5"></div>
                 <span id="hud-name" class="font-bold font-retro text-lg hidden md:inline tracking-wide">Artiste</span>
             </div>
             <div class="flex items-center gap-5 font-retro text-sm md:text-base">
@@ -406,12 +393,10 @@
                         
                         <!-- Timeline (Fake) -->
                         <div class="h-32 bg-[#0d0d12] border-b border-gray-700 flex flex-col overflow-x-auto relative">
-                            <!-- Time Ruler -->
                             <div class="h-4 bg-[#1a1a24] border-b border-[#333] flex items-center font-retro text-[8px] text-gray-500 px-2 tracking-widest">
                                 1...|...5...|...9...|...13...|...17...|...21...|...25...|...29...|...33
                             </div>
                             
-                            <!-- Tracks -->
                             <div class="tl-track">
                                 <div class="tl-header">Kick/Bass</div>
                                 <div class="tl-clip bg-red-900 border border-red-500" style="left: 90px; width: 120px;"></div>
@@ -431,7 +416,6 @@
                                 <div class="tl-clip bg-green-900 border border-green-500" style="left: 150px; width: 130px;"></div>
                             </div>
                             
-                            <!-- Playhead Fausse -->
                             <div class="absolute top-0 bottom-0 w-px bg-white left-[150px] shadow-[0_0_5px_#fff] z-10">
                                 <div class="w-2 h-2 bg-white rounded-full -ml-[3.5px] -mt-[2px]"></div>
                             </div>
@@ -444,13 +428,12 @@
                             <div class="w-2/3 p-3 flex flex-col justify-center">
                                 <label class="block text-[10px] text-gray-500 mb-2 font-retro uppercase">Drum Rack (Live Input)</label>
                                 <div class="grid grid-cols-8 gap-1.5" id="sequencer-grid">
-                                    <!-- Generated by JS (16 pads) -->
+                                    <!-- Generated by JS -->
                                 </div>
                             </div>
 
                             <!-- Master Mixer & Vu-Meter -->
                             <div class="w-1/3 bg-[#111] border-l border-gray-700 p-3 flex justify-between items-center relative">
-                                <!-- Knobs -->
                                 <div class="flex flex-col gap-4 justify-center">
                                     <div class="knob-container">
                                         <div class="knob" style="transform: rotate(90deg)"></div>
@@ -466,9 +449,8 @@
                                     </div>
                                 </div>
 
-                                <!-- Vu-Meter LED -->
                                 <div class="w-6 h-full bg-black border border-gray-800 rounded p-1 flex flex-col-reverse justify-between" id="vu-meter-container">
-                                    <!-- 12 Leds générées en JS -->
+                                    <!-- Generated by JS -->
                                 </div>
                             </div>
 
@@ -488,7 +470,7 @@
                     <button class="flex-1 py-2.5 bg-[#11111a] text-gray-400" id="tab-audio" onclick="switchBrowserTab('audio')">🛒 AudioStore</button>
                 </div>
                 <div class="window-content bg-[#eaeaea]" id="browser-content">
-                    <!-- Tab Content filled by JS -->
+                    <!-- Content -->
                 </div>
             </div>
 
@@ -510,7 +492,6 @@
                     <div class="mt-4">
                         <h4 class="text-xs font-bold text-gray-300 mb-2 uppercase border-b border-gray-700 pb-1 font-retro">> Contrats Sponsors (Sellout)</h4>
                         <div id="sponsor-list" class="space-y-2">
-                            <!-- Injected by JS -->
                         </div>
                     </div>
                 </div>
@@ -531,13 +512,11 @@
 
         <!-- Taskbar (Bottom) -->
         <div id="taskbar" class="glass-retro rounded-none border-b-0 border-l-0 border-r-0">
-            <!-- Start button fake -->
             <div class="taskbar-icon text-white bg-gradient-to-br from-purple-600 to-blue-600 mr-4 border-0" onclick="playBleep()">
                 <svg class="w-6 h-6 drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
             </div>
             
             <div id="open-apps-container" class="flex-grow flex gap-2">
-                <!-- Icons of open apps -->
             </div>
 
             <div class="text-sm font-retro text-gray-200 bg-black/50 px-3 py-1 rounded" id="sys-time">
@@ -570,54 +549,55 @@
      * 100% Vanilla JS. Retro Glassmorphism + Cascade Windows + DAW Pro.
      */
 
-    // --- Audio System (Procedural) ---
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // --- Audio System Sécurisé (Evite les crashs silencieux) ---
+    let audioCtx = null;
     
+    function initAudio() {
+        if (!audioCtx) {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) audioCtx = new AudioContext();
+            } catch(e) {
+                console.warn("Web Audio API not supported or blocked.");
+            }
+        }
+    }
+
     function playTone(freq, type = 'sine', duration = 0.1, vol = 0.1) {
-        if(audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        
-        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
+        try {
+            if (!audioCtx) initAudio();
+            if (!audioCtx) return; // Silent abort si l'audio n'est vraiment pas dispo
+            
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        } catch(e) {
+            // Empêche le jeu de planter si le navigateur bloque l'audio
+        }
     }
 
     const playBleep = () => playTone(800, 'sine', 0.05, 0.05);
     const playSuccess = () => { playTone(600, 'square', 0.1, 0.05); setTimeout(() => playTone(800, 'square', 0.15, 0.05), 100); };
     const playError = () => { playTone(200, 'sawtooth', 0.2, 0.1); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.1), 150); };
-    const playKick = () => { playTone(60, 'sine', 0.2, 0.3); playTone(120, 'square', 0.05, 0.1); }; // Punchy kick
+    const playKick = () => { playTone(60, 'sine', 0.2, 0.3); playTone(120, 'square', 0.05, 0.1); }; 
 
-    // --- Data & Fake "Pixel Art" SVGs Assets for Avatar Selection ---
-    // Instead of external PNGs, we use strict blocky SVGs as DataURIs to perfectly simulate pixel art files.
-
-        let rects = '';
-        const size = 16;
-        for(let y=0; y<size; y++) {
-            for(let x=0; x<size; x++) {
-                const char = pixels[y][x];
-                if(char !== ' ') {
-                    rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${colors[char]}"/>`;
-                }
-            }
-        }
-        return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">${rects}</svg>`;
-    };
-
-    // P = Pink/Purple, B = Blue, Y = Yellow, G = Green, W = White, K = Black, S = Skin, D = Dark Skin
-
+    // --- Data & Véritables images PNG locales ---
     const avatars = [
-    { id: 'spr_char_1', img: 'spr_char_1.png' },
-    { id: 'spr_char_2', img: 'spr_char_2.png' },
-    { id: 'spr_char_3', img: 'spr_char_3.png' },
-    { id: 'spr_char_4', img: 'spr_char_4.png' }
-];
+        { id: 'Char 1', img: './spr_char_1.png' },
+        { id: 'Char 2', img: './spr_char_2.png' },
+        { id: 'Char 3', img: './spr_char_3.png' },
+        { id: 'Char 4', img: './spr_char_4.png' }
+    ];
 
     const sponsors = [
         { id: 'sp1', name: "Boisson Enerji", reqFollowers: 1000, reward: 500, repCost: 15, cooldownDays: 7 },
@@ -628,7 +608,7 @@
     // --- State Management ---
     const DEFAULT_STATE = {
         username: '',
-        activeCharacter: 0, // Using the requested variable name
+        activeCharacter: 0,
         money: 100,
         rep: 10,
         followers: 0,
@@ -646,7 +626,6 @@
     let gameInterval;
     let selectedAvatarIndex = 0;
 
-    // Custom In-Memory "Session" Storage matching local storage signature
     const MockStorage = {
         data: {},
         getItem: (k) => MockStorage.data[k] || null,
@@ -667,22 +646,19 @@
 
     // --- Initialization ---
     function initUI() {
-        // Load avatars visually in login screen
         const cont = document.getElementById('avatar-container');
         cont.innerHTML = avatars.map((a, i) => `
             <div class="avatar-sel flex flex-col items-center justify-center p-2 bg-[#1a1a24] ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
-                <img src="${a.img}" alt="${a.id}" class="w-12 h-12 pixelated mb-1" />
+                <img src="${a.img}" alt="${a.id}" class="w-12 h-12 pixelated object-contain mb-1" onerror="this.style.border='1px solid red'" />
                 <span class="text-[9px] font-retro text-gray-500">${a.id}</span>
             </div>
         `).join('');
 
-        // Build sequencer (16 pads)
         const seq = document.getElementById('sequencer-grid');
         seq.innerHTML = Array(16).fill(0).map((_, i) => `
             <div class="seq-pad" id="pad-${i}" onclick="togglePad(${i})"></div>
         `).join('');
 
-        // Build Vu-Meter (12 leds)
         const vuMeter = document.getElementById('vu-meter-container');
         let ledsHTML = '';
         for(let i=1; i<=12; i++) {
@@ -690,7 +666,7 @@
         }
         vuMeter.innerHTML = ledsHTML;
 
-        // Set up windows dragging
+        // Windows dragging
         document.querySelectorAll('.os-window').forEach(win => {
             const header = win.querySelector('.window-header');
             let isDragging = false, startX, startY, initX, initY;
@@ -716,7 +692,7 @@
                 const dy = clientY - startY;
                 
                 let newY = initY + dy;
-                if (newY < 56) newY = 56; // HUD height protection
+                if (newY < 56) newY = 56;
 
                 win.style.transform = `none`; 
                 win.style.left = `${initX + dx}px`;
@@ -734,7 +710,12 @@
             document.addEventListener('touchend', stopDrag);
         });
 
+        // Event listeners (Clic + Touche "Entrée")
         document.getElementById('btn-login').addEventListener('click', attemptLogin);
+        document.getElementById('login-username').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') attemptLogin();
+        });
+        
         renderStore('crackz');
     }
 
@@ -746,6 +727,8 @@
     }
 
     function attemptLogin() {
+        initAudio(); // Force l'init de l'audio ici pour éviter les crashs de contexte
+
         const username = document.getElementById('login-username').value.trim();
         if(!username) {
             document.getElementById('login-error').classList.remove('hidden');
@@ -753,14 +736,20 @@
             return;
         }
 
-        audioCtx.resume();
-
-        // Check save
         const savedData = SafeStorage.get('smt_save_' + username);
         if(savedData) {
-            state = JSON.parse(savedData);
-            // Handle fallback if old save didn't have activeCharacter
-            if(state.activeCharacter === undefined) state.activeCharacter = state.avatar || 0;
+            try {
+                state = JSON.parse(savedData);
+            } catch(e) {
+                state = JSON.parse(JSON.stringify(DEFAULT_STATE)); // Sécurité si save corrompue
+            }
+            
+            // Fallback de sécurité robuste pour l'index du sprite
+            state.activeCharacter = state.activeCharacter ?? state.avatar ?? 0;
+            if(state.activeCharacter < 0 || state.activeCharacter >= avatars.length) {
+                state.activeCharacter = 0;
+            }
+            
             showToast("Session Restaurée : " + state.username, "success");
         } else {
             state = JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -773,8 +762,7 @@
         document.getElementById('os-screen').classList.remove('hidden');
         document.getElementById('os-screen').classList.add('flex');
         
-        // Update HUD with chosen sprite
-        document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="w-full h-full pixelated" />`;
+        document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="w-full h-full pixelated object-cover" />`;
         document.getElementById('hud-name').innerText = state.username;
         
         playSuccess();
@@ -794,7 +782,7 @@
             dailyReset();
         }
 
-        if(state.timeMins % 60 === 0) saveGame(); // Autosave every virtual hour
+        if(state.timeMins % 60 === 0) saveGame();
 
         updateHUD();
     }
@@ -830,7 +818,7 @@
         return Math.floor(num).toString();
     }
 
-    // --- Window Management (CASCADING OFFSET) ---
+    // --- Window Management ---
     let zIndexCounter = 50;
     let windowOffsetXY = 0;
     
@@ -839,17 +827,16 @@
         if(win.style.display === 'none' || win.style.display === '') {
             win.style.display = 'flex';
             
-            // Logique de cascade intelligente
             requestAnimationFrame(() => {
                 const rect = win.getBoundingClientRect();
                 const centerX = window.innerWidth / 2 - rect.width / 2;
                 
-                win.style.transform = 'none'; // Désactive le translate centré du CSS initial
+                win.style.transform = 'none';
                 win.style.left = `${centerX + windowOffsetXY}px`;
-                win.style.top = `${80 + windowOffsetXY}px`; // 80px du haut
+                win.style.top = `${80 + windowOffsetXY}px`;
                 
-                windowOffsetXY += 35; // Décale la prochaine fenêtre
-                if (windowOffsetXY > 150) windowOffsetXY = 0; // Reset si ça va trop loin
+                windowOffsetXY += 35;
+                if (windowOffsetXY > 150) windowOffsetXY = 0;
             });
 
             updateTaskbar();
@@ -902,31 +889,30 @@
         pad.classList.toggle('active');
         if(pad.classList.contains('active')) {
             playKick();
-            simulateVuMeter(8); // Ping the VU meter
+            simulateVuMeter(8);
         }
     }
 
     let vuInterval;
     function simulateVuMeter(maxLevel = 12) {
-        // Clear previous colors
         for(let i=1; i<=12; i++) {
             const led = document.getElementById(`vu-led-${i}`);
-            led.className = 'vu-led';
+            if (led) led.className = 'vu-led';
         }
         
-        // Random level up to maxLevel
         const level = Math.floor(Math.random() * maxLevel) + 1;
         for(let i=1; i<=level; i++) {
             const led = document.getElementById(`vu-led-${i}`);
+            if(!led) continue;
             if(i <= 6) led.classList.add('on-green');
             else if(i <= 10) led.classList.add('on-yellow');
             else led.classList.add('on-red');
         }
 
-        // Fade out quickly
         setTimeout(() => {
             for(let i=1; i<=12; i++) {
-                document.getElementById(`vu-led-${i}`).className = 'vu-led';
+                const led = document.getElementById(`vu-led-${i}`);
+                if (led) led.className = 'vu-led';
             }
         }, 100);
     }
@@ -945,7 +931,6 @@
             return;
         }
 
-        // Start process
         state.cooldowns.daw = true;
         const btn = document.getElementById('btn-export');
         const progCont = document.getElementById('export-progress-container');
@@ -958,7 +943,6 @@
 
         playTone(400, 'square', 0.1);
         
-        // Vu meter frenzy during export
         vuInterval = setInterval(() => simulateVuMeter(12), 100);
 
         let p = 0;
@@ -970,7 +954,6 @@
                 clearInterval(vuInterval);
                 finishExport(genre, bpm, voice, activePads);
                 
-                // Cooldown reset
                 setTimeout(() => {
                     state.cooldowns.daw = false;
                     btn.innerText = "Export Mixdown";
@@ -982,7 +965,6 @@
     }
 
     function finishExport(genre, bpm, voice, pads) {
-        // Combo Evaluation Rules
         let score = 0;
         if(genre === 'trap' && bpm >= 135 && bpm <= 155 && voice === 'm') score = 3;
         else if(genre === 'trap' && bpm >= 130 && bpm <= 160) score = 1;
@@ -996,7 +978,6 @@
         if(genre === 'house' && bpm >= 120 && bpm <= 130 && voice === 'f') score = 3;
         else if(genre === 'house' && bpm >= 115 && bpm <= 135) score = 1;
 
-        // Base rewards
         let moneyGain = 0;
         let repGain = 0;
         let resultTxt = "";
@@ -1020,7 +1001,6 @@
             playError();
         }
 
-        // Bonus if sequencer is heavily used
         if(pads > 8) moneyGain += 10;
 
         state.money += moneyGain;
