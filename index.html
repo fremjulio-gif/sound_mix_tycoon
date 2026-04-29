@@ -942,7 +942,7 @@
     // ==========================================
     const container = document.getElementById('three-canvas-container');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#050508');
+    scene.background = new THREE.Color('#fafafa');
 
     const aspect = window.innerWidth / window.innerHeight;
     const frustumSize = 10;
@@ -965,7 +965,7 @@
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.4);
     scene.add(hemiLight);
     
-    const dirLight = new THREE.DirectionalLight(0x818cf8, 1.2);
+    const dirLight = new THREE.DirectionalLight(0xd6daff, 1.2);
     dirLight.position.set(10, 20, 10);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048; 
@@ -983,7 +983,7 @@
     scene.add(floor);
 
     const deskTopGeo = new THREE.BoxGeometry(4.5, 0.1, 2.2);
-    const deskTopMat = new THREE.MeshStandardMaterial({ color: '#1e1b4b', roughness: 0.7, metalness: 0.1 });
+    const deskTopMat = new THREE.MeshStandardMaterial({ color: '#706e8b', roughness: 0.7, metalness: 0.1 });
     const deskTop = new THREE.Mesh(deskTopGeo, deskTopMat);
     deskTop.position.set(0, 0.7, 0);
     deskTop.castShadow = true;
@@ -992,7 +992,7 @@
     scene.add(deskTop);
 
     const legGeo = new THREE.BoxGeometry(0.1, 1.7, 0.1);
-    const legMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.4, metalness: 0.8 }); 
+    const legMat = new THREE.MeshStandardMaterial({ color: '#706e8b', roughness: 0.4, metalness: 0.8 }); 
     const legPositions = [ [-2.1, -0.15, -0.9], [2.1, -0.15, -0.9], [-2.1, -0.15, 0.9], [2.1, -0.15, 0.9] ];
     legPositions.forEach(pos => {
         const leg = new THREE.Mesh(legGeo, legMat);
@@ -1023,8 +1023,8 @@
     pcFrame.add(pcMesh); 
     scene.add(pcFrame);
 
-    const speakerMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.8, metalness: 0.2 });
-    const wooferMat = new THREE.MeshStandardMaterial({ color: '#000000', roughness: 0.9, metalness: 0.1 });
+    const speakerMat = new THREE.MeshStandardMaterial({ color: '#1b202d', roughness: 0.8, metalness: 0.2 });
+    const wooferMat = new THREE.MeshStandardMaterial({ color: '#383838', roughness: 0.9, metalness: 0.1 });
     const speakerGeo = new THREE.BoxGeometry(0.4, 0.6, 0.4);
     const wooferGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.02, 16);
 
