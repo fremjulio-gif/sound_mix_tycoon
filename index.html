@@ -959,10 +959,10 @@
     camera.add(listener);
 
     // Lights
-    const ambientLight = new THREE.AmbientLight(0xffcab3, 0.4);
+    const ambientLight = new THREE.AmbientLight(0xffcab3, 0.1);
     scene.add(ambientLight);
     
-    const dirLight = new THREE.DirectionalLight(0x1b1b1b, 0.8);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
     dirLight.position.set(10, 20, 10);
     dirLight.castShadow = true;
     scene.add(dirLight);
@@ -981,7 +981,7 @@
 
     // Desk
     const deskGeo = new THREE.BoxGeometry(4, 0.2, 2);
-    const deskMat = new THREE.MeshStandardMaterial({ color: '#3c3c3c', roughness: 0.5 });
+    const deskMat = new THREE.MeshStandardMaterial({ color: '#505050', roughness: 0.5 });
     const desk = new THREE.Mesh(deskGeo, deskMat);
     desk.position.set(0, 0, 0);
     desk.castShadow = true;
@@ -991,8 +991,8 @@
     // Glowing PC (Interactive Object)
     const pcGeo = new THREE.BoxGeometry(1.2, 0.8, 0.1);
     const pcMat = new THREE.MeshStandardMaterial({ 
-        color: '#e0e0e0', 
-        emissive: '#ff0055', 
+        color: '#fff3ee', 
+        emissive: '#fff3ee', 
         emissiveIntensity: 0.3
     });
     const pcMesh = new THREE.Mesh(pcGeo, pcMat);
