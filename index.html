@@ -975,7 +975,7 @@
 
     // Meshes
     const floorGeo = new THREE.PlaneGeometry(30, 30);
-    const floorMat = new THREE.MeshStandardMaterial({ color: '#09090b', roughness: 0.9, metalness: 0.1 });
+    const floorMat = new THREE.MeshStandardMaterial({ color: '#5d574b', roughness: 0.9, metalness: 0.1 });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -1;
@@ -998,6 +998,7 @@
         const leg = new THREE.Mesh(legGeo, legMat);
         leg.position.set(...pos);
         leg.castShadow = true;
+        leg.receiveShadow = true;
         scene.add(leg);
     });
 
@@ -1032,6 +1033,7 @@
     speakerL.position.set(-1.6, 1.05, -0.4);
     speakerL.rotation.y = Math.PI / 12; 
     speakerL.castShadow = true;
+    speakerL.receiveShadow = true;
     speakerL.name = 'pc_mesh'; 
     const wooferL = new THREE.Mesh(wooferGeo, wooferMat);
     wooferL.rotation.x = Math.PI / 2;
@@ -1043,6 +1045,7 @@
     speakerR.position.set(1.6, 1.05, -0.4);
     speakerR.rotation.y = -Math.PI / 12;
     speakerR.castShadow = true;
+    speakerR.receiveShadow = true;
     speakerR.name = 'pc_mesh';
     const wooferR = new THREE.Mesh(wooferGeo, wooferMat);
     wooferR.rotation.x = Math.PI / 2;
