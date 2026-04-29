@@ -23,7 +23,6 @@
             --retro-orange: #fbbf24;
             --retro-blue: #60a5fa;
             
-            /* Theme Colors */
             --bg-color-1: #09090b;
             --bg-color-2: #1e1b4b;
             --bg-color-3: #0f172a;
@@ -374,8 +373,9 @@
             background-size: 5px 5px; background-position: bottom right;
         }
 
-        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .toast { animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        /* Toasts animés depuis la GAUCHE */
+        @keyframes slideInLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast { animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
         .avatar-sel { 
             border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 12px; 
@@ -403,7 +403,7 @@
     
     <!-- LOGIN SCREEN -->
     <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl">
-        <div class="liquid-glass-heavy p-10 rounded-2xl w-full max-w-xl flex flex-col items-center border border-white/20">
+        <div class="liquid-glass-heavy p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20">
             <h1 class="text-4xl font-retro font-bold mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">SM_TYCOON</h1>
             <p class="text-[var(--text-muted)] font-retro text-xs mb-8 tracking-widest uppercase">OS Initialization // v6.0</p>
             
@@ -413,13 +413,14 @@
             </div>
 
             <div class="w-full mb-8">
-                <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Select_Avatar</label>
-                <div class="grid grid-cols-4 gap-4" id="avatar-container">
+                <label class="block text-[10px] font-retro text-gray-300 mb-4 uppercase tracking-widest">Select_Avatar</label>
+                <!-- Avatars X1.5 agrandis -->
+                <div class="grid grid-cols-4 gap-6" id="avatar-container">
                     <!-- Injected by JS -->
                 </div>
             </div>
 
-            <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold">
+            <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-4">
                 Boot System
             </button>
             <p id="login-error" class="text-[var(--retro-red)] font-retro text-xs mt-4 hidden text-center">Error: Missing ID</p>
@@ -430,33 +431,32 @@
     <div id="os-screen" class="absolute inset-0 hidden flex-col">
         
         <!-- HUD - DYNAMIC ISLAND (TOP) -->
-        <div id="hud" class="liquid-glass-heavy h-[72px] fixed top-6 left-1/2 -translate-x-1/2 z-50 rounded-full flex items-center justify-between px-4 transition-all duration-500 w-[220px] hover:w-[800px] group border border-white/10 shadow-2xl">
+        <div id="hud" class="liquid-glass-heavy h-[76px] fixed top-6 left-1/2 -translate-x-1/2 z-50 rounded-full flex items-center justify-between px-5 transition-all duration-500 w-[240px] hover:w-[720px] group border border-white/10 shadow-2xl">
             <div class="flex items-center gap-4 shrink-0">
-                <div id="hud-avatar" class="w-[60px] h-[60px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shrink-0 shadow-[0_0_15px_rgba(129,140,248,0.5)]"></div>
-                <span id="hud-name" class="font-bold font-retro text-base opacity-0 group-hover:opacity-100 transition-opacity duration-500 whitespace-nowrap tracking-widest uppercase text-white w-0 group-hover:w-auto">Artiste</span>
+                <!-- Avatar agrandi dans le HUD -->
+                <div id="hud-avatar" class="w-[64px] h-[64px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shrink-0 shadow-[0_0_15px_rgba(129,140,248,0.5)]"></div>
+                <span id="hud-name" class="font-bold font-retro text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 whitespace-nowrap tracking-widest uppercase text-white w-0 group-hover:w-auto">Artiste</span>
             </div>
             
-            <div class="flex items-center gap-8 font-retro text-sm text-[var(--text-muted)] tracking-wider opacity-0 group-hover:opacity-100 w-0 group-hover:w-auto transition-all duration-500 whitespace-nowrap">
+            <div class="flex items-center gap-10 font-retro text-sm text-[var(--text-muted)] tracking-wider opacity-0 group-hover:opacity-100 w-0 group-hover:w-auto transition-all duration-500 whitespace-nowrap">
                 
                 <!-- Hover Menus using standard mouse events via JS -->
-                <div class="relative flex items-center gap-2 cursor-help px-2 py-1 hover:bg-white/5 rounded transition-colors" onmouseenter="showTooltip('money', this)" onmouseleave="hideTooltip()">
-                    <span class="text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)]">$$$</span> <span id="hud-money" class="text-white">0</span>
+                <div class="relative flex items-center gap-2 cursor-help px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onmouseenter="showTooltip('money', this)" onmouseleave="hideTooltip()">
+                    <span class="text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] text-lg">$$$</span> <span id="hud-money" class="text-white text-lg">0</span>
                 </div>
                 
-                <div class="relative flex items-center gap-2 cursor-help px-2 py-1 hover:bg-white/5 rounded transition-colors" onmouseenter="showTooltip('rep', this)" onmouseleave="hideTooltip()">
-                    <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)]">REP</span> <span id="hud-rep" class="text-white">0</span>
+                <div class="relative flex items-center gap-2 cursor-help px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onmouseenter="showTooltip('rep', this)" onmouseleave="hideTooltip()">
+                    <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)] text-lg">REP</span> <span id="hud-rep" class="text-white text-lg">0</span>
                 </div>
                 
-                <div class="relative flex items-center gap-2 cursor-help px-2 py-1 hover:bg-white/5 rounded transition-colors" onmouseenter="showTooltip('fol', this)" onmouseleave="hideTooltip()">
-                    <span class="text-[var(--accent)] drop-shadow-[0_0_5px_var(--accent)]">FOL</span> <span id="hud-foll" class="text-white">0</span>
+                <div class="relative flex items-center gap-2 cursor-help px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onmouseenter="showTooltip('fol', this)" onmouseleave="hideTooltip()">
+                    <span class="text-[var(--accent)] drop-shadow-[0_0_5px_var(--accent)] text-lg">FOL</span> <span id="hud-foll" class="text-white text-lg">0</span>
                 </div>
-                
-                <div class="text-gray-500 pointer-events-none">| <span id="hud-studio" class="text-gray-300">Chambre</span></div>
             </div>
 
             <div class="font-retro text-right flex flex-col justify-center items-end shrink-0 pr-2 pointer-events-none">
-                <div id="hud-day" class="text-white font-bold tracking-widest text-[11px]">DAY 1</div>
-                <div id="sys-time" class="text-xs text-[var(--accent)] mt-1 tracking-widest font-bold drop-shadow-[0_0_5px_var(--accent)]">12:00</div>
+                <div id="hud-day" class="text-white font-bold tracking-widest text-[12px]">DAY 1</div>
+                <div id="sys-time" class="text-sm text-[var(--accent)] mt-1 tracking-widest font-bold drop-shadow-[0_0_5px_var(--accent)]">12:00</div>
             </div>
         </div>
 
@@ -543,13 +543,13 @@
             
             <div class="window-content daw-grid-container text-xs">
                 
-                <!-- Left Panel : Compact Séquenceur -->
-                <div class="daw-panel-neon w-[180px] p-4 flex flex-col flex-shrink-0 justify-start items-center relative">
+                <!-- Left Panel : Extra-Compact Séquenceur -->
+                <div class="daw-panel-neon w-[160px] p-4 flex flex-col flex-shrink-0 justify-start items-center relative">
                     <label class="block text-[10px] text-gray-300 mb-6 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2 w-full text-center">Drum Rack</label>
-                    <div class="grid grid-cols-4 gap-1.5 mb-4 w-full max-w-[140px]" id="sequencer-grid">
+                    <div class="grid grid-cols-4 gap-1 mb-4 w-full max-w-[120px]" id="sequencer-grid">
                         <!-- Generated by JS (16 pads, very compact) -->
                     </div>
-                    <p class="text-[8px] text-gray-500 font-retro tracking-widest mt-auto text-center border border-white/10 p-2 rounded">Live Input System</p>
+                    <p class="text-[8px] text-gray-500 font-retro tracking-widest mt-auto text-center border border-white/10 p-2 rounded">Live Input</p>
                 </div>
 
                 <!-- Middle Panel : Waveform, Settings (Perfectly Aligned) & Export -->
@@ -596,16 +596,24 @@
                             <button class="btn-minimal btn-genre flex-1 py-2 text-[9px] rounded font-retro tracking-widest" data-val="amapiano" onclick="selectDawGenre('amapiano')">Amapiano</button>
                         </div>
                         
-                        <!-- Voice & Tempo aligned -->
-                        <div class="flex gap-3 items-stretch">
-                            <div class="flex gap-2 flex-1">
-                                <button class="btn-minimal btn-voice active flex-1 py-2 text-[9px] rounded font-retro tracking-widest" data-val="m" onclick="selectDawVoice('m')">Male Vocals</button>
-                                <button class="btn-minimal btn-voice flex-1 py-2 text-[9px] rounded font-retro tracking-widest" data-val="f" onclick="selectDawVoice('f')">Female Vocals</button>
-                                <button class="btn-minimal btn-voice flex-1 py-2 text-[9px] rounded font-retro tracking-widest" data-val="instru" onclick="selectDawVoice('instru')">Instru Only</button>
+                        <!-- Voice & Tempo & Plugin aligned -->
+                        <div class="flex gap-2 items-stretch">
+                            <div class="flex gap-1 flex-1">
+                                <button class="btn-minimal btn-voice active flex-1 py-2 text-[8px] rounded font-retro tracking-widest" data-val="m" onclick="selectDawVoice('m')">Male Vocals</button>
+                                <button class="btn-minimal btn-voice flex-1 py-2 text-[8px] rounded font-retro tracking-widest" data-val="f" onclick="selectDawVoice('f')">Female Vocals</button>
+                                <button class="btn-minimal btn-voice flex-1 py-2 text-[8px] rounded font-retro tracking-widest" data-val="instru" onclick="selectDawVoice('instru')">Instru Only</button>
                             </div>
+
+                            <div class="w-[140px] flex-shrink-0">
+                                <select id="daw-plugin" class="w-full h-full bg-black/60 border border-white/10 rounded px-2 outline-none text-[var(--accent)] text-[9px] font-bold tracking-wider cursor-pointer">
+                                    <option value="">- Clean Mix (No Plugin) -</option>
+                                    <!-- Injected by JS -->
+                                </select>
+                            </div>
+
                             <!-- BPM Slider -->
-                            <div class="w-[200px] bg-black/40 border border-white/10 rounded flex items-center px-3 py-1 gap-3">
-                                <span id="bpm-val" class="text-base text-white font-retro w-10 text-right drop-shadow-[0_0_5px_var(--accent)]">120</span>
+                            <div class="w-[160px] bg-black/40 border border-white/10 rounded flex items-center px-3 py-1 gap-2 flex-shrink-0">
+                                <span id="bpm-val" class="text-sm text-white font-retro w-8 text-right drop-shadow-[0_0_5px_var(--accent)]">120</span>
                                 <input type="range" id="daw-bpm" min="60" max="200" value="120" class="flex-1 accent-[var(--accent)] cursor-pointer" oninput="document.getElementById('bpm-val').innerHTML = this.value">
                             </div>
                         </div>
@@ -704,8 +712,8 @@
             </div>
         </div>
 
-        <!-- Toasts Zone -->
-        <div id="toast-zone" class="absolute bottom-28 right-8 flex flex-col gap-3 z-50 pointer-events-none"></div>
+        <!-- Toasts Zone (TOP LEFT NOW) -->
+        <div id="toast-zone" class="absolute top-[100px] left-6 flex flex-col gap-3 z-50 pointer-events-none w-72"></div>
 
     </div>
 
@@ -726,7 +734,7 @@
 <script>
     /**
      * SOUND MIX TYCOON V6.0 - CORE LOGIC
-     * Fast-paced cooldowns, Smart Island Tooltips, Stealth Hack Event, DAW Grid Alignment
+     * Consumable Plugins, Stealth Hacks, Detailed Tooltips, Redesigned DAW.
      */
 
     // --- Themes ---
@@ -752,39 +760,39 @@
     // --- Dynamic Island Tooltips JS Engine ---
     const globalTooltip = document.createElement('div');
     globalTooltip.id = 'global-tooltip';
-    globalTooltip.className = 'fixed z-[100] bg-black/95 border border-[var(--glass-border)] rounded-lg p-4 w-[240px] opacity-0 pointer-events-none transition-opacity shadow-2xl font-retro text-[10px] text-white hidden';
+    globalTooltip.className = 'fixed z-[100] bg-black/95 border border-[var(--glass-border)] rounded-lg p-4 w-[260px] opacity-0 pointer-events-none transition-opacity shadow-2xl font-retro text-[10px] text-white hidden';
     document.body.appendChild(globalTooltip);
 
     window.showTooltip = (type, el) => {
         const rect = el.getBoundingClientRect();
-        globalTooltip.style.left = `${rect.left + rect.width/2 - 120}px`; // center (240/2)
+        globalTooltip.style.left = `${rect.left + rect.width/2 - 130}px`; 
         globalTooltip.style.top = `${rect.bottom + 15}px`;
         globalTooltip.classList.remove('hidden');
         
         requestAnimationFrame(() => globalTooltip.style.opacity = '1');
 
         if(type === 'money') {
-            let html = '<div class="text-[var(--retro-green)] mb-3 border-b border-white/10 pb-1 font-bold text-xs uppercase tracking-widest">Bank Statement</div><div class="space-y-1.5">';
+            let html = '<div class="text-[var(--retro-green)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Bank Statement</div><div class="space-y-2">';
             if(state.history.money.length === 0) html += '<div class="text-gray-500">No transactions.</div>';
             state.history.money.forEach(m => {
                 const color = m.amt >= 0 ? 'text-[var(--retro-green)]' : 'text-[var(--retro-red)]';
                 const sign = m.amt >= 0 ? '+' : '';
-                html += `<div class="flex justify-between"><span class="text-gray-400 truncate pr-2">${m.txt}</span><span class="${color} font-bold">${sign}$${Math.abs(m.amt)}</span></div>`;
+                html += `<div class="flex justify-between items-center"><span class="text-gray-400 truncate pr-2">${m.txt}</span><span class="${color} font-bold">${sign}$${Math.abs(m.amt)}</span></div>`;
             });
             html += '</div>';
             globalTooltip.innerHTML = html;
         }
         if(type === 'rep') {
-            const streams = state.rep * 1542 + Math.floor(Math.random()*500);
-            globalTooltip.innerHTML = `<div class="text-[var(--retro-orange)] mb-3 border-b border-white/10 pb-1 font-bold text-xs uppercase tracking-widest">Streaming Data</div>
+            const streams = Math.floor(state.rep * 42.5 + Math.random() * 20); // Realistic lower stream logic
+            globalTooltip.innerHTML = `<div class="text-[var(--retro-orange)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Streaming Data</div>
                                  <div class="text-gray-300">Estimated Daily Streams:</div>
-                                 <div class="text-xl text-white mt-1.5 font-bold">~${formatNum(streams)} <span class="text-[8px] text-[var(--retro-orange)]">PLAYS</span></div>`;
+                                 <div class="text-2xl text-white mt-2 font-bold tracking-wider">~${formatNum(streams)} <span class="text-[8px] text-[var(--retro-orange)]">PLAYS</span></div>`;
         }
         if(type === 'fol') {
-            let html = '<div class="text-[var(--accent)] mb-3 border-b border-white/10 pb-1 font-bold text-xs uppercase tracking-widest">Recent Subscribers</div><div class="space-y-1.5">';
+            let html = '<div class="text-[var(--accent)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Recent Subscribers</div><div class="space-y-2">';
             if(state.history.followers.length === 0) html += '<div class="text-gray-500">No recent activity.</div>';
             state.history.followers.forEach(f => {
-                html += `<div class="text-gray-300 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_5px_var(--accent)]"></span> @${f}</div>`;
+                html += `<div class="text-gray-200 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_5px_var(--accent)]"></span> @${f}</div>`;
             });
             html += '</div>';
             globalTooltip.innerHTML = html;
@@ -884,12 +892,13 @@
         { id: 'sp3', name: "AudioGear Pro", reqFollowers: 10000, reward: 8000, repCost: 5, cooldownDays: 2 }
     ];
 
+    // Cracks are now CONSUMABLES.
     const cracks = [
-        { id: 'c1', name: "Massive_Bass_Synth_CRACK.zip", mult: 0.2, risk: 0.20, reqRep: 0 },
-        { id: 'c2', name: "AutoTune_Pro_X_Patcher.rar", mult: 0.4, risk: 0.35, reqRep: 50 },
-        { id: 'c3', name: "Ozone_Mastering_Keygen.exe", mult: 0.8, risk: 0.50, reqRep: 150 },
-        { id: 'c4', name: "FabFilter_Bundle_2026.dmg", mult: 1.5, risk: 0.70, reqRep: 300 },
-        { id: 'c5', name: "Ghost_Prod_AI_Engine.tar", mult: 2.5, risk: 0.85, reqRep: 800 }
+        { id: 'c1', name: "Massive_Bass_CRACK", risk: 0.15, reqRep: 0, desc: "+20% Cash. Heavy bass." },
+        { id: 'c2', name: "AutoTune_Pro_Patcher", risk: 0.25, reqRep: 10, desc: "Fixes bad vocal choices." },
+        { id: 'c3', name: "Vintage_DrumMachine", risk: 0.20, reqRep: 30, desc: "Huge Bonus if using many pads." },
+        { id: 'c4', name: "Ozone_Mastering_Keygen", risk: 0.40, reqRep: 80, desc: "+50% Cash. Pro sound." },
+        { id: 'c5', name: "Ghost_Prod_AI_Engine", risk: 0.60, reqRep: 150, desc: "Guaranteed Banger. High rep risk." }
     ];
 
     const DEFAULT_STATE = {
@@ -898,14 +907,12 @@
         money: 100,
         rep: 10,
         followers: 0,
-        studioLevel: 'Chambre',
         timeMins: 8 * 60,
         day: 1,
-        plugins: 0,
         multiplier: 1.0,
-        stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0 },
+        stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0 },
         cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, sponsors: {} },
-        downloadedCracks: [],
+        inventory: [], // Store downloaded consumable crack IDs
         history: { money: [{amt: 100, txt: "Initial Bank Setup"}], followers: [] }
     };
 
@@ -947,12 +954,12 @@
 
     // --- Cooldowns Fast-Paced ---
     function getVpnCooldown() {
-        const dl = state.downloadedCracks.length;
-        if(dl === 0) return 3 * 60;   
-        if(dl === 1) return 6 * 60;   
-        if(dl === 2) return 10 * 60;  
-        if(dl === 3) return 12 * 60;  
-        return 24 * 60;               
+        const dlCount = state.stats.crackDownloads || 0;
+        if(dlCount === 0) return 30;   // 30 mins in-game = 6 real sec
+        if(dlCount === 1) return 60;   
+        if(dlCount === 2) return 120;  
+        if(dlCount === 3) return 180;  
+        return 360; // Max 6 hours in-game wait
     }
 
     function getDawCooldown() {
@@ -1109,6 +1116,20 @@
         playBleep();
     }
 
+    function updateDawPlugins() {
+        const select = document.getElementById('daw-plugin');
+        if(!select) return;
+        
+        let html = '<option value="">- Clean Mix (No Plugin) -</option>';
+        if(state.inventory && state.inventory.length > 0) {
+            state.inventory.forEach((crackId, index) => {
+                const c = cracks.find(x => x.id === crackId);
+                if(c) html += `<option value="${index}">Use: ${c.name}</option>`;
+            });
+        }
+        select.innerHTML = html;
+    }
+
     function attemptLogin() {
         initAudio();
 
@@ -1127,7 +1148,8 @@
                 if(!state.cooldowns.dawTimeReady) state.cooldowns.dawTimeReady = 0;
                 if(!state.cooldowns.crackzTimeReady) state.cooldowns.crackzTimeReady = 0;
                 if(!state.cooldowns.storyTimeReady) state.cooldowns.storyTimeReady = 0;
-                if(!state.downloadedCracks) state.downloadedCracks = [];
+                if(!state.inventory) state.inventory = [];
+                if(!state.stats.crackDownloads) state.stats.crackDownloads = 0;
                 if(!state.history) state.history = { money: [], followers: [] };
             } catch(e) {
                 state = JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -1151,6 +1173,7 @@
         
         selectDawGenre('drill');
         selectDawVoice('m');
+        updateDawPlugins();
         
         playSuccess();
         updateHUD();
@@ -1179,7 +1202,6 @@
         document.getElementById('hud-money').innerText = formatNum(state.money);
         document.getElementById('hud-rep').innerText = formatNum(state.rep);
         document.getElementById('hud-foll').innerText = formatNum(state.followers);
-        document.getElementById('hud-studio').innerText = state.studioLevel;
         document.getElementById('hud-day').innerText = `DAY ${state.day}`;
         
         const h = Math.floor(state.timeMins / 60).toString().padStart(2, '0');
@@ -1277,6 +1299,7 @@
                 windowOffsetXY += 40;
                 if (windowOffsetXY > 200) windowOffsetXY = 0;
             }
+            if(id === 'app-daw') updateDawPlugins();
         }
         bringToFront(id);
         updateTaskbar();
@@ -1384,7 +1407,7 @@
             if(bpm === 113) { isPerfectBpm = true; diff = 0; }
         }
 
-        if(voice !== targetVoice || diff > 10) return { score: 0, rewardType };
+        if(voice !== targetVoice || diff > 10) return { score: 0, rewardType, wrongVoice: (voice !== targetVoice) };
         if(isPerfectBpm) return { score: 3, rewardType };
         return { score: 1, rewardType };
     }
@@ -1396,11 +1419,19 @@
         const bpm = parseInt(document.getElementById('daw-bpm').value);
         const voice = currentDawVoice;
         const activePads = document.querySelectorAll('.seq-pad.active').length;
+        const pluginIndex = document.getElementById('daw-plugin').value;
 
         if(activePads === 0) {
             showToast("Sequencer is empty. Lay down some drums first.", "error");
             playError();
             return;
+        }
+
+        let consumedPluginId = null;
+        if(pluginIndex !== "") {
+            consumedPluginId = state.inventory[pluginIndex];
+            state.inventory.splice(pluginIndex, 1);
+            updateDawPlugins();
         }
 
         state.isExporting = true;
@@ -1444,57 +1475,79 @@
                 state.cooldowns.dawTimeReady = getTotalMins() + getDawCooldown(); 
                 progCont.classList.add('hidden');
                 
-                finishExport(genre, bpm, voice, activePads);
+                finishExport(genre, bpm, voice, activePads, consumedPluginId);
             }
         }, 60); 
     }
 
-    function finishExport(genre, bpm, voice, pads) {
+    function finishExport(genre, bpm, voice, pads, pluginId) {
         const result = calculateSuccess(genre, bpm, voice);
         
         let moneyGain = 0;
         let repGain = 0;
         let follGain = 0;
         let resultTxt = "";
+        let critique = "";
 
+        // Plugin Modifier Logic
+        if(pluginId === 'c2' && result.score === 0 && result.wrongVoice) {
+            result.score = 1; // AutoTune saves the day
+            critique = "\nAutoTune activé: Voix robotique, mais ça passe pour TikTok.";
+        }
+
+        if(pluginId === 'c5') {
+            result.score = 3; // Ghost AI forces banger
+            if(Math.random() > 0.5) {
+                critique = "\nIA Détectée ! Hit absolu, mais Bad Buzz (-20 REP).";
+                repGain -= 20;
+            } else {
+                critique = "\nGénéré par l'IA. Personne n'a remarqué. Hit assuré.";
+            }
+        }
+
+        // Base scoring
         if(result.score === 3) {
             resultTxt = "🔥 PERFECT BANGER! (Top Charts)";
             state.stats.bangers++;
             playSuccess();
             
-            if(result.rewardType === 'money') { moneyGain = 800; repGain = 10; }
-            if(result.rewardType === 'followers') { moneyGain = 150; follGain = 5000; repGain = 20; }
-            if(result.rewardType === 'stable') { moneyGain = 400; repGain = 5; }
-            if(result.rewardType === 'rep') { moneyGain = 200; repGain = 40; follGain = 1000;}
+            if(result.rewardType === 'money') { moneyGain = 800; repGain += 10; }
+            if(result.rewardType === 'followers') { moneyGain = 150; follGain = 5000; repGain += 20; }
+            if(result.rewardType === 'stable') { moneyGain = 400; repGain += 5; }
+            if(result.rewardType === 'rep') { moneyGain = 200; repGain += 40; follGain = 1000;}
             
         } else if(result.score === 1) {
             resultTxt = "👍 Decent track. It'll stream.";
             playBleep();
             
-            if(result.rewardType === 'money') { moneyGain = 200; repGain = 2; }
-            if(result.rewardType === 'followers') { moneyGain = 50; follGain = 800; repGain = 5; }
-            if(result.rewardType === 'stable') { moneyGain = 150; repGain = 1; }
-            if(result.rewardType === 'rep') { moneyGain = 50; repGain = 15;}
+            if(result.rewardType === 'money') { moneyGain = 200; repGain += 2; }
+            if(result.rewardType === 'followers') { moneyGain = 50; follGain = 800; repGain += 5; }
+            if(result.rewardType === 'stable') { moneyGain = 150; repGain += 1; }
+            if(result.rewardType === 'rep') { moneyGain = 50; repGain += 15;}
             
         } else {
             resultTxt = "🗑️ MASSIVE FLOP. Wrong vibe for 2026.";
             moneyGain = 10; 
-            repGain = -5; 
+            repGain -= 5; 
             state.stats.flops++;
             playError();
         }
 
         moneyGain = Math.floor(moneyGain * state.multiplier);
-        if(pads > 8) moneyGain += 20; 
+        if(pads > 8 && pluginId === 'c3') { moneyGain += 300; critique += "\nVintage DrumMachine : Kick surpuissant (+300$)"; }
+        else if(pads > 8) { moneyGain += 20; } 
+
+        if(pluginId === 'c1') { moneyGain = Math.floor(moneyGain * 1.3); critique += "\nMassive Bass : Le sub détruit les vitres (+30% Cash)."; }
+        if(pluginId === 'c4') { moneyGain = Math.floor(moneyGain * 1.5); critique += "\nOzone Mastering : Un son cristallin (+50% Cash)."; }
 
         logMoney(moneyGain, 'Track Royalties');
         state.rep = Math.max(0, state.rep + repGain);
         logFollower(follGain);
         state.stats.tracks++;
 
-        let toastMsg = `${resultTxt}\n+$${moneyGain}`;
+        let toastMsg = `${resultTxt}${critique}\n+$${moneyGain}`;
         if(follGain > 0) toastMsg += ` | +${follGain} Fans`;
-        if(repGain > 0) toastMsg += ` | +${repGain} Rep`;
+        if(repGain > 0 || repGain < 0) toastMsg += ` | ${repGain > 0 ? '+' : ''}${repGain} Rep`;
 
         showToast(toastMsg, result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error'));
         saveGame();
@@ -1535,28 +1588,27 @@
             }
 
             let crackHTML = `<h3 class="font-bold text-xl mb-5 text-[var(--retro-green)] tracking-widest uppercase drop-shadow-[0_0_5px_var(--retro-green)]">💀 CrackZ_World_2026</h3>
-                             <p class="text-[10px] mb-8 text-[var(--text-muted)] border-b border-gray-800 pb-3 uppercase">Disclaimer: Use at your own risk. Malware chance indicated.</p>
+                             <p class="text-[10px] mb-8 text-[var(--text-muted)] border-b border-gray-800 pb-3 uppercase">All plugins are SINGLE-USE consumables.</p>
                              <div class="space-y-4">`;
             
             let foundAny = false;
             cracks.forEach(c => {
-                if(state.downloadedCracks.includes(c.id)) return; 
                 if(state.rep < c.reqRep) return; 
                 foundAny = true;
                 
                 crackHTML += `
-                    <div class="border border-[var(--glass-border)] p-5 flex justify-between items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group">
-                        <div>
+                    <div class="border border-[var(--glass-border)] p-4 flex justify-between items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group">
+                        <div class="flex-1 pr-4">
                             <p class="font-bold text-sm text-gray-200">${c.name}</p>
-                            <p class="text-[10px] text-[var(--text-muted)] mt-2 font-retro tracking-widest">Mult: +${c.mult}x | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p>
+                            <p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc} | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p>
                         </div>
-                        <button class="btn-minimal px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
+                        <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
                     </div>
                 `;
             });
 
             if(!foundAny) {
-                crackHTML += `<p class="text-sm text-gray-500 text-center py-10 font-retro">No new cracks available. Raise your REP to access deep web links.</p>`;
+                crackHTML += `<p class="text-sm text-gray-500 text-center py-10 font-retro">Raise your REP to access deep web links.</p>`;
             }
 
             crackHTML += `</div>`;
@@ -1577,14 +1629,14 @@
                             <div class="border border-[var(--glass-border)] p-6 flex justify-between items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
                                 <div>
                                     <p class="font-bold text-base">ProEQ Studio Bundle</p>
-                                    <p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Mult: +0.5x | 100% Safe</p>
+                                    <p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +0.5x</p>
                                 </div>
                                 <button class="btn-action px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(300, 0.5)">BUY ($300)</button>
                             </div>
                             <div class="border border-[var(--glass-border)] p-6 flex justify-between items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
                                 <div>
                                     <p class="font-bold text-base">Analog Tape Saturation</p>
-                                    <p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Mult: +1.0x | 100% Safe</p>
+                                    <p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +1.0x</p>
                                 </div>
                                 <button class="btn-action px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button>
                             </div>
@@ -1599,15 +1651,16 @@
         const crack = cracks.find(c => c.id === id);
         if(!crack) return;
 
+        state.stats.crackDownloads++;
         state.cooldowns.crackzTimeReady = getTotalMins() + getVpnCooldown(); 
         
         if(Math.random() < crack.risk) {
-            // 10% Chance of a stealth ransomware making you lose money relative to reputation, instead of full BSOD
+            // 10% chance Stealth Hack, 90% BSOD
             if(Math.random() < 0.1) {
-                const loss = Math.floor(10 + (state.rep * 5) + (state.money * 0.05));
+                const loss = Math.floor(20 + (state.rep * 8) + (state.money * 0.05));
                 logMoney(-loss, 'Ransomware Attack');
                 state.stats.viruses++;
-                showToast(`⚠️ STEALTH HACK!\nHackers ont volé $${loss}.`, "error");
+                showToast(`⚠️ STEALTH HACK!\nHackers ont siphonné $${loss}.`, "error");
                 playError();
                 saveGame();
                 updateHUD();
@@ -1615,10 +1668,8 @@
                 triggerBSOD();
             }
         } else {
-            state.multiplier += crack.mult;
-            state.plugins++;
-            state.downloadedCracks.push(id);
-            showToast(`Download Complete! Multiplier +${crack.mult}`, "success");
+            state.inventory.push(id);
+            showToast(`Download Complete! Added to inventory.`, "success");
             playSuccess();
         }
         
@@ -1775,7 +1826,7 @@
         if(type === 'error') colorClass = "bg-[#4c0519] border-[var(--retro-red)] text-rose-100 shadow-[0_0_15px_rgba(251,113,133,0.3)]";
         if(type === 'info') colorClass = "bg-[#1e1b4b] border-[var(--accent)] text-indigo-100 shadow-[0_0_15px_rgba(129,140,248,0.3)]";
 
-        t.className = `toast px-8 py-5 rounded-lg border text-xs font-retro tracking-widest uppercase backdrop-blur-md ${colorClass} whitespace-pre-line`;
+        t.className = `toast px-6 py-4 w-full rounded-lg border text-xs font-retro tracking-widest uppercase backdrop-blur-md ${colorClass} whitespace-pre-line leading-relaxed`;
         t.innerText = msg;
         
         zone.appendChild(t);
@@ -1783,7 +1834,7 @@
             t.style.opacity = '0';
             t.style.transition = 'opacity 0.4s';
             setTimeout(() => t.remove(), 400);
-        }, 3500);
+        }, 4000);
     }
 
     // Boot
