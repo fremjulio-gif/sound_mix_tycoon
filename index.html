@@ -1062,8 +1062,35 @@
     kbdBase.receiveShadow = true;
     scene.add(kbdBase);
 
-    const keyGeo = new THREE.BoxGeometry(0.08, 0.03, 0.08);
+    const keyGeo = new THREE.BoxGeometry(0.08, 0, 0.08);
     const keyMat = new THREE.MeshStandardMaterial({ color: '#1a1a1a', emissive: '#818cf8', emissiveIntensity: 0.1 });
+
+    // --- SOURIS PRO (Corps galbé + Molette) ---
+    const mouseGroup = new THREE.Group();
+    mouseGroup.position.set(1.2, 0.73, 0.4); // Placée à droite du clavier
+    scene.add(mouseGroup);
+
+    // Corps de la souris (forme aplatie et allongée)
+    const mouseBodyGeo = new THREE.SphereGeometry(0.15, 16, 16);
+    mouseBodyGeo.scale(1, 0.6, 1.5); // On l'écrase pour faire une forme de souris
+    const mouseMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.4, metalness: 0.2 });
+    const mouseBody = new THREE.Mesh(mouseBodyGeo, mouseMat);
+    mouseBody.castShadow = true;
+    mouseGroup.add(mouseBody);
+
+    // Molette
+    const wheelGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.05, 12);
+    const wheelMat = new THREE.MeshStandardMaterial({ color: '#818cf8', emissive: '#818cf8', emissiveIntensity: 0.5 });
+    const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+    wheel.rotation.z = Math.PI / 2;
+    wheel.position.set(0, 0.06, -0.05); // Placée sur le dessus à l'avant
+    mouseGroup.add(wheel);
+
+    // Petit détail : fente entre les clics
+    const splitGeo = new THREE.BoxGeometry(0.005, 0.02, 0.15);
+    const split = new THREE.Mesh(splitGeo, new THREE.MeshStandardMaterial({ color: '#000000' }));
+    split.position.set(0, 0.08, -0.1);
+    mouseGroup.add(split);
     
     for (let x = -0.7; x <= 0.7; x += 0.12) {
         for (let z = -0.22; z <= 0.22; z += 0.12) {
