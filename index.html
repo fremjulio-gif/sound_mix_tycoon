@@ -1053,6 +1053,26 @@
     speakerR.add(wooferR);
     scene.add(speakerR);
 
+    const kbdBaseGeo = new THREE.BoxGeometry(1.6, 0.05, 0.6);
+    const kbdBaseMat = new THREE.MeshStandardMaterial({ color: '#0a0a0a', roughness: 0.3, metalness: 0.2 });
+    const kbdBase = new THREE.Mesh(kbdBaseGeo, kbdBaseMat);
+    kbdBase.position.set(0, 0.75, 0.4); // Placé devant l'écran
+    kbdBase.rotation.x = -Math.PI / 40; // Légère inclinaison vers le joueur
+    kbdBase.castShadow = true;
+    kbdBase.receiveShadow = true;
+    scene.add(kbdBase);
+
+    const keyGeo = new THREE.BoxGeometry(0.08, 0.03, 0.08);
+    const keyMat = new THREE.MeshStandardMaterial({ color: '#1a1a1a', emissive: '#818cf8', emissiveIntensity: 0.1 });
+    
+    for (let x = -0.7; x <= 0.7; x += 0.12) {
+        for (let z = -0.22; z <= 0.22; z += 0.12) {
+            const key = new THREE.Mesh(keyGeo, keyMat);
+            key.position.set(x, 0.03, z);
+            kbdBase.add(key);
+        }
+    }
+    
     let time = 0;
     function animate3D() {
         requestAnimationFrame(animate3D);
