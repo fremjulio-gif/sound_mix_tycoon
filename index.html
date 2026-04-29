@@ -433,7 +433,12 @@
 
         /* Toasts animés depuis la GAUCHE */
         @keyframes slideInLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .toast { animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; pointer-events: auto; cursor: grab; }
+        .toast { 
+            animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+            pointer-events: auto; 
+            cursor: grab; 
+            touch-action: none; 
+        }
         .toast:active { cursor: grabbing; }
         
         .avatar-sel { 
@@ -557,21 +562,18 @@
 
 <div id="game-container">
 
-    <!-- 3D CANVAS LAYER -->
     <div id="three-canvas-container"></div>
     
-    <!-- ROOM UI LAYER -->
     <div id="room-ui">
         <div class="bg-black/80 text-[var(--accent)] border border-[var(--accent)]/50 px-6 py-3 rounded-xl font-retro animate-[pulse_2s_ease-in-out_infinite] tracking-widest text-sm shadow-[0_0_15px_rgba(129,140,248,0.3)] mb-[15vh]">
             CLICK THE GLOWING PC TO START
         </div>
     </div>
 
-    <!-- LOGIN SCREEN -->
     <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
         <div class="liquid-glass-heavy p-8 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20">
             <h1 class="text-4xl font-retro font-bold mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">SM_TYCOON</h1>
-            <p class="text-[var(--text-muted)] font-retro text-xs mb-8 tracking-widest uppercase text-center">3D Room Edition // v10.0</p>
+            <p class="text-[var(--text-muted)] font-retro text-xs mb-8 tracking-widest uppercase text-center">3D Room Edition // v11.1</p>
             
             <div class="w-full mb-6">
                 <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
@@ -581,8 +583,7 @@
             <div class="w-full mb-8">
                 <label class="block text-[10px] font-retro text-gray-300 mb-4 uppercase tracking-widest">Select_Avatar</label>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6" id="avatar-container">
-                    <!-- Injected by JS -->
-                </div>
+                    </div>
             </div>
 
             <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-2">
@@ -592,10 +593,8 @@
         </div>
     </div>
 
-    <!-- MAIN OS INTERFACE (Layer 2) -->
-    <div id="pc-ui-layer">
+    <div id="pc-ui-layer" style="display: none;">
         
-        <!-- DYNAMIC BACKGROUND (Now inside the PC Layer to keep the OS looking cool) -->
         <div id="dynamic-bg">
             <div class="mesh-blob blob-1"></div>
             <div class="mesh-blob blob-2"></div>
@@ -603,27 +602,25 @@
             <div id="grid-overlay"></div>
         </div>
 
-        <!-- QUIT PC BUTTON -->
         <button id="btn-quit-pc" onclick="quitPC()">CLOSE OS SESSION</button>
 
-        <!-- HUD - DYNAMIC ISLAND (TOP) -->
         <div id="hud" class="liquid-glass-heavy h-[76px] fixed top-6 left-1/2 -translate-x-1/2 z-50 rounded-[30px] flex items-center justify-between px-5 transition-all duration-500 w-[240px] hover:w-[680px] group border border-white/10 shadow-2xl">
             <div class="flex items-center gap-4 shrink-0 w-full md:w-auto justify-center md:justify-start">
                 <div id="hud-avatar" class="w-[64px] h-[64px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shrink-0 shadow-[0_0_15px_rgba(129,140,248,0.5)]"></div>
                 <span id="hud-name" class="font-bold font-retro text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 whitespace-nowrap tracking-widest uppercase text-white w-0 group-hover:w-auto md:block hidden">Artiste</span>
             </div>
             
-            <div class="hud-stats-container flex items-center gap-6 md:gap-10 font-retro text-sm text-[var(--text-muted)] tracking-wider opacity-0 group-hover:opacity-100 w-0 group-hover:w-auto transition-all duration-500 whitespace-nowrap overflow-hidden">
+            <div class="hud-stats-container flex items-center gap-6 md:gap-10 font-retro text-sm text-[var(--text-muted)] tracking-wider opacity-0 group-hover:opacity-100 w-0 group-hover:w-auto transition-all duration-500 whitespace-nowrap overflow-hidden" onmouseleave="!isMobile && hideTooltip()">
                 
-                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('money', this)" onmouseenter="!isMobile && showTooltip('money', this)" onmouseleave="!isMobile && hideTooltip()">
+                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('money', this)" onmouseenter="!isMobile && showTooltip('money', this)">
                     <span class="text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] text-lg">$$$</span> <span id="hud-money" class="text-white text-lg">0</span>
                 </div>
                 
-                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)" onmouseleave="!isMobile && hideTooltip()">
+                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)">
                     <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)] text-lg">REP</span> <span id="hud-rep" class="text-white text-lg">0</span>
                 </div>
                 
-                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)" onmouseleave="!isMobile && hideTooltip()">
+                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)">
                     <span class="text-[var(--accent)] drop-shadow-[0_0_5px_var(--accent)] text-lg">FOL</span> <span id="hud-foll" class="text-white text-lg">0</span>
                 </div>
             </div>
@@ -634,9 +631,7 @@
             </div>
         </div>
 
-        <!-- DESKTOP CONTENT -->
         <div id="desktop-content">
-            <!-- Left Side : Icons -->
             <div class="flex flex-col gap-2" id="desktop-icons-container">
                 <div class="desktop-icon group" onclick="openApp('app-daw')">
                     <div class="icon-box"><svg class="w-9 h-9 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg></div>
@@ -656,7 +651,6 @@
                 </div>
             </div>
 
-            <!-- Right Side : Desktop Widgets -->
             <div class="widgets-container">
                 <div class="desktop-widget liquid-glass p-5 flex flex-col items-center text-center">
                     <div id="widget-clock-time" class="text-4xl font-retro font-bold text-white tracking-widest drop-shadow-lg">12:00</div>
@@ -685,7 +679,6 @@
             </div>
         </div>
 
-        <!-- BOTTOM TASKBAR (DESKTOP) -->
         <div id="taskbar-bottom" class="liquid-glass-heavy">
             <div class="flex gap-2 items-center border-r border-white/10 pr-4 mr-2">
                 <div class="taskbar-btn bg-white/5 hover:bg-white/10 !border-[var(--accent)] text-white" onclick="cycleTheme()" title="Change Theme">
@@ -694,8 +687,7 @@
             </div>
 
             <div class="flex-grow flex gap-2 overflow-x-auto" id="taskbar-apps">
-                <!-- Injected dynamically -->
-            </div>
+                </div>
 
             <div class="flex gap-5 items-center border-l border-white/10 pl-5 ml-2 text-gray-300 text-lg">
                 <span class="hover:text-white cursor-pointer transition-colors hover:drop-shadow-[0_0_8px_#fff]" title="Volume">🔊</span>
@@ -704,7 +696,6 @@
             </div>
         </div>
 
-        <!-- BOTTOM NAV BAR (MOBILE) -->
         <div id="mobile-nav" class="fixed bottom-0 left-0 w-full liquid-glass-heavy justify-around items-center px-2 pt-2 z-[60] border-t border-white/10" style="padding-bottom: env(safe-area-inset-bottom);">
             <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="openApp('app-daw')">
                 <svg class="w-7 h-7 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
@@ -722,16 +713,12 @@
                 <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 <span class="text-[9px] font-retro text-gray-300">STATS</span>
             </div>
-            <!-- Theme Toggle in Mobile Nav -->
             <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="cycleTheme()">
                 <svg class="w-7 h-7 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 <span class="text-[9px] font-retro text-[var(--accent)]">THEME</span>
             </div>
         </div>
 
-        <!-- APP WINDOWS -->
-        
-        <!-- DAW PRO V9 -->
         <div id="app-daw" class="os-window liquid-glass flex-col font-sans" style="display:none;">
             <div class="window-header">
                 <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
@@ -742,16 +729,13 @@
             
             <div class="window-content daw-grid-container text-xs">
                 
-                <!-- Left Panel : Extra-Compact Séquenceur -->
                 <div class="daw-panel-neon md:w-[160px] w-full p-4 flex flex-col flex-shrink-0 justify-start items-center relative">
                     <label class="block text-[10px] text-gray-300 mb-6 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2 w-full text-center">Drum Rack</label>
                     <div class="grid grid-cols-4 gap-2 mb-4 w-full max-w-[200px] md:max-w-[120px]" id="sequencer-grid">
-                        <!-- Generated by JS -->
-                    </div>
+                        </div>
                     <p class="text-[8px] text-gray-500 font-retro tracking-widest mt-auto text-center border border-white/10 p-2 rounded w-full">Live Input</p>
                 </div>
 
-                <!-- Middle Panel : Waveform, Settings & Export -->
                 <div class="daw-panel-neon flex-1 p-4 flex flex-col relative md:min-w-[450px] min-w-0">
                     <label class="block text-[10px] text-gray-300 mb-3 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2">Timeline Arrangement</label>
                     
@@ -784,9 +768,7 @@
                         </div>
                     </div>
 
-                    <!-- Clean Control Panel -->
                     <div class="flex flex-col gap-3 mt-auto">
-                        <!-- Genre Buttons -->
                         <div class="flex flex-wrap gap-2">
                             <button class="btn-minimal btn-genre active flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="drill" onclick="selectDawGenre('drill')">UK Drill</button>
                             <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="afropop" onclick="selectDawGenre('afropop')">Afro-Pop</button>
@@ -794,7 +776,6 @@
                             <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="amapiano" onclick="selectDawGenre('amapiano')">Amapiano</button>
                         </div>
                         
-                        <!-- Voice & Tempo & Plugin aligned -->
                         <div class="flex flex-col md:flex-row gap-3 items-stretch">
                             <div class="flex gap-2 flex-1">
                                 <button class="btn-minimal btn-voice active flex-1 py-3 md:py-2 text-[9px] md:text-[8px] rounded font-retro tracking-widest" data-val="m" onclick="selectDawVoice('m')">Male Voc</button>
@@ -805,18 +786,15 @@
                             <div class="w-full md:w-[140px] flex-shrink-0 h-[44px] md:h-auto">
                                 <select id="daw-plugin" class="w-full h-full bg-black/60 border border-white/10 rounded px-2 outline-none text-[var(--accent)] text-[10px] font-bold tracking-wider cursor-pointer">
                                     <option value="">- Clean Mix (No Plugin) -</option>
-                                    <!-- Injected by JS -->
-                                </select>
+                                    </select>
                             </div>
 
-                            <!-- BPM Slider -->
                             <div class="w-full md:w-[160px] bg-black/40 border border-white/10 rounded flex items-center px-4 py-2 md:px-3 md:py-1 gap-3 flex-shrink-0">
                                 <span id="bpm-val" class="text-base md:text-sm text-white font-retro w-10 md:w-8 text-right drop-shadow-[0_0_5px_var(--accent)]">120</span>
                                 <input type="range" id="daw-bpm" min="60" max="200" value="120" class="flex-1 accent-[var(--accent)] cursor-pointer" oninput="document.getElementById('bpm-val').innerHTML = this.value">
                             </div>
                         </div>
 
-                        <!-- Render Block -->
                         <div class="relative w-full h-[50px] md:h-[40px] mt-2">
                             <button id="btn-export" class="w-full h-full btn-action rounded-lg text-[12px] md:text-[11px] drop-shadow-lg tracking-widest" onclick="exportTrack()">
                                 RENDER MIXDOWN
@@ -828,7 +806,6 @@
                     </div>
                 </div>
 
-                <!-- Right Panel : Master Knobs -->
                 <div class="daw-panel-neon md:w-[110px] w-full p-4 flex flex-row md:flex-col items-center justify-between md:justify-start flex-shrink-0">
                     <label class="block text-[10px] text-gray-300 md:mb-6 mb-3 font-retro uppercase tracking-widest md:border-b border-[var(--accent)]/30 md:pb-2 w-auto md:w-full text-center">Master</label>
                     <div class="flex flex-row md:flex-col gap-4 md:gap-5 w-auto md:w-full items-center md:mb-6">
@@ -847,16 +824,14 @@
                             </div>
                         </div>
 
-                        <div class="w-full md:w-5 h-5 md:h-full bg-black/80 border border-white/10 rounded-sm p-1 flex flex-row md:flex-col-reverse justify-between shadow-[inset_0_0_10px_rgba(0,0,0,1)]" id="vu-meter-container">
-                            <!-- Generated by JS -->
-                        </div>
+                        <div class="w-full md:w-5 h-[16px] md:h-full bg-black/80 border border-white/10 rounded-sm p-0.5 md:p-1 flex flex-row md:flex-col-reverse justify-between shadow-[inset_0_0_10px_rgba(0,0,0,1)]" id="vu-meter-container">
+                            </div>
                     </div>
                 </div>
 
             </div>
         </div>
 
-        <!-- Browser / Store -->
         <div id="app-browser" class="os-window liquid-glass flex-col" style="display:none;">
             <div class="window-header">
                 <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
@@ -869,11 +844,9 @@
                 <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
             </div>
             <div class="window-content" id="browser-content">
-                <!-- Content -->
-            </div>
+                </div>
         </div>
 
-        <!-- Social Network -->
         <div id="app-social" class="os-window liquid-glass flex-col" style="display:none;">
             <div class="window-header">
                 <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
@@ -893,13 +866,11 @@
                 <div>
                     <h4 class="text-xs text-white mb-5 uppercase tracking-widest font-retro border-b border-[var(--accent)]/30 pb-3 font-bold">Brand Deals (Sellout)</h4>
                     <div id="sponsor-list" class="space-y-4">
-                        <!-- JS Injected -->
-                    </div>
+                        </div>
                 </div>
             </div>
         </div>
 
-        <!-- Stats -->
         <div id="app-stats" class="os-window liquid-glass flex-col" style="display:none;">
             <div class="window-header">
                 <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
@@ -912,174 +883,35 @@
             </div>
         </div>
 
-        <!-- Toasts Zone (TOP LEFT) -->
-        <div id="toast-zone" class="absolute top-[90px] md:top-6 left-4 md:left-6 flex flex-col gap-3 z-[9999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
+        <div id="toast-zone" class="absolute top-[90px] md:top-6 left-4 md:left-6 flex flex-col gap-3 z-[999999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
 
+    </div>
+
+    <div id="bsod" class="absolute inset-0 z-[100] bg-[#0000AA] text-white p-8 md:p-16 flex-col hidden font-retro">
+        <h1 class="text-3xl md:text-5xl font-bold bg-white text-[#0000AA] inline-block px-5 py-2 mb-8 md:mb-10 mt-10">CRITICAL_SYSTEM_ERROR</h1>
+        <p class="mb-6 text-lg md:text-xl tracking-wider">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
+        <p class="mb-12 md:mb-16 text-base md:text-lg text-gray-300">Unlicensed software execution caused a memory leak. Restoring system state...</p>
+        
+        <div class="w-full max-w-3xl border border-white/50 p-1">
+            <div id="bsod-progress" class="bg-white h-5 md:h-6 w-0 transition-all"></div>
+        </div>
+        <p class="mt-12 text-sm md:text-base glitch text-gray-400">Do not turn off your workstation.</p>
     </div>
 
 </div>
 
-<!-- THREE.JS MODULE SCRIPT -->
 <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
     /**
-     * SOUND MIX TYCOON V10.0 - 3D ISOMETRIC INTEGRATION
+     * SOUND MIX TYCOON V11.1 (CLEAN VERSION)
      */
 
     // ==========================================
-    // 1. THREE.JS SCENE SETUP
+    // 1. RESPONSIVE STATE & GLOBALS
     // ==========================================
-    const container = document.getElementById('three-canvas-container');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#050508');
-
-    // Isometric Camera Setup (Orthographic)
-    const aspect = window.innerWidth / window.innerHeight;
-    const frustumSize = 10;
-    const camera = new THREE.OrthographicCamera(
-        frustumSize * aspect / -2,
-        frustumSize * aspect / 2,
-        frustumSize / 2,
-        frustumSize / -2,
-        1,
-        1000
-    );
-    // Position camera for isometric view
-    camera.position.set(20, 20, 20);
-    camera.lookAt(0, 0, 0);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    container.appendChild(renderer.domElement);
-
-    // Audio Spatial Placeholder
-    const listener = new THREE.AudioListener();
-    camera.add(listener);
-
-    // Lumière atmosphérique globale (Ciel / Sol)
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.4);
-    scene.add(hemiLight);
-    
-    // Lumière directionnelle principale (Soleil/Spot)
-    const dirLight = new THREE.DirectionalLight(0x818cf8, 1.2);
-    dirLight.position.set(10, 20, 10);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 2048; // Qualité de l'ombre
-    dirLight.shadow.mapSize.height = 2048;
-    dirLight.shadow.bias = -0.0005; // Evite les artefacts d'ombre
-    scene.add(dirLight);
-
-     // ==========================================
-    // 2. ROOM CREATION (Meubles Détaillés & PBR)
-    // ==========================================
-    
-    // Sol mat
-    const floorGeo = new THREE.PlaneGeometry(30, 30);
-    const floorMat = new THREE.MeshStandardMaterial({ color: '#8d6245', roughness: 0.9, metalness: 0.1 });
-    const floor = new THREE.Mesh(floorGeo, floorMat);
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -1;
-    floor.receiveShadow = true;
-    scene.add(floor);
-
-    // --- LE BUREAU (Plateau en bois sombre + Pieds métalliques) ---
-    const deskTopGeo = new THREE.BoxGeometry(4.5, 0.1, 2.2);
-    const deskTopMat = new THREE.MeshStandardMaterial({ color: '#505050', roughness: 0.7, metalness: 0.1 });
-    const deskTop = new THREE.Mesh(deskTopGeo, deskTopMat);
-    deskTop.position.set(0, 0.7, 0);
-    deskTop.castShadow = true;
-    deskTop.receiveShadow = true;
-    scene.add(deskTop);
-
-    const legGeo = new THREE.BoxGeometry(0.1, 1.7, 0.1);
-    const legMat = new THREE.MeshStandardMaterial({ color: '#505050', roughness: 0.4, metalness: 0.8 }); // Métal
-    const legPositions = [ [-2.1, -0.15, -0.9], [2.1, -0.15, -0.9], [-2.1, -0.15, 0.9], [2.1, -0.15, 0.9] ];
-    legPositions.forEach(pos => {
-        const leg = new THREE.Mesh(legGeo, legMat);
-        leg.position.set(...pos);
-        leg.castShadow = true;
-        scene.add(leg);
-    });
-
-    // --- LE PC (Pied + Cadre noir + Dalle Néon) ---
-    // Pied du PC
-    const standGeo = new THREE.BoxGeometry(0.3, 0.4, 0.2);
-    const stand = new THREE.Mesh(standGeo, legMat);
-    stand.position.set(0, 0.9, -0.6);
-    stand.castShadow = true;
-    scene.add(stand);
-    stand.name = 'pc_mesh';
-
-    // Cadre de l'écran (Bezel)
-    const pcFrameGeo = new THREE.BoxGeometry(1.4, 0.85, 0.05);
-    const pcFrameMat = new THREE.MeshStandardMaterial({ color: '#acacac', roughness: 0.2, metalness: 0.5 }); // Plastique lisse
-    const pcFrame = new THREE.Mesh(pcFrameGeo, pcFrameMat);
-    pcFrame.position.set(0, 1.25, -0.55);
-    pcFrame.castShadow = true;
-    pcFrame.name = 'pc_mesh';
-    
-    // Dalle brillante interactive (C'est elle que le Raycaster touche)
-    const pcScreenGeo = new THREE.PlaneGeometry(1.3, 0.75);
-    const pcScreenMat = new THREE.MeshStandardMaterial({ color: '#000000', emissive: '#818cf8', emissiveIntensity: 0.8 });
-    const pcMesh = new THREE.Mesh(pcScreenGeo, pcScreenMat);
-    pcMesh.position.set(0, 0, 0.026); // Juste devant le cadre
-    pcMesh.name = 'pc_mesh'; // CRITIQUE POUR L'INTERACTION
-    pcFrame.add(pcMesh); // On attache l'écran au cadre
-    scene.add(pcFrame);
-
-    // --- LES ENCEINTES (Caisson mat + Haut-Parleur central) ---
-    const speakerMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.8, metalness: 0.2 });
-    const wooferMat = new THREE.MeshStandardMaterial({ color: '#000000', roughness: 0.9, metalness: 0.1 });
-    const speakerGeo = new THREE.BoxGeometry(0.4, 0.6, 0.4);
-    const wooferGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.02, 16);
-
-    // Enceinte Gauche
-    const speakerL = new THREE.Mesh(speakerGeo, speakerMat);
-    speakerL.position.set(-1.6, 1.05, -0.4);
-    speakerL.rotation.y = Math.PI / 12; // Légèrement tournée vers le joueur
-    speakerL.castShadow = true;
-    const wooferL = new THREE.Mesh(wooferGeo, wooferMat);
-    wooferL.rotation.x = Math.PI / 2;
-    wooferL.position.set(0, 0, 0.2);
-    speakerL.add(wooferL);
-    scene.add(speakerL);
-
-    // Enceinte Droite
-    const speakerR = new THREE.Mesh(speakerGeo, speakerMat);
-    speakerR.position.set(1.6, 1.05, -0.4);
-    speakerR.rotation.y = -Math.PI / 12;
-    speakerR.castShadow = true;
-    const wooferR = new THREE.Mesh(wooferGeo, wooferMat);
-    wooferR.rotation.x = Math.PI / 2;
-    wooferR.position.set(0, 0, 0.2);
-    speakerR.add(wooferR);
-    scene.add(speakerR);
-
-    // Animation Loop
-    let time = 0;
-    function animate3D() {
-        requestAnimationFrame(animate3D);
-        time += 0.02;
-        // Make PC glow pulsate slightly
-        pcScreenMat.emissiveIntensity = 0.5 + Math.sin(time) * 0.3;
-        renderer.render(scene, camera);
-    }
-    animate3D();
-
-    // Resize Handler for 3D and 2D
+    let isMobile = window.innerWidth <= 767;
     window.addEventListener('resize', () => {
-        // 3D Resize
-        const aspect = window.innerWidth / window.innerHeight;
-        camera.left = -frustumSize * aspect / 2;
-        camera.right = frustumSize * aspect / 2;
-        camera.top = frustumSize / 2;
-        camera.bottom = -frustumSize / 2;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-
-        // 2D OS Resize state
         isMobile = window.innerWidth <= 767;
         if (isMobile) {
             document.querySelectorAll('.os-window').forEach(win => {
@@ -1091,32 +923,169 @@
         }
     });
 
+    const themesList = [
+        { name: 'neon', vars: ['#09090b', '#1e1b4b', '#0f172a', '#312e81'] },
+        { name: 'synth', vars: ['#1a0b2e', '#ff007f', '#7928ca', '#00d4ff'] },
+        { name: 'matrix', vars: ['#020617', '#064e3b', '#022c22', '#047857'] },
+        { name: 'blood', vars: ['#170000', '#7f1d1d', '#4c0519', '#9f1239'] }
+    ];
+    let currentThemeIdx = 0;
+
+    function cycleTheme() {
+        currentThemeIdx = (currentThemeIdx + 1) % themesList.length;
+        const root = document.documentElement;
+        const t = themesList[currentThemeIdx];
+        root.style.setProperty('--bg-color-1', t.vars[0]);
+        root.style.setProperty('--bg-color-2', t.vars[1]);
+        root.style.setProperty('--bg-color-3', t.vars[2]);
+        root.style.setProperty('--bg-color-4', t.vars[3]);
+        playBleep();
+    }
 
     // ==========================================
-    // 3. RAYCASTER & INTERACTION
+    // 2. THREE.JS SCENE SETUP
     // ==========================================
+    const container = document.getElementById('three-canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#050508');
+
+    const aspect = window.innerWidth / window.innerHeight;
+    const frustumSize = 10;
+    const camera = new THREE.OrthographicCamera(
+        frustumSize * aspect / -2, frustumSize * aspect / 2,
+        frustumSize / 2, frustumSize / -2, 1, 1000
+    );
+    camera.position.set(20, 20, 20);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
+    container.appendChild(renderer.domElement);
+
+    const listener = new THREE.AudioListener();
+    camera.add(listener);
+
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.4);
+    scene.add(hemiLight);
+    
+    const dirLight = new THREE.DirectionalLight(0x818cf8, 1.2);
+    dirLight.position.set(10, 20, 10);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048; 
+    dirLight.shadow.mapSize.height = 2048;
+    dirLight.shadow.bias = -0.0005; 
+    scene.add(dirLight);
+
+    // Meshes
+    const floorGeo = new THREE.PlaneGeometry(30, 30);
+    const floorMat = new THREE.MeshStandardMaterial({ color: '#09090b', roughness: 0.9, metalness: 0.1 });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -1;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Make everything on the desk part of pc_mesh logically or just assign the names properly
+    const deskTopGeo = new THREE.BoxGeometry(4.5, 0.1, 2.2);
+    const deskTopMat = new THREE.MeshStandardMaterial({ color: '#1e1b4b', roughness: 0.7, metalness: 0.1 });
+    const deskTop = new THREE.Mesh(deskTopGeo, deskTopMat);
+    deskTop.position.set(0, 0.7, 0);
+    deskTop.castShadow = true;
+    deskTop.receiveShadow = true;
+    deskTop.name = 'pc_mesh'; // Clicking the desk also opens the PC
+    scene.add(deskTop);
+
+    const legGeo = new THREE.BoxGeometry(0.1, 1.7, 0.1);
+    const legMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.4, metalness: 0.8 }); 
+    const legPositions = [ [-2.1, -0.15, -0.9], [2.1, -0.15, -0.9], [-2.1, -0.15, 0.9], [2.1, -0.15, 0.9] ];
+    legPositions.forEach(pos => {
+        const leg = new THREE.Mesh(legGeo, legMat);
+        leg.position.set(...pos);
+        leg.castShadow = true;
+        scene.add(leg);
+    });
+
+    const standGeo = new THREE.BoxGeometry(0.3, 0.4, 0.2);
+    const stand = new THREE.Mesh(standGeo, legMat);
+    stand.position.set(0, 0.9, -0.6);
+    stand.castShadow = true;
+    stand.name = 'pc_mesh';
+    scene.add(stand);
+
+    const pcFrameGeo = new THREE.BoxGeometry(1.4, 0.85, 0.05);
+    const pcFrameMat = new THREE.MeshStandardMaterial({ color: '#050505', roughness: 0.2, metalness: 0.5 }); 
+    const pcFrame = new THREE.Mesh(pcFrameGeo, pcFrameMat);
+    pcFrame.position.set(0, 1.25, -0.55);
+    pcFrame.castShadow = true;
+    pcFrame.name = 'pc_mesh';
+    
+    const pcScreenGeo = new THREE.PlaneGeometry(1.3, 0.75);
+    const pcScreenMat = new THREE.MeshStandardMaterial({ color: '#000000', emissive: '#818cf8', emissiveIntensity: 0.8 });
+    const pcMesh = new THREE.Mesh(pcScreenGeo, pcScreenMat);
+    pcMesh.position.set(0, 0, 0.026); 
+    pcMesh.name = 'pc_mesh'; 
+    pcFrame.add(pcMesh); 
+    scene.add(pcFrame);
+
+    const speakerMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.8, metalness: 0.2 });
+    const wooferMat = new THREE.MeshStandardMaterial({ color: '#000000', roughness: 0.9, metalness: 0.1 });
+    const speakerGeo = new THREE.BoxGeometry(0.4, 0.6, 0.4);
+    const wooferGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.02, 16);
+
+    const speakerL = new THREE.Mesh(speakerGeo, speakerMat);
+    speakerL.position.set(-1.6, 1.05, -0.4);
+    speakerL.rotation.y = Math.PI / 12; 
+    speakerL.castShadow = true;
+    speakerL.name = 'pc_mesh'; // Clicking speakers also works
+    const wooferL = new THREE.Mesh(wooferGeo, wooferMat);
+    wooferL.rotation.x = Math.PI / 2;
+    wooferL.position.set(0, 0, 0.2);
+    speakerL.add(wooferL);
+    scene.add(speakerL);
+
+    const speakerR = new THREE.Mesh(speakerGeo, speakerMat);
+    speakerR.position.set(1.6, 1.05, -0.4);
+    speakerR.rotation.y = -Math.PI / 12;
+    speakerR.castShadow = true;
+    speakerR.name = 'pc_mesh';
+    const wooferR = new THREE.Mesh(wooferGeo, wooferMat);
+    wooferR.rotation.x = Math.PI / 2;
+    wooferR.position.set(0, 0, 0.2);
+    speakerR.add(wooferR);
+    scene.add(speakerR);
+
+    let time = 0;
+    function animate3D() {
+        requestAnimationFrame(animate3D);
+        time += 0.02;
+        pcScreenMat.emissiveIntensity = 0.5 + Math.sin(time) * 0.3;
+        renderer.render(scene, camera);
+    }
+    animate3D();
+
+    window.addEventListener('resize', () => {
+        const aspect = window.innerWidth / window.innerHeight;
+        camera.left = -frustumSize * aspect / 2;
+        camera.right = frustumSize * aspect / 2;
+        camera.top = frustumSize / 2;
+        camera.bottom = -frustumSize / 2;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
     function onPointerDown(event) {
-        // Only trigger if we are in the room (OS is hidden) and not in login
-        if (document.getElementById('pc-ui-layer').style.display !== 'none') return;
-        if (document.getElementById('login-screen').style.display !== 'none') return;
+        if (document.getElementById('room-ui').style.display !== 'flex') return;
 
-        let clientX, clientY;
-        if (event.changedTouches) {
-            clientX = event.changedTouches[0].clientX;
-            clientY = event.changedTouches[0].clientY;
-        } else {
-            clientX = event.clientX;
-            clientY = event.clientY;
-        }
-
-        mouse.x = (clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
         raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(scene.children);
+        const intersects = raycaster.intersectObjects(scene.children, true);
 
         for (let i = 0; i < intersects.length; i++) {
             if (intersects[i].object.name === 'pc_mesh') {
@@ -1126,57 +1095,33 @@
         }
     }
 
-    document.getElementById('three-canvas-container').addEventListener('mousedown', onPointerDown);
-    document.getElementById('three-canvas-container').addEventListener('touchstart', onPointerDown, {passive: true});
+    document.getElementById('three-canvas-container').addEventListener('pointerdown', onPointerDown);
 
     function enterPC() {
         document.getElementById('room-ui').style.display = 'none';
         document.getElementById('pc-ui-layer').style.display = 'flex';
-        playTone(600, 'square', 0.1, 0.05); // Boot sound
+        playTone(600, 'square', 0.1, 0.05); 
     }
 
     function quitPC() {
         document.getElementById('pc-ui-layer').style.display = 'none';
         document.getElementById('room-ui').style.display = 'flex';
-        playTone(300, 'sawtooth', 0.1, 0.05); // Shutdown sound
+        playTone(300, 'sawtooth', 0.1, 0.05); 
     }
 
-
     // ==========================================
-    // 4. EXISTING 2D OS LOGIC (Refactored for Module Scope)
+    // 3. UI LOGIC (Tooltips, Apps, System)
     // ==========================================
-    
-    let isMobile = window.innerWidth <= 767;
-
-    const themes = [
-        { name: 'neon', vars: ['#09090b', '#1e1b4b', '#0f172a', '#312e81'] },
-        { name: 'synth', vars: ['#1a0b2e', '#ff007f', '#7928ca', '#00d4ff'] },
-        { name: 'matrix', vars: ['#020617', '#064e3b', '#022c22', '#047857'] },
-        { name: 'blood', vars: ['#170000', '#7f1d1d', '#4c0519', '#9f1239'] }
-    ];
-    let currentThemeIdx = 0;
-
-    function cycleTheme() {
-        currentThemeIdx = (currentThemeIdx + 1) % themes.length;
-        const root = document.documentElement;
-        const t = themes[currentThemeIdx];
-        root.style.setProperty('--bg-color-1', t.vars[0]);
-        root.style.setProperty('--bg-color-2', t.vars[1]);
-        root.style.setProperty('--bg-color-3', t.vars[2]);
-        root.style.setProperty('--bg-color-4', t.vars[3]);
-        playBleep();
-    }
-
     const globalTooltip = document.createElement('div');
     globalTooltip.id = 'global-tooltip';
-    globalTooltip.className = 'fixed z-[100] bg-black/95 border border-[var(--glass-border)] rounded-lg p-4 w-[280px] opacity-0 pointer-events-none transition-opacity shadow-2xl font-retro text-[10px] text-white hidden';
+    globalTooltip.className = 'fixed z-[99999] bg-black/95 border border-[var(--glass-border)] rounded-lg p-4 w-[280px] opacity-0 pointer-events-none transition-opacity shadow-2xl font-retro text-[10px] text-white hidden';
     document.body.appendChild(globalTooltip);
 
     let tooltipTimeout;
 
     function toggleTooltip(type, el) {
         if(isMobile) {
-            if(!globalTooltip.classList.contains('hidden') && globalTooltip.dataset.type === type) {
+            if(globalTooltip.dataset.type === type && !globalTooltip.classList.contains('hidden')) {
                 hideTooltip();
             } else {
                 showTooltip(type, el);
@@ -1200,7 +1145,8 @@
         }
         
         globalTooltip.classList.remove('hidden');
-        requestAnimationFrame(() => globalTooltip.style.opacity = '1');
+        void globalTooltip.offsetWidth; // Force reflow
+        globalTooltip.style.opacity = '1';
 
         if(type === 'money') {
             let html = '<div class="text-[var(--retro-green)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Bank Statement</div><div class="space-y-3">';
@@ -1232,10 +1178,11 @@
 
     function hideTooltip() {
         globalTooltip.style.opacity = '0';
+        clearTimeout(tooltipTimeout);
         tooltipTimeout = setTimeout(() => { 
             globalTooltip.classList.add('hidden'); 
             globalTooltip.dataset.type = '';
-        }, 250); 
+        }, 300); 
     }
 
     document.addEventListener('touchstart', (e) => {
@@ -1244,43 +1191,43 @@
         }
     }, {passive: true});
 
-    const sysCanvas = document.getElementById('sys-canvas');
-    const sysCtx = sysCanvas ? sysCanvas.getContext('2d') : null;
-    let cpuData = Array(50).fill(50);
+    const sysCanvasUI = document.getElementById('sys-canvas');
+    const sysCtxUI = sysCanvasUI ? sysCanvasUI.getContext('2d') : null;
+    let cpuDataUI = Array(50).fill(50);
     
-    function drawSysGraph() {
-        if(!sysCtx || !sysCanvas) return;
-        sysCanvas.width = sysCanvas.parentElement.clientWidth;
-        sysCanvas.height = sysCanvas.parentElement.clientHeight;
+    function drawSysGraphUI() {
+        if(!sysCtxUI || !sysCanvasUI) return;
+        sysCanvasUI.width = sysCanvasUI.parentElement.clientWidth;
+        sysCanvasUI.height = sysCanvasUI.parentElement.clientHeight;
         
-        let last = cpuData[cpuData.length - 1];
+        let last = cpuDataUI[cpuDataUI.length - 1];
         let next = last + (Math.random() * 30 - 15);
         if(state.isExporting) next = 95 + Math.random() * 5; 
         if(next > 100) next = 100;
         if(next < 5) next = 5;
         
-        cpuData.shift();
-        cpuData.push(next);
+        cpuDataUI.shift();
+        cpuDataUI.push(next);
 
-        sysCtx.clearRect(0, 0, sysCanvas.width, sysCanvas.height);
-        sysCtx.beginPath();
-        sysCtx.moveTo(0, sysCanvas.height - (cpuData[0]/100 * sysCanvas.height));
+        sysCtxUI.clearRect(0, 0, sysCanvasUI.width, sysCanvasUI.height);
+        sysCtxUI.beginPath();
+        sysCtxUI.moveTo(0, sysCanvasUI.height - (cpuDataUI[0]/100 * sysCanvasUI.height));
         
-        const step = sysCanvas.width / (cpuData.length - 1);
-        for(let i=1; i<cpuData.length; i++) {
-            sysCtx.lineTo(i * step, sysCanvas.height - (cpuData[i]/100 * sysCanvas.height));
+        const step = sysCanvasUI.width / (cpuDataUI.length - 1);
+        for(let i=1; i<cpuDataUI.length; i++) {
+            sysCtxUI.lineTo(i * step, sysCanvasUI.height - (cpuDataUI[i]/100 * sysCanvasUI.height));
         }
         
-        sysCtx.strokeStyle = 'rgba(52, 211, 153, 0.9)';
-        sysCtx.lineWidth = 2;
-        sysCtx.stroke();
+        sysCtxUI.strokeStyle = 'rgba(52, 211, 153, 0.9)';
+        sysCtxUI.lineWidth = 2;
+        sysCtxUI.stroke();
 
-        sysCtx.lineTo(sysCanvas.width, sysCanvas.height);
-        sysCtx.lineTo(0, sysCanvas.height);
-        sysCtx.fillStyle = 'rgba(52, 211, 153, 0.15)';
-        sysCtx.fill();
+        sysCtxUI.lineTo(sysCanvasUI.width, sysCanvasUI.height);
+        sysCtxUI.lineTo(0, sysCanvasUI.height);
+        sysCtxUI.fillStyle = 'rgba(52, 211, 153, 0.15)';
+        sysCtxUI.fill();
 
-        setTimeout(() => requestAnimationFrame(drawSysGraph), 150); 
+        setTimeout(() => requestAnimationFrame(drawSysGraphUI), 150); 
     }
 
     let audioCtxUI = null;
@@ -1316,6 +1263,9 @@
     const playError = () => { playTone(200, 'sawtooth', 0.2, 0.05); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); };
     const playKick = () => { playTone(60, 'sine', 0.2, 0.2); playTone(120, 'square', 0.05, 0.1); }; 
 
+    // ==========================================
+    // 4. GAME STATE & DATA
+    // ==========================================
     const avatars = [
         { id: 'Char 1', img: './spr_char_1.png' },
         { id: 'Char 2', img: './spr_char_2.png' },
@@ -1408,6 +1358,9 @@
         return m > 0 ? `${h}H ${m}M` : `${h}H`;
     }
 
+    // ==========================================
+    // 5. INIT & CONTROLLERS
+    // ==========================================
     function initUI() {
         const cont = document.getElementById('avatar-container');
         cont.innerHTML = avatars.map((a, i) => `
@@ -1477,7 +1430,7 @@
         });
 
         initInteractiveStudio();
-        drawSysGraph();
+        drawSysGraphUI();
 
         document.getElementById('btn-login').addEventListener('click', attemptLogin);
         document.getElementById('login-username').addEventListener('keypress', function (e) {
@@ -1547,13 +1500,7 @@
     function selectDawGenre(val) {
         currentDawGenre = val;
         document.querySelectorAll('.btn-genre').forEach(b => {
-            if(b.dataset.val === val) {
-                b.classList.remove('btn-minimal');
-                b.classList.add('btn-action', 'text-white');
-            } else {
-                b.classList.add('btn-minimal');
-                b.classList.remove('btn-action', 'text-white');
-            }
+            b.classList.toggle('active', b.dataset.val === val);
         });
         playBleep();
     }
@@ -1561,13 +1508,7 @@
     function selectDawVoice(val) {
         currentDawVoice = val;
         document.querySelectorAll('.btn-voice').forEach(b => {
-            if(b.dataset.val === val) {
-                b.classList.remove('btn-minimal');
-                b.classList.add('btn-action', 'text-white');
-            } else {
-                b.classList.add('btn-minimal');
-                b.classList.remove('btn-action', 'text-white');
-            }
+            b.classList.toggle('active', b.dataset.val === val);
         });
         playBleep();
     }
@@ -1728,12 +1669,6 @@
         refreshStats();
     }
 
-    function formatNum(num) {
-        if(num >= 1000000) return (num/1000000).toFixed(1) + 'M';
-        if(num >= 1000) return (num/1000).toFixed(1) + 'k';
-        return Math.floor(num).toString();
-    }
-
     let zIndexCounter = 50;
     let windowOffsetXY = 0;
     
@@ -1812,37 +1747,6 @@
                 container.appendChild(btn);
             }
         });
-    }
-
-    function togglePad(idx) {
-        const pad = document.getElementById(`pad-${idx}`);
-        pad.classList.toggle('active');
-        if(pad.classList.contains('active')) {
-            playKick();
-            simulateVuMeter(12);
-        }
-    }
-
-    let vuInterval;
-    function simulateVuMeter(maxLevel = 14) {
-        for(let i=1; i<=14; i++) {
-            const led = document.getElementById(`vu-led-${i}`);
-            if (led) led.className = 'vu-led';
-        }
-        const level = Math.floor(Math.random() * maxLevel) + 1;
-        for(let i=1; i<=level; i++) {
-            const led = document.getElementById(`vu-led-${i}`);
-            if(!led) continue;
-            if(i <= 7) led.classList.add('on-green');
-            else if(i <= 11) led.classList.add('on-yellow');
-            else led.classList.add('on-red');
-        }
-        setTimeout(() => {
-            for(let i=1; i<=14; i++) {
-                const led = document.getElementById(`vu-led-${i}`);
-                if (led) led.className = 'vu-led';
-            }
-        }, 80);
     }
 
     function calculateSuccess(genre, bpm, voice) {
@@ -2356,7 +2260,9 @@
         }, 4000);
     }
 
-    // Bind UI actions to window object for module scope
+    // ==========================================
+    // 6. GLOBAL EXPORTS FOR HTML BINDINGS
+    // ==========================================
     window.cycleTheme = cycleTheme;
     window.toggleTooltip = toggleTooltip;
     window.showTooltip = showTooltip;
@@ -2373,9 +2279,12 @@
     window.postStory = postStory;
     window.acceptSponsor = acceptSponsor;
     window.quitPC = quitPC;
+    window.selectAvatar = selectAvatar;
+    window.attemptLogin = attemptLogin;
 
-    // Call UI Initialization
-    initUI();
+    // Boot
+    window.onload = initUI;
+    initUI(); // Fallback if already loaded
 
 </script>
 </body>
