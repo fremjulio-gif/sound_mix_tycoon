@@ -5,16 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sound Mix Tycoon - OS Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
     <style>
         /* =========================================
-           MINIMALIST RETRO GLASSMORPHISM
+           ADVANCED LIQUID GLASS & MESH GRADIENTS
            ========================================= */
         :root {
-            --os-bg: #09090b;
-            --glass-bg: rgba(15, 15, 20, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-glow: rgba(129, 140, 248, 0.15);
+            --glass-bg: rgba(20, 20, 25, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-glow: rgba(255, 255, 255, 0.05);
             --accent: #818cf8;
             --accent-hover: #6366f1;
             --text-main: #f8fafc;
@@ -22,27 +21,26 @@
             --retro-green: #34d399;
             --retro-red: #fb7185;
             --retro-orange: #fbbf24;
+            
+            /* Theme Colors (Overwritten by JS) */
+            --bg-color-1: #09090b;
+            --bg-color-2: #1e1b4b;
+            --bg-color-3: #0f172a;
+            --bg-color-4: #312e81;
         }
         
         body {
             margin: 0;
             overflow: hidden;
-            background-color: var(--os-bg);
             color: var(--text-main);
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             user-select: none;
             touch-action: none;
-            background-image: 
-                radial-gradient(circle at center, rgba(129, 140, 248, 0.05) 0%, transparent 70%),
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 100% 100%, 30px 30px, 30px 30px;
+            background-color: var(--bg-color-1);
         }
 
-        .font-retro {
-            font-family: 'Share Tech Mono', monospace;
-            letter-spacing: 0.05em;
-        }
+        .font-retro { font-family: 'Share Tech Mono', monospace; letter-spacing: 0.05em; }
+        .font-handwriting { font-family: 'Caveat', cursive; letter-spacing: 0.05em; }
 
         #game-container {
             position: relative;
@@ -52,14 +50,68 @@
             flex-direction: column;
         }
 
-        .glass-retro {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px) saturate(150%);
-            -webkit-backdrop-filter: blur(20px) saturate(150%);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.5);
+        /* --- DYNAMIC MESH BACKGROUND --- */
+        #dynamic-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            background: var(--bg-color-1);
+            transition: background 1s ease;
+        }
+        
+        .mesh-blob {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.6;
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out alternate;
+        }
+        
+        .blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: var(--bg-color-2); animation-delay: 0s; }
+        .blob-2 { bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: var(--bg-color-3); animation-delay: -5s; }
+        .blob-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: var(--bg-color-4); animation-delay: -10s; }
+
+        #grid-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
 
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(10%, 15%) scale(1.1); }
+            100% { transform: translate(-10%, -5%) scale(0.9); }
+        }
+
+        /* --- LIQUID GLASS EFFECT --- */
+        .liquid-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                0 16px 40px -8px rgba(0, 0, 0, 0.5),
+                inset 0 1px 1px rgba(255, 255, 255, 0.15),
+                inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+
+        .liquid-glass-heavy {
+            background: rgba(10, 10, 15, 0.65);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 
+                0 20px 50px -10px rgba(0, 0, 0, 0.6),
+                inset 0 1px 1px rgba(255, 255, 255, 0.3);
+        }
+
+        /* --- UI ELEMENTS --- */
         .os-window {
             position: absolute;
             width: 550px;
@@ -70,29 +122,29 @@
             flex-direction: column;
             overflow: hidden;
             z-index: 10;
-            border-radius: 8px;
-            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+            transition: border-color 0.3s ease;
             resize: both;
         }
         
         .os-window.active-window {
-            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6), 0 0 0 1px var(--accent);
             z-index: 40;
+            border-color: rgba(129, 140, 248, 0.6);
+            box-shadow: 
+                0 20px 50px -10px rgba(0, 0, 0, 0.7),
+                0 0 0 1px var(--accent),
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
         }
 
-        #app-daw {
-            width: 900px;
-            min-width: 650px;
-        }
+        #app-daw { width: 900px; min-width: 650px; }
 
         .window-header {
-            background: rgba(9, 9, 11, 0.8);
+            background: rgba(0, 0, 0, 0.4);
             padding: 12px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: grab;
-            border-bottom: 1px solid var(--glass-border);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             flex-shrink: 0;
         }
         .window-header:active { cursor: grabbing; }
@@ -102,8 +154,21 @@
             overflow-y: auto;
             flex: 1;
             min-height: 0; 
-            background: rgba(0,0,0,0.2);
+            background: rgba(0,0,0,0.1);
         }
+
+        /* Desktop Layout */
+        #desktop-content {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            padding: 100px 30px 80px 30px; /* Leave space for HUD and Taskbar */
+            pointer-events: none; /* Let clicks pass through to background */
+        }
+        
+        #desktop-content > div { pointer-events: auto; }
 
         /* Desktop Icons */
         .desktop-icon {
@@ -111,207 +176,207 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 16px;
+            margin-bottom: 20px;
             cursor: pointer;
             text-align: center;
             transition: transform 0.2s;
         }
         .desktop-icon:active { transform: scale(0.95); }
         .desktop-icon .icon-box {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
             display: flex;
             justify-content: center;
             align-items: center;
             margin-bottom: 8px;
-            border: 1px solid rgba(255,255,255,0.05);
-            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(10px);
             transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1);
         }
         .desktop-icon:hover .icon-box {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.1);
             border-color: var(--accent);
-            box-shadow: 0 0 20px var(--glass-glow);
+            box-shadow: 0 0 20px var(--glass-glow), inset 0 1px 1px rgba(255,255,255,0.2);
         }
 
-        /* =========================================
-           DAW PRO UI ELEMENTS (MINIMALIST)
-           ========================================= */
-        .daw-panel { background: rgba(9, 9, 11, 0.4); }
+        /* Desktop Widgets */
+        .desktop-widget {
+            margin-bottom: 24px;
+            transition: transform 0.3s ease;
+        }
+        .desktop-widget:hover { transform: translateY(-2px); }
+
+        /* Taskbar */
+        #taskbar-bottom {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 56px;
+            border-radius: 20px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 50;
+            width: 95%;
+            max-width: 1000px;
+        }
+
+        .taskbar-btn {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .taskbar-btn:hover, .taskbar-btn.active {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 0 0 15px rgba(255,255,255,0.05);
+        }
+
+        /* DAW Elements */
+        .daw-panel { background: rgba(0, 0, 0, 0.2); }
         
         .seq-pad {
-            width: 100%;
-            aspect-ratio: 1;
+            width: 100%; aspect-ratio: 1;
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 3px;
-            cursor: pointer;
-            transition: all 0.1s;
+            border-radius: 4px; cursor: pointer; transition: all 0.1s;
         }
         .seq-pad:active { transform: scale(0.9); }
         .seq-pad.active {
-            background: var(--accent);
-            border-color: var(--accent-hover);
-            box-shadow: 0 0 10px var(--glass-glow);
+            background: var(--accent); border-color: var(--accent-hover);
+            box-shadow: 0 0 12px var(--glass-glow), inset 0 0 5px rgba(255,255,255,0.4);
         }
 
         .tl-track {
-            height: 36px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            align-items: center;
-            position: relative;
+            height: 36px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; position: relative;
         }
         .tl-header {
-            width: 90px;
-            background: rgba(0,0,0,0.3);
-            height: 100%;
-            display: flex;
-            align-items: center;
-            padding-left: 12px;
-            font-size: 10px;
-            border-right: 1px solid rgba(255,255,255,0.05);
-            color: var(--text-muted);
-            flex-shrink: 0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            z-index: 20;
+            width: 90px; background: rgba(0,0,0,0.3); height: 100%;
+            display: flex; align-items: center; padding-left: 12px;
+            font-size: 10px; border-right: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-muted); flex-shrink: 0; text-transform: uppercase;
+            letter-spacing: 1px; z-index: 20;
         }
         .tl-clip {
-            position: absolute;
-            height: 20px;
-            border-radius: 2px;
-            top: 8px;
-            opacity: 0.9;
-            pointer-events: none; /* Ne bloque pas le clic timeline */
+            position: absolute; height: 20px; border-radius: 2px;
+            top: 8px; opacity: 0.9; pointer-events: none;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
         }
 
         .knob-container { display: flex; flex-direction: column; align-items: center; gap: 6px; }
         .knob {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            background: #18181b;
-            border: 1px solid #3f3f46;
-            position: relative;
-            transform: rotate(-135deg); /* Default start pos */
-            cursor: grab;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, #27272a, #18181b);
+            border: 1px solid #3f3f46; position: relative;
+            transform: rotate(-135deg); cursor: grab;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.1);
         }
         .knob:active { cursor: grabbing; }
         .knob::after {
             content: ''; position: absolute;
-            width: 2px; height: 12px; background: var(--accent);
-            top: 2px; left: 16px; border-radius: 2px;
+            width: 3px; height: 12px; background: var(--accent);
+            top: 3px; left: 15px; border-radius: 2px;
+            box-shadow: 0 0 5px var(--accent);
         }
 
         .vu-led {
             width: 100%; height: 4px; margin-bottom: 3px;
-            background: rgba(255,255,255,0.05); border-radius: 1px;
-            transition: background 0.05s;
+            background: rgba(255,255,255,0.05); border-radius: 1px; transition: background 0.05s;
         }
         .vu-led.on-green { background: var(--retro-green); box-shadow: 0 0 8px var(--retro-green); }
         .vu-led.on-yellow { background: var(--retro-orange); box-shadow: 0 0 8px var(--retro-orange); }
         .vu-led.on-red { background: var(--retro-red); box-shadow: 0 0 8px var(--retro-red); }
 
-        /* Minimalist Buttons */
         .btn-minimal {
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-            transition: all 0.2s;
+            background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;
+            font-weight: 600; transition: all 0.2s;
         }
         .btn-minimal:hover:not(:disabled) {
-            background: rgba(255,255,255,0.05);
-            border-color: var(--accent);
-            color: white;
+            background: rgba(255,255,255,0.05); border-color: var(--accent); color: white;
         }
         .btn-minimal.active {
-            background: var(--accent);
-            color: #fff;
-            border-color: var(--accent);
-            box-shadow: 0 0 15px var(--glass-glow);
+            background: var(--accent); color: #fff; border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(129, 140, 248, 0.4);
         }
         .btn-minimal:disabled {
-            border-color: #3f3f46;
-            color: #71717a;
-            cursor: not-allowed;
-            background: transparent;
-            box-shadow: none;
+            border-color: rgba(255,255,255,0.05); color: rgba(255,255,255,0.2); cursor: not-allowed;
+            background: transparent; box-shadow: none;
         }
 
-        /* Action Buttons specific */
         .btn-action {
-            background: transparent;
-            border: 1px solid var(--accent);
-            color: var(--accent);
+            background: rgba(129, 140, 248, 0.1); border: 1px solid var(--accent); color: var(--accent);
         }
         .btn-action:hover:not(:disabled) {
-            background: var(--accent);
-            color: #fff;
-            box-shadow: 0 0 15px var(--glass-glow);
+            background: var(--accent); color: #fff; box-shadow: 0 0 15px rgba(129, 140, 248, 0.4);
         }
 
-        /* Custom Scrollbar & Resize */
+        /* Scrollbars */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
         ::-webkit-resizer {
             background-color: transparent;
-            background-image: radial-gradient(rgba(255,255,255,0.2) 40%, transparent 40%);
-            background-size: 3px 3px;
-            background-position: bottom right;
+            background-image: radial-gradient(rgba(255,255,255,0.3) 40%, transparent 40%);
+            background-size: 4px 4px; background-position: bottom right;
         }
 
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
         .toast { animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
         .avatar-sel { 
-            border: 1px solid rgba(255,255,255,0.05); 
-            cursor: pointer; 
-            border-radius: 8px; 
-            overflow: hidden; 
-            background: rgba(255,255,255,0.02);
-            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.05); cursor: pointer; border-radius: 12px; 
+            overflow: hidden; background: rgba(0,0,0,0.3); transition: all 0.2s;
         }
         .avatar-sel.selected { 
-            border-color: var(--accent); 
-            background: rgba(129, 140, 248, 0.1);
-            box-shadow: 0 0 15px var(--glass-glow);
+            border-color: var(--accent); background: rgba(129, 140, 248, 0.15);
+            box-shadow: 0 0 20px rgba(129, 140, 248, 0.3), inset 0 1px 1px rgba(255,255,255,0.2);
         }
         .pixelated { image-rendering: pixelated; }
 
     </style>
 </head>
-<body>
+<body data-theme="neon">
 
 <div id="game-container">
+
+    <!-- DYNAMIC BACKGROUND -->
+    <div id="dynamic-bg">
+        <div class="mesh-blob blob-1"></div>
+        <div class="mesh-blob blob-2"></div>
+        <div class="mesh-blob blob-3"></div>
+        <div id="grid-overlay"></div>
+    </div>
     
     <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-[#09090b]">
-        <div class="glass-retro p-10 rounded-xl w-full max-w-lg flex flex-col items-center shadow-2xl border border-gray-800">
-            <h1 class="text-3xl font-retro font-bold mb-2 text-white tracking-widest text-center">SM_TYCOON</h1>
-            <p class="text-[var(--text-muted)] font-retro text-xs mb-10 tracking-widest uppercase">OS Initialization // v3.1</p>
+    <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/60 backdrop-blur-md">
+        <div class="liquid-glass-heavy p-10 rounded-2xl w-full max-w-lg flex flex-col items-center border border-white/10">
+            <h1 class="text-4xl font-retro font-bold mb-2 text-white tracking-widest text-center shadow-black drop-shadow-lg">SM_TYCOON</h1>
+            <p class="text-[var(--text-muted)] font-retro text-xs mb-10 tracking-widest uppercase">OS Initialization // v4.0</p>
             
             <div class="w-full mb-6">
                 <label class="block text-[10px] font-retro text-gray-400 mb-2 uppercase tracking-widest">Artist_ID</label>
-                <input type="text" id="login-username" class="w-full bg-black/50 border border-gray-800 rounded px-4 py-3 text-white font-retro text-sm focus:outline-none focus:border-[var(--accent)] transition-all" placeholder="Enter Alias...">
+                <input type="text" id="login-username" class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-white font-retro text-sm focus:outline-none focus:border-[var(--accent)] transition-all shadow-inner" placeholder="Enter Alias...">
             </div>
 
             <div class="w-full mb-10">
                 <label class="block text-[10px] font-retro text-gray-400 mb-2 uppercase tracking-widest">Select_Avatar</label>
-                <!-- Grille des avatars agrandis -->
                 <div class="grid grid-cols-4 gap-4" id="avatar-container">
                     <!-- Injected by JS -->
                 </div>
             </div>
 
-            <button id="btn-login" class="w-full btn-action py-3 rounded text-sm font-retro tracking-widest uppercase">
+            <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold">
                 Boot System
             </button>
             <p id="login-error" class="text-[var(--retro-red)] font-retro text-xs mt-4 hidden text-center">Error: Missing ID</p>
@@ -321,197 +386,245 @@
     <!-- MAIN OS INTERFACE -->
     <div id="os-screen" class="absolute inset-0 hidden flex-col">
         
-        <!-- HUD (Top Bar) - DYNAMIC ISLAND -->
-        <div id="hud" class="glass-retro h-[60px] fixed top-6 left-1/2 -translate-x-1/2 z-50 rounded-full flex items-center justify-between px-3 transition-all duration-500 w-[180px] hover:w-[750px] overflow-hidden group border border-[var(--glass-border)] shadow-2xl bg-[#09090b]/80 hover:bg-[#09090b]/95">
-            
-            <!-- Left : Avatar & Name -->
+        <!-- HUD - DYNAMIC ISLAND (TOP) -->
+        <div id="hud" class="liquid-glass-heavy h-[60px] fixed top-6 left-1/2 -translate-x-1/2 z-50 rounded-full flex items-center justify-between px-3 transition-all duration-500 w-[180px] hover:w-[750px] overflow-hidden group">
             <div class="flex items-center gap-3 shrink-0">
-                <div id="hud-avatar" class="w-[48px] h-[48px] rounded-full bg-black border border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shrink-0 shadow-[0_0_10px_var(--glass-glow)]"></div>
+                <div id="hud-avatar" class="w-[48px] h-[48px] rounded-full bg-black border border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shrink-0 shadow-[0_0_10px_rgba(129,140,248,0.3)]"></div>
                 <span id="hud-name" class="font-bold font-retro text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 whitespace-nowrap tracking-widest uppercase text-white w-0 group-hover:w-auto">Artiste</span>
             </div>
             
-            <!-- Middle : Stats (Revealed on hover) -->
             <div class="flex items-center gap-8 font-retro text-xs md:text-sm text-[var(--text-muted)] tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-500 whitespace-nowrap">
                 <div class="flex items-center gap-2" title="Argent">
-                    <span class="text-[var(--retro-green)]">$$$</span> <span id="hud-money" class="text-white">0</span>
+                    <span class="text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)]">$$$</span> <span id="hud-money" class="text-white">0</span>
                 </div>
                 <div class="flex items-center gap-2" title="Réputation">
-                    <span class="text-[var(--retro-orange)]">REP</span> <span id="hud-rep" class="text-white">0</span>
+                    <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)]">REP</span> <span id="hud-rep" class="text-white">0</span>
                 </div>
                 <div class="flex items-center gap-2" title="Followers">
-                    <span class="text-[var(--accent)]">FOL</span> <span id="hud-foll" class="text-white">0</span>
+                    <span class="text-[var(--accent)] drop-shadow-[0_0_5px_var(--accent)]">FOL</span> <span id="hud-foll" class="text-white">0</span>
                 </div>
-                <div class="text-gray-600">| <span id="hud-studio" class="text-gray-400">Chambre</span></div>
+                <div class="text-gray-600">| <span id="hud-studio" class="text-gray-300">Chambre</span></div>
             </div>
 
-            <!-- Right : Clock -->
             <div class="font-retro text-right flex flex-col justify-center items-end shrink-0 pr-3">
                 <div id="hud-day" class="text-white font-bold tracking-widest text-[10px]">DAY 1</div>
                 <div id="sys-time" class="text-[11px] text-[var(--accent)] mt-0.5 tracking-widest font-bold">12:00</div>
             </div>
         </div>
 
-        <!-- Desktop Area -->
-        <div id="desktop" class="flex-grow relative overflow-hidden pt-24">
-            
-            <div class="flex flex-col p-6 content-start gap-4">
-                <div class="desktop-icon" onclick="openApp('app-daw')">
-                    <div class="icon-box text-white"><svg class="w-7 h-7 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg></div>
-                    <span class="text-[10px] font-retro mt-1 text-gray-300 tracking-wider">AbleStudio</span>
+        <!-- DESKTOP CONTENT (Icons + Widgets) -->
+        <div id="desktop-content">
+            <!-- Left Side : Icons -->
+            <div class="flex flex-col gap-2">
+                <div class="desktop-icon group" onclick="openApp('app-daw')">
+                    <div class="icon-box"><svg class="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg></div>
+                    <span class="text-[10px] font-retro mt-1 text-gray-300 tracking-wider group-hover:text-white group-hover:drop-shadow-[0_0_5px_#fff]">AbleStudio</span>
                 </div>
-                <div class="desktop-icon" onclick="openApp('app-browser')">
-                    <div class="icon-box text-white"><svg class="w-7 h-7 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg></div>
-                    <span class="text-[10px] font-retro mt-1 text-gray-300 tracking-wider">Web_Nav</span>
+                <div class="desktop-icon group" onclick="openApp('app-browser')">
+                    <div class="icon-box"><svg class="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg></div>
+                    <span class="text-[10px] font-retro mt-1 text-gray-300 tracking-wider group-hover:text-white">Web_Nav</span>
                 </div>
-                <div class="desktop-icon" onclick="openApp('app-social')">
-                    <div class="icon-box text-white"><svg class="w-7 h-7 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg></div>
-                    <span class="text-[10px] font-retro mt-1 text-gray-300 tracking-wider">SoundNet</span>
+                <div class="desktop-icon group" onclick="openApp('app-social')">
+                    <div class="icon-box"><svg class="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg></div>
+                    <span class="text-[10px] font-retro mt-1 text-gray-300 tracking-wider group-hover:text-white">SoundNet</span>
                 </div>
-                <div class="desktop-icon" onclick="openApp('app-stats')">
-                    <div class="icon-box text-white"><svg class="w-7 h-7 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg></div>
-                    <span class="text-[10px] font-retro mt-1 text-gray-300 tracking-wider">Sys_Stats</span>
+                <div class="desktop-icon group" onclick="openApp('app-stats')">
+                    <div class="icon-box"><svg class="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg></div>
+                    <span class="text-[10px] font-retro mt-1 text-gray-300 tracking-wider group-hover:text-white">Sys_Stats</span>
                 </div>
             </div>
 
-            <!-- APP WINDOWS -->
-            
-            <!-- DAW PRO -->
-            <div id="app-daw" class="os-window glass-retro flex-col font-sans" style="display:none;">
-                <div class="window-header">
-                    <span class="font-retro text-xs text-gray-300 tracking-widest uppercase flex items-center gap-3">
-                        <span class="w-2 h-2 rounded-full bg-[var(--accent)]"></span> AbleStudio Pro 11
-                    </span>
-                    <button class="text-gray-500 hover:text-white transition-colors" onclick="closeApp('app-daw')"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <!-- Right Side : Desktop Widgets -->
+            <div class="flex flex-col gap-6 w-56 items-end">
+                <!-- Clock Widget -->
+                <div class="desktop-widget liquid-glass p-5 w-full flex flex-col items-center text-center">
+                    <div id="widget-clock-time" class="text-4xl font-retro font-bold text-white tracking-widest drop-shadow-md">12:00</div>
+                    <div id="widget-clock-date" class="text-[10px] font-retro text-[var(--accent)] mt-1 uppercase tracking-widest border-t border-white/10 pt-1 w-full">Virtual Day 1</div>
                 </div>
+
+                <!-- System Monitor Widget -->
+                <div class="desktop-widget liquid-glass p-4 w-full">
+                    <div class="flex justify-between items-end mb-2">
+                        <span class="text-[9px] font-retro uppercase text-[var(--text-muted)] tracking-widest">CPU Monitor</span>
+                        <span class="text-[9px] font-retro text-[var(--retro-green)]">LIVE</span>
+                    </div>
+                    <div class="w-full h-16 bg-black/40 rounded border border-white/5 overflow-hidden relative">
+                        <canvas id="sys-canvas" class="absolute inset-0 w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                <!-- Post-It Widget -->
+                <div class="desktop-widget liquid-glass !bg-yellow-500/10 !border-yellow-400/20 rotate-3 p-5 w-[110%] shadow-2xl backdrop-blur-xl">
+                    <h4 class="font-handwriting text-yellow-200/90 text-2xl mb-2 border-b border-yellow-500/30 pb-1">To-Do List :</h4>
+                    <ul class="font-handwriting text-yellow-100/80 text-lg space-y-1">
+                        <li class="line-through opacity-40">Setup OS</li>
+                        <li>Download Cracks</li>
+                        <li>Sign Brand Deal</li>
+                        <li class="text-yellow-300">Make a BANGER</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM TASKBAR -->
+        <div id="taskbar-bottom" class="liquid-glass-heavy">
+            <!-- Start Menu / OS Logo -->
+            <div class="flex gap-2 items-center border-r border-white/10 pr-4 mr-2">
+                <div class="taskbar-btn bg-white/5 hover:bg-white/10 !border-[var(--accent)] text-white" onclick="cycleTheme()" title="Change Theme">
+                    <svg class="w-6 h-6 drop-shadow-[0_0_8px_var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </div>
+            </div>
+
+            <!-- Open Apps Container -->
+            <div class="flex-grow flex gap-2 overflow-x-auto" id="taskbar-apps">
+                <!-- Injected dynamically -->
+            </div>
+
+            <!-- System Tray -->
+            <div class="flex gap-4 items-center border-l border-white/10 pl-4 ml-2 text-[var(--text-muted)] text-sm">
+                <span class="hover:text-white cursor-pointer transition-colors" title="Volume">🔊</span>
+                <span class="hover:text-white cursor-pointer transition-colors" title="Network">📶</span>
+                <span class="hover:text-white cursor-pointer transition-colors" title="Battery">🔋</span>
+            </div>
+        </div>
+
+        <!-- APP WINDOWS -->
+        
+        <!-- DAW PRO -->
+        <div id="app-daw" class="os-window liquid-glass flex-col font-sans" style="display:none;">
+            <div class="window-header">
+                <span class="font-retro text-xs text-gray-200 tracking-widest uppercase flex items-center gap-3">
+                    <span class="w-2.5 h-2.5 rounded-full bg-[var(--accent)] shadow-[0_0_8px_var(--accent)]"></span> AbleStudio Pro 11
+                </span>
+                <button class="text-gray-500 hover:text-white transition-colors p-1" onclick="closeApp('app-daw')">✕</button>
+            </div>
+            
+            <div class="window-content flex flex-col md:flex-row text-xs">
                 
-                <div class="window-content flex flex-col md:flex-row text-xs">
-                    
-                    <!-- Left Sidebar : Settings -->
-                    <div class="daw-panel w-full md:w-[240px] border-b md:border-b-0 md:border-r border-[var(--glass-border)] p-4 flex flex-col gap-5 flex-shrink-0">
-                        
-                        <!-- Genres Buttons -->
-                        <div>
-                            <label class="block text-[9px] text-[var(--text-muted)] mb-2 font-retro uppercase tracking-widest">Master Genre</label>
-                            <div class="grid grid-cols-2 gap-2" id="genre-buttons">
-                                <button class="btn-minimal btn-genre active px-2 py-2 text-[9px] rounded" data-val="trap" onclick="selectDawGenre('trap')">Trap / Rap</button>
-                                <button class="btn-minimal btn-genre px-2 py-2 text-[9px] rounded" data-val="lofi" onclick="selectDawGenre('lofi')">Lo-Fi Beats</button>
-                                <button class="btn-minimal btn-genre px-2 py-2 text-[9px] rounded" data-val="pop" onclick="selectDawGenre('pop')">Electro Pop</button>
-                                <button class="btn-minimal btn-genre px-2 py-2 text-[9px] rounded" data-val="house" onclick="selectDawGenre('house')">Deep House</button>
-                            </div>
-                        </div>
-
-                        <!-- Vocal Buttons -->
-                        <div>
-                            <label class="block text-[9px] text-[var(--text-muted)] mb-2 font-retro uppercase tracking-widest">Vocal Lead</label>
-                            <div class="flex flex-col gap-2" id="voice-buttons">
-                                <button class="btn-minimal btn-voice active px-2 py-1.5 text-[9px] rounded" data-val="m" onclick="selectDawVoice('m')">Male Vocals</button>
-                                <button class="btn-minimal btn-voice px-2 py-1.5 text-[9px] rounded" data-val="f" onclick="selectDawVoice('f')">Female Vocals</button>
-                                <button class="btn-minimal btn-voice px-2 py-1.5 text-[9px] rounded" data-val="instru" onclick="selectDawVoice('instru')">Instrumental Only</button>
-                            </div>
-                        </div>
-
-                        <div class="bg-black/30 p-3 border border-gray-800/50 rounded text-center">
-                            <label class="block text-[9px] text-[var(--text-muted)] mb-2 font-retro uppercase tracking-widest">Tempo</label>
-                            <div id="bpm-val" class="text-xl text-white font-retro tracking-widest mb-2">120 <span class="text-[10px] text-gray-500">BPM</span></div>
-                            <input type="range" id="daw-bpm" min="60" max="200" value="120" class="w-full accent-[var(--accent)]" oninput="document.getElementById('bpm-val').innerHTML = this.value + ' <span class=\'text-[10px] text-gray-500\'>BPM</span>'">
-                        </div>
-
-                        <div class="mt-auto pt-2 relative">
-                            <button id="btn-export" class="w-full btn-action py-3 text-[10px] rounded" onclick="exportTrack()">
-                                Render Track
-                            </button>
-                            <div id="export-progress-container" class="hidden absolute left-0 bottom-0 w-full h-1 bg-gray-900 overflow-hidden rounded-b">
-                                <div id="export-progress" class="h-full bg-[var(--accent)] w-0 transition-all duration-100 shadow-[0_0_8px_var(--accent)]"></div>
-                            </div>
+                <!-- Left Sidebar : Settings -->
+                <div class="daw-panel w-full md:w-[240px] border-b md:border-b-0 md:border-r border-[var(--glass-border)] p-5 flex flex-col gap-6 flex-shrink-0">
+                    <!-- Genres Buttons -->
+                    <div>
+                        <label class="block text-[9px] text-[var(--text-muted)] mb-3 font-retro uppercase tracking-widest border-b border-white/5 pb-1">Master Genre</label>
+                        <div class="grid grid-cols-2 gap-2" id="genre-buttons">
+                            <button class="btn-minimal btn-genre active px-2 py-2.5 text-[9px] rounded-md" data-val="trap" onclick="selectDawGenre('trap')">Trap / Rap</button>
+                            <button class="btn-minimal btn-genre px-2 py-2.5 text-[9px] rounded-md" data-val="lofi" onclick="selectDawGenre('lofi')">Lo-Fi Beats</button>
+                            <button class="btn-minimal btn-genre px-2 py-2.5 text-[9px] rounded-md" data-val="pop" onclick="selectDawGenre('pop')">Electro Pop</button>
+                            <button class="btn-minimal btn-genre px-2 py-2.5 text-[9px] rounded-md" data-val="house" onclick="selectDawGenre('house')">Deep House</button>
                         </div>
                     </div>
 
-                    <!-- Right Main Area -->
-                    <div class="w-full flex-1 flex flex-col min-w-0">
+                    <!-- Vocal Buttons -->
+                    <div>
+                        <label class="block text-[9px] text-[var(--text-muted)] mb-3 font-retro uppercase tracking-widest border-b border-white/5 pb-1">Vocal Lead</label>
+                        <div class="flex flex-col gap-2" id="voice-buttons">
+                            <button class="btn-minimal btn-voice active px-2 py-2 text-[9px] rounded-md" data-val="m" onclick="selectDawVoice('m')">Male Vocals</button>
+                            <button class="btn-minimal btn-voice px-2 py-2 text-[9px] rounded-md" data-val="f" onclick="selectDawVoice('f')">Female Vocals</button>
+                            <button class="btn-minimal btn-voice px-2 py-2 text-[9px] rounded-md" data-val="instru" onclick="selectDawVoice('instru')">Instrumental Only</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-black/40 p-4 border border-white/5 rounded-lg text-center shadow-inner">
+                        <label class="block text-[9px] text-[var(--text-muted)] mb-2 font-retro uppercase tracking-widest">Tempo</label>
+                        <div id="bpm-val" class="text-2xl text-white font-retro tracking-widest mb-3 drop-shadow-md">120 <span class="text-[10px] text-gray-500">BPM</span></div>
+                        <input type="range" id="daw-bpm" min="60" max="200" value="120" class="w-full accent-[var(--accent)] cursor-pointer" oninput="document.getElementById('bpm-val').innerHTML = this.value + ' <span class=\'text-[10px] text-gray-500\'>BPM</span>'">
+                    </div>
+
+                    <div class="mt-auto pt-2 relative">
+                        <button id="btn-export" class="w-full btn-action py-3.5 text-[10px] rounded-lg tracking-widest font-bold" onclick="exportTrack()">
+                            Render Track
+                        </button>
+                        <div id="export-progress-container" class="hidden absolute left-0 bottom-0 w-full h-1 bg-gray-900 overflow-hidden rounded-b-lg">
+                            <div id="export-progress" class="h-full bg-[var(--accent)] w-0 transition-all duration-100 shadow-[0_0_10px_var(--accent)]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Main Area -->
+                <div class="w-full flex-1 flex flex-col min-w-0">
+                    
+                    <!-- Timeline Interactive -->
+                    <div class="h-44 border-b border-[var(--glass-border)] flex flex-col overflow-x-auto overflow-y-hidden relative bg-black/30 cursor-crosshair shadow-inner" id="timeline-container">
+                        <div class="h-6 bg-black/60 border-b border-white/10 flex items-center font-retro text-[9px] text-gray-500 px-3 tracking-widest min-w-[700px] select-none shadow-sm">
+                            1...|...5...|...9...|...13...|...17...|...21...|...25...|...29...|...33
+                        </div>
                         
-                        <!-- Timeline Interactive -->
-                        <div class="h-40 border-b border-[var(--glass-border)] flex flex-col overflow-x-auto overflow-y-hidden relative bg-black/20 cursor-crosshair" id="timeline-container">
-                            <div class="h-5 bg-black/40 border-b border-gray-800/50 flex items-center font-retro text-[8px] text-gray-600 px-3 tracking-widest min-w-[700px] select-none">
-                                1...|...5...|...9...|...13...|...17...|...21...|...25...|...29...|...33
-                            </div>
-                            
-                            <div class="tl-track min-w-[700px]">
-                                <div class="tl-header">Kick/Bass</div>
-                                <div class="tl-clip bg-rose-500/80" style="left: 90px; width: 140px;"></div>
-                                <div class="tl-clip bg-rose-500/80" style="left: 280px; width: 80px;"></div>
-                            </div>
-                            <div class="tl-track min-w-[700px]">
-                                <div class="tl-header">Snare/Clap</div>
-                                <div class="tl-clip bg-sky-500/80" style="left: 120px; width: 40px;"></div>
-                                <div class="tl-clip bg-sky-500/80" style="left: 310px; width: 40px;"></div>
-                            </div>
-                            <div class="tl-track min-w-[700px]">
-                                <div class="tl-header">Melody</div>
-                                <div class="tl-clip bg-indigo-500/80" style="left: 90px; width: 250px;"></div>
-                            </div>
-                            <div class="tl-track min-w-[700px]">
-                                <div class="tl-header">Vocals</div>
-                                <div class="tl-clip bg-emerald-500/80" style="left: 170px; width: 150px;"></div>
-                            </div>
-                            
-                            <!-- Playhead Animée via JS -->
-                            <div id="playhead" class="absolute top-0 bottom-0 w-px bg-white/60 left-[90px] shadow-[0_0_8px_#fff] z-10 pointer-events-none">
-                                <div class="w-2 h-2 bg-white rounded-full -ml-[3.5px] -mt-[2px]"></div>
+                        <div class="tl-track min-w-[700px]">
+                            <div class="tl-header">Kick/Bass</div>
+                            <div class="tl-clip bg-rose-500/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]" style="left: 90px; width: 140px;"></div>
+                            <div class="tl-clip bg-rose-500/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]" style="left: 280px; width: 80px;"></div>
+                        </div>
+                        <div class="tl-track min-w-[700px]">
+                            <div class="tl-header">Snare/Clap</div>
+                            <div class="tl-clip bg-sky-500/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]" style="left: 120px; width: 40px;"></div>
+                            <div class="tl-clip bg-sky-500/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]" style="left: 310px; width: 40px;"></div>
+                        </div>
+                        <div class="tl-track min-w-[700px]">
+                            <div class="tl-header">Melody</div>
+                            <div class="tl-clip bg-indigo-500/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]" style="left: 90px; width: 250px;"></div>
+                        </div>
+                        <div class="tl-track min-w-[700px]">
+                            <div class="tl-header">Vocals</div>
+                            <div class="tl-clip bg-emerald-500/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]" style="left: 170px; width: 150px;"></div>
+                        </div>
+                        
+                        <!-- Playhead -->
+                        <div id="playhead" class="absolute top-0 bottom-0 w-px bg-white/80 left-[90px] shadow-[0_0_8px_#fff] z-10 pointer-events-none">
+                            <div class="w-3 h-3 bg-white rounded-sm -ml-[1px] -mt-[0px]"></div>
+                        </div>
+                    </div>
+
+                    <!-- Lower section: Sequencer + Mixer -->
+                    <div class="flex flex-1 min-h-[200px] bg-black/10">
+                        
+                        <!-- Sequencer Grid -->
+                        <div class="flex-1 p-6 flex flex-col justify-center border-r border-[var(--glass-border)]">
+                            <label class="block text-[9px] text-[var(--text-muted)] mb-4 font-retro uppercase tracking-widest flex justify-between">
+                                <span>Drum Rack (Live Input)</span>
+                                <span class="text-gray-500">Click to preview</span>
+                            </label>
+                            <div class="grid grid-cols-8 gap-2.5 max-w-[500px]" id="sequencer-grid">
+                                <!-- Generated by JS -->
                             </div>
                         </div>
 
-                        <!-- Lower section: Sequencer + Mixer -->
-                        <div class="flex flex-1 min-h-[180px] bg-black/10">
-                            
-                            <!-- Sequencer Grid -->
-                            <div class="flex-1 p-5 flex flex-col justify-center border-r border-[var(--glass-border)]">
-                                <label class="block text-[9px] text-[var(--text-muted)] mb-3 font-retro uppercase tracking-widest flex justify-between">
-                                    <span>Drum Rack (Live Input)</span>
-                                    <span class="text-gray-600">Click to preview</span>
-                                </label>
-                                <div class="grid grid-cols-8 gap-2 max-w-[450px]" id="sequencer-grid">
-                                    <!-- Generated by JS -->
+                        <!-- Master Mixer & Knobs (Interactive) -->
+                        <div class="w-[140px] p-5 flex justify-between items-center bg-black/20 flex-shrink-0 shadow-inner">
+                            <div class="flex flex-col gap-6 justify-center w-full items-center">
+                                <div class="knob-container">
+                                    <div class="knob" id="knob-1" data-rot="-45" style="transform: rotate(-45deg)"></div>
+                                    <span class="text-[9px] text-[var(--text-muted)] font-retro mt-1 tracking-widest">LOW</span>
+                                </div>
+                                <div class="knob-container">
+                                    <div class="knob" id="knob-2" data-rot="30" style="transform: rotate(30deg)"></div>
+                                    <span class="text-[9px] text-[var(--text-muted)] font-retro mt-1 tracking-widest">MID</span>
+                                </div>
+                                <div class="knob-container">
+                                    <div class="knob" id="knob-3" data-rot="90" style="transform: rotate(90deg)"></div>
+                                    <span class="text-[9px] text-[var(--text-muted)] font-retro mt-1 tracking-widest">HIGH</span>
                                 </div>
                             </div>
 
-                            <!-- Master Mixer & Knobs (Interactive) -->
-                            <div class="w-[120px] p-4 flex justify-between items-center bg-black/20 flex-shrink-0">
-                                <div class="flex flex-col gap-6 justify-center w-full items-center">
-                                    <div class="knob-container">
-                                        <div class="knob" id="knob-1" data-rot="-45" style="transform: rotate(-45deg)"></div>
-                                        <span class="text-[8px] text-[var(--text-muted)] font-retro mt-1">LOW</span>
-                                    </div>
-                                    <div class="knob-container">
-                                        <div class="knob" id="knob-2" data-rot="30" style="transform: rotate(30deg)"></div>
-                                        <span class="text-[8px] text-[var(--text-muted)] font-retro mt-1">MID</span>
-                                    </div>
-                                    <div class="knob-container">
-                                        <div class="knob" id="knob-3" data-rot="90" style="transform: rotate(90deg)"></div>
-                                        <span class="text-[8px] text-[var(--text-muted)] font-retro mt-1">HIGH</span>
-                                    </div>
-                                </div>
-
-                                <div class="w-3 h-[90%] bg-black/50 border border-gray-800 rounded-full p-0.5 flex flex-col-reverse justify-between ml-2" id="vu-meter-container">
-                                    <!-- Generated by JS -->
-                                </div>
+                            <div class="w-4 h-[95%] bg-black/60 border border-white/5 rounded-full p-0.5 flex flex-col-reverse justify-between ml-3 shadow-inner" id="vu-meter-container">
+                                <!-- Generated by JS -->
                             </div>
-
                         </div>
+
                     </div>
                 </div>
             </div>
 
             <!-- Browser / Store -->
-            <div id="app-browser" class="os-window glass-retro flex-col" style="display:none;">
+            <div id="app-browser" class="os-window liquid-glass flex-col" style="display:none;">
                 <div class="window-header">
-                    <span class="font-retro text-xs text-gray-300 tracking-widest uppercase flex items-center gap-3">
-                        <span class="w-2 h-2 rounded-full bg-blue-400"></span> Web_Nav App
+                    <span class="font-retro text-xs text-gray-200 tracking-widest uppercase flex items-center gap-3">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_#60a5fa]"></span> Web_Nav App
                     </span>
-                    <button class="text-gray-500 hover:text-white transition-colors" onclick="closeApp('app-browser')"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    <button class="text-gray-500 hover:text-white transition-colors p-1" onclick="closeApp('app-browser')">✕</button>
                 </div>
-                <div class="flex border-b border-[var(--glass-border)] text-[10px] font-retro uppercase tracking-widest flex-shrink-0">
-                    <button class="flex-1 py-3 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
-                    <button class="flex-1 py-3 transition-colors" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
+                <div class="flex border-b border-[var(--glass-border)] text-[10px] font-retro uppercase tracking-widest flex-shrink-0 bg-black/40">
+                    <button class="flex-1 py-3.5 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
+                    <button class="flex-1 py-3.5 transition-colors" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
                 </div>
                 <div class="window-content" id="browser-content">
                     <!-- Content -->
@@ -519,24 +632,24 @@
             </div>
 
             <!-- Social Network -->
-            <div id="app-social" class="os-window glass-retro flex-col" style="display:none;">
+            <div id="app-social" class="os-window liquid-glass flex-col" style="display:none;">
                 <div class="window-header">
-                    <span class="font-retro text-xs text-gray-300 tracking-widest uppercase flex items-center gap-3">
-                        <span class="w-2 h-2 rounded-full bg-pink-400"></span> SoundNet App
+                    <span class="font-retro text-xs text-gray-200 tracking-widest uppercase flex items-center gap-3">
+                        <span class="w-2.5 h-2.5 rounded-full bg-pink-400 shadow-[0_0_8px_#f472b6]"></span> SoundNet App
                     </span>
-                    <button class="text-gray-500 hover:text-white transition-colors" onclick="closeApp('app-social')"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    <button class="text-gray-500 hover:text-white transition-colors p-1" onclick="closeApp('app-social')">✕</button>
                 </div>
                 <div class="window-content p-6">
-                    <div class="border border-[var(--glass-border)] bg-black/20 p-5 rounded-lg text-center mb-6">
+                    <div class="border border-[var(--glass-border)] bg-black/30 p-6 rounded-xl text-center mb-6 shadow-inner">
                         <p class="text-xs text-[var(--text-muted)] mb-5">Engage your fanbase. Gain passive followers.</p>
-                        <button id="btn-story" class="btn-action px-6 py-2.5 text-[10px] rounded" onclick="postStory()">
+                        <button id="btn-story" class="btn-action px-8 py-3 text-[10px] rounded-lg tracking-widest font-bold" onclick="postStory()">
                             Post Daily Story
                         </button>
-                        <p id="story-status" class="text-[9px] text-[var(--retro-green)] mt-4 font-retro tracking-widest">STATUS: READY</p>
+                        <p id="story-status" class="text-[10px] text-[var(--retro-green)] mt-4 font-retro tracking-widest">STATUS: READY</p>
                     </div>
 
                     <div>
-                        <h4 class="text-[10px] text-[var(--text-muted)] mb-4 uppercase tracking-widest font-retro border-b border-gray-800/50 pb-2">Brand Deals (Sellout)</h4>
+                        <h4 class="text-[10px] text-[var(--text-muted)] mb-4 uppercase tracking-widest font-retro border-b border-white/5 pb-2">Brand Deals (Sellout)</h4>
                         <div id="sponsor-list" class="space-y-3">
                             <!-- JS Injected -->
                         </div>
@@ -545,48 +658,106 @@
             </div>
 
             <!-- Stats -->
-            <div id="app-stats" class="os-window glass-retro flex-col" style="display:none;">
+            <div id="app-stats" class="os-window liquid-glass flex-col" style="display:none;">
                 <div class="window-header">
-                    <span class="font-retro text-xs text-gray-300 tracking-widest uppercase flex items-center gap-3">
-                        <span class="w-2 h-2 rounded-full bg-[var(--retro-green)]"></span> Sys_Stats
+                    <span class="font-retro text-xs text-gray-200 tracking-widest uppercase flex items-center gap-3">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[var(--retro-green)] shadow-[0_0_8px_var(--retro-green)]"></span> Sys_Stats
                     </span>
-                    <button class="text-gray-500 hover:text-white transition-colors" onclick="closeApp('app-stats')"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    <button class="text-gray-500 hover:text-white transition-colors p-1" onclick="closeApp('app-stats')">✕</button>
                 </div>
-                <div class="window-content font-retro text-xs text-[var(--retro-green)] bg-[#050505] p-6 leading-loose tracking-wide">
+                <div class="window-content font-retro text-xs text-[var(--retro-green)] bg-black/60 p-8 leading-loose tracking-wide shadow-inner">
                     <div id="stats-content">Loading metrics...</div>
                 </div>
             </div>
 
-        </div>
-
         <!-- Toasts Zone -->
-        <div id="toast-zone" class="absolute bottom-6 right-6 flex flex-col gap-3 z-50 pointer-events-none"></div>
+        <div id="toast-zone" class="absolute bottom-24 right-6 flex flex-col gap-3 z-50 pointer-events-none"></div>
 
     </div>
 
     <!-- BSOD Overlay -->
-    <div id="bsod" class="absolute inset-0 z-[100] bg-[#0000AA] text-white p-10 flex-col hidden font-retro">
-        <h1 class="text-3xl font-bold bg-white text-[#0000AA] inline-block px-3 mb-6 mt-10">CRITICAL_SYSTEM_ERROR</h1>
-        <p class="mb-4 text-base tracking-wide">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
-        <p class="mb-10 text-sm text-gray-300">Unlicensed software execution caused a memory leak. Restoring system state...</p>
+    <div id="bsod" class="absolute inset-0 z-[100] bg-[#0000AA] text-white p-12 flex-col hidden font-retro">
+        <h1 class="text-4xl font-bold bg-white text-[#0000AA] inline-block px-4 py-1 mb-8 mt-10">CRITICAL_SYSTEM_ERROR</h1>
+        <p class="mb-5 text-lg tracking-wider">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
+        <p class="mb-12 text-base text-gray-300">Unlicensed software execution caused a memory leak. Restoring system state...</p>
         
-        <div class="w-full max-w-xl border border-white/50 p-0.5">
-            <div id="bsod-progress" class="bg-white h-4 w-0 transition-all"></div>
+        <div class="w-full max-w-2xl border border-white/50 p-1">
+            <div id="bsod-progress" class="bg-white h-5 w-0 transition-all"></div>
         </div>
-        <p class="mt-8 text-xs glitch text-gray-400">Do not turn off your workstation.</p>
+        <p class="mt-10 text-sm glitch text-gray-400">Do not turn off your workstation.</p>
     </div>
 
 </div>
 
 <script>
     /**
-     * SOUND MIX TYCOON V3.1 - CORE LOGIC
-     * Minimalist UI, Dynamic Island, Cracks & DAW Progressions, Interactive DAW.
+     * SOUND MIX TYCOON V4.0 - CORE LOGIC
+     * Mesh Gradient, Advanced Liquid Glass, Enhanced DAW, Desktop Widgets & Taskbar
      */
 
-    // --- Audio System Sécurisé ---
-    let audioCtx = null;
+    // --- Themes ---
+    const themes = [
+        { name: 'neon', vars: ['#09090b', '#1e1b4b', '#0f172a', '#312e81'] },
+        { name: 'synth', vars: ['#1a0b2e', '#ff007f', '#7928ca', '#00d4ff'] },
+        { name: 'matrix', vars: ['#020617', '#064e3b', '#022c22', '#047857'] },
+        { name: 'blood', vars: ['#170000', '#7f1d1d', '#4c0519', '#9f1239'] }
+    ];
+    let currentThemeIdx = 0;
+
+    function cycleTheme() {
+        currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+        const root = document.documentElement;
+        const t = themes[currentThemeIdx];
+        root.style.setProperty('--bg-color-1', t.vars[0]);
+        root.style.setProperty('--bg-color-2', t.vars[1]);
+        root.style.setProperty('--bg-color-3', t.vars[2]);
+        root.style.setProperty('--bg-color-4', t.vars[3]);
+        playBleep();
+    }
+
+    // --- System Monitor Graph (Canvas) ---
+    const sysCanvas = document.getElementById('sys-canvas');
+    const sysCtx = sysCanvas ? sysCanvas.getContext('2d') : null;
+    let cpuData = Array(40).fill(50);
     
+    function drawSysGraph() {
+        if(!sysCtx || !sysCanvas) return;
+        // Handle resize inherently
+        sysCanvas.width = sysCanvas.parentElement.clientWidth;
+        sysCanvas.height = sysCanvas.parentElement.clientHeight;
+        
+        let last = cpuData[cpuData.length - 1];
+        let next = last + (Math.random() * 20 - 10);
+        if(state.isExporting) next = 90 + Math.random() * 10; // Spike during export
+        if(next > 100) next = 100;
+        if(next < 5) next = 5;
+        
+        cpuData.shift();
+        cpuData.push(next);
+
+        sysCtx.clearRect(0, 0, sysCanvas.width, sysCanvas.height);
+        sysCtx.beginPath();
+        sysCtx.moveTo(0, sysCanvas.height - (cpuData[0]/100 * sysCanvas.height));
+        
+        const step = sysCanvas.width / (cpuData.length - 1);
+        for(let i=1; i<cpuData.length; i++) {
+            sysCtx.lineTo(i * step, sysCanvas.height - (cpuData[i]/100 * sysCanvas.height));
+        }
+        
+        sysCtx.strokeStyle = 'rgba(52, 211, 153, 0.8)';
+        sysCtx.lineWidth = 1.5;
+        sysCtx.stroke();
+
+        sysCtx.lineTo(sysCanvas.width, sysCanvas.height);
+        sysCtx.lineTo(0, sysCanvas.height);
+        sysCtx.fillStyle = 'rgba(52, 211, 153, 0.1)';
+        sysCtx.fill();
+
+        setTimeout(() => requestAnimationFrame(drawSysGraph), 200); // 5 FPS graph
+    }
+
+    // --- Audio System ---
+    let audioCtx = null;
     function initAudio() {
         if (!audioCtx) {
             try {
@@ -681,23 +852,23 @@
 
     function getTotalMins() { return (state.day * 1440) + state.timeMins; }
 
-    // --- Cooldown Logic ---
+    // --- Cooldown Paliers ---
     function getVpnCooldown() {
         const dl = state.downloadedCracks.length;
-        if(dl === 0) return 3 * 60;   // 3h
-        if(dl === 1) return 6 * 60;   // 6h
-        if(dl === 2) return 10 * 60;  // 10h
-        if(dl === 3) return 12 * 60;  // 12h
-        return 24 * 60;               // 24h
+        if(dl === 0) return 3 * 60;   
+        if(dl === 1) return 6 * 60;   
+        if(dl === 2) return 10 * 60;  
+        if(dl === 3) return 12 * 60;  
+        return 24 * 60;               
     }
 
     function getDawCooldown() {
         const t = state.stats.tracks;
-        if(t <= 2) return 30;         // 30m
-        if(t <= 5) return 60;         // 1h
-        if(t <= 10) return 120;       // 2h
-        if(t <= 20) return 240;       // 4h
-        return 360;                   // 6h
+        if(t <= 2) return 30;         
+        if(t <= 5) return 60;         
+        if(t <= 10) return 120;       
+        if(t <= 20) return 240;       
+        return 360;                   
     }
 
     function formatTimeLeft(mins) {
@@ -709,12 +880,12 @@
 
     // --- Initialization ---
     function initUI() {
-        // Avatars (1.5x larger, w-16 h-16 images in login)
+        // Avatars 
         const cont = document.getElementById('avatar-container');
         cont.innerHTML = avatars.map((a, i) => `
-            <div class="avatar-sel flex flex-col items-center justify-center p-3 ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
-                <img src="${a.img}" alt="${a.id}" class="w-16 h-16 pixelated object-contain mb-2" onerror="this.style.border='1px solid red'" />
-                <span class="text-[9px] font-retro text-[var(--text-muted)] uppercase">${a.id}</span>
+            <div class="avatar-sel flex flex-col items-center justify-center p-4 ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
+                <img src="${a.img}" alt="${a.id}" class="w-20 h-20 pixelated object-contain mb-3" onerror="this.style.border='1px solid red'" />
+                <span class="text-[10px] font-retro text-[var(--text-muted)] uppercase">${a.id}</span>
             </div>
         `).join('');
 
@@ -732,7 +903,7 @@
         }
         vuMeter.innerHTML = ledsHTML;
 
-        // Interactive Windows
+        // Interactive Windows Setup
         document.querySelectorAll('.os-window').forEach(win => {
             const header = win.querySelector('.window-header');
             let isDragging = false, startX, startY, initX, initY;
@@ -757,7 +928,7 @@
                 const dy = clientY - startY;
                 let newX = initX + dx;
                 let newY = initY + dy;
-                if (newY < 80) newY = 80; // Protection HUD (Dynamic Island is thick)
+                if (newY < 100) newY = 100; // Protection HUD
                 win.style.left = `${newX}px`;
                 win.style.top = `${newY}px`;
             };
@@ -772,16 +943,16 @@
             document.addEventListener('touchend', stopDrag);
         });
 
-        // Interactive Studio Elements (Knobs & Timeline)
         initInteractiveStudio();
+        drawSysGraph(); // Start system monitor
 
-        // Login binds
         document.getElementById('btn-login').addEventListener('click', attemptLogin);
         document.getElementById('login-username').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') attemptLogin();
         });
         
         switchBrowserTab('crackz');
+        updateTaskbar();
     }
 
     function selectAvatar(idx) {
@@ -796,17 +967,17 @@
         document.querySelectorAll('.knob').forEach(knob => {
             let isDragging = false;
             let startY = 0;
-            let currentRot = parseFloat(knob.dataset.rot || 0);
+            let currentRot = parseFloat(knob.dataset.rot || -135);
 
             knob.addEventListener('mousedown', (e) => {
                 isDragging = true;
                 startY = e.clientY;
-                currentRot = parseFloat(knob.dataset.rot || 0);
+                currentRot = parseFloat(knob.dataset.rot || -135);
             });
             document.addEventListener('mousemove', (e) => {
                 if(!isDragging) return;
                 const dy = startY - e.clientY; // Up = positive
-                let newRot = currentRot + dy * 2;
+                let newRot = currentRot + dy * 2.5;
                 if(newRot < -135) newRot = -135;
                 if(newRot > 135) newRot = 135;
                 knob.style.transform = `rotate(${newRot}deg)`;
@@ -822,7 +993,7 @@
             if (state.isExporting) return;
             const rect = tlContainer.getBoundingClientRect();
             let x = e.clientX - rect.left + tlContainer.scrollLeft;
-            if(x < 90) x = 90; // offset of track headers
+            if(x < 90) x = 90; 
             playhead.style.left = `${x}px`;
             playTone(300, 'sine', 0.05, 0.05); 
         });
@@ -833,9 +1004,11 @@
         currentDawGenre = val;
         document.querySelectorAll('.btn-genre').forEach(b => {
             if(b.dataset.val === val) {
-                b.classList.add('active');
+                b.classList.remove('btn-minimal');
+                b.classList.add('btn-action', 'text-white', 'shadow-[0_0_10px_var(--glass-glow)]');
             } else {
-                b.classList.remove('active');
+                b.classList.add('btn-minimal');
+                b.classList.remove('btn-action', 'text-white', 'shadow-[0_0_10px_var(--glass-glow)]');
             }
         });
         playBleep();
@@ -845,9 +1018,11 @@
         currentDawVoice = val;
         document.querySelectorAll('.btn-voice').forEach(b => {
             if(b.dataset.val === val) {
-                b.classList.add('active');
+                b.classList.remove('btn-minimal');
+                b.classList.add('btn-action', 'text-white', 'shadow-[0_0_10px_var(--glass-glow)]');
             } else {
-                b.classList.remove('active');
+                b.classList.add('btn-minimal');
+                b.classList.remove('btn-action', 'text-white', 'shadow-[0_0_10px_var(--glass-glow)]');
             }
         });
         playBleep();
@@ -891,6 +1066,10 @@
         document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="w-full h-full pixelated object-cover" />`;
         document.getElementById('hud-name').innerText = state.username;
         
+        // Initial init for UI highlights
+        selectDawGenre('trap');
+        selectDawVoice('m');
+        
         playSuccess();
         updateHUD();
         refreshStats();
@@ -924,6 +1103,8 @@
         const h = Math.floor(state.timeMins / 60).toString().padStart(2, '0');
         const m = (state.timeMins % 60).toString().padStart(2, '0');
         document.getElementById('sys-time').innerText = `${h}:${m}`;
+        document.getElementById('widget-clock-time').innerText = `${h}:${m}`;
+        document.getElementById('widget-clock-date').innerText = `Virtual Day ${state.day}`;
     }
 
     function updateCooldownUIs() {
@@ -950,7 +1131,6 @@
             if(wasCooling && !isCooling) renderStore('crackz');
             if(isCooling && !wasCooling) renderStore('crackz');
             
-            // Live update of text if currently cooling
             if(isCooling) {
                 const el = document.getElementById('crackz-cd-text');
                 if(el) {
@@ -980,7 +1160,7 @@
         return Math.floor(num).toString();
     }
 
-    // --- Window Management ---
+    // --- Window & Taskbar Management ---
     let zIndexCounter = 50;
     let windowOffsetXY = 0;
     
@@ -990,16 +1170,18 @@
             win.style.display = 'flex';
             if (!win.dataset.posInit) {
                 const w = win.offsetWidth || parseInt(window.getComputedStyle(win).width, 10) || 500;
-                const centerX = Math.max(10, (window.innerWidth / 2) - (w / 2));
-                win.style.left = `${centerX + windowOffsetXY}px`;
-                win.style.top = `${100 + windowOffsetXY}px`;
+                // Place it more on the left to avoid widgets initially
+                const startX = Math.max(20, (window.innerWidth / 2) - (w / 2) - 100);
+                win.style.left = `${startX + windowOffsetXY}px`;
+                win.style.top = `${120 + windowOffsetXY}px`;
                 win.dataset.posInit = 'true';
                 
-                windowOffsetXY += 35;
-                if (windowOffsetXY > 150) windowOffsetXY = 0;
+                windowOffsetXY += 40;
+                if (windowOffsetXY > 200) windowOffsetXY = 0;
             }
         }
         bringToFront(id);
+        updateTaskbar();
         playBleep();
         if(id === 'app-stats') refreshStats();
         if(id === 'app-social') refreshSocial();
@@ -1007,6 +1189,7 @@
 
     function closeApp(id) {
         document.getElementById(id).style.display = 'none';
+        updateTaskbar();
         playBleep();
     }
 
@@ -1016,6 +1199,33 @@
         const win = document.getElementById(id);
         win.style.zIndex = zIndexCounter;
         win.classList.add('active-window');
+    }
+
+    function updateTaskbar() {
+        const container = document.getElementById('taskbar-apps');
+        if(!container) return;
+        container.innerHTML = '';
+        
+        const apps = [
+            { id: 'app-daw', name: 'AbleStudio', icon: '<svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>' },
+            { id: 'app-browser', name: 'Web_Nav', icon: '<svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>' },
+            { id: 'app-social', name: 'SoundNet', icon: '<svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>' },
+            { id: 'app-stats', name: 'SysStats', icon: '<svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>' }
+        ];
+
+        apps.forEach(app => {
+            if(document.getElementById(app.id).style.display !== 'none') {
+                const btn = document.createElement('div');
+                btn.className = 'taskbar-btn active relative group';
+                btn.innerHTML = `
+                    ${app.icon}
+                    <div class="absolute -top-8 bg-black/80 text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">${app.name}</div>
+                    <div class="absolute bottom-1 w-1 h-1 rounded-full bg-white/50"></div>
+                `;
+                btn.onclick = () => bringToFront(app.id);
+                container.appendChild(btn);
+            }
+        });
     }
 
     // --- DAW Logic & Fake Animations ---
@@ -1050,17 +1260,6 @@
         }, 80);
     }
 
-    function twiddleKnobs() {
-        for(let i=1; i<=3; i++) {
-            const k = document.getElementById(`knob-${i}`);
-            if(k) {
-                const newRot = Math.floor(Math.random()*270 - 135);
-                k.style.transform = `rotate(${newRot}deg)`;
-                k.dataset.rot = newRot;
-            }
-        }
-    }
-
     function exportTrack() {
         if(getTotalMins() < state.cooldowns.dawTimeReady || state.isExporting) return;
 
@@ -1089,24 +1288,31 @@
 
         playTone(400, 'square', 0.1);
         
+        // Automate knobs wildly during export
         vuInterval = setInterval(() => {
             simulateVuMeter(12);
-            twiddleKnobs();
+            for(let i=1; i<=3; i++) {
+                const k = document.getElementById(`knob-${i}`);
+                if(k) {
+                    const newRot = Math.floor(Math.random()*270 - 135);
+                    k.style.transform = `rotate(${newRot}deg)`;
+                    k.dataset.rot = newRot;
+                }
+            }
         }, 100);
 
         let p = 0;
         const interval = setInterval(() => {
             p += 4;
             prog.style.width = p + '%';
-            playhead.style.left = `${90 + (p * 6)}px`; // Adjust across timeline
+            playhead.style.left = `${90 + (p * 6)}px`; 
             
             if(p >= 100) {
                 clearInterval(interval);
                 clearInterval(vuInterval);
-                playhead.style.left = '90px'; // Reset
+                playhead.style.left = '90px'; 
                 state.isExporting = false;
                 
-                // Dynamic DAW Cooldown
                 state.cooldowns.dawTimeReady = getTotalMins() + getDawCooldown(); 
                 progCont.classList.add('hidden');
                 
@@ -1170,11 +1376,11 @@
         const btnA = document.getElementById('tab-audio');
         
         if(tab === 'crackz') {
-            btnC.className = "flex-1 py-3 transition-colors border-r border-[var(--glass-border)] bg-white/5 text-white";
-            btnA.className = "flex-1 py-3 transition-colors text-[var(--text-muted)]";
+            btnC.className = "flex-1 py-3.5 transition-colors border-r border-[var(--glass-border)] bg-white/5 text-white shadow-inner";
+            btnA.className = "flex-1 py-3.5 transition-colors text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
         } else {
-            btnA.className = "flex-1 py-3 transition-colors bg-white/5 text-white";
-            btnC.className = "flex-1 py-3 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)]";
+            btnA.className = "flex-1 py-3.5 transition-colors bg-white/5 text-white shadow-inner";
+            btnC.className = "flex-1 py-3.5 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
         }
         renderStore(tab);
         playBleep();
@@ -1187,10 +1393,10 @@
             if(total < state.cooldowns.crackzTimeReady) {
                 const left = state.cooldowns.crackzTimeReady - total;
                 content.innerHTML = `
-                    <div class="p-8 text-center text-[var(--retro-red)] font-retro h-full min-h-[250px] flex flex-col items-center justify-center bg-[#050505]">
-                        <p class="mb-2 text-lg">⚠️ VPN COOLDOWN ⚠️</p>
-                        <p class="text-[10px] text-[var(--text-muted)]">Your IP is flagged. Next safe download window in:</p>
-                        <p class="text-2xl mt-4" id="crackz-cd-text">${formatTimeLeft(left)}</p>
+                    <div class="p-8 text-center text-[var(--retro-red)] font-retro h-full min-h-[250px] flex flex-col items-center justify-center bg-[#050505] shadow-inner">
+                        <p class="mb-3 text-xl tracking-widest font-bold">⚠️ VPN COOLDOWN ⚠️</p>
+                        <p class="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Your IP is flagged. Next safe download window in:</p>
+                        <p class="text-3xl mt-5 font-bold" id="crackz-cd-text">${formatTimeLeft(left)}</p>
                     </div>
                 `;
                 return;
@@ -1198,57 +1404,57 @@
 
             let crackHTML = `<h3 class="font-bold text-lg mb-4 text-[var(--retro-green)] tracking-widest uppercase">💀 CrackZ_World_2026</h3>
                              <p class="text-[9px] mb-6 text-[var(--text-muted)] border-b border-gray-800 pb-2">Disclaimer: Use at your own risk. Malware chance indicated.</p>
-                             <div class="space-y-3">`;
+                             <div class="space-y-4">`;
             
             let foundAny = false;
             cracks.forEach(c => {
-                if(state.downloadedCracks.includes(c.id)) return; // Déjà dl
-                if(state.rep < c.reqRep) return; // Pas assez de rep
+                if(state.downloadedCracks.includes(c.id)) return; 
+                if(state.rep < c.reqRep) return; 
                 foundAny = true;
                 
                 crackHTML += `
-                    <div class="border border-[var(--glass-border)] p-4 flex justify-between items-center bg-black/30 rounded">
+                    <div class="border border-[var(--glass-border)] p-4 flex justify-between items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors">
                         <div>
-                            <p class="font-bold text-[11px] text-gray-200">${c.name}</p>
-                            <p class="text-[9px] text-[var(--text-muted)] mt-1 font-retro">Mult: +${c.mult}x | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p>
+                            <p class="font-bold text-xs text-gray-200">${c.name}</p>
+                            <p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Mult: +${c.mult}x | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p>
                         </div>
-                        <button class="btn-minimal px-3 py-1.5 text-[9px] border-[var(--retro-green)] text-[var(--retro-green)] hover:bg-[var(--retro-green)] hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
+                        <button class="btn-minimal px-4 py-2 text-[9px] border-[var(--retro-green)] text-[var(--retro-green)] hover:bg-[var(--retro-green)] hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
                     </div>
                 `;
             });
 
             if(!foundAny) {
-                crackHTML += `<p class="text-xs text-gray-500 text-center py-6">No new cracks available. Raise your REP to access deep web links.</p>`;
+                crackHTML += `<p class="text-xs text-gray-500 text-center py-8 font-retro">No new cracks available. Raise your REP to access deep web links.</p>`;
             }
 
             crackHTML += `</div>`;
-            content.innerHTML = `<div class="p-6 bg-[#050505] font-sans h-full min-h-[250px]">${crackHTML}</div>`;
+            content.innerHTML = `<div class="p-6 bg-[#050505] font-sans h-full min-h-[250px] overflow-y-auto shadow-inner">${crackHTML}</div>`;
 
         } else {
             if(state.rep < 100) {
                 content.innerHTML = `
-                    <div class="p-8 text-center text-[var(--text-muted)] font-retro h-full min-h-[250px] flex items-center justify-center bg-[#09090b]">
-                        <p>🔒 ACCESS DENIED.<br>AudioStore requires 100 REP.<br>(Who are you bro?)</p>
+                    <div class="p-8 text-center text-[var(--text-muted)] font-retro h-full min-h-[250px] flex items-center justify-center bg-black/20 shadow-inner">
+                        <p class="leading-relaxed">🔒 ACCESS DENIED.<br>AudioStore requires 100 REP.<br>(Who are you bro?)</p>
                     </div>
                 `;
             } else {
                 content.innerHTML = `
-                    <div class="p-6 bg-[#09090b] text-white h-full min-h-[250px] font-sans">
+                    <div class="p-6 bg-black/20 text-white h-full min-h-[250px] font-sans shadow-inner">
                         <h3 class="font-bold text-lg text-white mb-6 tracking-widest uppercase">🛒 AudioStore Pro</h3>
                         <div class="space-y-4">
-                            <div class="border border-[var(--glass-border)] p-5 flex justify-between items-center rounded bg-black/40">
+                            <div class="border border-[var(--glass-border)] p-5 flex justify-between items-center rounded-lg bg-black/40 hover:border-[var(--accent)] transition-colors">
                                 <div>
                                     <p class="font-bold text-sm">ProEQ Studio Bundle</p>
-                                    <p class="text-[10px] text-[var(--text-muted)] mt-1">Mult: +0.5x | 100% Safe</p>
+                                    <p class="text-[10px] text-[var(--text-muted)] mt-1.5 font-retro uppercase tracking-widest">Mult: +0.5x | 100% Safe</p>
                                 </div>
-                                <button class="btn-action px-4 py-2 text-[10px] rounded" onclick="buyLegit(300, 0.5)">BUY ($300)</button>
+                                <button class="btn-action px-5 py-2.5 text-[10px] rounded" onclick="buyLegit(300, 0.5)">BUY ($300)</button>
                             </div>
-                            <div class="border border-[var(--glass-border)] p-5 flex justify-between items-center rounded bg-black/40">
+                            <div class="border border-[var(--glass-border)] p-5 flex justify-between items-center rounded-lg bg-black/40 hover:border-[var(--accent)] transition-colors">
                                 <div>
                                     <p class="font-bold text-sm">Analog Tape Saturation</p>
-                                    <p class="text-[10px] text-[var(--text-muted)] mt-1">Mult: +1.0x | 100% Safe</p>
+                                    <p class="text-[10px] text-[var(--text-muted)] mt-1.5 font-retro uppercase tracking-widest">Mult: +1.0x | 100% Safe</p>
                                 </div>
-                                <button class="btn-action px-4 py-2 text-[10px] rounded" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button>
+                                <button class="btn-action px-5 py-2.5 text-[10px] rounded" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button>
                             </div>
                         </div>
                     </div>
@@ -1261,7 +1467,6 @@
         const crack = cracks.find(c => c.id === id);
         if(!crack) return;
 
-        // Evolving Cooldown
         state.cooldowns.crackzTimeReady = getTotalMins() + getVpnCooldown(); 
         
         if(Math.random() < crack.risk) {
@@ -1296,7 +1501,7 @@
     // --- Virus / BSOD Event ---
     function triggerBSOD() {
         state.stats.viruses++;
-        state.money = Math.max(0, Math.floor(state.money * 0.8)); // Lose 20% money
+        state.money = Math.max(0, Math.floor(state.money * 0.8)); 
         saveGame();
         updateHUD();
         playError();
@@ -1349,14 +1554,14 @@
                 const daysLeft = state.cooldowns.sponsors[s.id] - state.day;
                 btnHtml = `<span class="text-[9px] text-[var(--retro-orange)] font-retro tracking-widest">WAIT ${daysLeft}D</span>`;
             } else {
-                btnHtml = `<button class="btn-minimal px-3 py-1.5 text-[9px] border-[var(--retro-green)] text-[var(--retro-green)] hover:bg-[var(--retro-green)] hover:text-black rounded" onclick="acceptSponsor('${s.id}')">ACCEPT</button>`;
+                btnHtml = `<button class="btn-minimal px-4 py-2 text-[9px] border-[var(--retro-green)] text-[var(--retro-green)] hover:bg-[var(--retro-green)] hover:text-black rounded" onclick="acceptSponsor('${s.id}')">ACCEPT</button>`;
             }
 
             return `
-                <div class="flex justify-between items-center bg-black/40 p-4 border border-[var(--glass-border)] rounded">
+                <div class="flex justify-between items-center bg-black/40 p-4 border border-[var(--glass-border)] rounded-lg">
                     <div>
                         <p class="font-bold text-xs text-gray-200">${s.name}</p>
-                        <p class="text-[9px] text-[var(--text-muted)] mt-1 font-retro tracking-widest">PAY: +$${s.reward} | REP: -${s.repCost}</p>
+                        <p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro tracking-widest">PAY: +$${s.reward} | REP: -${s.repCost}</p>
                     </div>
                     <div>${btnHtml}</div>
                 </div>
