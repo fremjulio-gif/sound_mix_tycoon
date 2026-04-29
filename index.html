@@ -967,57 +967,89 @@
     dirLight.castShadow = true;
     scene.add(dirLight);
 
+     // ==========================================
+    // 2. ROOM CREATION (Meubles Détaillés & PBR)
     // ==========================================
-    // 2. ROOM CREATION
-    // ==========================================
-    // Floor
-    const floorGeo = new THREE.PlaneGeometry(20, 20);
-    const floorMat = new THREE.MeshStandardMaterial({ color: '#09090b', roughness: 0.8 });
+    
+    // Sol mat
+    const floorGeo = new THREE.PlaneGeometry(30, 30);
+    const floorMat = new THREE.MeshStandardMaterial({ color: '#8d6245', roughness: 0.9, metalness: 0.1 });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -1;
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Desk
-    const deskGeo = new THREE.BoxGeometry(4, 0.2, 2);
-    const deskMat = new THREE.MeshStandardMaterial({ color: '#1e1b4b', roughness: 0.5 });
-    const desk = new THREE.Mesh(deskGeo, deskMat);
-    desk.position.set(0, 0, 0);
-    desk.castShadow = true;
-    desk.receiveShadow = true;
-    scene.add(desk);
+    // --- LE BUREAU (Plateau en bois sombre + Pieds métalliques) ---
+    const deskTopGeo = new THREE.BoxGeometry(4.5, 0.1, 2.2);
+    const deskTopMat = new THREE.MeshStandardMaterial({ color: '#505050', roughness: 0.7, metalness: 0.1 });
+    const deskTop = new THREE.Mesh(deskTopGeo, deskTopMat);
+    deskTop.position.set(0, 0.7, 0);
+    deskTop.castShadow = true;
+    deskTop.receiveShadow = true;
+    scene.add(deskTop);
 
-    // Glowing PC (Interactive Object)
-    const pcGeo = new THREE.BoxGeometry(1.2, 0.8, 0.1);
-    const pcMat = new THREE.MeshStandardMaterial({ 
-        color: '#000000', 
-        emissive: '#818cf8', 
-        emissiveIntensity: 0.8
+    const legGeo = new THREE.BoxGeometry(0.1, 1.7, 0.1);
+    const legMat = new THREE.MeshStandardMaterial({ color: '#505050', roughness: 0.4, metalness: 0.8 }); // Métal
+    const legPositions = [ [-2.1, -0.15, -0.9], [2.1, -0.15, -0.9], [-2.1, -0.15, 0.9], [2.1, -0.15, 0.9] ];
+    legPositions.forEach(pos => {
+        const leg = new THREE.Mesh(legGeo, legMat);
+        leg.position.set(...pos);
+        leg.castShadow = true;
+        scene.add(leg);
     });
-    const pcMesh = new THREE.Mesh(pcGeo, pcMat);
-    pcMesh.position.set(0, 0.5, -0.5);
-    pcMesh.name = 'pc_mesh'; // Critical for raycaster
-    pcMesh.castShadow = true;
-    scene.add(pcMesh);
 
-    // Speakers (Left and Right)
+    // --- LE PC (Pied + Cadre noir + Dalle Néon) ---
+    // Pied du PC
+    const standGeo = new THREE.BoxGeometry(0.3, 0.4, 0.2);
+    const stand = new THREE.Mesh(standGeo, legMat);
+    stand.position.set(0, 0.9, -0.6);
+    stand.castShadow = true;
+    scene.add(stand);
+
+    // Cadre de l'écran (Bezel)
+    const pcFrameGeo = new THREE.BoxGeometry(1.4, 0.85, 0.05);
+    const pcFrameMat = new THREE.MeshStandardMaterial({ color: '#acacac', roughness: 0.2, metalness: 0.5 }); // Plastique lisse
+    const pcFrame = new THREE.Mesh(pcFrameGeo, pcFrameMat);
+    pcFrame.position.set(0, 1.25, -0.55);
+    pcFrame.castShadow = true;
+    
+    // Dalle brillante interactive (C'est elle que le Raycaster touche)
+    const pcScreenGeo = new THREE.PlaneGeometry(1.3, 0.75);
+    const pcScreenMat = new THREE.MeshStandardMaterial({ color: '#000000', emissive: '#818cf8', emissiveIntensity: 0.8 });
+    const pcMesh = new THREE.Mesh(pcScreenGeo, pcScreenMat);
+    pcMesh.position.set(0, 0, 0.026); // Juste devant le cadre
+    pcMesh.name = 'pc_mesh'; // CRITIQUE POUR L'INTERACTION
+    pcFrame.add(pcMesh); // On attache l'écran au cadre
+    scene.add(pcFrame);
+
+    // --- LES ENCEINTES (Caisson mat + Haut-Parleur central) ---
+    const speakerMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.8, metalness: 0.2 });
+    const wooferMat = new THREE.MeshStandardMaterial({ color: '#000000', roughness: 0.9, metalness: 0.1 });
     const speakerGeo = new THREE.BoxGeometry(0.4, 0.6, 0.4);
-    const speakerMat = new THREE.MeshStandardMaterial({ color: '#0f172a' });
-    
-    const speakerL = new THREE.Mesh(speakerGeo, speakerMat);
-    speakerL.position.set(-1.5, 0.4, -0.5);
-    speakerL.castShadow = true;
-    scene.add(speakerL);
-    
-    const speakerR = new THREE.Mesh(speakerGeo, speakerMat);
-    speakerR.position.set(1.5, 0.4, -0.5);
-    speakerR.castShadow = true;
-    scene.add(speakerR);
+    const wooferGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.02, 16);
 
-    // Positional Audio placeholder on left speaker
-    const speakerAudio = new THREE.PositionalAudio(listener);
-    // speakerL.add(speakerAudio); // Ready for future audio sources
+    // Enceinte Gauche
+    const speakerL = new THREE.Mesh(speakerGeo, speakerMat);
+    speakerL.position.set(-1.6, 1.05, -0.4);
+    speakerL.rotation.y = Math.PI / 12; // Légèrement tournée vers le joueur
+    speakerL.castShadow = true;
+    const wooferL = new THREE.Mesh(wooferGeo, wooferMat);
+    wooferL.rotation.x = Math.PI / 2;
+    wooferL.position.set(0, 0, 0.2);
+    speakerL.add(wooferL);
+    scene.add(speakerL);
+
+    // Enceinte Droite
+    const speakerR = new THREE.Mesh(speakerGeo, speakerMat);
+    speakerR.position.set(1.6, 1.05, -0.4);
+    speakerR.rotation.y = -Math.PI / 12;
+    speakerR.castShadow = true;
+    const wooferR = new THREE.Mesh(wooferGeo, wooferMat);
+    wooferR.rotation.x = Math.PI / 2;
+    wooferR.position.set(0, 0, 0.2);
+    speakerR.add(wooferR);
+    scene.add(speakerR);
 
     // Animation Loop
     let time = 0;
@@ -1025,7 +1057,7 @@
         requestAnimationFrame(animate3D);
         time += 0.02;
         // Make PC glow pulsate slightly
-        pcMat.emissiveIntensity = 0.6 + Math.sin(time) * 0.2;
+        pcScreenMat.emissiveIntensity = 0.5 + Math.sin(time) * 0.3;
         renderer.render(scene, camera);
     }
     animate3D();
@@ -1052,6 +1084,7 @@
             });
         }
     });
+
 
     // ==========================================
     // 3. RAYCASTER & INTERACTION
