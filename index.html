@@ -2031,6 +2031,93 @@
         `;
     }
 
+     // --- Swipe-to-Dismiss Toast Notifications ---
+    function showToast(msg, type = 'info') {
+        const zone = document.getElementById('toast-zone');
+        const t = document.createElement('div');
+        
+        let colorClass = "bg-black/90 border-gray-700 text-gray-100";
+        if(type === 'success') colorClass = "bg-[#022c22] border-[var(--retro-green)] text-emerald-100 shadow-[0_0_15px_rgba(52,211,153,0.3)]";
+        if(type === 'error') colorClass = "bg-[#4c0519] border-[var(--retro-red)] text-rose-100 shadow-[0_0_15px_rgba(251,113,133,0.3)]";
+        if(type === 'info') colorClass = "bg-[#1e1b4b] border-[var(--accent)] text-indigo-100 shadow-[0_0_15px_rgba(129,140,248,0.3)]";
+
+        t.className = `toast px-6 py-4 w-full rounded-lg border text-xs font-retro tracking-widest uppercase backdrop-blur-md ${colorClass} whitespace-pre-line leading-relaxed`;
+        t.innerText = msg;
+        
+        zone.appendChild(t);
+
+        // Advanced Swipe-to-Dismiss Logic
+        t.addEventListener('mousedown', e => {
+            let startX = e.clientX;
+            let currentX = 0;
+            t.style.transition = 'none';
+            
+            const onMove = e => {
+                currentX = e.clientX - startX;
+                if(currentX < 0) {
+                    t.style.transform = `translateX(${currentX}px)`;
+                    t.style.opacity = Math.max(0, 1 + currentX/200);
+                }
+            };
+            const onUp = () => {
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+                if(currentX < -50) { 
+                    t.style.transition = 'all 0.3s ease-out';
+                    t.style.transform = `translateX(-120%)`;
+                    t.style.opacity = '0';
+                    setTimeout(() => t.remove(), 300);
+                } else { 
+                    t.style.transition = 'all 0.3s ease-out';
+                    t.style.transform = 'translateX(0)';
+                    t.style.opacity = '1';
+                }
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+        });
+
+        // Touch logic for mobile
+        t.addEventListener('touchstart', e => {
+            let startX = e.touches[0].clientX;
+            let currentX = 0;
+            t.style.transition = 'none';
+            
+            const onMove = e => {
+                currentX = e.touches[0].clientX - startX;
+                if(currentX < 0) {
+                    t.style.transform = `translateX(${currentX}px)`;
+                    t.style.opacity = Math.max(0, 1 + currentX/200);
+                }
+            };
+            const onUp = () => {
+                document.removeEventListener('touchmove', onMove);
+                document.removeEventListener('touchend', onUp);
+                if(currentX < -50) {
+                    t.style.transition = 'all 0.3s ease-out';
+                    t.style.transform = `translateX(-120%)`;
+                    t.style.opacity = '0';
+                    setTimeout(() => t.remove(), 300);
+                } else {
+                    t.style.transition = 'all 0.3s ease-out';
+                    t.style.transform = 'translateX(0)';
+                    t.style.opacity = '1';
+                }
+            };
+            document.addEventListener('touchmove', onMove);
+            document.addEventListener('touchend', onUp);
+        }, {passive: true});
+
+        // Auto remove fallback
+        setTimeout(() => {
+            if(t.parentElement) {
+                t.style.opacity = '0';
+                t.style.transition = 'opacity 0.4s';
+                setTimeout(() => { if(t.parentElement) t.remove(); }, 400);
+            }
+        }, 4000);
+    }
+
     // Boot
     window.onload = initUI;
 
