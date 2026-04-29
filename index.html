@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sound Mix Tycoon - OS Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
@@ -35,12 +35,20 @@
             color: var(--text-main);
             font-family: 'Inter', system-ui, sans-serif;
             user-select: none;
-            touch-action: none;
+            -webkit-user-select: none;
             background-color: var(--bg-color-1);
         }
 
         .font-retro { font-family: 'Share Tech Mono', monospace; letter-spacing: 0.05em; }
         .font-handwriting { font-family: 'Caveat', cursive; letter-spacing: 0.05em; }
+
+        /* Disable double-tap zoom & delay on critical elements */
+        button, select, .seq-pad, .btn-minimal, .btn-action, .desktop-icon, .taskbar-btn {
+            touch-action: manipulation;
+        }
+        input[type="range"], .knob {
+            touch-action: none; /* Prevent scroll while dragging */
+        }
 
         #game-container {
             position: relative;
@@ -111,7 +119,7 @@
                 inset 0 1px 1px rgba(255, 255, 255, 0.4);
         }
 
-        /* --- UI ELEMENTS & RESPONSIVE WINDOWS --- */
+        /* --- DESKTOP OS WINDOW BASE --- */
         .os-window {
             position: absolute;
             width: 800px; 
@@ -164,11 +172,11 @@
             justify-content: space-between;
             padding: 110px 30px 80px 30px; 
             pointer-events: none; 
+            overflow-y: auto;
         }
         
         #desktop-content > div { pointer-events: auto; }
 
-        /* Widget Container */
         .widgets-container {
             display: flex;
             flex-direction: column;
@@ -213,14 +221,13 @@
             box-shadow: 0 0 25px var(--glass-glow), inset 0 1px 1px rgba(255,255,255,0.3);
         }
 
-        /* Desktop Widgets */
         .desktop-widget {
             flex-shrink: 0;
             transition: transform 0.3s ease;
         }
         .desktop-widget:hover { transform: translateY(-2px); }
 
-        /* Taskbar */
+        /* Taskbar Desktop */
         #taskbar-bottom {
             position: absolute;
             bottom: 12px;
@@ -251,14 +258,7 @@
             box-shadow: 0 0 20px rgba(255,255,255,0.1);
         }
 
-        /* =========================================
-           DAW PRO UI
-           ========================================= */
-        #app-daw {
-            width: 950px;
-            min-width: 700px;
-        }
-
+        /* DAW PRO UI */
         .daw-grid-container {
             display: flex;
             flex-direction: column;
@@ -269,9 +269,8 @@
         }
 
         @media (min-width: 768px) {
-            .daw-grid-container {
-                flex-direction: row;
-            }
+            .daw-grid-container { flex-direction: row; }
+            #app-daw { width: 950px; min-width: 700px; }
         }
 
         .daw-panel-neon {
@@ -346,8 +345,8 @@
             background: rgba(255,255,255,0.1); border-color: var(--accent); color: white;
         }
         .btn-minimal.active {
-            background: var(--accent); color: #fff; border-color: var(--accent);
-            box-shadow: 0 0 12px rgba(129, 140, 248, 0.4);
+            background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important;
+            box-shadow: 0 0 12px rgba(129, 140, 248, 0.4) !important;
         }
         .btn-minimal:disabled {
             border-color: rgba(255,255,255,0.05); color: rgba(255,255,255,0.2); cursor: not-allowed;
@@ -363,7 +362,7 @@
         }
 
         /* Scrollbars */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
@@ -388,6 +387,91 @@
         }
         .pixelated { image-rendering: pixelated; }
 
+        /* =========================================
+           MOBILE RESPONSIVE RULES (Max 767px)
+           ========================================= */
+        #mobile-nav { display: none; }
+        
+        @media (max-width: 767px) {
+            /* Replace Desktop Taskbar with Bottom App Bar */
+            #taskbar-bottom { display: none !important; }
+            #mobile-nav { display: flex !important; }
+            
+            /* Reformat Desktop area */
+            #desktop-content {
+                padding-top: 100px !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 20px !important;
+                overflow-y: auto;
+                padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+            }
+            .widgets-container {
+                width: 100% !important;
+                max-height: none !important;
+                padding-right: 0 !important;
+            }
+            #desktop-icons-container {
+                flex-direction: row !important;
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+            }
+
+            /* Windows take Full Screen */
+            .os-window {
+                width: 100vw !important;
+                height: 100dvh !important;
+                max-width: 100vw !important;
+                max-height: 100dvh !important;
+                top: 0 !important;
+                left: 0 !important;
+                border-radius: 0 !important;
+                resize: none !important;
+                border: none !important;
+                padding-top: 80px; /* Push content below Dynamic Island */
+                background: rgba(10, 10, 15, 0.98) !important;
+                box-shadow: none !important;
+            }
+            .window-header {
+                border-top: 1px solid rgba(255,255,255,0.1);
+                border-radius: 0;
+            }
+            .window-content {
+                padding-bottom: calc(85px + env(safe-area-inset-bottom)) !important; /* Clear bottom nav */
+            }
+
+            /* Make hit targets larger */
+            .btn-minimal, .btn-action, .seq-pad {
+                min-height: 44px;
+            }
+            .seq-pad { min-width: 44px; }
+
+            /* HUD tweaks */
+            #hud {
+                width: 92% !important;
+                top: 10px !important;
+                height: auto !important;
+                padding: 10px 15px !important;
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+                gap: 10px !important;
+            }
+            #hud:hover { width: 96% !important; }
+            #hud-name { opacity: 1 !important; width: auto !important; }
+            .hud-stats-container { opacity: 1 !important; width: 100% !important; justify-content: space-around !important; }
+            
+            /* DAW Layout fixes for mobile */
+            #app-daw { min-width: 0 !important; }
+            .daw-panel-neon { min-width: 0 !important; width: 100% !important; }
+            .tl-track { min-width: 600px; }
+            
+            /* Adjust Tooltip location */
+            #global-tooltip {
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                top: 100px !important;
+            }
+        }
     </style>
 </head>
 <body data-theme="neon">
@@ -403,10 +487,10 @@
     </div>
     
     <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl">
-        <div class="liquid-glass-heavy p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20">
+    <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
+        <div class="liquid-glass-heavy p-8 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20">
             <h1 class="text-4xl font-retro font-bold mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">SM_TYCOON</h1>
-            <p class="text-[var(--text-muted)] font-retro text-xs mb-8 tracking-widest uppercase">OS Initialization // v7.0</p>
+            <p class="text-[var(--text-muted)] font-retro text-xs mb-8 tracking-widest uppercase text-center">OS Initialization // v8.0</p>
             
             <div class="w-full mb-6">
                 <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
@@ -415,12 +499,12 @@
 
             <div class="w-full mb-8">
                 <label class="block text-[10px] font-retro text-gray-300 mb-4 uppercase tracking-widest">Select_Avatar</label>
-                <div class="grid grid-cols-4 gap-6" id="avatar-container">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6" id="avatar-container">
                     <!-- Injected by JS -->
                 </div>
             </div>
 
-            <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-4">
+            <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-2">
                 Boot System
             </button>
             <p id="login-error" class="text-[var(--retro-red)] font-retro text-xs mt-4 hidden text-center">Error: Missing ID</p>
@@ -431,28 +515,28 @@
     <div id="os-screen" class="absolute inset-0 hidden flex-col">
         
         <!-- HUD - DYNAMIC ISLAND (TOP) -->
-        <div id="hud" class="liquid-glass-heavy h-[76px] fixed top-6 left-1/2 -translate-x-1/2 z-50 rounded-full flex items-center justify-between px-5 transition-all duration-500 w-[240px] hover:w-[680px] group border border-white/10 shadow-2xl">
-            <div class="flex items-center gap-4 shrink-0">
+        <div id="hud" class="liquid-glass-heavy h-[76px] fixed top-6 left-1/2 -translate-x-1/2 z-50 rounded-[30px] flex items-center justify-between px-5 transition-all duration-500 w-[240px] hover:w-[680px] group border border-white/10 shadow-2xl">
+            <div class="flex items-center gap-4 shrink-0 w-full md:w-auto justify-center md:justify-start">
                 <div id="hud-avatar" class="w-[64px] h-[64px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shrink-0 shadow-[0_0_15px_rgba(129,140,248,0.5)]"></div>
-                <span id="hud-name" class="font-bold font-retro text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 whitespace-nowrap tracking-widest uppercase text-white w-0 group-hover:w-auto">Artiste</span>
+                <span id="hud-name" class="font-bold font-retro text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 whitespace-nowrap tracking-widest uppercase text-white w-0 group-hover:w-auto md:block hidden">Artiste</span>
             </div>
             
-            <div class="flex items-center gap-10 font-retro text-sm text-[var(--text-muted)] tracking-wider opacity-0 group-hover:opacity-100 w-0 group-hover:w-auto transition-all duration-500 whitespace-nowrap">
+            <div class="hud-stats-container flex items-center gap-6 md:gap-10 font-retro text-sm text-[var(--text-muted)] tracking-wider opacity-0 group-hover:opacity-100 w-0 group-hover:w-auto transition-all duration-500 whitespace-nowrap overflow-hidden">
                 
-                <div class="relative flex items-center gap-2 cursor-help px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onmouseenter="showTooltip('money', this)" onmouseleave="hideTooltip()">
+                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('money', this)" onmouseenter="!isMobile && showTooltip('money', this)" onmouseleave="!isMobile && hideTooltip()">
                     <span class="text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] text-lg">$$$</span> <span id="hud-money" class="text-white text-lg">0</span>
                 </div>
                 
-                <div class="relative flex items-center gap-2 cursor-help px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onmouseenter="showTooltip('rep', this)" onmouseleave="hideTooltip()">
+                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)" onmouseleave="!isMobile && hideTooltip()">
                     <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)] text-lg">REP</span> <span id="hud-rep" class="text-white text-lg">0</span>
                 </div>
                 
-                <div class="relative flex items-center gap-2 cursor-help px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onmouseenter="showTooltip('fol', this)" onmouseleave="hideTooltip()">
+                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)" onmouseleave="!isMobile && hideTooltip()">
                     <span class="text-[var(--accent)] drop-shadow-[0_0_5px_var(--accent)] text-lg">FOL</span> <span id="hud-foll" class="text-white text-lg">0</span>
                 </div>
             </div>
 
-            <div class="font-retro text-right flex flex-col justify-center items-end shrink-0 pr-2 pointer-events-none">
+            <div class="font-retro text-right flex flex-col justify-center items-end shrink-0 pr-2 pointer-events-none hidden md:flex">
                 <div id="hud-day" class="text-white font-bold tracking-widest text-[12px]">DAY 1</div>
                 <div id="sys-time" class="text-sm text-[var(--accent)] mt-1 tracking-widest font-bold drop-shadow-[0_0_5px_var(--accent)]">12:00</div>
             </div>
@@ -461,7 +545,7 @@
         <!-- DESKTOP CONTENT -->
         <div id="desktop-content">
             <!-- Left Side : Icons -->
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-2" id="desktop-icons-container">
                 <div class="desktop-icon group" onclick="openApp('app-daw')">
                     <div class="icon-box"><svg class="w-9 h-9 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg></div>
                     <span class="text-[11px] font-retro mt-1 text-gray-200 tracking-wider group-hover:text-white group-hover:drop-shadow-[0_0_5px_#fff]">AbleStudio</span>
@@ -509,7 +593,7 @@
             </div>
         </div>
 
-        <!-- BOTTOM TASKBAR -->
+        <!-- BOTTOM TASKBAR (DESKTOP) -->
         <div id="taskbar-bottom" class="liquid-glass-heavy">
             <div class="flex gap-2 items-center border-r border-white/10 pr-4 mr-2">
                 <div class="taskbar-btn bg-white/5 hover:bg-white/10 !border-[var(--accent)] text-white" onclick="cycleTheme()" title="Change Theme">
@@ -528,30 +612,50 @@
             </div>
         </div>
 
+        <!-- BOTTOM NAV BAR (MOBILE) -->
+        <div id="mobile-nav" class="fixed bottom-0 left-0 w-full liquid-glass-heavy justify-around items-center px-2 pt-2 z-[60] border-t border-white/10" style="padding-bottom: env(safe-area-inset-bottom);">
+            <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="openApp('app-daw')">
+                <svg class="w-7 h-7 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                <span class="text-[9px] font-retro text-gray-300">STUDIO</span>
+            </div>
+            <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="openApp('app-browser')">
+                <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                <span class="text-[9px] font-retro text-gray-300">WEB</span>
+            </div>
+            <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="openApp('app-social')">
+                <svg class="w-7 h-7 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                <span class="text-[9px] font-retro text-gray-300">SOCIAL</span>
+            </div>
+            <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="openApp('app-stats')">
+                <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                <span class="text-[9px] font-retro text-gray-300">STATS</span>
+            </div>
+        </div>
+
         <!-- APP WINDOWS -->
         
-        <!-- DAW PRO V7 -->
+        <!-- DAW PRO V8 -->
         <div id="app-daw" class="os-window liquid-glass flex-col font-sans" style="display:none;">
             <div class="window-header">
                 <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
                     <span class="w-3 h-3 rounded-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]"></span> AbleStudio Pro 11
                 </span>
-                <button class="text-gray-400 hover:text-white transition-colors p-1 text-lg" onclick="closeApp('app-daw')">✕</button>
+                <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-daw')">✕</button>
             </div>
             
             <div class="window-content daw-grid-container text-xs">
                 
                 <!-- Left Panel : Extra-Compact Séquenceur -->
-                <div class="daw-panel-neon w-[160px] p-4 flex flex-col flex-shrink-0 justify-start items-center relative">
+                <div class="daw-panel-neon md:w-[160px] w-full p-4 flex flex-col flex-shrink-0 justify-start items-center relative">
                     <label class="block text-[10px] text-gray-300 mb-6 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2 w-full text-center">Drum Rack</label>
-                    <div class="grid grid-cols-4 gap-1 mb-4 w-full max-w-[120px]" id="sequencer-grid">
+                    <div class="grid grid-cols-4 gap-2 mb-4 w-full max-w-[200px] md:max-w-[120px]" id="sequencer-grid">
                         <!-- Generated by JS -->
                     </div>
-                    <p class="text-[8px] text-gray-500 font-retro tracking-widest mt-auto text-center border border-white/10 p-2 rounded">Live Input</p>
+                    <p class="text-[8px] text-gray-500 font-retro tracking-widest mt-auto text-center border border-white/10 p-2 rounded w-full">Live Input</p>
                 </div>
 
                 <!-- Middle Panel : Waveform, Settings & Export -->
-                <div class="daw-panel-neon flex-1 p-4 flex flex-col relative min-w-[450px]">
+                <div class="daw-panel-neon flex-1 p-4 flex flex-col relative md:min-w-[450px] min-w-0">
                     <label class="block text-[10px] text-gray-300 mb-3 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2">Timeline Arrangement</label>
                     
                     <div class="h-32 border border-white/10 rounded-lg flex flex-col overflow-x-auto overflow-y-hidden relative bg-black/60 cursor-crosshair shadow-inner mb-4" id="timeline-container">
@@ -586,41 +690,41 @@
                     <!-- Clean Control Panel -->
                     <div class="flex flex-col gap-3 mt-auto">
                         <!-- Genre Buttons -->
-                        <div class="flex gap-2">
-                            <button class="btn-minimal btn-genre active flex-1 py-2 text-[9px] rounded font-retro tracking-widest" data-val="drill" onclick="selectDawGenre('drill')">UK Drill</button>
-                            <button class="btn-minimal btn-genre flex-1 py-2 text-[9px] rounded font-retro tracking-widest" data-val="afropop" onclick="selectDawGenre('afropop')">Afro-Pop</button>
-                            <button class="btn-minimal btn-genre flex-1 py-2 text-[9px] rounded font-retro tracking-widest" data-val="technohouse" onclick="selectDawGenre('technohouse')">Techno House</button>
-                            <button class="btn-minimal btn-genre flex-1 py-2 text-[9px] rounded font-retro tracking-widest" data-val="amapiano" onclick="selectDawGenre('amapiano')">Amapiano</button>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="btn-minimal btn-genre active flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="drill" onclick="selectDawGenre('drill')">UK Drill</button>
+                            <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="afropop" onclick="selectDawGenre('afropop')">Afro-Pop</button>
+                            <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="technohouse" onclick="selectDawGenre('technohouse')">Techno House</button>
+                            <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="amapiano" onclick="selectDawGenre('amapiano')">Amapiano</button>
                         </div>
                         
                         <!-- Voice & Tempo & Plugin aligned -->
-                        <div class="flex gap-2 items-stretch">
-                            <div class="flex gap-1 flex-1">
-                                <button class="btn-minimal btn-voice active flex-1 py-2 text-[8px] rounded font-retro tracking-widest" data-val="m" onclick="selectDawVoice('m')">Male Vocals</button>
-                                <button class="btn-minimal btn-voice flex-1 py-2 text-[8px] rounded font-retro tracking-widest" data-val="f" onclick="selectDawVoice('f')">Female Vocals</button>
-                                <button class="btn-minimal btn-voice flex-1 py-2 text-[8px] rounded font-retro tracking-widest" data-val="instru" onclick="selectDawVoice('instru')">Instru Only</button>
+                        <div class="flex flex-col md:flex-row gap-3 items-stretch">
+                            <div class="flex gap-2 flex-1">
+                                <button class="btn-minimal btn-voice active flex-1 py-3 md:py-2 text-[9px] md:text-[8px] rounded font-retro tracking-widest" data-val="m" onclick="selectDawVoice('m')">Male Voc</button>
+                                <button class="btn-minimal btn-voice flex-1 py-3 md:py-2 text-[9px] md:text-[8px] rounded font-retro tracking-widest" data-val="f" onclick="selectDawVoice('f')">Fem Voc</button>
+                                <button class="btn-minimal btn-voice flex-1 py-3 md:py-2 text-[9px] md:text-[8px] rounded font-retro tracking-widest" data-val="instru" onclick="selectDawVoice('instru')">Instru</button>
                             </div>
 
-                            <div class="w-[140px] flex-shrink-0">
-                                <select id="daw-plugin" class="w-full h-full bg-black/60 border border-white/10 rounded px-2 outline-none text-[var(--accent)] text-[9px] font-bold tracking-wider cursor-pointer">
+                            <div class="w-full md:w-[140px] flex-shrink-0 h-[44px] md:h-auto">
+                                <select id="daw-plugin" class="w-full h-full bg-black/60 border border-white/10 rounded px-2 outline-none text-[var(--accent)] text-[10px] font-bold tracking-wider cursor-pointer">
                                     <option value="">- Clean Mix (No Plugin) -</option>
                                     <!-- Injected by JS -->
                                 </select>
                             </div>
 
                             <!-- BPM Slider -->
-                            <div class="w-[160px] bg-black/40 border border-white/10 rounded flex items-center px-3 py-1 gap-2 flex-shrink-0">
-                                <span id="bpm-val" class="text-sm text-white font-retro w-8 text-right drop-shadow-[0_0_5px_var(--accent)]">120</span>
+                            <div class="w-full md:w-[160px] bg-black/40 border border-white/10 rounded flex items-center px-4 py-2 md:px-3 md:py-1 gap-3 flex-shrink-0">
+                                <span id="bpm-val" class="text-base md:text-sm text-white font-retro w-10 md:w-8 text-right drop-shadow-[0_0_5px_var(--accent)]">120</span>
                                 <input type="range" id="daw-bpm" min="60" max="200" value="120" class="flex-1 accent-[var(--accent)] cursor-pointer" oninput="document.getElementById('bpm-val').innerHTML = this.value">
                             </div>
                         </div>
 
                         <!-- Render Block -->
-                        <div class="relative w-full h-[40px] mt-1">
-                            <button id="btn-export" class="w-full h-full btn-action rounded-lg text-[11px] drop-shadow-lg tracking-widest" onclick="exportTrack()">
+                        <div class="relative w-full h-[50px] md:h-[40px] mt-2">
+                            <button id="btn-export" class="w-full h-full btn-action rounded-lg text-[12px] md:text-[11px] drop-shadow-lg tracking-widest" onclick="exportTrack()">
                                 RENDER MIXDOWN
                             </button>
-                            <div id="export-progress-container" class="hidden absolute left-0 bottom-0 w-full h-1 bg-gray-900 overflow-hidden rounded-b-lg">
+                            <div id="export-progress-container" class="hidden absolute left-0 bottom-0 w-full h-1.5 bg-gray-900 overflow-hidden rounded-b-lg">
                                 <div id="export-progress" class="h-full bg-[var(--accent)] w-0 transition-all duration-100 shadow-[0_0_10px_var(--accent)]"></div>
                             </div>
                         </div>
@@ -628,9 +732,9 @@
                 </div>
 
                 <!-- Right Panel : Master Knobs -->
-                <div class="daw-panel-neon w-[110px] p-4 flex flex-col items-center flex-shrink-0">
-                    <label class="block text-[10px] text-gray-300 mb-6 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2 w-full text-center">Master</label>
-                    <div class="flex flex-col gap-5 w-full items-center mb-6">
+                <div class="daw-panel-neon md:w-[110px] w-full p-4 flex flex-row md:flex-col items-center justify-between md:justify-start flex-shrink-0">
+                    <label class="block text-[10px] text-gray-300 md:mb-6 font-retro uppercase tracking-widest md:border-b border-[var(--accent)]/30 md:pb-2 w-auto md:w-full text-center">Master</label>
+                    <div class="flex flex-row md:flex-col gap-4 md:gap-5 w-auto md:w-full items-center md:mb-6">
                         <div class="knob-container">
                             <div class="knob" id="knob-1" data-rot="-45" style="transform: rotate(-45deg)"></div>
                             <span class="text-[9px] text-[var(--text-muted)] font-retro mt-1 tracking-widest font-bold">LOW</span>
@@ -645,7 +749,7 @@
                         </div>
                     </div>
 
-                    <div class="w-5 h-full bg-black/80 border border-white/10 rounded-sm p-1 flex flex-col-reverse justify-between shadow-[inset_0_0_10px_rgba(0,0,0,1)]" id="vu-meter-container">
+                    <div class="w-full md:w-5 h-5 md:h-full bg-black/80 border border-white/10 rounded-sm p-1 flex flex-row md:flex-col-reverse justify-between shadow-[inset_0_0_10px_rgba(0,0,0,1)]" id="vu-meter-container">
                         <!-- Generated by JS -->
                     </div>
                 </div>
@@ -659,11 +763,11 @@
                 <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
                     <span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"></span> Web_Nav App
                 </span>
-                <button class="text-gray-400 hover:text-white transition-colors p-1 text-lg" onclick="closeApp('app-browser')">✕</button>
+                <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-browser')">✕</button>
             </div>
-            <div class="flex border-b border-[var(--glass-border)] text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-black/60 font-bold">
-                <button class="flex-1 py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
-                <button class="flex-1 py-4 transition-colors" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
+            <div class="flex border-b border-[var(--glass-border)] text-[12px] md:text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-black/60 font-bold">
+                <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
+                <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
             </div>
             <div class="window-content" id="browser-content">
                 <!-- Content -->
@@ -676,10 +780,10 @@
                 <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
                     <span class="w-3 h-3 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></span> SoundNet App
                 </span>
-                <button class="text-gray-400 hover:text-white transition-colors p-1 text-lg" onclick="closeApp('app-social')">✕</button>
+                <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-social')">✕</button>
             </div>
-            <div class="window-content p-8">
-                <div class="border border-[var(--accent)]/30 bg-black/40 p-8 rounded-xl text-center mb-8 shadow-inner">
+            <div class="window-content p-6 md:p-8">
+                <div class="border border-[var(--accent)]/30 bg-black/40 p-6 md:p-8 rounded-xl text-center mb-8 shadow-inner">
                     <p class="text-sm text-[var(--text-muted)] mb-6">Keep the hype alive. Feed your fans.</p>
                     <button id="btn-story" class="btn-action px-10 py-4 text-xs rounded-lg tracking-widest font-bold w-full md:w-auto" onclick="postStory()">
                         POST DAILY STORY
@@ -702,37 +806,51 @@
                 <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
                     <span class="w-3 h-3 rounded-full bg-[var(--retro-green)] shadow-[0_0_10px_var(--retro-green)]"></span> Sys_Stats
                 </span>
-                <button class="text-gray-400 hover:text-white transition-colors p-1 text-lg" onclick="closeApp('app-stats')">✕</button>
+                <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-stats')">✕</button>
             </div>
-            <div class="window-content font-retro text-sm text-[var(--retro-green)] bg-black/80 p-8 leading-loose tracking-wider shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
+            <div class="window-content font-retro text-sm text-[var(--retro-green)] bg-black/80 p-6 md:p-8 leading-loose tracking-wider shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
                 <div id="stats-content">Loading metrics...</div>
             </div>
         </div>
 
         <!-- Toasts Zone (TOP LEFT) -->
-        <div id="toast-zone" class="absolute top-6 left-6 flex flex-col gap-3 z-[9999] pointer-events-none w-72"></div>
+        <div id="toast-zone" class="absolute top-[90px] md:top-6 left-4 md:left-6 flex flex-col gap-3 z-[9999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
 
     </div>
 
     <!-- BSOD Overlay -->
-    <div id="bsod" class="absolute inset-0 z-[100] bg-[#0000AA] text-white p-16 flex-col hidden font-retro">
-        <h1 class="text-5xl font-bold bg-white text-[#0000AA] inline-block px-5 py-2 mb-10 mt-10">CRITICAL_SYSTEM_ERROR</h1>
-        <p class="mb-6 text-xl tracking-wider">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
-        <p class="mb-16 text-lg text-gray-300">Unlicensed software execution caused a memory leak. Restoring system state...</p>
+    <div id="bsod" class="absolute inset-0 z-[100] bg-[#0000AA] text-white p-8 md:p-16 flex-col hidden font-retro">
+        <h1 class="text-3xl md:text-5xl font-bold bg-white text-[#0000AA] inline-block px-5 py-2 mb-8 md:mb-10 mt-10">CRITICAL_SYSTEM_ERROR</h1>
+        <p class="mb-6 text-lg md:text-xl tracking-wider">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
+        <p class="mb-12 md:mb-16 text-base md:text-lg text-gray-300">Unlicensed software execution caused a memory leak. Restoring system state...</p>
         
         <div class="w-full max-w-3xl border border-white/50 p-1">
-            <div id="bsod-progress" class="bg-white h-6 w-0 transition-all"></div>
+            <div id="bsod-progress" class="bg-white h-5 md:h-6 w-0 transition-all"></div>
         </div>
-        <p class="mt-12 text-base glitch text-gray-400">Do not turn off your workstation.</p>
+        <p class="mt-12 text-sm md:text-base glitch text-gray-400">Do not turn off your workstation.</p>
     </div>
 
 </div>
 
 <script>
     /**
-     * SOUND MIX TYCOON V7.0 - CORE LOGIC
-     * Swipe-to-dismiss Notifications, Fixed UI Buttons, Fixed Tooltips
+     * SOUND MIX TYCOON V8.0 - CORE LOGIC
+     * PWA Mobile-First, Bottom Navigation, Advanced Touch interactions
      */
+
+    // --- Responsive State ---
+    let isMobile = window.innerWidth <= 767;
+    window.addEventListener('resize', () => {
+        isMobile = window.innerWidth <= 767;
+        if (isMobile) {
+            document.querySelectorAll('.os-window').forEach(win => {
+                if (win.style.display !== 'none') {
+                    win.style.left = '0px';
+                    win.style.top = '0px';
+                }
+            });
+        }
+    });
 
     // --- Themes ---
     const themes = [
@@ -757,27 +875,46 @@
     // --- Dynamic Island Tooltips JS Engine ---
     const globalTooltip = document.createElement('div');
     globalTooltip.id = 'global-tooltip';
-    globalTooltip.className = 'fixed z-[100] bg-black/95 border border-[var(--glass-border)] rounded-lg p-4 w-[260px] opacity-0 pointer-events-none transition-opacity shadow-2xl font-retro text-[10px] text-white hidden';
+    globalTooltip.className = 'fixed z-[100] bg-black/95 border border-[var(--glass-border)] rounded-lg p-4 w-[280px] opacity-0 pointer-events-none transition-opacity shadow-2xl font-retro text-[10px] text-white hidden';
     document.body.appendChild(globalTooltip);
 
     let tooltipTimeout;
 
+    window.toggleTooltip = (type, el) => {
+        if(isMobile) {
+            if(!globalTooltip.classList.contains('hidden') && globalTooltip.dataset.type === type) {
+                hideTooltip();
+            } else {
+                showTooltip(type, el);
+            }
+        }
+    };
+
     window.showTooltip = (type, el) => {
         clearTimeout(tooltipTimeout);
+        globalTooltip.dataset.type = type;
         const rect = el.getBoundingClientRect();
-        globalTooltip.style.left = `${rect.left + rect.width/2 - 130}px`; 
-        globalTooltip.style.top = `${rect.bottom + 15}px`;
-        globalTooltip.classList.remove('hidden');
         
+        if (isMobile) {
+            globalTooltip.style.left = `50%`;
+            globalTooltip.style.transform = `translateX(-50%)`;
+            globalTooltip.style.top = `${rect.bottom + 15}px`;
+        } else {
+            globalTooltip.style.left = `${rect.left + rect.width/2 - 140}px`; 
+            globalTooltip.style.transform = `none`;
+            globalTooltip.style.top = `${rect.bottom + 15}px`;
+        }
+        
+        globalTooltip.classList.remove('hidden');
         requestAnimationFrame(() => globalTooltip.style.opacity = '1');
 
         if(type === 'money') {
-            let html = '<div class="text-[var(--retro-green)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Bank Statement</div><div class="space-y-2">';
+            let html = '<div class="text-[var(--retro-green)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Bank Statement</div><div class="space-y-3">';
             if(state.history.money.length === 0) html += '<div class="text-gray-500">No transactions.</div>';
             state.history.money.forEach(m => {
                 const color = m.amt >= 0 ? 'text-[var(--retro-green)]' : 'text-[var(--retro-red)]';
                 const sign = m.amt >= 0 ? '+' : '';
-                html += `<div class="flex justify-between items-center"><span class="text-gray-400 truncate pr-2">${m.txt}</span><span class="${color} font-bold">${sign}$${Math.abs(m.amt)}</span></div>`;
+                html += `<div class="flex justify-between items-center"><span class="text-gray-400 truncate pr-2 text-[10px]">${m.txt}</span><span class="${color} font-bold text-xs">${sign}$${Math.abs(m.amt)}</span></div>`;
             });
             html += '</div>';
             globalTooltip.innerHTML = html;
@@ -785,14 +922,14 @@
         if(type === 'rep') {
             const streams = Math.floor(state.rep * 42.5 + Math.random() * 20); 
             globalTooltip.innerHTML = `<div class="text-[var(--retro-orange)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Streaming Data</div>
-                                 <div class="text-gray-300">Estimated Daily Streams:</div>
-                                 <div class="text-2xl text-white mt-2 font-bold tracking-wider">~${formatNum(streams)} <span class="text-[8px] text-[var(--retro-orange)]">PLAYS</span></div>`;
+                                 <div class="text-gray-300 text-[11px]">Estimated Daily Streams:</div>
+                                 <div class="text-2xl text-white mt-2 font-bold tracking-wider">~${formatNum(streams)} <span class="text-[9px] text-[var(--retro-orange)]">PLAYS</span></div>`;
         }
         if(type === 'fol') {
-            let html = '<div class="text-[var(--accent)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Recent Subscribers</div><div class="space-y-2">';
+            let html = '<div class="text-[var(--accent)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Recent Subscribers</div><div class="space-y-3">';
             if(state.history.followers.length === 0) html += '<div class="text-gray-500">No recent activity.</div>';
             state.history.followers.forEach(f => {
-                html += `<div class="text-gray-200 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_5px_var(--accent)]"></span> @${f}</div>`;
+                html += `<div class="text-gray-200 flex items-center gap-3 text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_5px_var(--accent)]"></span> @${f}</div>`;
             });
             html += '</div>';
             globalTooltip.innerHTML = html;
@@ -803,8 +940,16 @@
         globalTooltip.style.opacity = '0';
         tooltipTimeout = setTimeout(() => { 
             globalTooltip.classList.add('hidden'); 
-        }, 250); // Ensure it cleans up
+            globalTooltip.dataset.type = '';
+        }, 250); 
     };
+
+    // Close tooltip on mobile if tap outside
+    document.addEventListener('touchstart', (e) => {
+        if(isMobile && !e.target.closest('#hud') && !e.target.closest('#global-tooltip')) {
+            hideTooltip();
+        }
+    }, {passive: true});
 
     // --- System Monitor Graph ---
     const sysCanvas = document.getElementById('sys-canvas');
@@ -978,9 +1123,9 @@
     function initUI() {
         const cont = document.getElementById('avatar-container');
         cont.innerHTML = avatars.map((a, i) => `
-            <div class="avatar-sel flex flex-col items-center justify-center p-4 ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
-                <img src="${a.img}" alt="${a.id}" class="w-32 h-32 pixelated object-contain mb-3" onerror="this.style.border='1px solid red'" />
-                <span class="text-xs font-retro text-[var(--text-muted)] uppercase font-bold tracking-widest">${a.id}</span>
+            <div class="avatar-sel flex flex-col items-center justify-center p-3 md:p-4 ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
+                <img src="${a.img}" alt="${a.id}" class="w-24 h-24 md:w-32 md:h-32 pixelated object-contain mb-3" onerror="this.style.border='1px solid red'" />
+                <span class="text-[10px] md:text-xs font-retro text-[var(--text-muted)] uppercase font-bold tracking-widest">${a.id}</span>
             </div>
         `).join('');
 
@@ -1001,6 +1146,7 @@
             let isDragging = false, startX, startY, initX, initY;
 
             const startDrag = (e) => {
+                if(isMobile) return; 
                 isDragging = true;
                 bringToFront(win.id);
                 const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
@@ -1012,7 +1158,7 @@
             };
 
             const doDrag = (e) => {
-                if(!isDragging) return;
+                if(!isDragging || isMobile) return;
                 e.preventDefault();
                 const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
                 const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
@@ -1030,7 +1176,7 @@
             header.addEventListener('mousedown', startDrag);
             document.addEventListener('mousemove', doDrag);
             document.addEventListener('mouseup', stopDrag);
-            header.addEventListener('touchstart', startDrag, {passive: false});
+            header.addEventListener('touchstart', startDrag, {passive: true});
             document.addEventListener('touchmove', doDrag, {passive: false});
             document.addEventListener('touchend', stopDrag);
         });
@@ -1060,39 +1206,59 @@
             let startY = 0;
             let currentRot = parseFloat(knob.dataset.rot || -135);
 
-            knob.addEventListener('mousedown', (e) => {
+            const onStart = (clientY) => {
                 isDragging = true;
-                startY = e.clientY;
+                startY = clientY;
                 currentRot = parseFloat(knob.dataset.rot || -135);
-            });
-            document.addEventListener('mousemove', (e) => {
+            };
+
+            const onMove = (clientY) => {
                 if(!isDragging) return;
-                const dy = startY - e.clientY; 
+                const dy = startY - clientY; 
                 let newRot = currentRot + dy * 2.5;
                 if(newRot < -135) newRot = -135;
                 if(newRot > 135) newRot = 135;
                 knob.style.transform = `rotate(${newRot}deg)`;
                 knob.dataset.rot = newRot;
-            });
-            document.addEventListener('mouseup', () => { isDragging = false; });
+            };
+
+            const onEnd = () => { isDragging = false; };
+
+            knob.addEventListener('mousedown', (e) => onStart(e.clientY));
+            document.addEventListener('mousemove', (e) => onMove(e.clientY));
+            document.addEventListener('mouseup', onEnd);
+            
+            knob.addEventListener('touchstart', (e) => onStart(e.touches[0].clientY), {passive: true});
+            document.addEventListener('touchmove', (e) => onMove(e.touches[0].clientY), {passive: false});
+            document.addEventListener('touchend', onEnd);
         });
 
         const tlContainer = document.getElementById('timeline-container');
         const playhead = document.getElementById('playhead');
-        tlContainer.addEventListener('mousedown', (e) => {
+        
+        const onTlClick = (clientX) => {
             if (state.isExporting) return;
             const rect = tlContainer.getBoundingClientRect();
-            let x = e.clientX - rect.left + tlContainer.scrollLeft;
+            let x = clientX - rect.left + tlContainer.scrollLeft;
             if(x < 110) x = 110; 
             playhead.style.left = `${x}px`;
             playTone(300, 'sine', 0.05, 0.05); 
-        });
+        };
+
+        tlContainer.addEventListener('mousedown', (e) => onTlClick(e.clientX));
+        tlContainer.addEventListener('touchstart', (e) => onTlClick(e.touches[0].clientX), {passive: true});
     }
 
     function selectDawGenre(val) {
         currentDawGenre = val;
         document.querySelectorAll('.btn-genre').forEach(b => {
-            b.classList.toggle('active', b.dataset.val === val);
+            if(b.dataset.val === val) {
+                b.classList.remove('btn-minimal');
+                b.classList.add('btn-action', 'text-white');
+            } else {
+                b.classList.add('btn-minimal');
+                b.classList.remove('btn-action', 'text-white');
+            }
         });
         playBleep();
     }
@@ -1100,7 +1266,13 @@
     function selectDawVoice(val) {
         currentDawVoice = val;
         document.querySelectorAll('.btn-voice').forEach(b => {
-            b.classList.toggle('active', b.dataset.val === val);
+            if(b.dataset.val === val) {
+                b.classList.remove('btn-minimal');
+                b.classList.add('btn-action', 'text-white');
+            } else {
+                b.classList.add('btn-minimal');
+                b.classList.remove('btn-action', 'text-white');
+            }
         });
         playBleep();
     }
@@ -1275,10 +1447,14 @@
     let windowOffsetXY = 0;
     
     function openApp(id) {
+        if(isMobile) {
+            document.querySelectorAll('.os-window').forEach(w => w.style.display = 'none');
+        }
+
         const win = document.getElementById(id);
         if(win.style.display === 'none' || win.style.display === '') {
             win.style.display = 'flex';
-            if (!win.dataset.posInit) {
+            if (!isMobile && !win.dataset.posInit) {
                 const w = win.offsetWidth || parseInt(window.getComputedStyle(win).width, 10) || 700;
                 const startX = Math.max(20, (window.innerWidth / 2) - (w / 2) - 100);
                 win.style.left = `${startX + windowOffsetXY}px`;
@@ -1288,10 +1464,14 @@
                 windowOffsetXY += 40;
                 if (windowOffsetXY > 200) windowOffsetXY = 0;
             }
+            if (isMobile) {
+                win.style.left = '0px';
+                win.style.top = '0px';
+            }
             if(id === 'app-daw') updateDawPlugins();
         }
         bringToFront(id);
-        updateTaskbar();
+        if(!isMobile) updateTaskbar();
         playBleep();
         if(id === 'app-stats') refreshStats();
         if(id === 'app-social') refreshSocial();
@@ -1299,7 +1479,7 @@
 
     function closeApp(id) {
         document.getElementById(id).style.display = 'none';
-        updateTaskbar();
+        if(!isMobile) updateTaskbar();
         playBleep();
     }
 
@@ -1312,6 +1492,7 @@
     }
 
     function updateTaskbar() {
+        if(isMobile) return;
         const container = document.getElementById('taskbar-apps');
         if(!container) return;
         container.innerHTML = '';
@@ -1478,14 +1659,13 @@
         let resultTxt = "";
         let critique = "";
 
-        // Plugin Modifier Logic
         if(pluginId === 'c2' && result.score === 0 && result.wrongVoice) {
-            result.score = 1; // AutoTune saves the day
+            result.score = 1; 
             critique = "\nAutoTune activé: Voix robotique, mais ça passe pour TikTok.";
         }
 
         if(pluginId === 'c5') {
-            result.score = 3; // Ghost AI forces banger
+            result.score = 3; 
             if(Math.random() > 0.5) {
                 critique = "\nIA Détectée ! Hit absolu, mais Bad Buzz (-20 REP).";
                 repGain -= 20;
@@ -1494,7 +1674,6 @@
             }
         }
 
-        // Base scoring
         if(result.score === 3) {
             resultTxt = "🔥 PERFECT BANGER! (Top Charts)";
             state.stats.bangers++;
@@ -1683,7 +1862,7 @@
     // --- Virus / BSOD Event ---
     function triggerBSOD() {
         state.stats.viruses++;
-        const loss = Math.floor(state.money * 0.2); // Lose 20%
+        const loss = Math.floor(state.money * 0.2); 
         logMoney(-loss, 'System Virus Purge');
         saveGame();
         updateHUD();
@@ -1827,7 +2006,7 @@
             
             const onMove = e => {
                 currentX = e.clientX - startX;
-                if(currentX < 0) { // Only swipe left allowed
+                if(currentX < 0) {
                     t.style.transform = `translateX(${currentX}px)`;
                     t.style.opacity = Math.max(0, 1 + currentX/200);
                 }
@@ -1835,12 +2014,12 @@
             const onUp = () => {
                 document.removeEventListener('mousemove', onMove);
                 document.removeEventListener('mouseup', onUp);
-                if(currentX < -50) { // Dismiss
+                if(currentX < -50) { 
                     t.style.transition = 'all 0.3s ease-out';
                     t.style.transform = `translateX(-120%)`;
                     t.style.opacity = '0';
                     setTimeout(() => t.remove(), 300);
-                } else { // Snap back
+                } else { 
                     t.style.transition = 'all 0.3s ease-out';
                     t.style.transform = 'translateX(0)';
                     t.style.opacity = '1';
