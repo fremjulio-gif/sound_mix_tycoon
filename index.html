@@ -995,6 +995,23 @@
     floor.receiveShadow = true;
     scene.add(floor);
 
+  
+    const wallMat = new THREE.MeshStandardMaterial({ color: '#b6b0a3', roughness: 0.9 });
+    
+    // Mur arrière gauche (axe Z)
+    const wallLeftGeo = new THREE.BoxGeometry(10, 5, 0.5);
+    const wallLeft = new THREE.Mesh(wallLeftGeo, wallMat);
+    wallLeft.position.set(0, 6.5, -10); // Aligné sur le bord du sol (-10)
+    wallLeft.receiveShadow = true;
+    scene.add(wallLeft);
+
+    // Mur arrière droit (axe X)
+    const wallRightGeo = new THREE.BoxGeometry(0.5, 5, 10);
+    const wallRight = new THREE.Mesh(wallRightGeo, wallMat);
+    wallRight.position.set(-10, 6.5, 0); // Aligné sur l'autre bord (-10)
+    wallRight.receiveShadow = true;
+    scene.add(wallRight);
+
     const deskTopGeo = new THREE.BoxGeometry(4.5, 0.1, 2.2);
     const deskTopMat = new THREE.MeshStandardMaterial({ color: '#1e1b4b', roughness: 0.7, metalness: 0.1 });
     const deskTop = new THREE.Mesh(deskTopGeo, deskTopMat);
