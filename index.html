@@ -464,19 +464,27 @@
             }
             .seq-pad { min-width: 44px; }
 
-            /* HUD tweaks */
+            /* HUD tweaks (Dynamic Island miniaturisée) */
             #hud {
-                width: 92% !important;
+                width: max-content !important;
+                min-width: 200px !important;
                 top: 10px !important;
-                height: auto !important;
-                padding: 10px 15px !important;
-                flex-wrap: wrap !important;
-                justify-content: center !important;
-                gap: 10px !important;
+                height: 48px !important;
+                padding: 5px 15px !important;
+                flex-wrap: nowrap !important;
+                gap: 15px !important;
             }
-            #hud:hover { width: 96% !important; }
-            #hud-name { opacity: 1 !important; width: auto !important; }
-            .hud-stats-container { opacity: 1 !important; width: 100% !important; justify-content: space-around !important; }
+            #hud:hover { width: max-content !important; }
+            #hud-avatar { width: 32px !important; height: 32px !important; }
+            #hud-name { display: none !important; }
+            .hud-stats-container { opacity: 1 !important; width: auto !important; gap: 15px !important; }
+            
+            /* DAW Layout fixes for mobile */
+            #app-daw { min-width: 0 !important; }
+            .daw-panel-neon { min-width: 0 !important; width: 100% !important; }
+            .tl-track { min-width: 600px; }
+            /* Débloque le scroll du DAW pour atteindre le bouton Render */
+            .daw-grid-container { height: auto !important; min-height: max-content !important; }
             
             /* DAW Layout fixes for mobile */
             #app-daw { min-width: 0 !important; }
