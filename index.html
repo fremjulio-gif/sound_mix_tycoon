@@ -36,7 +36,7 @@
             font-family: 'Inter', system-ui, sans-serif;
             user-select: none;
             -webkit-user-select: none;
-            background-color: #050505; /* Base fallback */
+            background-color: #050505;
         }
 
         .font-retro { font-family: 'Share Tech Mono', monospace; letter-spacing: 0.05em; }
@@ -64,7 +64,7 @@
             inset: 0;
             z-index: 1;
             overflow: hidden;
-            background: #09090b;
+            background: #050508;
         }
 
         #room-ui {
@@ -72,14 +72,14 @@
             inset: 0;
             z-index: 5;
             pointer-events: none;
-            display: none; /* Controlled by JS */
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: flex-end;
             padding-bottom: 10vh;
         }
 
-        /* --- DYNAMIC MESH BACKGROUND (Moved inside OS Layer) --- */
+        /* --- DYNAMIC MESH BACKGROUND --- */
         #dynamic-bg {
             position: absolute;
             inset: 0;
@@ -122,7 +122,7 @@
             position: absolute;
             inset: 0;
             z-index: 10;
-            display: none; /* Hidden until PC is clicked */
+            display: none;
             flex-direction: column;
         }
 
@@ -175,22 +175,19 @@
         }
 
         .os-window {
-                width: 100vw !important;
-                height: 100dvh !important;
-                max-width: 100vw !important;
-                max-height: 100dvh !important;
-                top: 0 !important;
-                left: 0 !important;
-                border-radius: 0 !important;
-                resize: none !important;
-                border: none !important;
-                padding-top: 85px; 
-                background: rgba(10, 10, 15, 0.98) !important;
-                box-shadow: none !important;
-                /* AJOUT ICI */
-                overflow-y: auto !important; 
-                display: block !important; /* Permet au contenu de s'empiler */
-            }
+            position: absolute;
+            width: 800px; 
+            max-width: 95vw;
+            min-width: 320px;
+            max-height: 85dvh; 
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 10;
+            transition: border-color 0.3s ease;
+            resize: both;
+            box-sizing: border-box;
+        }
         
         .os-window.active-window {
             z-index: 40;
@@ -319,13 +316,15 @@
         }
 
         /* DAW PRO UI */
-       .daw-grid-container { 
-                height: auto !important; 
-                min-height: max-content !important; 
-                display: flex !important;
-                flex-direction: column !important;
-                padding-bottom: 120px !important; /* Marge pour ne pas être caché par la nav mobile */
-            }
+        .daw-grid-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(0,0,0,0.4);
+            height: 100%;
+            box-sizing: border-box;
+        }
 
         @media (min-width: 768px) {
             .daw-grid-container { flex-direction: row; }
@@ -421,14 +420,6 @@
             background: var(--accent); color: #fff; box-shadow: 0 0 20px rgba(129, 140, 248, 0.6);
         }
 
-        .btn-minimal, .btn-action {
-                padding: 15px 5px !important; /* Boutons plus hauts */
-                font-size: 10px !important;
-            }
-            #daw-plugin, #daw-bpm {
-                height: 48px !important; /* Inputs plus gros */
-            }
-
         /* Scrollbars */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -461,11 +452,9 @@
         #mobile-nav { display: none; }
         
         @media (max-width: 767px) {
-            /* Replace Desktop Taskbar with Bottom App Bar */
             #taskbar-bottom { display: none !important; }
             #mobile-nav { display: flex !important; }
             
-            /* Reformat Desktop area */
             #desktop-content {
                 padding-top: 100px !important;
                 flex-direction: column !important;
@@ -483,7 +472,6 @@
                 display: none !important;
             }
 
-            /* Windows take Full Screen */
             .os-window {
                 width: 100vw !important;
                 height: 100dvh !important;
@@ -497,6 +485,9 @@
                 padding-top: 85px; 
                 background: rgba(10, 10, 15, 0.98) !important;
                 box-shadow: none !important;
+                /* Rendre les fenêtres défilables sur mobile */
+                overflow-y: auto !important; 
+                display: block !important;
             }
             .window-header {
                 border-top: 1px solid rgba(255,255,255,0.1);
@@ -507,13 +498,22 @@
                 overflow-x: hidden;
             }
 
-            /* Make hit targets larger */
             .btn-minimal, .btn-action, .seq-pad {
                 min-height: 44px;
             }
             .seq-pad { min-width: 44px; }
+            
+            .btn-minimal, .btn-action {
+                padding: 15px 5px !important; 
+                font-size: 10px !important;
+            }
+            #daw-plugin, #daw-bpm {
+                height: 48px !important;
+            }
+            #bpm-val {
+                font-size: 18px !important; 
+            }
 
-            /* HUD tweaks (Dynamic Island miniaturisée) */
             #hud {
                 width: max-content !important;
                 min-width: 200px !important;
@@ -528,30 +528,32 @@
             #hud-name { display: none !important; }
             .hud-stats-container { opacity: 1 !important; width: auto !important; gap: 15px !important; }
             
-            /* DAW Layout fixes for mobile */
             #app-daw { min-width: 0 !important; }
             .daw-panel-neon { min-width: 0 !important; width: 100% !important; }
             .tl-track { min-width: 600px; }
-            /* Débloque le scroll du DAW pour atteindre le bouton Render */
-            .daw-grid-container { height: auto !important; min-height: max-content !important; }
             
-            /* Mobile DAW Vu Meter fix (Horizontal) */
+            /* Débloquer le conteneur du DAW pour le scroll mobile */
+            .daw-grid-container { 
+                height: auto !important; 
+                min-height: max-content !important; 
+                display: flex !important;
+                flex-direction: column !important;
+                padding-bottom: 120px !important; 
+            }
+            
             .vu-led { width: 4px; height: 100%; margin-bottom: 0; margin-right: 2px; }
             #vu-meter-container { flex-direction: row !important; height: 16px !important; width: 100% !important; padding: 2px !important; }
             
-            /* Adjust Tooltip location */
             #global-tooltip {
                 left: 50% !important;
                 transform: translateX(-50%) !important;
                 top: 105px !important;
             }
-            /* Toast mobile location */
             #toast-zone {
                 top: 110px !important;
                 width: calc(100vw - 32px) !important;
             }
             
-            /* Hide the Quit PC button on mobile, users can rely on UI */
             #btn-quit-pc {
                 top: auto;
                 bottom: calc(85px + env(safe-area-inset-bottom));
@@ -577,7 +579,7 @@
     <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
         <div class="liquid-glass-heavy p-8 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20">
             <h1 class="text-4xl font-retro font-bold mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">SM_TYCOON</h1>
-            <p class="text-[var(--text-muted)] font-retro text-xs mb-8 tracking-widest uppercase text-center">3D Room Edition // v11.1</p>
+            <p class="text-[var(--text-muted)] font-retro text-xs mb-8 tracking-widest uppercase text-center">3D Room Edition // v11.2</p>
             
             <div class="w-full mb-6">
                 <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
@@ -597,7 +599,7 @@
         </div>
     </div>
 
-    <div id="pc-ui-layer" style="display: none;">
+    <div id="pc-ui-layer">
         
         <div id="dynamic-bg">
             <div class="mesh-blob blob-1"></div>
@@ -790,7 +792,7 @@
                             <div class="w-full md:w-[140px] flex-shrink-0 h-[44px] md:h-auto">
                                 <select id="daw-plugin" class="w-full h-full bg-black/60 border border-white/10 rounded px-2 outline-none text-[var(--accent)] text-[10px] font-bold tracking-wider cursor-pointer">
                                     <option value="">- Clean Mix (No Plugin) -</option>
-                                    </select>
+                                </select>
                             </div>
 
                             <div class="w-full md:w-[160px] bg-black/40 border border-white/10 rounded flex items-center px-4 py-2 md:px-3 md:py-1 gap-3 flex-shrink-0">
@@ -829,7 +831,7 @@
                         </div>
 
                         <div class="w-full md:w-5 h-[16px] md:h-full bg-black/80 border border-white/10 rounded-sm p-0.5 md:p-1 flex flex-row md:flex-col-reverse justify-between shadow-[inset_0_0_10px_rgba(0,0,0,1)]" id="vu-meter-container">
-                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -848,7 +850,7 @@
                 <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
             </div>
             <div class="window-content" id="browser-content">
-                </div>
+            </div>
         </div>
 
         <div id="app-social" class="os-window liquid-glass flex-col" style="display:none;">
@@ -870,7 +872,7 @@
                 <div>
                     <h4 class="text-xs text-white mb-5 uppercase tracking-widest font-retro border-b border-[var(--accent)]/30 pb-3 font-bold">Brand Deals (Sellout)</h4>
                     <div id="sponsor-list" class="space-y-4">
-                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -908,7 +910,7 @@
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
     /**
-     * SOUND MIX TYCOON V11.1
+     * SOUND MIX TYCOON V11.2 (CLEAN VERSION)
      */
 
     // ==========================================
@@ -951,7 +953,7 @@
     // ==========================================
     const container = document.getElementById('three-canvas-container');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#fafafa');
+    scene.background = new THREE.Color('#050508');
 
     const aspect = window.innerWidth / window.innerHeight;
     const frustumSize = 10;
@@ -974,7 +976,7 @@
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.4);
     scene.add(hemiLight);
     
-    const dirLight = new THREE.DirectionalLight(0xd6daff, 1.2);
+    const dirLight = new THREE.DirectionalLight(0x818cf8, 1.2);
     dirLight.position.set(10, 20, 10);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048; 
@@ -982,9 +984,11 @@
     dirLight.shadow.bias = -0.0005; 
     scene.add(dirLight);
 
-    // Meshes
+    // ==========================================
+    // 3. ROOM CREATION
+    // ==========================================
     const floorGeo = new THREE.PlaneGeometry(30, 30);
-    const floorMat = new THREE.MeshStandardMaterial({ color: '#5d574b', roughness: 0.9, metalness: 0.1 });
+    const floorMat = new THREE.MeshStandardMaterial({ color: '#09090b', roughness: 0.9, metalness: 0.1 });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -1;
@@ -992,7 +996,7 @@
     scene.add(floor);
 
     const deskTopGeo = new THREE.BoxGeometry(4.5, 0.1, 2.2);
-    const deskTopMat = new THREE.MeshStandardMaterial({ color: '#706e8b', roughness: 0.7, metalness: 0.1 });
+    const deskTopMat = new THREE.MeshStandardMaterial({ color: '#1e1b4b', roughness: 0.7, metalness: 0.1 });
     const deskTop = new THREE.Mesh(deskTopGeo, deskTopMat);
     deskTop.position.set(0, 0.7, 0);
     deskTop.castShadow = true;
@@ -1001,19 +1005,18 @@
     scene.add(deskTop);
 
     const legGeo = new THREE.BoxGeometry(0.1, 1.7, 0.1);
-    const legMat = new THREE.MeshStandardMaterial({ color: '#706e8b', roughness: 0.4, metalness: 0.8 }); 
+    const legMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.4, metalness: 0.8 }); 
     const legPositions = [ [-2.1, -0.15, -0.9], [2.1, -0.15, -0.9], [-2.1, -0.15, 0.9], [2.1, -0.15, 0.9] ];
     legPositions.forEach(pos => {
         const leg = new THREE.Mesh(legGeo, legMat);
         leg.position.set(...pos);
         leg.castShadow = true;
-        leg.receiveShadow = true;
         scene.add(leg);
     });
 
     const standGeo = new THREE.BoxGeometry(0.2, 0.2, 0.15);
     const stand = new THREE.Mesh(standGeo, legMat);
-    stand.position.set(0, 0.9, -0.6);
+    stand.position.set(0, 0.8, -0.6);
     stand.castShadow = true;
     stand.name = 'pc_mesh';
     scene.add(stand);
@@ -1033,8 +1036,8 @@
     pcFrame.add(pcMesh); 
     scene.add(pcFrame);
 
-    const speakerMat = new THREE.MeshStandardMaterial({ color: '#1b202d', roughness: 0.8, metalness: 0.2 });
-    const wooferMat = new THREE.MeshStandardMaterial({ color: '#383838', roughness: 0.9, metalness: 0.1 });
+    const speakerMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.8, metalness: 0.2 });
+    const wooferMat = new THREE.MeshStandardMaterial({ color: '#000000', roughness: 0.9, metalness: 0.1 });
     const speakerGeo = new THREE.BoxGeometry(0.4, 0.6, 0.4);
     const wooferGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.02, 16);
 
@@ -1042,7 +1045,6 @@
     speakerL.position.set(-1.6, 1.05, -0.4);
     speakerL.rotation.y = Math.PI / 12; 
     speakerL.castShadow = true;
-    speakerL.receiveShadow = true;
     speakerL.name = 'pc_mesh'; 
     const wooferL = new THREE.Mesh(wooferGeo, wooferMat);
     wooferL.rotation.x = Math.PI / 2;
@@ -1054,7 +1056,6 @@
     speakerR.position.set(1.6, 1.05, -0.4);
     speakerR.rotation.y = -Math.PI / 12;
     speakerR.castShadow = true;
-    speakerR.receiveShadow = true;
     speakerR.name = 'pc_mesh';
     const wooferR = new THREE.Mesh(wooferGeo, wooferMat);
     wooferR.rotation.x = Math.PI / 2;
@@ -1062,45 +1063,19 @@
     speakerR.add(wooferR);
     scene.add(speakerR);
 
+    // Clavier
     const kbdBaseGeo = new THREE.BoxGeometry(1.6, 0.05, 0.6);
     const kbdBaseMat = new THREE.MeshStandardMaterial({ color: '#0a0a0a', roughness: 0.3, metalness: 0.2 });
     const kbdBase = new THREE.Mesh(kbdBaseGeo, kbdBaseMat);
-    kbdBase.position.set(0, 0.75, 0.4); // Placé devant l'écran
-    kbdBase.rotation.x = -Math.PI / 40; // Légère inclinaison vers le joueur
+    kbdBase.position.set(0, 0.75, 0.4); 
+    kbdBase.rotation.x = -Math.PI / 40; 
     kbdBase.castShadow = true;
     kbdBase.receiveShadow = true;
+    kbdBase.name = 'pc_mesh';
     scene.add(kbdBase);
 
-    const keyGeo = new THREE.BoxGeometry(0.08, 0, 0.08);
+    const keyGeo = new THREE.BoxGeometry(0.08, 0.03, 0.08);
     const keyMat = new THREE.MeshStandardMaterial({ color: '#1a1a1a', emissive: '#818cf8', emissiveIntensity: 0.1 });
-
-    // --- SOURIS PRO (Corps galbé + Molette) ---
-    const mouseGroup = new THREE.Group();
-    mouseGroup.position.set(1.2, 0.73, 0.4); // Placée à droite du clavier
-    scene.add(mouseGroup);
-
-    // Corps de la souris (forme aplatie et allongée)
-    const mouseBodyGeo = new THREE.SphereGeometry(0.15, 16, 16);
-    mouseBodyGeo.scale(1, 0.6, 1.5); // On l'écrase pour faire une forme de souris
-    const mouseMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.4, metalness: 0.2 });
-    const mouseBody = new THREE.Mesh(mouseBodyGeo, mouseMat);
-    mouseBody.castShadow = true;
-    mouseGroup.add(mouseBody);
-
-    // Molette
-    const wheelGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.05, 12);
-    const wheelMat = new THREE.MeshStandardMaterial({ color: '#818cf8', emissive: '#818cf8', emissiveIntensity: 0.5 });
-    const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-    wheel.rotation.z = Math.PI / 2;
-    wheel.position.set(0, 0.06, -0.05); // Placée sur le dessus à l'avant
-    mouseGroup.add(wheel);
-
-    // Petit détail : fente entre les clics
-    const splitGeo = new THREE.BoxGeometry(0.005, 0.02, 0.15);
-    const split = new THREE.Mesh(splitGeo, new THREE.MeshStandardMaterial({ color: '#000000' }));
-    split.position.set(0, 0.08, -0.1);
-    mouseGroup.add(split);
-    
     for (let x = -0.7; x <= 0.7; x += 0.12) {
         for (let z = -0.22; z <= 0.22; z += 0.12) {
             const key = new THREE.Mesh(keyGeo, keyMat);
@@ -1108,7 +1083,32 @@
             kbdBase.add(key);
         }
     }
-    
+
+    // Souris
+    const mouseGroup = new THREE.Group();
+    mouseGroup.position.set(1.2, 0.73, 0.4); 
+    scene.add(mouseGroup);
+
+    const mouseBodyGeo = new THREE.SphereGeometry(0.15, 16, 16);
+    mouseBodyGeo.scale(1, 0.6, 1.5); 
+    const mouseMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.4, metalness: 0.2 });
+    const mouseBody = new THREE.Mesh(mouseBodyGeo, mouseMat);
+    mouseBody.castShadow = true;
+    mouseBody.name = 'pc_mesh';
+    mouseGroup.add(mouseBody);
+
+    const wheelGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.05, 12);
+    const wheelMat = new THREE.MeshStandardMaterial({ color: '#818cf8', emissive: '#818cf8', emissiveIntensity: 0.5 });
+    const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+    wheel.rotation.z = Math.PI / 2;
+    wheel.position.set(0, 0.06, -0.05); 
+    mouseGroup.add(wheel);
+
+    const splitGeo = new THREE.BoxGeometry(0.005, 0.02, 0.15);
+    const split = new THREE.Mesh(splitGeo, new THREE.MeshStandardMaterial({ color: '#000000' }));
+    split.position.set(0, 0.08, -0.1);
+    mouseGroup.add(split);
+
     let time = 0;
     function animate3D() {
         requestAnimationFrame(animate3D);
@@ -1128,8 +1128,11 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
+    // ==========================================
+    // 4. RAYCASTER & INTERACTION
+    // ==========================================
     const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
+    const mousePos = new THREE.Vector2();
 
     function onPointerDown(event) {
         if (document.getElementById('room-ui').style.display !== 'flex') return;
@@ -1143,10 +1146,10 @@
             clientY = event.clientY;
         }
 
-        mouse.x = (clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+        mousePos.x = (clientX / window.innerWidth) * 2 - 1;
+        mousePos.y = -(clientY / window.innerHeight) * 2 + 1;
 
-        raycaster.setFromCamera(mouse, camera);
+        raycaster.setFromCamera(mousePos, camera);
         const intersects = raycaster.intersectObjects(scene.children, true);
 
         for (let i = 0; i < intersects.length; i++) {
@@ -1172,7 +1175,7 @@
     }
 
     // ==========================================
-    // 3. UI LOGIC (Tooltips, Apps, System)
+    // 5. GAME LOGIC & UI (Refactored)
     // ==========================================
     const globalTooltip = document.createElement('div');
     globalTooltip.id = 'global-tooltip';
@@ -1207,7 +1210,7 @@
         }
         
         globalTooltip.classList.remove('hidden');
-        void globalTooltip.offsetWidth; // Force reflow
+        void globalTooltip.offsetWidth;
         globalTooltip.style.opacity = '1';
 
         if(type === 'money') {
@@ -1325,9 +1328,7 @@
     const playError = () => { playTone(200, 'sawtooth', 0.2, 0.05); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); };
     const playKick = () => { playTone(60, 'sine', 0.2, 0.2); playTone(120, 'square', 0.05, 0.1); }; 
 
-    // ==========================================
-    // 4. GAME STATE & DATA
-    // ==========================================
+    // Constants
     const avatars = [
         { id: 'Char 1', img: './spr_char_1.png' },
         { id: 'Char 2', img: './spr_char_2.png' },
@@ -1421,7 +1422,7 @@
     }
 
     // ==========================================
-    // 5. INIT & CONTROLLERS
+    // 6. INITIALIZATION & APP LOGIC
     // ==========================================
     function initUI() {
         const cont = document.getElementById('avatar-container');
@@ -1492,8 +1493,7 @@
         });
 
         initInteractiveStudio();
-        drawSysGraphUI();
-
+        
         document.getElementById('btn-login').addEventListener('click', attemptLogin);
         document.getElementById('login-username').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') attemptLogin();
@@ -1562,7 +1562,13 @@
     function selectDawGenre(val) {
         currentDawGenre = val;
         document.querySelectorAll('.btn-genre').forEach(b => {
-            b.classList.toggle('active', b.dataset.val === val);
+            if(b.dataset.val === val) {
+                b.classList.remove('btn-minimal');
+                b.classList.add('btn-action', 'text-white');
+            } else {
+                b.classList.add('btn-minimal');
+                b.classList.remove('btn-action', 'text-white');
+            }
         });
         playBleep();
     }
@@ -1570,7 +1576,13 @@
     function selectDawVoice(val) {
         currentDawVoice = val;
         document.querySelectorAll('.btn-voice').forEach(b => {
-            b.classList.toggle('active', b.dataset.val === val);
+            if(b.dataset.val === val) {
+                b.classList.remove('btn-minimal');
+                b.classList.add('btn-action', 'text-white');
+            } else {
+                b.classList.add('btn-minimal');
+                b.classList.remove('btn-action', 'text-white');
+            }
         });
         playBleep();
     }
@@ -1625,7 +1637,6 @@
 
         document.getElementById('login-screen').style.display = 'none';
         
-        // Show 3D Room Prompt instead of directly opening OS
         document.getElementById('room-ui').style.display = 'flex';
         
         document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="w-full h-full pixelated object-cover" />`;
@@ -1732,7 +1743,6 @@
     }
 
     let zIndexCounter = 50;
-    let windowOffsetXY = 0;
     
     function openApp(id) {
         if(isMobile) {
@@ -2237,7 +2247,7 @@
                 <div class="text-[var(--text-muted)]">AVATAR_ID:</div> <div class="text-white">spr_char_${state.activeCharacter + 1}.png</div>
                 <div class="text-[var(--text-muted)]">UPTIME (Days):</div> <div class="text-white">${state.day}</div>
                 <div class="text-[var(--text-muted)]">REVENUE_MULT:</div> <div class="text-[var(--accent)] font-bold drop-shadow-[0_0_5px_var(--accent)]">x${state.multiplier.toFixed(1)}</div>
-                <div class="text-[var(--text-muted)]">PLUGINS_INST:</div> <div class="text-white">${state.plugins}</div>
+                <div class="text-[var(--text-muted)]">PLUGINS_INST:</div> <div class="text-white">${state.plugins || 0}</div>
                 <div class="col-span-2 text-gray-800">---------------------------------</div>
                 <div class="text-[var(--text-muted)]">TRACKS_EXPORTED:</div> <div class="text-white">${state.stats.tracks}</div>
                 <div class="text-[var(--text-muted)]">BANGERS (Hits):</div> <div class="text-[var(--retro-orange)] font-bold drop-shadow-[0_0_5px_var(--retro-orange)]">${state.stats.bangers}</div>
@@ -2332,7 +2342,7 @@
     }
 
     // ==========================================
-    // 6. GLOBAL EXPORTS FOR HTML BINDINGS
+    // 7. GLOBAL EXPORTS FOR HTML BINDINGS
     // ==========================================
     window.cycleTheme = cycleTheme;
     window.toggleTooltip = toggleTooltip;
