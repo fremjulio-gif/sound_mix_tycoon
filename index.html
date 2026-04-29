@@ -958,13 +958,17 @@
     const listener = new THREE.AudioListener();
     camera.add(listener);
 
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-    scene.add(ambientLight);
+    // Lumière atmosphérique globale (Ciel / Sol)
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.4);
+    scene.add(hemiLight);
     
-    const dirLight = new THREE.DirectionalLight(0x818cf8, 0.8);
+    // Lumière directionnelle principale (Soleil/Spot)
+    const dirLight = new THREE.DirectionalLight(0x818cf8, 1.2);
     dirLight.position.set(10, 20, 10);
     dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048; // Qualité de l'ombre
+    dirLight.shadow.mapSize.height = 2048;
+    dirLight.shadow.bias = -0.0005; // Evite les artefacts d'ombre
     scene.add(dirLight);
 
      // ==========================================
