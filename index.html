@@ -36,7 +36,7 @@
             font-family: 'Inter', system-ui, sans-serif;
             user-select: none;
             -webkit-user-select: none;
-            background-color: var(--bg-color-1);
+            background-color: #050505; /* Base fallback */
         }
 
         .font-retro { font-family: 'Share Tech Mono', monospace; letter-spacing: 0.05em; }
@@ -58,7 +58,28 @@
             flex-direction: column;
         }
 
-        /* --- DYNAMIC MESH BACKGROUND --- */
+        /* --- 3D CANVAS LAYER --- */
+        #three-canvas-container {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            overflow: hidden;
+            background: #09090b;
+        }
+
+        #room-ui {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            pointer-events: none;
+            display: none; /* Controlled by JS */
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 10vh;
+        }
+
+        /* --- DYNAMIC MESH BACKGROUND (Moved inside OS Layer) --- */
         #dynamic-bg {
             position: absolute;
             inset: 0;
@@ -95,6 +116,34 @@
             50% { transform: translate(8%, 12%) scale(1.05); }
             100% { transform: translate(-8%, -6%) scale(0.95); }
         }
+
+        /* --- OS LAYER WRAPPER --- */
+        #pc-ui-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            display: none; /* Hidden until PC is clicked */
+            flex-direction: column;
+        }
+
+        #btn-quit-pc {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 90;
+            padding: 8px 16px;
+            background: rgba(10, 10, 15, 0.8);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            color: var(--retro-red);
+            font-family: 'Share Tech Mono', monospace;
+            text-transform: uppercase;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+        }
+        #btn-quit-pc:hover { background: rgba(251, 113, 133, 0.2); border-color: var(--retro-red); }
 
         /* --- LIQUID GLASS EFFECT --- */
         .liquid-glass {
@@ -436,7 +485,7 @@
                 border-radius: 0 !important;
                 resize: none !important;
                 border: none !important;
-                padding-top: 85px; /* Push content below Dynamic Island */
+                padding-top: 85px; 
                 background: rgba(10, 10, 15, 0.98) !important;
                 box-shadow: none !important;
             }
@@ -445,7 +494,7 @@
                 border-radius: 0;
             }
             .window-content {
-                padding-bottom: calc(85px + env(safe-area-inset-bottom)) !important; /* Clear bottom nav */
+                padding-bottom: calc(85px + env(safe-area-inset-bottom)) !important; 
                 overflow-x: hidden;
             }
 
@@ -477,11 +526,6 @@
             /* Débloque le scroll du DAW pour atteindre le bouton Render */
             .daw-grid-container { height: auto !important; min-height: max-content !important; }
             
-            /* DAW Layout fixes for mobile */
-            #app-daw { min-width: 0 !important; }
-            .daw-panel-neon { min-width: 0 !important; width: 100% !important; }
-            .tl-track { min-width: 600px; }
-            
             /* Mobile DAW Vu Meter fix (Horizontal) */
             .vu-led { width: 4px; height: 100%; margin-bottom: 0; margin-right: 2px; }
             #vu-meter-container { flex-direction: row !important; height: 16px !important; width: 100% !important; padding: 2px !important; }
@@ -497,6 +541,15 @@
                 top: 110px !important;
                 width: calc(100vw - 32px) !important;
             }
+            
+            /* Hide the Quit PC button on mobile, users can rely on UI */
+            #btn-quit-pc {
+                top: auto;
+                bottom: calc(85px + env(safe-area-inset-bottom));
+                left: 50%;
+                transform: translateX(-50%);
+                width: 90%;
+            }
         }
     </style>
 </head>
@@ -504,19 +557,21 @@
 
 <div id="game-container">
 
-    <!-- DYNAMIC BACKGROUND -->
-    <div id="dynamic-bg">
-        <div class="mesh-blob blob-1"></div>
-        <div class="mesh-blob blob-2"></div>
-        <div class="mesh-blob blob-3"></div>
-        <div id="grid-overlay"></div>
-    </div>
+    <!-- 3D CANVAS LAYER -->
+    <div id="three-canvas-container"></div>
     
+    <!-- ROOM UI LAYER -->
+    <div id="room-ui">
+        <div class="bg-black/80 text-[var(--accent)] border border-[var(--accent)]/50 px-6 py-3 rounded-xl font-retro animate-[pulse_2s_ease-in-out_infinite] tracking-widest text-sm shadow-[0_0_15px_rgba(129,140,248,0.3)] mb-[15vh]">
+            CLICK THE GLOWING PC TO START
+        </div>
+    </div>
+
     <!-- LOGIN SCREEN -->
     <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
         <div class="liquid-glass-heavy p-8 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20">
             <h1 class="text-4xl font-retro font-bold mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">SM_TYCOON</h1>
-            <p class="text-[var(--text-muted)] font-retro text-xs mb-8 tracking-widest uppercase text-center">OS Initialization // v9.0</p>
+            <p class="text-[var(--text-muted)] font-retro text-xs mb-8 tracking-widest uppercase text-center">3D Room Edition // v10.0</p>
             
             <div class="w-full mb-6">
                 <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
@@ -531,15 +586,26 @@
             </div>
 
             <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-2">
-                Boot System
+                Boot Studio Environment
             </button>
             <p id="login-error" class="text-[var(--retro-red)] font-retro text-xs mt-4 hidden text-center">Error: Missing ID</p>
         </div>
     </div>
 
-    <!-- MAIN OS INTERFACE -->
-    <div id="os-screen" class="absolute inset-0 hidden flex-col">
+    <!-- MAIN OS INTERFACE (Layer 2) -->
+    <div id="pc-ui-layer">
         
+        <!-- DYNAMIC BACKGROUND (Now inside the PC Layer to keep the OS looking cool) -->
+        <div id="dynamic-bg">
+            <div class="mesh-blob blob-1"></div>
+            <div class="mesh-blob blob-2"></div>
+            <div class="mesh-blob blob-3"></div>
+            <div id="grid-overlay"></div>
+        </div>
+
+        <!-- QUIT PC BUTTON -->
+        <button id="btn-quit-pc" onclick="quitPC()">CLOSE OS SESSION</button>
+
         <!-- HUD - DYNAMIC ISLAND (TOP) -->
         <div id="hud" class="liquid-glass-heavy h-[76px] fixed top-6 left-1/2 -translate-x-1/2 z-50 rounded-[30px] flex items-center justify-between px-5 transition-all duration-500 w-[240px] hover:w-[680px] group border border-white/10 shadow-2xl">
             <div class="flex items-center gap-4 shrink-0 w-full md:w-auto justify-center md:justify-start">
@@ -763,10 +829,9 @@
                 </div>
 
                 <!-- Right Panel : Master Knobs -->
-                <div class="daw-panel-neon md:w-[110px] w-full p-4 flex flex-col items-center justify-start flex-shrink-0">
+                <div class="daw-panel-neon md:w-[110px] w-full p-4 flex flex-row md:flex-col items-center justify-between md:justify-start flex-shrink-0">
                     <label class="block text-[10px] text-gray-300 md:mb-6 mb-3 font-retro uppercase tracking-widest md:border-b border-[var(--accent)]/30 md:pb-2 w-auto md:w-full text-center">Master</label>
-                    <div class="flex flex-row md:flex-col gap-4 md:gap-5 w-full items-center justify-center mb-0 md:mb-6">
-                        <!-- Wrapper for knobs on mobile -->
+                    <div class="flex flex-row md:flex-col gap-4 md:gap-5 w-auto md:w-full items-center md:mb-6">
                         <div class="flex flex-row md:flex-col gap-4 md:gap-5">
                             <div class="knob-container">
                                 <div class="knob" id="knob-1" data-rot="-45" style="transform: rotate(-45deg)"></div>
@@ -782,8 +847,7 @@
                             </div>
                         </div>
 
-                        <!-- VU Meter -->
-                        <div class="w-full md:w-5 h-[16px] md:h-full bg-black/80 border border-white/10 rounded-sm p-0.5 md:p-1 flex flex-row md:flex-col-reverse justify-between shadow-[inset_0_0_10px_rgba(0,0,0,1)]" id="vu-meter-container">
+                        <div class="w-full md:w-5 h-5 md:h-full bg-black/80 border border-white/10 rounded-sm p-1 flex flex-row md:flex-col-reverse justify-between shadow-[inset_0_0_10px_rgba(0,0,0,1)]" id="vu-meter-container">
                             <!-- Generated by JS -->
                         </div>
                     </div>
@@ -853,29 +917,131 @@
 
     </div>
 
-    <!-- BSOD Overlay -->
-    <div id="bsod" class="absolute inset-0 z-[100] bg-[#0000AA] text-white p-8 md:p-16 flex-col hidden font-retro">
-        <h1 class="text-3xl md:text-5xl font-bold bg-white text-[#0000AA] inline-block px-5 py-2 mb-8 md:mb-10 mt-10">CRITICAL_SYSTEM_ERROR</h1>
-        <p class="mb-6 text-lg md:text-xl tracking-wider">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
-        <p class="mb-12 md:mb-16 text-base md:text-lg text-gray-300">Unlicensed software execution caused a memory leak. Restoring system state...</p>
-        
-        <div class="w-full max-w-3xl border border-white/50 p-1">
-            <div id="bsod-progress" class="bg-white h-5 md:h-6 w-0 transition-all"></div>
-        </div>
-        <p class="mt-12 text-sm md:text-base glitch text-gray-400">Do not turn off your workstation.</p>
-    </div>
-
 </div>
 
-<script>
+<!-- THREE.JS MODULE SCRIPT -->
+<script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
     /**
-     * SOUND MIX TYCOON V9.0 - CORE LOGIC
-     * PWA Mobile-First, Central App Opening, Mobile Themes, Fully Responsive DAW
+     * SOUND MIX TYCOON V10.0 - 3D ISOMETRIC INTEGRATION
      */
 
-    // --- Responsive State ---
-    let isMobile = window.innerWidth <= 767;
+    // ==========================================
+    // 1. THREE.JS SCENE SETUP
+    // ==========================================
+    const container = document.getElementById('three-canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#050508');
+
+    // Isometric Camera Setup (Orthographic)
+    const aspect = window.innerWidth / window.innerHeight;
+    const frustumSize = 10;
+    const camera = new THREE.OrthographicCamera(
+        frustumSize * aspect / -2,
+        frustumSize * aspect / 2,
+        frustumSize / 2,
+        frustumSize / -2,
+        1,
+        1000
+    );
+    // Position camera for isometric view
+    camera.position.set(20, 20, 20);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    container.appendChild(renderer.domElement);
+
+    // Audio Spatial Placeholder
+    const listener = new THREE.AudioListener();
+    camera.add(listener);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambientLight);
+    
+    const dirLight = new THREE.DirectionalLight(0x818cf8, 0.8);
+    dirLight.position.set(10, 20, 10);
+    dirLight.castShadow = true;
+    scene.add(dirLight);
+
+    // ==========================================
+    // 2. ROOM CREATION
+    // ==========================================
+    // Floor
+    const floorGeo = new THREE.PlaneGeometry(20, 20);
+    const floorMat = new THREE.MeshStandardMaterial({ color: '#09090b', roughness: 0.8 });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -1;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Desk
+    const deskGeo = new THREE.BoxGeometry(4, 0.2, 2);
+    const deskMat = new THREE.MeshStandardMaterial({ color: '#1e1b4b', roughness: 0.5 });
+    const desk = new THREE.Mesh(deskGeo, deskMat);
+    desk.position.set(0, 0, 0);
+    desk.castShadow = true;
+    desk.receiveShadow = true;
+    scene.add(desk);
+
+    // Glowing PC (Interactive Object)
+    const pcGeo = new THREE.BoxGeometry(1.2, 0.8, 0.1);
+    const pcMat = new THREE.MeshStandardMaterial({ 
+        color: '#000000', 
+        emissive: '#818cf8', 
+        emissiveIntensity: 0.8
+    });
+    const pcMesh = new THREE.Mesh(pcGeo, pcMat);
+    pcMesh.position.set(0, 0.5, -0.5);
+    pcMesh.name = 'pc_mesh'; // Critical for raycaster
+    pcMesh.castShadow = true;
+    scene.add(pcMesh);
+
+    // Speakers (Left and Right)
+    const speakerGeo = new THREE.BoxGeometry(0.4, 0.6, 0.4);
+    const speakerMat = new THREE.MeshStandardMaterial({ color: '#0f172a' });
+    
+    const speakerL = new THREE.Mesh(speakerGeo, speakerMat);
+    speakerL.position.set(-1.5, 0.4, -0.5);
+    speakerL.castShadow = true;
+    scene.add(speakerL);
+    
+    const speakerR = new THREE.Mesh(speakerGeo, speakerMat);
+    speakerR.position.set(1.5, 0.4, -0.5);
+    speakerR.castShadow = true;
+    scene.add(speakerR);
+
+    // Positional Audio placeholder on left speaker
+    const speakerAudio = new THREE.PositionalAudio(listener);
+    // speakerL.add(speakerAudio); // Ready for future audio sources
+
+    // Animation Loop
+    let time = 0;
+    function animate3D() {
+        requestAnimationFrame(animate3D);
+        time += 0.02;
+        // Make PC glow pulsate slightly
+        pcMat.emissiveIntensity = 0.6 + Math.sin(time) * 0.2;
+        renderer.render(scene, camera);
+    }
+    animate3D();
+
+    // Resize Handler for 3D and 2D
     window.addEventListener('resize', () => {
+        // 3D Resize
+        const aspect = window.innerWidth / window.innerHeight;
+        camera.left = -frustumSize * aspect / 2;
+        camera.right = frustumSize * aspect / 2;
+        camera.top = frustumSize / 2;
+        camera.bottom = -frustumSize / 2;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // 2D OS Resize state
         isMobile = window.innerWidth <= 767;
         if (isMobile) {
             document.querySelectorAll('.os-window').forEach(win => {
@@ -887,7 +1053,62 @@
         }
     });
 
-    // --- Themes ---
+    // ==========================================
+    // 3. RAYCASTER & INTERACTION
+    // ==========================================
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    function onPointerDown(event) {
+        // Only trigger if we are in the room (OS is hidden) and not in login
+        if (document.getElementById('pc-ui-layer').style.display !== 'none') return;
+        if (document.getElementById('login-screen').style.display !== 'none') return;
+
+        let clientX, clientY;
+        if (event.changedTouches) {
+            clientX = event.changedTouches[0].clientX;
+            clientY = event.changedTouches[0].clientY;
+        } else {
+            clientX = event.clientX;
+            clientY = event.clientY;
+        }
+
+        mouse.x = (clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(scene.children);
+
+        for (let i = 0; i < intersects.length; i++) {
+            if (intersects[i].object.name === 'pc_mesh') {
+                enterPC();
+                break;
+            }
+        }
+    }
+
+    document.getElementById('three-canvas-container').addEventListener('mousedown', onPointerDown);
+    document.getElementById('three-canvas-container').addEventListener('touchstart', onPointerDown, {passive: true});
+
+    function enterPC() {
+        document.getElementById('room-ui').style.display = 'none';
+        document.getElementById('pc-ui-layer').style.display = 'flex';
+        playTone(600, 'square', 0.1, 0.05); // Boot sound
+    }
+
+    function quitPC() {
+        document.getElementById('pc-ui-layer').style.display = 'none';
+        document.getElementById('room-ui').style.display = 'flex';
+        playTone(300, 'sawtooth', 0.1, 0.05); // Shutdown sound
+    }
+
+
+    // ==========================================
+    // 4. EXISTING 2D OS LOGIC (Refactored for Module Scope)
+    // ==========================================
+    
+    let isMobile = window.innerWidth <= 767;
+
     const themes = [
         { name: 'neon', vars: ['#09090b', '#1e1b4b', '#0f172a', '#312e81'] },
         { name: 'synth', vars: ['#1a0b2e', '#ff007f', '#7928ca', '#00d4ff'] },
@@ -907,7 +1128,6 @@
         playBleep();
     }
 
-    // --- Dynamic Island Tooltips JS Engine ---
     const globalTooltip = document.createElement('div');
     globalTooltip.id = 'global-tooltip';
     globalTooltip.className = 'fixed z-[100] bg-black/95 border border-[var(--glass-border)] rounded-lg p-4 w-[280px] opacity-0 pointer-events-none transition-opacity shadow-2xl font-retro text-[10px] text-white hidden';
@@ -915,7 +1135,7 @@
 
     let tooltipTimeout;
 
-    window.toggleTooltip = (type, el) => {
+    function toggleTooltip(type, el) {
         if(isMobile) {
             if(!globalTooltip.classList.contains('hidden') && globalTooltip.dataset.type === type) {
                 hideTooltip();
@@ -923,9 +1143,9 @@
                 showTooltip(type, el);
             }
         }
-    };
+    }
 
-    window.showTooltip = (type, el) => {
+    function showTooltip(type, el) {
         clearTimeout(tooltipTimeout);
         globalTooltip.dataset.type = type;
         const rect = el.getBoundingClientRect();
@@ -969,15 +1189,15 @@
             html += '</div>';
             globalTooltip.innerHTML = html;
         }
-    };
+    }
 
-    window.hideTooltip = () => {
+    function hideTooltip() {
         globalTooltip.style.opacity = '0';
         tooltipTimeout = setTimeout(() => { 
             globalTooltip.classList.add('hidden'); 
             globalTooltip.dataset.type = '';
         }, 250); 
-    };
+    }
 
     document.addEventListener('touchstart', (e) => {
         if(isMobile && !e.target.closest('#hud') && !e.target.closest('#global-tooltip')) {
@@ -985,7 +1205,6 @@
         }
     }, {passive: true});
 
-    // --- System Monitor Graph ---
     const sysCanvas = document.getElementById('sys-canvas');
     const sysCtx = sysCanvas ? sysCanvas.getContext('2d') : null;
     let cpuData = Array(50).fill(50);
@@ -1025,32 +1244,31 @@
         setTimeout(() => requestAnimationFrame(drawSysGraph), 150); 
     }
 
-    // --- Audio System ---
-    let audioCtx = null;
+    let audioCtxUI = null;
     function initAudio() {
-        if (!audioCtx) {
+        if (!audioCtxUI) {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (AudioContext) audioCtx = new AudioContext();
+                if (AudioContext) audioCtxUI = new AudioContext();
             } catch(e) {}
         }
     }
 
     function playTone(freq, type = 'sine', duration = 0.1, vol = 0.1) {
         try {
-            if (!audioCtx) initAudio();
-            if (!audioCtx) return;
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
+            if (!audioCtxUI) initAudio();
+            if (!audioCtxUI) return;
+            if(audioCtxUI.state === 'suspended') audioCtxUI.resume();
+            const osc = audioCtxUI.createOscillator();
+            const gain = audioCtxUI.createGain();
             osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.frequency.setValueAtTime(freq, audioCtxUI.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtxUI.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtxUI.currentTime + duration);
             osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            gain.connect(audioCtxUI.destination);
             osc.start();
-            osc.stop(audioCtx.currentTime + duration);
+            osc.stop(audioCtxUI.currentTime + duration);
         } catch(e) {}
     }
 
@@ -1059,7 +1277,6 @@
     const playError = () => { playTone(200, 'sawtooth', 0.2, 0.05); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); };
     const playKick = () => { playTone(60, 'sine', 0.2, 0.2); playTone(120, 'square', 0.05, 0.1); }; 
 
-    // --- Data ---
     const avatars = [
         { id: 'Char 1', img: './spr_char_1.png' },
         { id: 'Char 2', img: './spr_char_2.png' },
@@ -1132,7 +1349,6 @@
         }
     }
 
-    // --- Cooldowns Fast-Paced ---
     function getVpnCooldown() {
         const dlCount = state.stats.crackDownloads || 0;
         if(dlCount === 0) return 30;   
@@ -1153,7 +1369,6 @@
         return m > 0 ? `${h}H ${m}M` : `${h}H`;
     }
 
-    // --- Initialization ---
     function initUI() {
         const cont = document.getElementById('avatar-container');
         cont.innerHTML = avatars.map((a, i) => `
@@ -1175,7 +1390,6 @@
         }
         vuMeter.innerHTML = ledsHTML;
 
-        // Apply horizontal layout for VU Meter on Mobile
         if(isMobile) {
             document.querySelectorAll('.vu-led').forEach(l => {
                 l.style.width = '4px'; l.style.height = '100%'; l.style.marginBottom = '0'; l.style.marginRight = '2px';
@@ -1368,8 +1582,9 @@
         }
 
         document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('os-screen').classList.remove('hidden');
-        document.getElementById('os-screen').classList.add('flex');
+        
+        // Show 3D Room Prompt instead of directly opening OS
+        document.getElementById('room-ui').style.display = 'flex';
         
         document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="w-full h-full pixelated object-cover" />`;
         document.getElementById('hud-name').innerText = state.username;
@@ -1386,7 +1601,6 @@
         gameInterval = setInterval(gameTick, 1000); 
     }
 
-    // --- Game Loop ---
     function gameTick() {
         state.timeMins += 5;
         if(state.timeMins >= 24 * 60) {
@@ -1417,7 +1631,6 @@
     function updateCooldownUIs() {
         const total = getTotalMins();
         
-        // DAW
         const btnDaw = document.getElementById('btn-export');
         if(total < state.cooldowns.dawTimeReady) {
             const left = state.cooldowns.dawTimeReady - total;
@@ -1430,7 +1643,6 @@
             }
         }
 
-        // Story 
         const btnStory = document.getElementById('btn-story');
         const statusStory = document.getElementById('story-status');
         if(total < state.cooldowns.storyTimeReady) {
@@ -1447,7 +1659,6 @@
             }
         }
 
-        // CrackZ
         const browserContent = document.getElementById('browser-content');
         if(document.getElementById('tab-crackz').classList.contains('text-white')) {
             const wasCooling = browserContent.innerHTML.includes('VPN COOLDOWN');
@@ -1484,8 +1695,8 @@
         return Math.floor(num).toString();
     }
 
-    // --- Window & Taskbar Management ---
     let zIndexCounter = 50;
+    let windowOffsetXY = 0;
     
     function openApp(id) {
         if(isMobile) {
@@ -1498,13 +1709,11 @@
         if(win.style.display === 'none' || win.style.display === '') {
             win.style.display = 'flex';
             
-            // Force browser reflow to trigger CSS animation properly
             void win.offsetWidth;
 
             if (!isMobile) {
                 const w = win.offsetWidth || 700;
                 const h = win.offsetHeight || 500;
-                // Center exactly perfectly on desktop for "Apple Liquid Glass" feeling
                 const startX = Math.max(20, (window.innerWidth / 2) - (w / 2));
                 const startY = Math.max(80, (window.innerHeight / 2) - (h / 2) + 20);
                 win.style.left = `${startX}px`;
@@ -1566,7 +1775,6 @@
         });
     }
 
-    // --- DAW Logic & Trend Engine 2026 ---
     function togglePad(idx) {
         const pad = document.getElementById(`pad-${idx}`);
         pad.classList.toggle('active');
@@ -1770,7 +1978,6 @@
         updateCooldownUIs();
     }
 
-    // --- Browser & Shop ---
     function switchBrowserTab(tab) {
         const btnC = document.getElementById('tab-crackz');
         const btnA = document.getElementById('tab-audio');
@@ -1906,7 +2113,6 @@
         }
     }
 
-    // --- Virus / BSOD Event ---
     function triggerBSOD() {
         state.stats.viruses++;
         const loss = Math.floor(state.money * 0.2); 
@@ -1937,7 +2143,6 @@
         }, 150);
     }
 
-    // --- Social Network ---
     function refreshSocial() {
         const total = getTotalMins();
         const btn = document.getElementById('btn-story');
@@ -2009,7 +2214,6 @@
         refreshSocial();
     }
 
-    // --- Stats App ---
     function refreshStats() {
         const content = document.getElementById('stats-content');
         content.innerHTML = `
@@ -2030,7 +2234,6 @@
         `;
     }
 
-     // --- Swipe-to-Dismiss Toast Notifications ---
     function showToast(msg, type = 'info') {
         const zone = document.getElementById('toast-zone');
         const t = document.createElement('div');
@@ -2045,7 +2248,6 @@
         
         zone.appendChild(t);
 
-        // Advanced Swipe-to-Dismiss Logic
         t.addEventListener('mousedown', e => {
             let startX = e.clientX;
             let currentX = 0;
@@ -2076,7 +2278,6 @@
             document.addEventListener('mouseup', onUp);
         });
 
-        // Touch logic for mobile
         t.addEventListener('touchstart', e => {
             let startX = e.touches[0].clientX;
             let currentX = 0;
@@ -2107,7 +2308,6 @@
             document.addEventListener('touchend', onUp);
         }, {passive: true});
 
-        // Auto remove fallback
         setTimeout(() => {
             if(t.parentElement) {
                 t.style.opacity = '0';
@@ -2117,8 +2317,26 @@
         }, 4000);
     }
 
-    // Boot
-    window.onload = initUI;
+    // Bind UI actions to window object for module scope
+    window.cycleTheme = cycleTheme;
+    window.toggleTooltip = toggleTooltip;
+    window.showTooltip = showTooltip;
+    window.hideTooltip = hideTooltip;
+    window.openApp = openApp;
+    window.closeApp = closeApp;
+    window.togglePad = togglePad;
+    window.exportTrack = exportTrack;
+    window.selectDawGenre = selectDawGenre;
+    window.selectDawVoice = selectDawVoice;
+    window.switchBrowserTab = switchBrowserTab;
+    window.downloadCrack = downloadCrack;
+    window.buyLegit = buyLegit;
+    window.postStory = postStory;
+    window.acceptSponsor = acceptSponsor;
+    window.quitPC = quitPC;
+
+    // Call UI Initialization
+    initUI();
 
 </script>
 </body>
