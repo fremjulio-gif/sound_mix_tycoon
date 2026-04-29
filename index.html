@@ -433,12 +433,7 @@
 
         /* Toasts animés depuis la GAUCHE */
         @keyframes slideInLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .toast { 
-            animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-            pointer-events: auto; 
-            cursor: grab; 
-            touch-action: none; 
-        }
+        .toast { animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; pointer-events: auto; cursor: grab; }
         .toast:active { cursor: grabbing; }
         
         .avatar-sel { 
@@ -610,17 +605,17 @@
                 <span id="hud-name" class="font-bold font-retro text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 whitespace-nowrap tracking-widest uppercase text-white w-0 group-hover:w-auto md:block hidden">Artiste</span>
             </div>
             
-            <div class="hud-stats-container flex items-center gap-6 md:gap-10 font-retro text-sm text-[var(--text-muted)] tracking-wider opacity-0 group-hover:opacity-100 w-0 group-hover:w-auto transition-all duration-500 whitespace-nowrap overflow-hidden" onmouseleave="!isMobile && hideTooltip()">
+            <div class="hud-stats-container flex items-center gap-6 md:gap-10 font-retro text-sm text-[var(--text-muted)] tracking-wider opacity-0 group-hover:opacity-100 w-0 group-hover:w-auto transition-all duration-500 whitespace-nowrap overflow-hidden">
                 
-                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('money', this)" onmouseenter="!isMobile && showTooltip('money', this)">
+                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('money', this)" onmouseenter="!isMobile && showTooltip('money', this)" onmouseleave="!isMobile && hideTooltip()">
                     <span class="text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] text-lg">$$$</span> <span id="hud-money" class="text-white text-lg">0</span>
                 </div>
                 
-                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)">
+                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)" onmouseleave="!isMobile && hideTooltip()">
                     <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)] text-lg">REP</span> <span id="hud-rep" class="text-white text-lg">0</span>
                 </div>
                 
-                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)">
+                <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)" onmouseleave="!isMobile && hideTooltip()">
                     <span class="text-[var(--accent)] drop-shadow-[0_0_5px_var(--accent)] text-lg">FOL</span> <span id="hud-foll" class="text-white text-lg">0</span>
                 </div>
             </div>
@@ -904,7 +899,7 @@
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
     /**
-     * SOUND MIX TYCOON V11.1 (CLEAN VERSION)
+     * SOUND MIX TYCOON V11.1
      */
 
     // ==========================================
@@ -987,14 +982,13 @@
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Make everything on the desk part of pc_mesh logically or just assign the names properly
     const deskTopGeo = new THREE.BoxGeometry(4.5, 0.1, 2.2);
     const deskTopMat = new THREE.MeshStandardMaterial({ color: '#1e1b4b', roughness: 0.7, metalness: 0.1 });
     const deskTop = new THREE.Mesh(deskTopGeo, deskTopMat);
     deskTop.position.set(0, 0.7, 0);
     deskTop.castShadow = true;
     deskTop.receiveShadow = true;
-    deskTop.name = 'pc_mesh'; // Clicking the desk also opens the PC
+    deskTop.name = 'pc_mesh'; 
     scene.add(deskTop);
 
     const legGeo = new THREE.BoxGeometry(0.1, 1.7, 0.1);
@@ -1038,7 +1032,7 @@
     speakerL.position.set(-1.6, 1.05, -0.4);
     speakerL.rotation.y = Math.PI / 12; 
     speakerL.castShadow = true;
-    speakerL.name = 'pc_mesh'; // Clicking speakers also works
+    speakerL.name = 'pc_mesh'; 
     const wooferL = new THREE.Mesh(wooferGeo, wooferMat);
     wooferL.rotation.x = Math.PI / 2;
     wooferL.position.set(0, 0, 0.2);
@@ -1081,8 +1075,17 @@
     function onPointerDown(event) {
         if (document.getElementById('room-ui').style.display !== 'flex') return;
 
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        let clientX, clientY;
+        if (event.changedTouches) {
+            clientX = event.changedTouches[0].clientX;
+            clientY = event.changedTouches[0].clientY;
+        } else {
+            clientX = event.clientX;
+            clientY = event.clientY;
+        }
+
+        mouse.x = (clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(clientY / window.innerHeight) * 2 + 1;
 
         raycaster.setFromCamera(mouse, camera);
         const intersects = raycaster.intersectObjects(scene.children, true);
@@ -1749,6 +1752,15 @@
         });
     }
 
+    function togglePad(idx) {
+        const pad = document.getElementById(`pad-${idx}`);
+        pad.classList.toggle('active');
+        if(pad.classList.contains('active')) {
+            playKick();
+            simulateVuMeter(12);
+        }
+    }
+
     function calculateSuccess(genre, bpm, voice) {
         let targetVoice, rewardType;
         let isPerfectBpm = false;
@@ -2282,9 +2294,8 @@
     window.selectAvatar = selectAvatar;
     window.attemptLogin = attemptLogin;
 
-    // Boot
-    window.onload = initUI;
-    initUI(); // Fallback if already loaded
+    // Call UI Initialization
+    initUI();
 
 </script>
 </body>
