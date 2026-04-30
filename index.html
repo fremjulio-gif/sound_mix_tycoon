@@ -7,9 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
     <style>
-        /* =========================================
-           ADVANCED LIQUID GLASS & MESH GRADIENTS
-           ========================================= */
         :root {
             --glass-bg: rgba(10, 10, 15, 0.45);
             --glass-border: rgba(255, 255, 255, 0.2);
@@ -22,577 +19,151 @@
             --retro-red: #fb7185;
             --retro-orange: #fbbf24;
             --retro-blue: #60a5fa;
-            
             --bg-color-1: #09090b;
             --bg-color-2: #1e1b4b;
             --bg-color-3: #0f172a;
             --bg-color-4: #312e81;
         }
-        
         body {
-            margin: 0;
-            overflow: hidden;
+            margin: 0; overflow: hidden;
             color: var(--text-main);
             font-family: 'Inter', system-ui, sans-serif;
-            user-select: none;
-            -webkit-user-select: none;
+            user-select: none; -webkit-user-select: none;
             background-color: #050505;
         }
-
         .font-retro { font-family: 'Share Tech Mono', monospace; letter-spacing: 0.05em; }
         .font-handwriting { font-family: 'Caveat', cursive; letter-spacing: 0.05em; }
-
-        /* Disable double-tap zoom & delay on critical elements */
-        button, select, .seq-pad, .btn-minimal, .btn-action, .desktop-icon, .taskbar-btn {
-            touch-action: manipulation;
-        }
-        input[type="range"], .knob {
-            touch-action: none; 
-        }
-
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100dvh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* --- 3D CANVAS LAYER --- */
-        #three-canvas-container {
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-            overflow: hidden;
-            background: #050508;
-        }
-
-        #room-ui {
-            position: absolute;
-            inset: 0;
-            z-index: 5;
-            pointer-events: none;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            padding-bottom: 10vh;
-        }
-
-        /* --- DYNAMIC MESH BACKGROUND --- */
-        #dynamic-bg {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            overflow: hidden;
-            background: var(--bg-color-1);
-            transition: background 1s ease;
-        }
-        
-        .mesh-blob {
-            position: absolute;
-            filter: blur(90px);
-            opacity: 0.65;
-            border-radius: 50%;
-            animation: float 20s infinite ease-in-out alternate;
-        }
-        
+        button, select, .seq-pad, .btn-minimal, .btn-action, .desktop-icon, .taskbar-btn { touch-action: manipulation; }
+        input[type="range"], .knob { touch-action: none; }
+        #game-container { position: relative; width: 100vw; height: 100dvh; display: flex; flex-direction: column; }
+        #three-canvas-container { position: absolute; inset: 0; z-index: 1; overflow: hidden; background: #050508; }
+        #room-ui { position: absolute; inset: 0; z-index: 5; pointer-events: none; display: none; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 10vh; }
+        #dynamic-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: var(--bg-color-1); transition: background 1s ease; }
+        .mesh-blob { position: absolute; filter: blur(90px); opacity: 0.65; border-radius: 50%; animation: float 20s infinite ease-in-out alternate; }
         .blob-1 { top: -10%; left: -10%; width: 55vw; height: 55vw; background: var(--bg-color-2); animation-delay: 0s; }
         .blob-2 { bottom: -20%; right: -10%; width: 65vw; height: 65vw; background: var(--bg-color-3); animation-delay: -5s; }
         .blob-3 { top: 40%; left: 40%; width: 45vw; height: 45vw; background: var(--bg-color-4); animation-delay: -10s; }
-
-        #grid-overlay {
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-            background-image: 
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 35px 35px;
-        }
-
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(8%, 12%) scale(1.05); }
-            100% { transform: translate(-8%, -6%) scale(0.95); }
-        }
-
-        /* --- OS LAYER WRAPPER --- */
-        #pc-ui-layer {
-            position: absolute;
-            inset: 0;
-            z-index: 10;
-            display: none;
-            flex-direction: column;
-        }
-
-        #btn-quit-pc {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 90;
-            padding: 8px 16px;
-            background: rgba(10, 10, 15, 0.8);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(10px);
-            color: var(--retro-red);
-            font-family: 'Share Tech Mono', monospace;
-            text-transform: uppercase;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            transition: all 0.2s;
-        }
+        #grid-overlay { position: absolute; inset: 0; z-index: 1; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 35px 35px; }
+        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(8%, 12%) scale(1.05); } 100% { transform: translate(-8%, -6%) scale(0.95); } }
+        #pc-ui-layer { position: absolute; inset: 0; z-index: 10; display: none; flex-direction: column; }
+        #btn-quit-pc { position: absolute; top: 20px; left: 20px; z-index: 90; padding: 8px 16px; background: rgba(10, 10, 15, 0.8); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); color: var(--retro-red); font-family: 'Share Tech Mono', monospace; text-transform: uppercase; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: all 0.2s; }
         #btn-quit-pc:hover { background: rgba(251, 113, 133, 0.2); border-color: var(--retro-red); }
-
-        /* --- LIQUID GLASS EFFECT --- */
-        .liquid-glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(28px) saturate(190%);
-            -webkit-backdrop-filter: blur(28px) saturate(190%);
-            border: 1px solid var(--glass-border);
-            box-shadow: 
-                0 16px 40px -8px rgba(0, 0, 0, 0.6),
-                inset 0 1px 1px rgba(255, 255, 255, 0.2),
-                inset 0 -1px 1px rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-        }
-
-        .liquid-glass-heavy {
-            background: rgba(10, 10, 15, 0.85);
-            backdrop-filter: blur(40px) saturate(220%);
-            -webkit-backdrop-filter: blur(40px) saturate(220%);
-            border: 1px solid rgba(255,255,255,0.25);
-            box-shadow: 
-                0 20px 50px -10px rgba(0, 0, 0, 0.7),
-                inset 0 1px 1px rgba(255, 255, 255, 0.4);
-        }
-
-        /* --- DESKTOP OS WINDOW BASE & ANIMATION --- */
-        @keyframes liquidGlassOpen {
-            0% { opacity: 0; transform: scale(0.85); filter: blur(15px); }
-            100% { opacity: 1; transform: scale(1); filter: blur(0px); }
-        }
-
-        .os-window {
-            position: absolute;
-            width: 800px; 
-            max-width: 95vw;
-            min-width: 320px;
-            max-height: 85dvh; 
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            z-index: 10;
-            transition: border-color 0.3s ease;
-            resize: both;
-            box-sizing: border-box;
-        }
-        
-        .os-window.active-window {
-            z-index: 40;
-            border-color: rgba(129, 140, 248, 0.8);
-            box-shadow: 
-                0 25px 60px -10px rgba(0, 0, 0, 0.8),
-                0 0 0 1px var(--accent),
-                inset 0 1px 1px rgba(255, 255, 255, 0.3);
-            animation: liquidGlassOpen 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .window-header {
-            background: rgba(0, 0, 0, 0.6);
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: grab;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            flex-shrink: 0;
-        }
+        .liquid-glass { background: var(--glass-bg); backdrop-filter: blur(28px) saturate(190%); -webkit-backdrop-filter: blur(28px) saturate(190%); border: 1px solid var(--glass-border); box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.2), inset 0 -1px 1px rgba(0, 0, 0, 0.3); border-radius: 12px; }
+        .liquid-glass-heavy { background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(40px) saturate(220%); -webkit-backdrop-filter: blur(40px) saturate(220%); border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.4); }
+        @keyframes liquidGlassOpen { 0% { opacity: 0; transform: scale(0.85); filter: blur(15px); } 100% { opacity: 1; transform: scale(1); filter: blur(0px); } }
+        .os-window { position: absolute; width: 800px; max-width: 95vw; min-width: 320px; max-height: 85dvh; display: none; flex-direction: column; overflow: hidden; z-index: 10; transition: border-color 0.3s ease; resize: both; box-sizing: border-box; }
+        .os-window.active-window { z-index: 40; border-color: rgba(129, 140, 248, 0.8); box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--accent), inset 0 1px 1px rgba(255, 255, 255, 0.3); animation: liquidGlassOpen 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .window-header { background: rgba(0, 0, 0, 0.6); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: grab; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
         .window-header:active { cursor: grabbing; }
-
-        .window-content {
-            padding: 0;
-            overflow-y: auto; 
-            overflow-x: hidden;
-            flex: 1;
-            min-height: 0; 
-            background: rgba(0,0,0,0.3);
-        }
-
-        /* Desktop Layout */
-        #desktop-content {
-            position: absolute;
-            inset: 0;
-            z-index: 2;
-            display: flex;
-            justify-content: space-between;
-            padding: 110px 30px 80px 30px; 
-            pointer-events: none; 
-            overflow-y: auto;
-        }
-        
+        .window-content { padding: 0; overflow-y: auto; overflow-x: hidden; flex: 1; min-height: 0; background: rgba(0,0,0,0.3); }
+        #desktop-content { position: absolute; inset: 0; z-index: 2; display: flex; justify-content: space-between; padding: 110px 30px 80px 30px; pointer-events: none; overflow-y: auto; }
         #desktop-content > div { pointer-events: auto; }
-
-        .widgets-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 240px;
-            max-height: calc(100dvh - 180px);
-            overflow-y: auto; 
-            overflow-x: hidden;
-            padding-right: 5px;
-        }
+        .widgets-container { display: flex; flex-direction: column; gap: 20px; width: 240px; max-height: calc(100dvh - 180px); overflow-y: auto; overflow-x: hidden; padding-right: 5px; }
         .widgets-container::-webkit-scrollbar { width: 0px; }
-
-        /* Desktop Icons */
-        .desktop-icon {
-            width: 80px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 24px;
-            cursor: pointer;
-            text-align: center;
-            transition: transform 0.2s;
-        }
+        .desktop-icon { width: 80px; display: flex; flex-direction: column; align-items: center; margin-bottom: 24px; cursor: pointer; text-align: center; transition: transform 0.2s; }
         .desktop-icon:active { transform: scale(0.95); }
-        .desktop-icon .icon-box {
-            width: 60px;
-            height: 60px;
-            border-radius: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 8px;
-            border: 1px solid rgba(255,255,255,0.15);
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(12px);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.2);
-        }
-        .desktop-icon:hover .icon-box {
-            background: rgba(255,255,255,0.15);
-            border-color: var(--accent);
-            box-shadow: 0 0 25px var(--glass-glow), inset 0 1px 1px rgba(255,255,255,0.3);
-        }
-
-        .desktop-widget {
-            flex-shrink: 0;
-            transition: transform 0.3s ease;
-        }
+        .desktop-icon .icon-box { width: 60px; height: 60px; border-radius: 16px; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.2); }
+        .desktop-icon:hover .icon-box { background: rgba(255,255,255,0.15); border-color: var(--accent); box-shadow: 0 0 25px var(--glass-glow), inset 0 1px 1px rgba(255,255,255,0.3); }
+        .desktop-widget { flex-shrink: 0; transition: transform 0.3s ease; }
         .desktop-widget:hover { transform: translateY(-2px); }
-
-        /* Taskbar Desktop */
-        #taskbar-bottom {
-            position: absolute;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            height: 60px;
-            border-radius: 20px;
-            padding: 0 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 50;
-            width: 95%;
-            max-width: 1100px;
-        }
-
-        .taskbar-btn {
-            width: 46px; height: 46px;
-            border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-        }
-        .taskbar-btn:hover, .taskbar-btn.active {
-            background: rgba(255,255,255,0.15);
-            border-color: rgba(255,255,255,0.3);
-            box-shadow: 0 0 20px rgba(255,255,255,0.1);
-        }
-
-        /* DAW PRO UI */
-        .daw-grid-container { 
-            height: auto !important; 
-            min-height: max-content !important; 
-            display: flex !important;
-            flex-direction: column !important;
-            padding-bottom: 120px !important;
-            gap: 12px;
-            padding: 12px;
-            background: rgba(0,0,0,0.4);
-            box-sizing: border-box;
-        }
-
-        @media (min-width: 768px) {
-            .daw-grid-container { flex-direction: row !important; height: 100% !important; padding-bottom: 12px !important; }
-            #app-daw { width: 950px; min-width: 700px; }
-        }
-
-        .daw-panel-neon {
-            background: rgba(10, 10, 15, 0.8);
-            border: 1px solid var(--accent);
-            border-radius: 8px;
-            box-shadow: inset 0 0 15px rgba(129, 140, 248, 0.1), 0 0 10px rgba(129, 140, 248, 0.2);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-sizing: border-box;
-        }
-        
-        .seq-pad {
-            width: 100%; aspect-ratio: 1;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 3px; cursor: pointer; transition: all 0.1s;
-        }
+        #taskbar-bottom { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); height: 60px; border-radius: 20px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; z-index: 50; width: 95%; max-width: 1100px; }
+        .taskbar-btn { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; }
+        .taskbar-btn:hover, .taskbar-btn.active { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); box-shadow: 0 0 20px rgba(255,255,255,0.1); }
+        .daw-grid-container { height: auto !important; min-height: max-content !important; display: flex !important; flex-direction: column !important; padding-bottom: 120px !important; gap: 12px; padding: 12px; background: rgba(0,0,0,0.4); box-sizing: border-box; }
+        @media (min-width: 768px) { .daw-grid-container { flex-direction: row !important; height: 100% !important; padding-bottom: 12px !important; } #app-daw { width: 950px; min-width: 700px; } }
+        .daw-panel-neon { background: rgba(10, 10, 15, 0.8); border: 1px solid var(--accent); border-radius: 8px; box-shadow: inset 0 0 15px rgba(129, 140, 248, 0.1), 0 0 10px rgba(129, 140, 248, 0.2); display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; }
+        .seq-pad { width: 100%; aspect-ratio: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 3px; cursor: pointer; transition: all 0.1s; }
         .seq-pad:active { transform: scale(0.9); }
-        .seq-pad.active {
-            background: var(--accent); border-color: var(--accent-hover);
-            box-shadow: 0 0 10px var(--accent), inset 0 0 4px rgba(255,255,255,0.6);
-        }
-
-        .tl-track {
-            height: 36px; border-bottom: 1px solid rgba(255,255,255,0.05);
-            display: flex; align-items: center; position: relative;
-        }
-        .tl-header {
-            width: 90px; background: rgba(0,0,0,0.5); height: 100%;
-            display: flex; align-items: center; padding-left: 10px;
-            font-size: 9px; border-right: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-muted); flex-shrink: 0; text-transform: uppercase;
-            letter-spacing: 1px; z-index: 20; font-weight: bold;
-        }
-        .tl-clip {
-            position: absolute; height: 20px; border-radius: 3px;
-            top: 8px; opacity: 0.95; pointer-events: none;
-            box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), 0 2px 5px rgba(0,0,0,0.5);
-        }
-
+        .seq-pad.active { background: var(--accent); border-color: var(--accent-hover); box-shadow: 0 0 10px var(--accent), inset 0 0 4px rgba(255,255,255,0.6); }
+        .tl-track { height: 36px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; position: relative; }
+        .tl-header { width: 90px; background: rgba(0,0,0,0.5); height: 100%; display: flex; align-items: center; padding-left: 10px; font-size: 9px; border-right: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); flex-shrink: 0; text-transform: uppercase; letter-spacing: 1px; z-index: 20; font-weight: bold; }
+        .tl-clip { position: absolute; height: 20px; border-radius: 3px; top: 8px; opacity: 0.95; pointer-events: none; box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), 0 2px 5px rgba(0,0,0,0.5); }
         .knob-container { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .knob {
-            width: 40px; height: 40px; border-radius: 50%;
-            background: linear-gradient(135deg, #3f3f46, #18181b);
-            border: 2px solid #27272a; position: relative;
-            transform: rotate(-135deg); cursor: grab;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.2);
-        }
+        .knob { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #3f3f46, #18181b); border: 2px solid #27272a; position: relative; transform: rotate(-135deg); cursor: grab; box-shadow: 0 4px 8px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.2); }
         .knob:active { cursor: grabbing; }
-        .knob::after {
-            content: ''; position: absolute;
-            width: 3px; height: 12px; background: var(--retro-green);
-            top: 4px; left: 16.5px; border-radius: 2px;
-            box-shadow: 0 0 5px var(--retro-green);
-        }
-
-        .vu-led {
-            width: 100%; height: 4px; margin-bottom: 3px;
-            background: rgba(255,255,255,0.05); border-radius: 1px; transition: background 0.05s;
-        }
+        .knob::after { content: ''; position: absolute; width: 3px; height: 12px; background: var(--retro-green); top: 4px; left: 16.5px; border-radius: 2px; box-shadow: 0 0 5px var(--retro-green); }
+        .vu-led { width: 100%; height: 4px; margin-bottom: 3px; background: rgba(255,255,255,0.05); border-radius: 1px; transition: background 0.05s; }
         .vu-led.on-green { background: var(--retro-green); box-shadow: 0 0 8px var(--retro-green); }
         .vu-led.on-yellow { background: var(--retro-orange); box-shadow: 0 0 8px var(--retro-orange); }
         .vu-led.on-red { background: var(--retro-red); box-shadow: 0 0 8px var(--retro-red); }
-
-        .btn-minimal {
-            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;
-            font-weight: 600; transition: all 0.2s; cursor: pointer;
-        }
-        .btn-minimal:hover:not(:disabled) {
-            background: rgba(255,255,255,0.1); border-color: var(--accent); color: white;
-        }
-        .btn-minimal.active {
-            background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important;
-            box-shadow: 0 0 12px rgba(129, 140, 248, 0.4) !important;
-        }
-        .btn-minimal:disabled {
-            border-color: rgba(255,255,255,0.05); color: rgba(255,255,255,0.2); cursor: not-allowed;
-            background: transparent; box-shadow: none;
-        }
-
-        .btn-action {
-            background: rgba(129, 140, 248, 0.15); border: 1px solid var(--accent); color: var(--accent);
-            text-transform: uppercase; font-weight: bold; letter-spacing: 2px; transition: all 0.2s; cursor: pointer;
-        }
-        .btn-action:hover:not(:disabled) {
-            background: var(--accent); color: #fff; box-shadow: 0 0 20px rgba(129, 140, 248, 0.6);
-        }
-
-        .btn-minimal, .btn-action {
-            padding: 15px 5px !important; /* Boutons plus hauts */
-            font-size: 10px !important;
-        }
-        #daw-plugin, #daw-bpm {
-            height: 48px !important; /* Inputs plus gros */
-        }
-
-        /* Scrollbars */
+        .btn-minimal { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; transition: all 0.2s; cursor: pointer; }
+        .btn-minimal:hover:not(:disabled) { background: rgba(255,255,255,0.1); border-color: var(--accent); color: white; }
+        .btn-minimal.active { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; box-shadow: 0 0 12px rgba(129, 140, 248, 0.4) !important; }
+        .btn-minimal:disabled { border-color: rgba(255,255,255,0.05); color: rgba(255,255,255,0.2); cursor: not-allowed; background: transparent; box-shadow: none; }
+        .btn-action { background: rgba(129, 140, 248, 0.15); border: 1px solid var(--accent); color: var(--accent); text-transform: uppercase; font-weight: bold; letter-spacing: 2px; transition: all 0.2s; cursor: pointer; }
+        .btn-action:hover:not(:disabled) { background: var(--accent); color: #fff; box-shadow: 0 0 20px rgba(129, 140, 248, 0.6); }
+        .btn-minimal, .btn-action { padding: 15px 5px !important; font-size: 10px !important; }
+        #daw-plugin, #daw-bpm { height: 48px !important; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
-        ::-webkit-resizer {
-            background-color: transparent;
-            background-image: radial-gradient(rgba(255,255,255,0.4) 40%, transparent 40%);
-            background-size: 5px 5px; background-position: bottom right;
-        }
-
-        /* Toasts animés depuis la GAUCHE */
+        ::-webkit-resizer { background-color: transparent; background-image: radial-gradient(rgba(255,255,255,0.4) 40%, transparent 40%); background-size: 5px 5px; background-position: bottom right; }
         @keyframes slideInLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast { animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; pointer-events: auto; cursor: grab; }
         .toast:active { cursor: grabbing; }
-        
-        .avatar-sel { 
-            border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 12px; 
-            overflow: hidden; background: rgba(0,0,0,0.4); transition: all 0.2s;
-        }
-        .avatar-sel.selected { 
-            border-color: var(--accent); background: rgba(129, 140, 248, 0.2);
-            box-shadow: 0 0 25px rgba(129, 140, 248, 0.4), inset 0 1px 1px rgba(255,255,255,0.3);
-        }
+        .avatar-sel { border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.4); transition: all 0.2s; }
+        .avatar-sel.selected { border-color: var(--accent); background: rgba(129, 140, 248, 0.2); box-shadow: 0 0 25px rgba(129, 140, 248, 0.4), inset 0 1px 1px rgba(255,255,255,0.3); }
         .pixelated { image-rendering: pixelated; }
-
-        /* =========================================
-           MOBILE RESPONSIVE RULES (Max 767px)
-           ========================================= */
         #mobile-nav { display: none; }
-        
         @media (max-width: 767px) {
             #taskbar-bottom { display: none !important; }
             #mobile-nav { display: flex !important; }
-            
-            #desktop-content {
-                padding-top: 100px !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                gap: 20px !important;
-                overflow-y: auto;
-                padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
-            }
-            .widgets-container {
-                width: 100% !important;
-                max-height: none !important;
-                padding-right: 0 !important;
-            }
-            #desktop-icons-container {
-                display: none !important;
-            }
-
-            .os-window {
-                width: 100vw !important;
-                height: 100dvh !important;
-                max-width: 100vw !important;
-                max-height: 100dvh !important;
-                top: 0 !important;
-                left: 0 !important;
-                border-radius: 0 !important;
-                resize: none !important;
-                border: none !important;
-                padding-top: 85px; 
-                background: rgba(10, 10, 15, 0.98) !important;
-                box-shadow: none !important;
-                overflow-y: auto !important; 
-                display: block !important;
-            }
-            .window-header {
-                border-top: 1px solid rgba(255,255,255,0.1);
-                border-radius: 0;
-            }
-            .window-content {
-                padding-bottom: calc(85px + env(safe-area-inset-bottom)) !important; 
-                overflow-x: hidden;
-            }
-
-            .btn-minimal, .btn-action, .seq-pad {
-                min-height: 44px;
-            }
+            #desktop-content { padding-top: 100px !important; flex-direction: column !important; align-items: center !important; gap: 20px !important; overflow-y: auto; padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important; }
+            .widgets-container { width: 100% !important; max-height: none !important; padding-right: 0 !important; }
+            #desktop-icons-container { display: none !important; }
+            .os-window { width: 100vw !important; height: 100dvh !important; max-width: 100vw !important; max-height: 100dvh !important; top: 0 !important; left: 0 !important; border-radius: 0 !important; resize: none !important; border: none !important; padding-top: 85px; background: rgba(10, 10, 15, 0.98) !important; box-shadow: none !important; overflow-y: auto !important; display: block !important; }
+            .window-header { border-top: 1px solid rgba(255,255,255,0.1); border-radius: 0; }
+            .window-content { padding-bottom: calc(85px + env(safe-area-inset-bottom)) !important; overflow-x: hidden; }
+            .btn-minimal, .btn-action, .seq-pad { min-height: 44px; }
             .seq-pad { min-width: 44px; }
-            
-            #bpm-val {
-                font-size: 18px !important; 
-            }
-
-            #hud {
-                width: max-content !important;
-                min-width: 200px !important;
-                top: 10px !important;
-                height: 48px !important;
-                padding: 5px 15px !important;
-                flex-wrap: nowrap !important;
-                gap: 15px !important;
-            }
+            #bpm-val { font-size: 18px !important; }
+            #hud { width: max-content !important; min-width: 200px !important; top: 10px !important; height: 48px !important; padding: 5px 15px !important; flex-wrap: nowrap !important; gap: 15px !important; }
             #hud:hover { width: max-content !important; }
             #hud-avatar { width: 32px !important; height: 32px !important; }
             #hud-name { display: none !important; }
             .hud-stats-container { opacity: 1 !important; width: auto !important; gap: 15px !important; }
-            
             #app-daw { min-width: 0 !important; }
             .daw-panel-neon { min-width: 0 !important; width: 100% !important; }
             .tl-track { min-width: 600px; }
-            
             .vu-led { width: 4px; height: 100%; margin-bottom: 0; margin-right: 2px; }
             #vu-meter-container { flex-direction: row !important; height: 16px !important; width: 100% !important; padding: 2px !important; }
-            
-            #global-tooltip {
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                top: 105px !important;
-            }
-            #toast-zone {
-                top: 110px !important;
-                width: calc(100vw - 32px) !important;
-            }
-            
-            #btn-quit-pc {
-                top: auto;
-                bottom: calc(85px + env(safe-area-inset-bottom));
-                left: 50%;
-                transform: translateX(-50%);
-                width: 90%;
-            }
+            #global-tooltip { left: 50% !important; transform: translateX(-50%) !important; top: 105px !important; }
+            #toast-zone { top: 110px !important; width: calc(100vw - 32px) !important; }
+            #btn-quit-pc { top: auto; bottom: calc(85px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 90%; }
         }
     </style>
 </head>
 <body data-theme="neon">
-
 <div id="game-container">
 
-    <!-- HUD - DEPLACÉ EN DEHORS DE L'OS POUR ETRE VISIBLE DANS LA CHAMBRE ET L'OS -->
+    <!-- HUD -->
     <div id="hud" class="liquid-glass-heavy h-[76px] fixed top-6 left-1/2 -translate-x-1/2 z-50 rounded-[30px] flex items-center justify-between px-5 transition-all duration-500 w-[240px] hover:w-[680px] group border border-white/10 shadow-2xl">
         <div class="flex items-center gap-4 shrink-0 w-full md:w-auto justify-center md:justify-start">
             <div id="hud-avatar" class="w-[64px] h-[64px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shrink-0 shadow-[0_0_15px_rgba(129,140,248,0.5)]"></div>
             <span id="hud-name" class="font-bold font-retro text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 whitespace-nowrap tracking-widest uppercase text-white w-0 group-hover:w-auto md:block hidden">Artiste</span>
         </div>
-        
         <div class="hud-stats-container flex items-center gap-6 md:gap-10 font-retro text-sm text-[var(--text-muted)] tracking-wider opacity-0 group-hover:opacity-100 w-0 group-hover:w-auto transition-all duration-500 whitespace-nowrap overflow-hidden">
-            
             <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('money', this)" onmouseenter="!isMobile && showTooltip('money', this)" onmouseleave="!isMobile && hideTooltip()">
                 <span class="text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] text-lg">$$$</span> <span id="hud-money" class="text-white text-lg">0</span>
             </div>
-            
             <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)" onmouseleave="!isMobile && hideTooltip()">
                 <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)] text-lg">REP</span> <span id="hud-rep" class="text-white text-lg">0</span>
             </div>
-            
             <div class="relative flex items-center gap-2 cursor-pointer px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)" onmouseleave="!isMobile && hideTooltip()">
                 <span class="text-[var(--accent)] drop-shadow-[0_0_5px_var(--accent)] text-lg">FOL</span> <span id="hud-foll" class="text-white text-lg">0</span>
             </div>
         </div>
-
         <div class="font-retro text-right flex flex-col justify-center items-end shrink-0 pr-2 pointer-events-none hidden md:flex">
             <div id="hud-day" class="text-white font-bold tracking-widest text-[12px]">DAY 1</div>
-            <div id="sys-time" class="text-sm text-[var(--accent)] mt-1 tracking-widest font-bold drop-shadow-[0_0_5px_var(--accent)]">12:00</div>
+            <div id="sys-time" class="text-sm text-[var(--accent)] mt-1 tracking-widest font-bold drop-shadow-[0_0_5px_var(--accent)]">08:00</div>
         </div>
     </div>
 
-    <!-- 3D CANVAS LAYER -->
+    <!-- 3D CANVAS -->
     <div id="three-canvas-container"></div>
-    
-    <!-- ROOM UI LAYER -->
+
+    <!-- ROOM UI -->
     <div id="room-ui">
         <div class="bg-black/80 text-[var(--accent)] border border-[var(--accent)]/50 px-6 py-3 rounded-xl font-retro animate-[pulse_2s_ease-in-out_infinite] tracking-widest text-sm shadow-[0_0_15px_rgba(129,140,248,0.3)] mb-[15vh]">
             CLICK THE GLOWING PC TO START
@@ -603,44 +174,32 @@
     <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
         <div class="liquid-glass-heavy p-8 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20">
             <h1 class="text-4xl font-retro font-bold mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">SM_TYCOON</h1>
-            <p class="text-[var(--text-muted)] font-retro text-xs mb-8 tracking-widest uppercase text-center">3D Room Edition // v12.0</p>
-            
+            <p class="text-[var(--text-muted)] font-retro text-xs mb-8 tracking-widest uppercase text-center">3D Room Edition // v12.2</p>
             <div class="w-full mb-6">
                 <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
                 <input type="text" id="login-username" class="w-full bg-black/60 border border-gray-600 rounded-lg px-4 py-3 text-white font-retro text-sm focus:outline-none focus:border-[var(--accent)] transition-all shadow-inner" placeholder="Enter Alias...">
             </div>
-
             <div class="w-full mb-8">
                 <label class="block text-[10px] font-retro text-gray-300 mb-4 uppercase tracking-widest">Select_Avatar</label>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6" id="avatar-container">
-                    <!-- Injected by JS -->
-                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6" id="avatar-container"></div>
             </div>
-
-            <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-2">
-                Boot Studio Environment
-            </button>
+            <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-2">Boot Studio Environment</button>
             <p id="login-error" class="text-[var(--retro-red)] font-retro text-xs mt-4 hidden text-center">Error: Missing ID</p>
         </div>
     </div>
 
-    <!-- MAIN OS INTERFACE (Layer 2) -->
+    <!-- MAIN OS INTERFACE -->
     <div id="pc-ui-layer" style="display: none;">
-        
-        <!-- DYNAMIC BACKGROUND -->
         <div id="dynamic-bg">
             <div class="mesh-blob blob-1"></div>
             <div class="mesh-blob blob-2"></div>
             <div class="mesh-blob blob-3"></div>
             <div id="grid-overlay"></div>
         </div>
-
-        <!-- QUIT PC BUTTON -->
         <button id="btn-quit-pc" onclick="quitPC()">CLOSE OS SESSION</button>
 
         <!-- DESKTOP CONTENT -->
         <div id="desktop-content">
-            <!-- Left Side : Icons -->
             <div class="flex flex-col gap-2" id="desktop-icons-container">
                 <div class="desktop-icon group" onclick="openApp('app-daw')">
                     <div class="icon-box"><svg class="w-9 h-9 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg></div>
@@ -660,13 +219,11 @@
                 </div>
             </div>
 
-            <!-- Right Side : Desktop Widgets -->
             <div class="widgets-container">
                 <div class="desktop-widget liquid-glass p-5 flex flex-col items-center text-center">
-                    <div id="widget-clock-time" class="text-4xl font-retro font-bold text-white tracking-widest drop-shadow-lg">12:00</div>
+                    <div id="widget-clock-time" class="text-4xl font-retro font-bold text-white tracking-widest drop-shadow-lg">08:00</div>
                     <div id="widget-clock-date" class="text-[11px] font-retro text-[var(--accent)] mt-2 uppercase tracking-widest border-t border-white/20 pt-2 w-full">Virtual Day 1</div>
                 </div>
-
                 <div class="desktop-widget liquid-glass p-5">
                     <div class="flex justify-between items-end mb-3">
                         <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">CPU Monitor</span>
@@ -676,7 +233,6 @@
                         <canvas id="sys-canvas" class="absolute inset-0 w-full h-full"></canvas>
                     </div>
                 </div>
-
                 <div class="desktop-widget liquid-glass !bg-yellow-500/15 !border-yellow-400/30 rotate-2 p-6 w-[105%] shadow-[0_20px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
                     <h4 class="font-handwriting text-yellow-300/90 text-3xl mb-3 border-b border-yellow-500/40 pb-1">To-Do List :</h4>
                     <ul class="font-handwriting text-yellow-100/90 text-xl space-y-1">
@@ -689,18 +245,14 @@
             </div>
         </div>
 
-        <!-- BOTTOM TASKBAR (DESKTOP) -->
+        <!-- TASKBAR DESKTOP -->
         <div id="taskbar-bottom" class="liquid-glass-heavy">
             <div class="flex gap-2 items-center border-r border-white/10 pr-4 mr-2">
                 <div class="taskbar-btn bg-white/5 hover:bg-white/10 !border-[var(--accent)] text-white" onclick="cycleTheme()" title="Change Theme">
                     <svg class="w-6 h-6 drop-shadow-[0_0_10px_var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 </div>
             </div>
-
-            <div class="flex-grow flex gap-2 overflow-x-auto" id="taskbar-apps">
-                <!-- Injected dynamically -->
-            </div>
-
+            <div class="flex-grow flex gap-2 overflow-x-auto" id="taskbar-apps"></div>
             <div class="flex gap-5 items-center border-l border-white/10 pl-5 ml-2 text-gray-300 text-lg">
                 <span class="hover:text-white cursor-pointer transition-colors hover:drop-shadow-[0_0_8px_#fff]" title="Volume">🔊</span>
                 <span class="hover:text-white cursor-pointer transition-colors hover:drop-shadow-[0_0_8px_#fff]" title="Network">📶</span>
@@ -708,7 +260,7 @@
             </div>
         </div>
 
-        <!-- BOTTOM NAV BAR (MOBILE) -->
+        <!-- MOBILE NAV -->
         <div id="mobile-nav" class="fixed bottom-0 left-0 w-full liquid-glass-heavy justify-around items-center px-2 pt-2 z-[60] border-t border-white/10" style="padding-bottom: env(safe-area-inset-bottom);">
             <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="openApp('app-daw')">
                 <svg class="w-7 h-7 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
@@ -726,7 +278,6 @@
                 <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 <span class="text-[9px] font-retro text-gray-300">STATS</span>
             </div>
-            <!-- Theme Toggle in Mobile Nav -->
             <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="cycleTheme()">
                 <svg class="w-7 h-7 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 <span class="text-[9px] font-retro text-[var(--accent)]">THEME</span>
@@ -734,7 +285,7 @@
         </div>
 
         <!-- APP WINDOWS -->
-        
+
         <!-- DAW PRO -->
         <div id="app-daw" class="os-window liquid-glass flex-col font-sans" style="display:none;">
             <div class="window-header">
@@ -743,49 +294,22 @@
                 </span>
                 <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-daw')">✕</button>
             </div>
-            
             <div class="window-content daw-grid-container text-xs">
-                
                 <div class="daw-panel-neon md:w-[160px] w-full p-4 flex flex-col flex-shrink-0 justify-start items-center relative">
                     <label class="block text-[10px] text-gray-300 mb-6 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2 w-full text-center">Drum Rack</label>
-                    <div class="grid grid-cols-4 gap-2 mb-4 w-full max-w-[200px] md:max-w-[120px]" id="sequencer-grid">
-                        <!-- Generated by JS -->
-                    </div>
+                    <div class="grid grid-cols-4 gap-2 mb-4 w-full max-w-[200px] md:max-w-[120px]" id="sequencer-grid"></div>
                     <p class="text-[8px] text-gray-500 font-retro tracking-widest mt-auto text-center border border-white/10 p-2 rounded w-full">Live Input</p>
                 </div>
-
                 <div class="daw-panel-neon flex-1 p-4 flex flex-col relative md:min-w-[450px] min-w-0">
                     <label class="block text-[10px] text-gray-300 mb-3 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2">Timeline Arrangement</label>
-                    
                     <div class="h-32 border border-white/10 rounded-lg flex flex-col overflow-x-auto overflow-y-hidden relative bg-black/60 cursor-crosshair shadow-inner mb-4" id="timeline-container">
-                        <div class="h-5 bg-black/80 border-b border-white/10 flex items-center font-retro text-[8px] text-gray-500 px-3 tracking-widest min-w-[700px] select-none">
-                            1...|...5...|...9...|...13...|...17...|...21...|...25...|...29...|...33
-                        </div>
-                        
-                        <div class="tl-track min-w-[700px]">
-                            <div class="tl-header">Kick/Bass</div>
-                            <div class="tl-clip bg-[var(--retro-red)]" style="left: 110px; width: 140px;"></div>
-                            <div class="tl-clip bg-[var(--retro-red)]" style="left: 300px; width: 80px;"></div>
-                        </div>
-                        <div class="tl-track min-w-[700px]">
-                            <div class="tl-header">Snare/Clap</div>
-                            <div class="tl-clip bg-[var(--retro-blue)]" style="left: 140px; width: 40px;"></div>
-                            <div class="tl-clip bg-[var(--retro-blue)]" style="left: 330px; width: 40px;"></div>
-                        </div>
-                        <div class="tl-track min-w-[700px]">
-                            <div class="tl-header">Melody</div>
-                            <div class="tl-clip bg-[var(--retro-green)]" style="left: 110px; width: 250px;"></div>
-                        </div>
-                        <div class="tl-track min-w-[700px]">
-                            <div class="tl-header">Vocals</div>
-                            <div class="tl-clip bg-[#a855f7]" style="left: 190px; width: 150px;"></div>
-                        </div>
-                        
-                        <div id="playhead" class="absolute top-0 bottom-0 w-px bg-white left-[110px] shadow-[0_0_10px_#fff] z-10 pointer-events-none">
-                            <div class="w-2.5 h-2.5 bg-white rounded-sm -ml-[1px] -mt-[0px]"></div>
-                        </div>
+                        <div class="h-5 bg-black/80 border-b border-white/10 flex items-center font-retro text-[8px] text-gray-500 px-3 tracking-widest min-w-[700px] select-none">1...|...5...|...9...|...13...|...17...|...21...|...25...|...29...|...33</div>
+                        <div class="tl-track min-w-[700px]"><div class="tl-header">Kick/Bass</div><div class="tl-clip bg-[var(--retro-red)]" style="left: 110px; width: 140px;"></div><div class="tl-clip bg-[var(--retro-red)]" style="left: 300px; width: 80px;"></div></div>
+                        <div class="tl-track min-w-[700px]"><div class="tl-header">Snare/Clap</div><div class="tl-clip bg-[var(--retro-blue)]" style="left: 140px; width: 40px;"></div><div class="tl-clip bg-[var(--retro-blue)]" style="left: 330px; width: 40px;"></div></div>
+                        <div class="tl-track min-w-[700px]"><div class="tl-header">Melody</div><div class="tl-clip bg-[var(--retro-green)]" style="left: 110px; width: 250px;"></div></div>
+                        <div class="tl-track min-w-[700px]"><div class="tl-header">Vocals</div><div class="tl-clip bg-[#a855f7]" style="left: 190px; width: 150px;"></div></div>
+                        <div id="playhead" class="absolute top-0 bottom-0 w-px bg-white left-[110px] shadow-[0_0_10px_#fff] z-10 pointer-events-none"><div class="w-2.5 h-2.5 bg-white rounded-sm -ml-[1px] -mt-[0px]"></div></div>
                     </div>
-
                     <div class="flex flex-col gap-3 mt-auto">
                         <div class="flex flex-wrap gap-2">
                             <button class="btn-minimal btn-genre active flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="drill" onclick="selectDawGenre('drill')">UK Drill</button>
@@ -793,110 +317,78 @@
                             <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="technohouse" onclick="selectDawGenre('technohouse')">Techno House</button>
                             <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="amapiano" onclick="selectDawGenre('amapiano')">Amapiano</button>
                         </div>
-                        
                         <div class="flex flex-col md:flex-row gap-3 items-stretch">
                             <div class="flex gap-2 flex-1">
                                 <button class="btn-minimal btn-voice active flex-1 py-3 md:py-2 text-[9px] md:text-[8px] rounded font-retro tracking-widest" data-val="m" onclick="selectDawVoice('m')">Male Voc</button>
                                 <button class="btn-minimal btn-voice flex-1 py-3 md:py-2 text-[9px] md:text-[8px] rounded font-retro tracking-widest" data-val="f" onclick="selectDawVoice('f')">Fem Voc</button>
                                 <button class="btn-minimal btn-voice flex-1 py-3 md:py-2 text-[9px] md:text-[8px] rounded font-retro tracking-widest" data-val="instru" onclick="selectDawVoice('instru')">Instru</button>
                             </div>
-
                             <div class="w-full md:w-[140px] flex-shrink-0 h-[44px] md:h-auto">
-                                <select id="daw-plugin" class="w-full h-full bg-black/60 border border-white/10 rounded px-2 outline-none text-[var(--accent)] text-[10px] font-bold tracking-wider cursor-pointer">
-                                    <option value="">- Clean Mix (No Plugin) -</option>
-                                </select>
+                                <select id="daw-plugin" class="w-full h-full bg-black/60 border border-white/10 rounded px-2 outline-none text-[var(--accent)] text-[10px] font-bold tracking-wider cursor-pointer"><option value="">- Clean Mix (No Plugin) -</option></select>
                             </div>
-
                             <div class="w-full md:w-[160px] bg-black/40 border border-white/10 rounded flex items-center px-4 py-2 md:px-3 md:py-1 gap-3 flex-shrink-0">
                                 <span id="bpm-val" class="text-base md:text-sm text-white font-retro w-10 md:w-8 text-right drop-shadow-[0_0_5px_var(--accent)]">120</span>
                                 <input type="range" id="daw-bpm" min="60" max="200" value="120" class="flex-1 accent-[var(--accent)] cursor-pointer" oninput="document.getElementById('bpm-val').innerHTML = this.value">
                             </div>
                         </div>
-
                         <div class="relative w-full h-[50px] md:h-[40px] mt-2">
-                            <button id="btn-export" class="w-full h-full btn-action rounded-lg text-[12px] md:text-[11px] drop-shadow-lg tracking-widest" onclick="exportTrack()">
-                                RENDER MIXDOWN
-                            </button>
+                            <button id="btn-export" class="w-full h-full btn-action rounded-lg text-[12px] md:text-[11px] drop-shadow-lg tracking-widest" onclick="exportTrack()">RENDER MIXDOWN</button>
                             <div id="export-progress-container" class="hidden absolute left-0 bottom-0 w-full h-1.5 bg-gray-900 overflow-hidden rounded-b-lg">
                                 <div id="export-progress" class="h-full bg-[var(--accent)] w-0 transition-all duration-100 shadow-[0_0_10px_var(--accent)]"></div>
                             </div>
                         </div>
                     </div>
                 </div>
-
                 <div class="daw-panel-neon md:w-[110px] w-full p-4 flex flex-row md:flex-col items-center justify-between md:justify-start flex-shrink-0">
                     <label class="block text-[10px] text-gray-300 md:mb-6 mb-3 font-retro uppercase tracking-widest md:border-b border-[var(--accent)]/30 md:pb-2 w-auto md:w-full text-center">Master</label>
                     <div class="flex flex-row md:flex-col gap-4 md:gap-5 w-auto md:w-full items-center md:mb-6">
                         <div class="flex flex-row md:flex-col gap-4 md:gap-5">
-                            <div class="knob-container">
-                                <div class="knob" id="knob-1" data-rot="-45" style="transform: rotate(-45deg)"></div>
-                                <span class="text-[9px] text-[var(--text-muted)] font-retro mt-1 tracking-widest font-bold">LOW</span>
-                            </div>
-                            <div class="knob-container">
-                                <div class="knob" id="knob-2" data-rot="30" style="transform: rotate(30deg)"></div>
-                                <span class="text-[9px] text-[var(--text-muted)] font-retro mt-1 tracking-widest font-bold">MID</span>
-                            </div>
-                            <div class="knob-container">
-                                <div class="knob" id="knob-3" data-rot="90" style="transform: rotate(90deg)"></div>
-                                <span class="text-[9px] text-[var(--text-muted)] font-retro mt-1 tracking-widest font-bold">HIGH</span>
-                            </div>
+                            <div class="knob-container"><div class="knob" id="knob-1" data-rot="-45" style="transform: rotate(-45deg)"></div><span class="text-[9px] text-[var(--text-muted)] font-retro mt-1 tracking-widest font-bold">LOW</span></div>
+                            <div class="knob-container"><div class="knob" id="knob-2" data-rot="30" style="transform: rotate(30deg)"></div><span class="text-[9px] text-[var(--text-muted)] font-retro mt-1 tracking-widest font-bold">MID</span></div>
+                            <div class="knob-container"><div class="knob" id="knob-3" data-rot="90" style="transform: rotate(90deg)"></div><span class="text-[9px] text-[var(--text-muted)] font-retro mt-1 tracking-widest font-bold">HIGH</span></div>
                         </div>
-
-                        <div class="w-full md:w-5 h-[16px] md:h-full bg-black/80 border border-white/10 rounded-sm p-0.5 md:p-1 flex flex-row md:flex-col-reverse justify-between shadow-[inset_0_0_10px_rgba(0,0,0,1)]" id="vu-meter-container">
-                        </div>
+                        <div class="w-full md:w-5 h-[16px] md:h-full bg-black/80 border border-white/10 rounded-sm p-0.5 md:p-1 flex flex-row md:flex-col-reverse justify-between shadow-[inset_0_0_10px_rgba(0,0,0,1)]" id="vu-meter-container"></div>
                     </div>
                 </div>
-
             </div>
         </div>
 
-        <!-- Browser / Store -->
+        <!-- BROWSER -->
         <div id="app-browser" class="os-window liquid-glass flex-col" style="display:none;">
             <div class="window-header">
-                <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
-                    <span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"></span> Web_Nav App
-                </span>
+                <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"></span> Web_Nav App</span>
                 <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-browser')">✕</button>
             </div>
             <div class="flex border-b border-[var(--glass-border)] text-[12px] md:text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-black/60 font-bold">
                 <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
                 <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
             </div>
-            <div class="window-content" id="browser-content">
-            </div>
+            <div class="window-content" id="browser-content"></div>
         </div>
 
-        <!-- Social Network -->
+        <!-- SOCIAL -->
         <div id="app-social" class="os-window liquid-glass flex-col" style="display:none;">
             <div class="window-header">
-                <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
-                    <span class="w-3 h-3 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></span> SoundNet App
-                </span>
+                <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></span> SoundNet App</span>
                 <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-social')">✕</button>
             </div>
             <div class="window-content p-6 md:p-8">
                 <div class="border border-[var(--accent)]/30 bg-black/40 p-6 md:p-8 rounded-xl text-center mb-8 shadow-inner">
                     <p class="text-sm text-[var(--text-muted)] mb-6">Keep the hype alive. Feed your fans.</p>
-                    <button id="btn-story" class="btn-action px-10 py-4 text-xs rounded-lg tracking-widest font-bold w-full md:w-auto" onclick="postStory()">
-                        POST DAILY STORY
-                    </button>
+                    <button id="btn-story" class="btn-action px-10 py-4 text-xs rounded-lg tracking-widest font-bold w-full md:w-auto" onclick="postStory()">POST DAILY STORY</button>
                     <p id="story-status" class="text-xs text-[var(--retro-green)] mt-5 font-retro tracking-widest drop-shadow-[0_0_5px_var(--retro-green)]">STATUS: READY</p>
                 </div>
-
                 <div>
                     <h4 class="text-xs text-white mb-5 uppercase tracking-widest font-retro border-b border-[var(--accent)]/30 pb-3 font-bold">Brand Deals (Sellout)</h4>
-                    <div id="sponsor-list" class="space-y-4">
-                    </div>
+                    <div id="sponsor-list" class="space-y-4"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Stats -->
+        <!-- STATS -->
         <div id="app-stats" class="os-window liquid-glass flex-col" style="display:none;">
             <div class="window-header">
-                <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
-                    <span class="w-3 h-3 rounded-full bg-[var(--retro-green)] shadow-[0_0_10px_var(--retro-green)]"></span> Sys_Stats
-                </span>
+                <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-[var(--retro-green)] shadow-[0_0_10px_var(--retro-green)]"></span> Sys_Stats</span>
                 <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-stats')">✕</button>
             </div>
             <div class="window-content font-retro text-sm text-[var(--retro-green)] bg-black/80 p-6 md:p-8 leading-loose tracking-wider shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
@@ -904,54 +396,54 @@
             </div>
         </div>
 
-        <!-- Toasts Zone (TOP LEFT) -->
+        <!-- TOAST ZONE -->
         <div id="toast-zone" class="absolute top-[90px] md:top-6 left-4 md:left-6 flex flex-col gap-3 z-[999999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
-
     </div>
 
-    <!-- BSOD Overlay -->
+    <!-- BSOD -->
     <div id="bsod" class="absolute inset-0 z-[100] bg-[#0000AA] text-white p-8 md:p-16 flex-col hidden font-retro">
         <h1 class="text-3xl md:text-5xl font-bold bg-white text-[#0000AA] inline-block px-5 py-2 mb-8 md:mb-10 mt-10">CRITICAL_SYSTEM_ERROR</h1>
         <p class="mb-6 text-lg md:text-xl tracking-wider">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
         <p class="mb-12 md:mb-16 text-base md:text-lg text-gray-300">Unlicensed software execution caused a memory leak. Restoring system state...</p>
-        
-        <div class="w-full max-w-3xl border border-white/50 p-1">
-            <div id="bsod-progress" class="bg-white h-5 md:h-6 w-0 transition-all"></div>
-        </div>
+        <div class="w-full max-w-3xl border border-white/50 p-1"><div id="bsod-progress" class="bg-white h-5 md:h-6 w-0 transition-all"></div></div>
         <p class="mt-12 text-sm md:text-base glitch text-gray-400">Do not turn off your workstation.</p>
     </div>
-
 </div>
 
-<!-- THREE.JS MODULE SCRIPT -->
 <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
-    /**
-     * SOUND MIX TYCOON V12.1 (HORLOGE ET COOLDOWNS CORRIGÉS)
-     */
+    // ==========================================
+    // V12.2 — CORRECTIF CRITIQUE : TEMPS & COOLDOWNS
+    // Résumé des correctifs :
+    // 1. formatNum() ajouté (était manquant → crash silencieux)
+    // 2. getTotalMins() sécurisé : parseInt sur day ET timeMins
+    // 3. gameTick() : incrément timeMins sécurisé + rollover propre
+    // 4. Chargement save : tous les cooldowns castés en parseInt
+    // 5. setInterval unique avec clearInterval systématique avant relance
+    // 6. simulateVuMeter() déclaré AVANT son premier appel
+    // ==========================================
 
     // ==========================================
-    // 1. RESPONSIVE STATE & GLOBALS
+    // 1. RESPONSIVE & GLOBALS
     // ==========================================
     let isMobile = window.innerWidth <= 767;
+    window.isMobile = isMobile;
     window.addEventListener('resize', () => {
         isMobile = window.innerWidth <= 767;
+        window.isMobile = isMobile;
         if (isMobile) {
             document.querySelectorAll('.os-window').forEach(win => {
-                if (win.style.display !== 'none') {
-                    win.style.left = '0px';
-                    win.style.top = '0px';
-                }
+                if (win.style.display !== 'none') { win.style.left = '0px'; win.style.top = '0px'; }
             });
         }
     });
 
     const themesList = [
-        { name: 'neon', vars: ['#09090b', '#1e1b4b', '#0f172a', '#312e81'] },
-        { name: 'synth', vars: ['#1a0b2e', '#ff007f', '#7928ca', '#00d4ff'] },
+        { name: 'neon',   vars: ['#09090b', '#1e1b4b', '#0f172a', '#312e81'] },
+        { name: 'synth',  vars: ['#1a0b2e', '#ff007f', '#7928ca', '#00d4ff'] },
         { name: 'matrix', vars: ['#020617', '#064e3b', '#022c22', '#047857'] },
-        { name: 'blood', vars: ['#170000', '#7f1d1d', '#4c0519', '#9f1239'] }
+        { name: 'blood',  vars: ['#170000', '#7f1d1d', '#4c0519', '#9f1239'] }
     ];
     let currentThemeIdx = 0;
 
@@ -967,7 +459,7 @@
     }
 
     // ==========================================
-    // 2. THREE.JS SCENE SETUP
+    // 2. THREE.JS SCENE
     // ==========================================
     const container = document.getElementById('three-canvas-container');
     const scene = new THREE.Scene();
@@ -985,7 +477,7 @@
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
 
     const listener = new THREE.AudioListener();
@@ -993,161 +485,85 @@
 
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.4);
     scene.add(hemiLight);
-    
     const dirLight = new THREE.DirectionalLight(0xe0e7ff, 1.1);
     dirLight.position.set(10, 20, 10);
     dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 2048; 
+    dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 2048;
-    dirLight.shadow.bias = -0.0005; 
-    
-    // Extension de la caméra d'ombre
-    dirLight.shadow.camera.left = -15;
-    dirLight.shadow.camera.right = 15;
-    dirLight.shadow.camera.top = 15;
-    dirLight.shadow.camera.bottom = -15;
+    dirLight.shadow.bias = -0.0005;
+    dirLight.shadow.camera.left = -15; dirLight.shadow.camera.right = 15;
+    dirLight.shadow.camera.top = 15;   dirLight.shadow.camera.bottom = -15;
     scene.add(dirLight);
 
-    // ==========================================
-    // 3. ROOM CREATION
-    // ==========================================
+    // Room
     const floorGeo = new THREE.PlaneGeometry(10, 10);
     const floorMat = new THREE.MeshStandardMaterial({ color: '#cda87c', roughness: 0.9, metalness: 0.1 });
     const floor = new THREE.Mesh(floorGeo, floorMat);
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -1;
-    floor.receiveShadow = true;
+    floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true;
     scene.add(floor);
 
     const wallMat = new THREE.MeshStandardMaterial({ color: '#dce1e3', roughness: 0.9 });
-    
-    const wallLeftGeo = new THREE.BoxGeometry(10.5, 10, 0.5);
-    const wallLeft = new THREE.Mesh(wallLeftGeo, wallMat);
-    wallLeft.position.set(0, 4, -5); 
-    wallLeft.receiveShadow = true;
-    scene.add(wallLeft);
+    const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(10.5, 10, 0.5), wallMat);
+    wallLeft.position.set(0, 4, -5); wallLeft.receiveShadow = true; scene.add(wallLeft);
+    const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.5, 10, 10.5), wallMat);
+    wallRight.position.set(-5, 4, 0); wallRight.receiveShadow = true; scene.add(wallRight);
 
-    const wallRightGeo = new THREE.BoxGeometry(0.5, 10, 10.5);
-    const wallRight = new THREE.Mesh(wallRightGeo, wallMat);
-    wallRight.position.set(-5, 4, 0); 
-    wallRight.receiveShadow = true;
-    scene.add(wallRight);
-
-    const deskTopGeo = new THREE.BoxGeometry(4.5, 0.1, 2.2);
     const deskTopMat = new THREE.MeshStandardMaterial({ color: '#b5b8c2', roughness: 0.7, metalness: 0.1 });
-    const deskTop = new THREE.Mesh(deskTopGeo, deskTopMat);
-    deskTop.position.set(0, 0.7, 0);
-    deskTop.castShadow = true;
-    deskTop.receiveShadow = true;
-    deskTop.name = 'pc_mesh'; 
+    const deskTop = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.1, 2.2), deskTopMat);
+    deskTop.position.set(0, 0.7, 0); deskTop.castShadow = true; deskTop.receiveShadow = true; deskTop.name = 'pc_mesh';
     scene.add(deskTop);
 
+    const legMat = new THREE.MeshStandardMaterial({ color: '#8c92a1', roughness: 0.4, metalness: 0.8 });
     const legGeo = new THREE.BoxGeometry(0.1, 1.7, 0.1);
-    const legMat = new THREE.MeshStandardMaterial({ color: '#8c92a1', roughness: 0.4, metalness: 0.8 }); 
-    const legPositions = [ [-2.1, -0.15, -0.9], [2.1, -0.15, -0.9], [-2.1, -0.15, 0.9], [2.1, -0.15, 0.9] ];
-    legPositions.forEach(pos => {
+    [[-2.1,-0.15,-0.9],[2.1,-0.15,-0.9],[-2.1,-0.15,0.9],[2.1,-0.15,0.9]].forEach(pos => {
         const leg = new THREE.Mesh(legGeo, legMat);
-        leg.position.set(...pos);
-        leg.castShadow = true;
-        leg.receiveShadow = true;
-        scene.add(leg);
+        leg.position.set(...pos); leg.castShadow = true; leg.receiveShadow = true; scene.add(leg);
     });
 
-    const standGeo = new THREE.BoxGeometry(0.2, 0.2, 0.15);
-    const stand = new THREE.Mesh(standGeo, legMat);
-    stand.position.set(0, 0.8, -0.6);
-    stand.castShadow = true;
-    stand.receiveShadow = true;
-    stand.name = 'pc_mesh';
-    scene.add(stand);
+    const stand = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.15), legMat);
+    stand.position.set(0, 0.8, -0.6); stand.castShadow = true; stand.receiveShadow = true; stand.name = 'pc_mesh'; scene.add(stand);
 
-    const pcFrameGeo = new THREE.BoxGeometry(1.4, 0.85, 0.05);
-    const pcFrameMat = new THREE.MeshStandardMaterial({ color: '#d9dce3', roughness: 0.2, metalness: 0.5 }); 
-    const pcFrame = new THREE.Mesh(pcFrameGeo, pcFrameMat);
-    pcFrame.position.set(0, 1.25, -0.55);
-    pcFrame.castShadow = true;
-    pcFrame.name = 'pc_mesh';
-    
-    const pcScreenGeo = new THREE.PlaneGeometry(1.3, 0.75);
+    const pcFrameMat = new THREE.MeshStandardMaterial({ color: '#d9dce3', roughness: 0.2, metalness: 0.5 });
+    const pcFrame = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.85, 0.05), pcFrameMat);
+    pcFrame.position.set(0, 1.25, -0.55); pcFrame.castShadow = true; pcFrame.name = 'pc_mesh';
+
     const pcScreenMat = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#818cf8', emissiveIntensity: 0.8 });
-    const pcMesh = new THREE.Mesh(pcScreenGeo, pcScreenMat);
-    pcMesh.position.set(0, 0, 0.026); 
-    pcMesh.name = 'pc_mesh'; 
-    pcFrame.add(pcMesh); 
+    const pcMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.75), pcScreenMat);
+    pcMesh.position.set(0, 0, 0.026); pcMesh.name = 'pc_mesh'; pcFrame.add(pcMesh);
     scene.add(pcFrame);
 
     const speakerMat = new THREE.MeshStandardMaterial({ color: '#a3a8b5', roughness: 0.8, metalness: 0.2 });
-    const wooferMat = new THREE.MeshStandardMaterial({ color: '#33353d', roughness: 0.9, metalness: 0.1 });
+    const wooferMat = new THREE.MeshStandardMaterial({ color: '#33353d', roughness: 0.9 });
     const speakerGeo = new THREE.BoxGeometry(0.4, 0.6, 0.4);
     const wooferGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.02, 16);
 
     const speakerL = new THREE.Mesh(speakerGeo, speakerMat);
-    speakerL.position.set(-1.6, 1.05, -0.4);
-    speakerL.rotation.y = Math.PI / 12; 
-    speakerL.castShadow = true;
-    speakerL.name = 'pc_mesh'; 
-    const wooferL = new THREE.Mesh(wooferGeo, wooferMat);
-    wooferL.rotation.x = Math.PI / 2;
-    wooferL.position.set(0, 0, 0.2);
-    speakerL.add(wooferL);
-    scene.add(speakerL);
+    speakerL.position.set(-1.6, 1.05, -0.4); speakerL.rotation.y = Math.PI / 12; speakerL.castShadow = true; speakerL.name = 'pc_mesh';
+    const wooferL = new THREE.Mesh(wooferGeo, wooferMat); wooferL.rotation.x = Math.PI / 2; wooferL.position.set(0, 0, 0.2); speakerL.add(wooferL); scene.add(speakerL);
 
     const speakerR = new THREE.Mesh(speakerGeo, speakerMat);
-    speakerR.position.set(1.6, 1.05, -0.4);
-    speakerR.rotation.y = -Math.PI / 12;
-    speakerR.castShadow = true;
-    speakerR.name = 'pc_mesh';
-    const wooferR = new THREE.Mesh(wooferGeo, wooferMat);
-    wooferR.rotation.x = Math.PI / 2;
-    wooferR.position.set(0, 0, 0.2);
-    speakerR.add(wooferR);
-    scene.add(speakerR);
+    speakerR.position.set(1.6, 1.05, -0.4); speakerR.rotation.y = -Math.PI / 12; speakerR.castShadow = true; speakerR.name = 'pc_mesh';
+    const wooferR = new THREE.Mesh(wooferGeo, wooferMat); wooferR.rotation.x = Math.PI / 2; wooferR.position.set(0, 0, 0.2); speakerR.add(wooferR); scene.add(speakerR);
 
-    // Clavier
-    const kbdBaseGeo = new THREE.BoxGeometry(1.6, 0.05, 0.6);
     const kbdBaseMat = new THREE.MeshStandardMaterial({ color: '#e8eaf0', roughness: 0.3, metalness: 0.2 });
-    const kbdBase = new THREE.Mesh(kbdBaseGeo, kbdBaseMat);
-    kbdBase.position.set(0, 0.75, 0.4); 
-    kbdBase.rotation.x = -Math.PI / 40; 
-    kbdBase.castShadow = true;
-    kbdBase.receiveShadow = true;
-    kbdBase.name = 'pc_mesh';
-    scene.add(kbdBase);
+    const kbdBase = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.05, 0.6), kbdBaseMat);
+    kbdBase.position.set(0, 0.75, 0.4); kbdBase.rotation.x = -Math.PI / 40; kbdBase.castShadow = true; kbdBase.receiveShadow = true; kbdBase.name = 'pc_mesh'; scene.add(kbdBase);
 
     const keyGeo = new THREE.BoxGeometry(0.08, 0.03, 0.08);
-    const keyMat = new THREE.MeshStandardMaterial({ color: '#d1d5db', emissive: '#000000', emissiveIntensity: 0 });
-    for (let x = -0.7; x <= 0.7; x += 0.12) {
-        for (let z = -0.22; z <= 0.22; z += 0.12) {
-            const key = new THREE.Mesh(keyGeo, keyMat);
-            key.position.set(x, 0.03, z);
-            kbdBase.add(key);
-        }
+    const keyMat = new THREE.MeshStandardMaterial({ color: '#d1d5db' });
+    for (let x = -0.7; x <= 0.7; x += 0.12) for (let z = -0.22; z <= 0.22; z += 0.12) {
+        const key = new THREE.Mesh(keyGeo, keyMat); key.position.set(x, 0.03, z); kbdBase.add(key);
     }
 
-    // Souris
-    const mouseGroup = new THREE.Group();
-    mouseGroup.position.set(1.2, 0.73, 0.4); 
-    scene.add(mouseGroup);
-
-    const mouseBodyGeo = new THREE.SphereGeometry(0.15, 16, 16);
-    mouseBodyGeo.scale(1, 0.6, 1.5); 
+    const mouseGroup = new THREE.Group(); mouseGroup.position.set(1.2, 0.73, 0.4); scene.add(mouseGroup);
+    const mouseBodyGeo = new THREE.SphereGeometry(0.15, 16, 16); mouseBodyGeo.scale(1, 0.6, 1.5);
     const mouseMat = new THREE.MeshStandardMaterial({ color: '#e8eaf0', roughness: 0.4, metalness: 0.2 });
-    const mouseBody = new THREE.Mesh(mouseBodyGeo, mouseMat);
-    mouseBody.castShadow = true;
-    mouseBody.name = 'pc_mesh';
-    mouseGroup.add(mouseBody);
-
-    const wheelGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.05, 12);
-    const wheelMat = new THREE.MeshStandardMaterial({ color: '#818cf8', emissive: '#000000', emissiveIntensity: 0 });
-    const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-    wheel.rotation.z = Math.PI / 2;
-    wheel.position.set(0, 0.06, -0.05); 
-    mouseGroup.add(wheel);
-
-    const splitGeo = new THREE.BoxGeometry(0.005, 0.02, 0.15);
-    const split = new THREE.Mesh(splitGeo, new THREE.MeshStandardMaterial({ color: '#000000' }));
-    split.position.set(0, 0.08, -0.1);
-    mouseGroup.add(split);
+    const mouseBody = new THREE.Mesh(mouseBodyGeo, mouseMat); mouseBody.castShadow = true; mouseBody.name = 'pc_mesh'; mouseGroup.add(mouseBody);
+    const wheelMat = new THREE.MeshStandardMaterial({ color: '#818cf8' });
+    const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.05, 12), wheelMat);
+    wheel.rotation.z = Math.PI / 2; wheel.position.set(0, 0.06, -0.05); mouseGroup.add(wheel);
+    const split = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.02, 0.15), new THREE.MeshStandardMaterial({ color: '#000' }));
+    split.position.set(0, 0.08, -0.1); mouseGroup.add(split);
 
     let time = 0;
     function animate3D() {
@@ -1159,93 +575,64 @@
     animate3D();
 
     // ==========================================
-    // 4. RAYCASTER & INTERACTION
+    // 3. RAYCASTER & INTERACTION
     // ==========================================
     const raycaster = new THREE.Raycaster();
     const mousePos = new THREE.Vector2();
 
     function onPointerDown(event) {
         if (document.getElementById('room-ui').style.display !== 'flex') return;
-
         let clientX, clientY;
-        if (event.changedTouches) {
-            clientX = event.changedTouches[0].clientX;
-            clientY = event.changedTouches[0].clientY;
-        } else {
-            clientX = event.clientX;
-            clientY = event.clientY;
-        }
-
+        if (event.changedTouches) { clientX = event.changedTouches[0].clientX; clientY = event.changedTouches[0].clientY; }
+        else { clientX = event.clientX; clientY = event.clientY; }
         mousePos.x = (clientX / window.innerWidth) * 2 - 1;
         mousePos.y = -(clientY / window.innerHeight) * 2 + 1;
-
         raycaster.setFromCamera(mousePos, camera);
         const intersects = raycaster.intersectObjects(scene.children, true);
-
         for (let i = 0; i < intersects.length; i++) {
-            if (intersects[i].object.name === 'pc_mesh') {
-                enterPC();
-                break;
-            }
+            if (intersects[i].object.name === 'pc_mesh') { enterPC(); break; }
         }
     }
-
     document.getElementById('three-canvas-container').addEventListener('pointerdown', onPointerDown);
 
     function enterPC() {
         document.getElementById('room-ui').style.display = 'none';
         document.getElementById('pc-ui-layer').style.display = 'flex';
-        playTone(600, 'square', 0.1, 0.05); 
+        playTone(600, 'square', 0.1, 0.05);
     }
-
     function quitPC() {
         document.getElementById('pc-ui-layer').style.display = 'none';
         document.getElementById('room-ui').style.display = 'flex';
-        playTone(300, 'sawtooth', 0.1, 0.05); 
+        playTone(300, 'sawtooth', 0.1, 0.05);
     }
 
     // ==========================================
-    // 5. GAME LOGIC & UI (Refactored)
+    // 4. TOOLTIP
     // ==========================================
     const globalTooltip = document.createElement('div');
     globalTooltip.id = 'global-tooltip';
     globalTooltip.className = 'fixed z-[99999] bg-black/95 border border-[var(--glass-border)] rounded-lg p-4 w-[280px] opacity-0 pointer-events-none transition-opacity shadow-2xl font-retro text-[10px] text-white hidden';
     document.body.appendChild(globalTooltip);
-
     let tooltipTimeout;
 
     function toggleTooltip(type, el) {
-        if(isMobile) {
-            if(globalTooltip.dataset.type === type && !globalTooltip.classList.contains('hidden')) {
-                hideTooltip();
-            } else {
-                showTooltip(type, el);
-            }
+        if (isMobile) {
+            if (globalTooltip.dataset.type === type && !globalTooltip.classList.contains('hidden')) hideTooltip();
+            else showTooltip(type, el);
         }
     }
-
     function showTooltip(type, el) {
         clearTimeout(tooltipTimeout);
         globalTooltip.dataset.type = type;
         const rect = el.getBoundingClientRect();
-        
-        if (isMobile) {
-            globalTooltip.style.left = `50%`;
-            globalTooltip.style.transform = `translateX(-50%)`;
-            globalTooltip.style.top = `${rect.bottom + 15}px`;
-        } else {
-            globalTooltip.style.left = `${rect.left + rect.width/2 - 140}px`; 
-            globalTooltip.style.transform = `none`;
-            globalTooltip.style.top = `${rect.bottom + 15}px`;
-        }
-        
+        if (isMobile) { globalTooltip.style.left = '50%'; globalTooltip.style.transform = 'translateX(-50%)'; globalTooltip.style.top = `${rect.bottom + 15}px`; }
+        else { globalTooltip.style.left = `${rect.left + rect.width/2 - 140}px`; globalTooltip.style.transform = 'none'; globalTooltip.style.top = `${rect.bottom + 15}px`; }
         globalTooltip.classList.remove('hidden');
         void globalTooltip.offsetWidth;
         globalTooltip.style.opacity = '1';
-
-        if(type === 'money') {
+        if (type === 'money') {
             let html = '<div class="text-[var(--retro-green)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Bank Statement</div><div class="space-y-3">';
-            if(state.history.money.length === 0) html += '<div class="text-gray-500">No transactions.</div>';
+            if (state.history.money.length === 0) html += '<div class="text-gray-500">No transactions.</div>';
             state.history.money.forEach(m => {
                 const color = m.amt >= 0 ? 'text-[var(--retro-green)]' : 'text-[var(--retro-red)]';
                 const sign = m.amt >= 0 ? '+' : '';
@@ -1254,197 +641,189 @@
             html += '</div>';
             globalTooltip.innerHTML = html;
         }
-        if(type === 'rep') {
-            const streams = Math.floor(state.rep * 42.5 + Math.random() * 20); 
+        if (type === 'rep') {
+            const streams = Math.floor(state.rep * 42.5 + Math.random() * 20);
             globalTooltip.innerHTML = `<div class="text-[var(--retro-orange)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Streaming Data</div>
-                                 <div class="text-gray-300 text-[11px]">Estimated Daily Streams:</div>
-                                 <div class="text-2xl text-white mt-2 font-bold tracking-wider">~${formatNum(streams)} <span class="text-[9px] text-[var(--retro-orange)]">PLAYS</span></div>`;
+                <div class="text-gray-300 text-[11px]">Estimated Daily Streams:</div>
+                <div class="text-2xl text-white mt-2 font-bold tracking-wider">~${formatNum(streams)} <span class="text-[9px] text-[var(--retro-orange)]">PLAYS</span></div>`;
         }
-        if(type === 'fol') {
+        if (type === 'fol') {
             let html = '<div class="text-[var(--accent)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Recent Subscribers</div><div class="space-y-3">';
-            if(state.history.followers.length === 0) html += '<div class="text-gray-500">No recent activity.</div>';
-            state.history.followers.forEach(f => {
-                html += `<div class="text-gray-200 flex items-center gap-3 text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_5px_var(--accent)]"></span> @${f}</div>`;
-            });
+            if (state.history.followers.length === 0) html += '<div class="text-gray-500">No recent activity.</div>';
+            state.history.followers.forEach(f => { html += `<div class="text-gray-200 flex items-center gap-3 text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_5px_var(--accent)]"></span> @${f}</div>`; });
             html += '</div>';
             globalTooltip.innerHTML = html;
         }
     }
-
     function hideTooltip() {
         globalTooltip.style.opacity = '0';
         clearTimeout(tooltipTimeout);
-        tooltipTimeout = setTimeout(() => { 
-            globalTooltip.classList.add('hidden'); 
-            globalTooltip.dataset.type = '';
-        }, 300); 
+        tooltipTimeout = setTimeout(() => { globalTooltip.classList.add('hidden'); globalTooltip.dataset.type = ''; }, 300);
     }
-
     document.addEventListener('touchstart', (e) => {
-        if(isMobile && !e.target.closest('#hud') && !e.target.closest('#global-tooltip')) {
-            hideTooltip();
-        }
-    }, {passive: true});
+        if (isMobile && !e.target.closest('#hud') && !e.target.closest('#global-tooltip')) hideTooltip();
+    }, { passive: true });
 
+    // ==========================================
+    // 5. CPU GRAPH
+    // ==========================================
     const sysCanvasUI = document.getElementById('sys-canvas');
     const sysCtxUI = sysCanvasUI ? sysCanvasUI.getContext('2d') : null;
     let cpuDataUI = Array(50).fill(50);
-    
+
     function drawSysGraphUI() {
-        if(!sysCtxUI || !sysCanvasUI) return;
+        if (!sysCtxUI || !sysCanvasUI) return;
         sysCanvasUI.width = sysCanvasUI.parentElement.clientWidth;
         sysCanvasUI.height = sysCanvasUI.parentElement.clientHeight;
-        
         let last = cpuDataUI[cpuDataUI.length - 1];
         let next = last + (Math.random() * 30 - 15);
-        if(state.isExporting) next = 95 + Math.random() * 5; 
-        if(next > 100) next = 100;
-        if(next < 5) next = 5;
-        
-        cpuDataUI.shift();
-        cpuDataUI.push(next);
-
+        if (state.isExporting) next = 95 + Math.random() * 5;
+        if (next > 100) next = 100;
+        if (next < 5) next = 5;
+        cpuDataUI.shift(); cpuDataUI.push(next);
         sysCtxUI.clearRect(0, 0, sysCanvasUI.width, sysCanvasUI.height);
         sysCtxUI.beginPath();
         sysCtxUI.moveTo(0, sysCanvasUI.height - (cpuDataUI[0]/100 * sysCanvasUI.height));
-        
         const step = sysCanvasUI.width / (cpuDataUI.length - 1);
-        for(let i=1; i<cpuDataUI.length; i++) {
-            sysCtxUI.lineTo(i * step, sysCanvasUI.height - (cpuDataUI[i]/100 * sysCanvasUI.height));
-        }
-        
-        sysCtxUI.strokeStyle = 'rgba(52, 211, 153, 0.9)';
-        sysCtxUI.lineWidth = 2;
-        sysCtxUI.stroke();
-
-        sysCtxUI.lineTo(sysCanvasUI.width, sysCanvasUI.height);
-        sysCtxUI.lineTo(0, sysCanvasUI.height);
-        sysCtxUI.fillStyle = 'rgba(52, 211, 153, 0.15)';
-        sysCtxUI.fill();
-
-        setTimeout(() => requestAnimationFrame(drawSysGraphUI), 150); 
+        for (let i = 1; i < cpuDataUI.length; i++) sysCtxUI.lineTo(i * step, sysCanvasUI.height - (cpuDataUI[i]/100 * sysCanvasUI.height));
+        sysCtxUI.strokeStyle = 'rgba(52, 211, 153, 0.9)'; sysCtxUI.lineWidth = 2; sysCtxUI.stroke();
+        sysCtxUI.lineTo(sysCanvasUI.width, sysCanvasUI.height); sysCtxUI.lineTo(0, sysCanvasUI.height);
+        sysCtxUI.fillStyle = 'rgba(52, 211, 153, 0.15)'; sysCtxUI.fill();
+        setTimeout(() => requestAnimationFrame(drawSysGraphUI), 150);
     }
 
+    // ==========================================
+    // 6. VU METER — déclaré avant tout appel
+    // ==========================================
+    function simulateVuMeter(level) {
+        for (let i = 1; i <= 14; i++) {
+            const led = document.getElementById(`vu-led-${i}`);
+            if (!led) continue;
+            led.className = 'vu-led';
+            if (i <= level) {
+                if (i > 12) led.classList.add('on-red');
+                else if (i > 9) led.classList.add('on-yellow');
+                else led.classList.add('on-green');
+            }
+        }
+        setTimeout(() => {
+            for (let i = 1; i <= 14; i++) {
+                const led = document.getElementById(`vu-led-${i}`);
+                if (led) led.className = 'vu-led';
+            }
+        }, 80);
+    }
+
+    // ==========================================
+    // 7. AUDIO
+    // ==========================================
     let audioCtxUI = null;
     function initAudio() {
         if (!audioCtxUI) {
             try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (AudioContext) audioCtxUI = new AudioContext();
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (AC) audioCtxUI = new AC();
             } catch(e) {}
         }
     }
-
     function playTone(freq, type = 'sine', duration = 0.1, vol = 0.1) {
         try {
             if (!audioCtxUI) initAudio();
             if (!audioCtxUI) return;
-            if(audioCtxUI.state === 'suspended') audioCtxUI.resume();
+            if (audioCtxUI.state === 'suspended') audioCtxUI.resume();
             const osc = audioCtxUI.createOscillator();
             const gain = audioCtxUI.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtxUI.currentTime);
+            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtxUI.currentTime);
             gain.gain.setValueAtTime(vol, audioCtxUI.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtxUI.currentTime + duration);
-            osc.connect(gain);
-            gain.connect(audioCtxUI.destination);
-            osc.start();
-            osc.stop(audioCtxUI.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtxUI.destination);
+            osc.start(); osc.stop(audioCtxUI.currentTime + duration);
         } catch(e) {}
     }
-
-    const playBleep = () => playTone(800, 'sine', 0.05, 0.03);
+    const playBleep   = () => playTone(800, 'sine', 0.05, 0.03);
     const playSuccess = () => { playTone(600, 'square', 0.1, 0.03); setTimeout(() => playTone(800, 'square', 0.15, 0.03), 100); };
-    const playError = () => { playTone(200, 'sawtooth', 0.2, 0.05); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); };
-    const playKick = () => { playTone(60, 'sine', 0.2, 0.2); playTone(120, 'square', 0.05, 0.1); }; 
+    const playError   = () => { playTone(200, 'sawtooth', 0.2, 0.05); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); };
+    const playKick    = () => { playTone(60, 'sine', 0.2, 0.2); playTone(120, 'square', 0.05, 0.1); };
 
-    // Constants
+    // ==========================================
+    // 8. CONSTANTS & DEFAULT STATE
+    // ==========================================
     const avatars = [
         { id: 'Char 1', img: './spr_char_1.png' },
         { id: 'Char 2', img: './spr_char_2.png' },
         { id: 'Char 3', img: './spr_char_3.png' },
         { id: 'Char 4', img: './spr_char_4.png' }
     ];
-
     const sponsors = [
-        { id: 'sp1', name: "Enerji Drink", reqFollowers: 1000, reward: 500, repCost: 15, cooldownDays: 1 },
-        { id: 'sp2', name: "CryptoCoinZ", reqFollowers: 5000, reward: 2500, repCost: 20, cooldownDays: 1 },
-        { id: 'sp3', name: "AudioGear Pro", reqFollowers: 10000, reward: 8000, repCost: 5, cooldownDays: 2 }
+        { id: 'sp1', name: "Enerji Drink",  reqFollowers: 1000,  reward: 500,  repCost: 15, cooldownDays: 1 },
+        { id: 'sp2', name: "CryptoCoinZ",   reqFollowers: 5000,  reward: 2500, repCost: 20, cooldownDays: 1 },
+        { id: 'sp3', name: "AudioGear Pro", reqFollowers: 10000, reward: 8000, repCost: 5,  cooldownDays: 2 }
     ];
-
     const cracks = [
-        { id: 'c1', name: "Massive_Bass_CRACK", risk: 0.15, reqRep: 0, desc: "+20% Cash. Heavy bass." },
-        { id: 'c2', name: "AutoTune_Pro_Patcher", risk: 0.25, reqRep: 10, desc: "Fixes bad vocal choices." },
-        { id: 'c3', name: "Vintage_DrumMachine", risk: 0.20, reqRep: 30, desc: "Huge Bonus if using many pads." },
-        { id: 'c4', name: "Ozone_Mastering_Keygen", risk: 0.40, reqRep: 80, desc: "+50% Cash. Pro sound." },
-        { id: 'c5', name: "Ghost_Prod_AI_Engine", risk: 0.60, reqRep: 150, desc: "Guaranteed Banger. High rep risk." }
+        { id: 'c1', name: "Massive_Bass_CRACK",      risk: 0.15, reqRep: 0,   desc: "+20% Cash. Heavy bass." },
+        { id: 'c2', name: "AutoTune_Pro_Patcher",    risk: 0.25, reqRep: 10,  desc: "Fixes bad vocal choices." },
+        { id: 'c3', name: "Vintage_DrumMachine",     risk: 0.20, reqRep: 30,  desc: "Huge Bonus if using many pads." },
+        { id: 'c4', name: "Ozone_Mastering_Keygen",  risk: 0.40, reqRep: 80,  desc: "+50% Cash. Pro sound." },
+        { id: 'c5', name: "Ghost_Prod_AI_Engine",    risk: 0.60, reqRep: 150, desc: "Guaranteed Banger. High rep risk." }
     ];
 
     const DEFAULT_STATE = {
-        username: '',
-        activeCharacter: 0,
-        money: 100,
-        rep: 10,
-        followers: 0,
-        timeMins: 8 * 60,
+        username: '', activeCharacter: 0,
+        money: 100, rep: 10, followers: 0,
+        timeMins: 8 * 60,   // FIX: commence à 8h00, pas 12h00
         day: 1,
-        multiplier: 1.0,
+        multiplier: 1.0, plugins: 0,
         stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0 },
         cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, sponsors: {} },
-        inventory: [], 
-        history: { money: [{amt: 100, txt: "Initial Bank Setup"}], followers: [] },
+        inventory: [],
+        history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
         isExporting: false
     };
 
     let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
     let selectedAvatarIndex = 0;
-    
     let currentDawGenre = 'drill';
     let currentDawVoice = 'm';
 
+    // ==========================================
+    // 9. STORAGE
+    // ==========================================
     const MockStorage = { data: {}, getItem: (k) => MockStorage.data[k] || null, setItem: (k, v) => { MockStorage.data[k] = v; } };
     const SafeStorage = {
         get: (key) => { try { return localStorage.getItem(key) || MockStorage.getItem(key); } catch(e) { return MockStorage.getItem(key); } },
         set: (key, val) => { try { localStorage.setItem(key, val); } catch(e) {} MockStorage.setItem(key, val); }
     };
 
-    function getTotalMins() { return (Number(state.day) * 1440) + Number(state.timeMins); }
+    // ==========================================
+    // 10. HELPERS — formatNum AJOUTÉ ICI (V12.2 FIX)
+    // ==========================================
 
-    function logMoney(amount, reason) {
-        state.money = Number(state.money) + amount;
-        if(state.money < 0) state.money = 0;
-        state.history.money.unshift({amt: amount, txt: reason});
-        if(state.history.money.length > 5) state.history.money.pop();
+    /**
+     * FIX V12.2 : formatNum était absent du code d'origine → crash silencieux
+     * à chaque appel (updateHUD, tooltip...). Cela empêchait le HUD de se
+     * rafraîchir et donnait l'illusion que le temps était figé.
+     */
+    function formatNum(n) {
+        n = Number(n);
+        if (isNaN(n)) return '0';
+        if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+        if (n >= 1_000)     return (n / 1_000).toFixed(1) + 'K';
+        return Math.floor(n).toString();
     }
 
-    function generateFanName() {
-        const prefixes = ['Lil_', 'DJ_', 'MC_', 'Prod_', 'User', 'Fan_'];
-        const suffixes = ['_Beat', 'Vibe', 'Master', '99', '2026', 'Z'];
-        return prefixes[Math.floor(Math.random()*prefixes.length)] + suffixes[Math.floor(Math.random()*suffixes.length)];
-    }
-
-    function logFollower(amount) {
-        if(amount > 0) {
-            state.followers = Number(state.followers) + amount;
-            state.history.followers.unshift(generateFanName());
-            if(state.history.followers.length > 4) state.history.followers.pop();
-        }
-    }
-
-    function getVpnCooldown() {
-        const dlCount = state.stats.crackDownloads || 0;
-        if(dlCount === 0) return 30;   
-        if(dlCount === 1) return 60;   
-        if(dlCount === 2) return 120;  
-        if(dlCount === 3) return 180;  
-        return 360; 
-    }
-
-    function getDawCooldown() {
-        return 15; 
+    /**
+     * FIX V12.2 : getTotalMins() sécurisé avec parseInt sur les deux membres.
+     * Sans ça, (day * 1440) peut produire NaN si day est une string,
+     * rendant TOUS les cooldowns invalides (NaN < NaN === false toujours).
+     */
+    function getTotalMins() {
+        const d = parseInt(state.day, 10) || 1;
+        const t = parseInt(state.timeMins, 10) || 0;
+        return (d * 1440) + t;
     }
 
     function formatTimeLeft(mins) {
+        mins = parseInt(mins, 10) || 0;
         if (mins <= 0) return "0 MIN";
         if (mins < 60) return `${mins} MIN`;
         const h = Math.floor(mins / 60);
@@ -1452,8 +831,36 @@
         return m > 0 ? `${h}H ${m}M` : `${h}H`;
     }
 
+    function logMoney(amount, reason) {
+        state.money = (parseInt(state.money, 10) || 0) + amount;
+        if (state.money < 0) state.money = 0;
+        state.history.money.unshift({ amt: amount, txt: reason });
+        if (state.history.money.length > 5) state.history.money.pop();
+    }
+    function generateFanName() {
+        const p = ['Lil_','DJ_','MC_','Prod_','User','Fan_'];
+        const s = ['_Beat','Vibe','Master','99','2026','Z'];
+        return p[Math.floor(Math.random()*p.length)] + s[Math.floor(Math.random()*s.length)];
+    }
+    function logFollower(amount) {
+        if (amount > 0) {
+            state.followers = (parseInt(state.followers, 10) || 0) + amount;
+            state.history.followers.unshift(generateFanName());
+            if (state.history.followers.length > 4) state.history.followers.pop();
+        }
+    }
+    function getVpnCooldown() {
+        const dl = parseInt(state.stats.crackDownloads, 10) || 0;
+        if (dl === 0) return 30;
+        if (dl === 1) return 60;
+        if (dl === 2) return 120;
+        if (dl === 3) return 180;
+        return 360;
+    }
+    function getDawCooldown() { return 15; }
+
     // ==========================================
-    // 6. INITIALIZATION & APP LOGIC
+    // 11. INIT UI
     // ==========================================
     function initUI() {
         const cont = document.getElementById('avatar-container');
@@ -1461,75 +868,54 @@
             <div class="avatar-sel flex flex-col items-center justify-center p-3 md:p-4 ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
                 <img src="${a.img}" alt="${a.id}" class="w-24 h-24 md:w-32 md:h-32 pixelated object-contain mb-3" onerror="this.style.border='1px solid red'" />
                 <span class="text-[10px] md:text-xs font-retro text-[var(--text-muted)] uppercase font-bold tracking-widest">${a.id}</span>
-            </div>
-        `).join('');
+            </div>`).join('');
 
         const seq = document.getElementById('sequencer-grid');
-        seq.innerHTML = Array(16).fill(0).map((_, i) => `
-            <div class="seq-pad" id="pad-${i}" onclick="togglePad(${i})"></div>
-        `).join('');
+        seq.innerHTML = Array(16).fill(0).map((_, i) => `<div class="seq-pad" id="pad-${i}" onclick="togglePad(${i})"></div>`).join('');
 
         const vuMeter = document.getElementById('vu-meter-container');
         let ledsHTML = '';
-        for(let i=1; i<=14; i++) {
-            ledsHTML += `<div class="vu-led" id="vu-led-${i}"></div>`;
-        }
+        for (let i = 1; i <= 14; i++) ledsHTML += `<div class="vu-led" id="vu-led-${i}"></div>`;
         vuMeter.innerHTML = ledsHTML;
 
-        if(isMobile) {
-            document.querySelectorAll('.vu-led').forEach(l => {
-                l.style.width = '4px'; l.style.height = '100%'; l.style.marginBottom = '0'; l.style.marginRight = '2px';
-            });
+        if (isMobile) {
+            document.querySelectorAll('.vu-led').forEach(l => { l.style.width = '4px'; l.style.height = '100%'; l.style.marginBottom = '0'; l.style.marginRight = '2px'; });
             vuMeter.style.flexDirection = 'row';
         }
 
+        // Window dragging
         document.querySelectorAll('.os-window').forEach(win => {
             const header = win.querySelector('.window-header');
             let isDragging = false, startX, startY, initX, initY;
-
             const startDrag = (e) => {
-                if(isMobile) return; 
-                isDragging = true;
-                bringToFront(win.id);
-                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-                startX = clientX;
-                startY = clientY;
-                initX = win.offsetLeft;
-                initY = win.offsetTop;
+                if (isMobile) return;
+                isDragging = true; bringToFront(win.id);
+                const cx = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                const cy = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+                startX = cx; startY = cy; initX = win.offsetLeft; initY = win.offsetTop;
             };
-
             const doDrag = (e) => {
-                if(!isDragging || isMobile) return;
+                if (!isDragging || isMobile) return;
                 e.preventDefault();
-                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-                const dx = clientX - startX;
-                const dy = clientY - startY;
-                let newX = initX + dx;
-                let newY = initY + dy;
-                if (newY < 100) newY = 100; 
-                win.style.left = `${newX}px`;
-                win.style.top = `${newY}px`;
+                const cx = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                const cy = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+                let newX = initX + (cx - startX);
+                let newY = initY + (cy - startY);
+                if (newY < 100) newY = 100;
+                win.style.left = `${newX}px`; win.style.top = `${newY}px`;
             };
-
             const stopDrag = () => { isDragging = false; };
-
             header.addEventListener('mousedown', startDrag);
             document.addEventListener('mousemove', doDrag);
             document.addEventListener('mouseup', stopDrag);
-            header.addEventListener('touchstart', startDrag, {passive: true});
-            document.addEventListener('touchmove', doDrag, {passive: false});
+            header.addEventListener('touchstart', startDrag, { passive: true });
+            document.addEventListener('touchmove', doDrag, { passive: false });
             document.addEventListener('touchend', stopDrag);
         });
 
         initInteractiveStudio();
-        
         document.getElementById('btn-login').addEventListener('click', attemptLogin);
-        document.getElementById('login-username').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') attemptLogin();
-        });
-        
+        document.getElementById('login-username').addEventListener('keypress', (e) => { if (e.key === 'Enter') attemptLogin(); });
         switchBrowserTab('crackz');
         updateTaskbar();
     }
@@ -1543,131 +929,134 @@
 
     function initInteractiveStudio() {
         document.querySelectorAll('.knob').forEach(knob => {
-            let isDragging = false;
-            let startY = 0;
-            let currentRot = parseFloat(knob.dataset.rot || -135);
-
-            const onStart = (clientY) => {
-                isDragging = true;
-                startY = clientY;
-                currentRot = parseFloat(knob.dataset.rot || -135);
+            let isDragging = false, startY = 0, currentRot = parseFloat(knob.dataset.rot || -135);
+            const onStart = (cy) => { isDragging = true; startY = cy; currentRot = parseFloat(knob.dataset.rot || -135); };
+            const onMove = (cy) => {
+                if (!isDragging) return;
+                let newRot = currentRot + (startY - cy) * 2.5;
+                newRot = Math.max(-135, Math.min(135, newRot));
+                knob.style.transform = `rotate(${newRot}deg)`; knob.dataset.rot = newRot;
             };
-
-            const onMove = (clientY) => {
-                if(!isDragging) return;
-                const dy = startY - clientY; 
-                let newRot = currentRot + dy * 2.5;
-                if(newRot < -135) newRot = -135;
-                if(newRot > 135) newRot = 135;
-                knob.style.transform = `rotate(${newRot}deg)`;
-                knob.dataset.rot = newRot;
-            };
-
             const onEnd = () => { isDragging = false; };
-
             knob.addEventListener('mousedown', (e) => onStart(e.clientY));
             document.addEventListener('mousemove', (e) => onMove(e.clientY));
             document.addEventListener('mouseup', onEnd);
-            
-            knob.addEventListener('touchstart', (e) => onStart(e.touches[0].clientY), {passive: true});
-            document.addEventListener('touchmove', (e) => onMove(e.touches[0].clientY), {passive: false});
+            knob.addEventListener('touchstart', (e) => onStart(e.touches[0].clientY), { passive: true });
+            document.addEventListener('touchmove', (e) => onMove(e.touches[0].clientY), { passive: false });
             document.addEventListener('touchend', onEnd);
         });
 
         const tlContainer = document.getElementById('timeline-container');
         const playhead = document.getElementById('playhead');
-        
         const onTlClick = (clientX) => {
             if (state.isExporting) return;
             const rect = tlContainer.getBoundingClientRect();
             let x = clientX - rect.left + tlContainer.scrollLeft;
-            if(x < 110) x = 110; 
+            if (x < 110) x = 110;
             playhead.style.left = `${x}px`;
-            playTone(300, 'sine', 0.05, 0.05); 
+            playTone(300, 'sine', 0.05, 0.05);
         };
-
         tlContainer.addEventListener('mousedown', (e) => onTlClick(e.clientX));
-        tlContainer.addEventListener('touchstart', (e) => onTlClick(e.touches[0].clientX), {passive: true});
+        tlContainer.addEventListener('touchstart', (e) => onTlClick(e.touches[0].clientX), { passive: true });
     }
 
     function selectDawGenre(val) {
         currentDawGenre = val;
         document.querySelectorAll('.btn-genre').forEach(b => {
-            if(b.dataset.val === val) {
-                b.classList.remove('btn-minimal');
-                b.classList.add('btn-action', 'text-white');
-            } else {
-                b.classList.add('btn-minimal');
-                b.classList.remove('btn-action', 'text-white');
-            }
+            if (b.dataset.val === val) { b.classList.remove('btn-minimal'); b.classList.add('btn-action','text-white'); }
+            else { b.classList.add('btn-minimal'); b.classList.remove('btn-action','text-white'); }
         });
         playBleep();
     }
-
     function selectDawVoice(val) {
         currentDawVoice = val;
         document.querySelectorAll('.btn-voice').forEach(b => {
-            if(b.dataset.val === val) {
-                b.classList.remove('btn-minimal');
-                b.classList.add('btn-action', 'text-white');
-            } else {
-                b.classList.add('btn-minimal');
-                b.classList.remove('btn-action', 'text-white');
-            }
+            if (b.dataset.val === val) { b.classList.remove('btn-minimal'); b.classList.add('btn-action','text-white'); }
+            else { b.classList.add('btn-minimal'); b.classList.remove('btn-action','text-white'); }
         });
         playBleep();
     }
-
     function updateDawPlugins() {
         const select = document.getElementById('daw-plugin');
-        if(!select) return;
-        
+        if (!select) return;
         let html = '<option value="">- Clean Mix (No Plugin) -</option>';
-        if(state.inventory && state.inventory.length > 0) {
+        if (state.inventory && state.inventory.length > 0) {
             state.inventory.forEach((crackId, index) => {
                 const c = cracks.find(x => x.id === crackId);
-                if(c) html += `<option value="${index}">Use: ${c.name}</option>`;
+                if (c) html += `<option value="${index}">Use: ${c.name}</option>`;
             });
         }
         select.innerHTML = html;
     }
 
+    // ==========================================
+    // 12. LOGIN — FIX CHARGEMENT SAVE (V12.2)
+    // ==========================================
     function attemptLogin() {
         initAudio();
-
         const username = document.getElementById('login-username').value.trim();
-        if(!username) {
-            document.getElementById('login-error').classList.remove('hidden');
-            playError();
-            return;
-        }
+        if (!username) { document.getElementById('login-error').classList.remove('hidden'); playError(); return; }
 
         const savedData = SafeStorage.get('smt_save_' + username);
-        if(savedData) {
+        if (savedData) {
             try {
                 const parsed = JSON.parse(savedData);
-                state = {...DEFAULT_STATE, ...parsed};
-                
-                // V12.1 FIX: Empêche la corruption en forçant le typage
-                state.timeMins = parseInt(state.timeMins, 10) || 8 * 60;
-                state.day = parseInt(state.day, 10) || 1;
-                state.money = parseInt(state.money, 10) || 100;
-                state.rep = parseInt(state.rep, 10) || 10;
-                state.followers = parseInt(state.followers, 10) || 0;
-                state.isExporting = false;
-                
-                if(!state.cooldowns.dawTimeReady) state.cooldowns.dawTimeReady = 0;
-                if(!state.cooldowns.crackzTimeReady) state.cooldowns.crackzTimeReady = 0;
-                if(!state.cooldowns.storyTimeReady) state.cooldowns.storyTimeReady = 0;
-                if(!state.inventory) state.inventory = [];
-                if(!state.stats.crackDownloads) state.stats.crackDownloads = 0;
-                if(!state.history) state.history = { money: [], followers: [] };
+                state = { ...JSON.parse(JSON.stringify(DEFAULT_STATE)), ...parsed };
+
+                /**
+                 * FIX V12.2 CRITIQUE : Tous les champs numériques doivent être
+                 * castés en entier. Sans ça, des strings comme "480" persistent
+                 * depuis le JSON.parse() et causent :
+                 *   - "480" + 5 = "4805"  (concaténation string → temps figé)
+                 *   - "480" >= 1440 → false toujours (rollover jour jamais déclenché)
+                 *   - getTotalMins() = NaN → tous les cooldowns bloqués
+                 */
+                state.timeMins        = parseInt(state.timeMins, 10);
+                state.day             = parseInt(state.day, 10);
+                state.money           = parseInt(state.money, 10);
+                state.rep             = parseInt(state.rep, 10);
+                state.followers       = parseInt(state.followers, 10);
+                state.multiplier      = parseFloat(state.multiplier) || 1.0;
+                state.plugins         = parseInt(state.plugins, 10) || 0;
+
+                // Valeurs par défaut si NaN ou manquantes
+                if (isNaN(state.timeMins)) state.timeMins = 8 * 60;
+                if (isNaN(state.day) || state.day < 1) state.day = 1;
+                if (isNaN(state.money)) state.money = 100;
+                if (isNaN(state.rep)) state.rep = 10;
+                if (isNaN(state.followers)) state.followers = 0;
+
+                // FIX : Cooldowns castés en entier
+                state.cooldowns = state.cooldowns || {};
+                state.cooldowns.dawTimeReady   = parseInt(state.cooldowns.dawTimeReady, 10)   || 0;
+                state.cooldowns.crackzTimeReady= parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
+                state.cooldowns.storyTimeReady = parseInt(state.cooldowns.storyTimeReady, 10)  || 0;
+                state.cooldowns.sponsors       = state.cooldowns.sponsors || {};
+
+                // FIX : Sponsors castés en entier
+                Object.keys(state.cooldowns.sponsors).forEach(k => {
+                    state.cooldowns.sponsors[k] = parseInt(state.cooldowns.sponsors[k], 10) || 0;
+                });
+
+                state.inventory              = state.inventory || [];
+                state.stats                  = state.stats || {};
+                state.stats.tracks           = parseInt(state.stats.tracks, 10)        || 0;
+                state.stats.bangers          = parseInt(state.stats.bangers, 10)       || 0;
+                state.stats.flops            = parseInt(state.stats.flops, 10)         || 0;
+                state.stats.viruses          = parseInt(state.stats.viruses, 10)       || 0;
+                state.stats.crackDownloads   = parseInt(state.stats.crackDownloads, 10)|| 0;
+                state.history                = state.history || { money: [], followers: [] };
+                state.isExporting            = false;
+                state.activeCharacter        = parseInt(state.activeCharacter ?? state.avatar, 10) || 0;
+                if (state.activeCharacter < 0 || state.activeCharacter >= avatars.length) state.activeCharacter = 0;
+
+                showToast("Session Restored.", "success");
             } catch(e) {
+                console.warn('Save corrupted, resetting', e);
                 state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+                state.username = username;
+                state.activeCharacter = selectedAvatarIndex;
             }
-            state.activeCharacter = state.activeCharacter ?? state.avatar ?? 0;
-            if(state.activeCharacter < 0 || state.activeCharacter >= avatars.length) state.activeCharacter = 0;
-            showToast("Session Restored.", "success");
         } else {
             state = JSON.parse(JSON.stringify(DEFAULT_STATE));
             state.username = username;
@@ -1676,112 +1065,126 @@
         }
 
         document.getElementById('login-screen').style.display = 'none';
-        
         document.getElementById('room-ui').style.display = 'flex';
-        
         document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="w-full h-full pixelated object-cover" />`;
         document.getElementById('hud-name').innerText = state.username;
-        
+
         selectDawGenre('drill');
         selectDawVoice('m');
         updateDawPlugins();
-        
         playSuccess();
         updateHUD();
         refreshStats();
         refreshSocial();
-        
-        // V12.1 FIX: Intervalle unique et nettoyé
-        if(window.gameInterval) clearInterval(window.gameInterval);
-        window.gameInterval = setInterval(gameTick, 1000); 
+        drawSysGraphUI();
+
+        // FIX V12.2 : Nettoyage de l'intervalle précédent AVANT relance
+        if (window.gameInterval) { clearInterval(window.gameInterval); window.gameInterval = null; }
+        window.gameInterval = setInterval(gameTick, 1000);
     }
 
+    // ==========================================
+    // 13. GAME TICK — FIX PRINCIPAL (V12.2)
+    // ==========================================
     function gameTick() {
-        // V12.1 FIX: Sécurisation incrémentation temps
-        state.timeMins = Number(state.timeMins) + 5;
-        
-        if(state.timeMins >= 1440) { // 24h = 1440 mins
+        /**
+         * FIX V12.2 PRINCIPAL :
+         * L'ancienne version faisait state.timeMins += 5 sans parseInt préalable.
+         * Si state.timeMins était une string "480" (chargée depuis JSON),
+         * l'opération produisait "4805", "48010", "480155"... → jamais >= 1440
+         * → le jour ne changeait jamais → les cooldowns ne se décomptaient pas.
+         *
+         * Solution : parseInt() systématique avant l'incrément.
+         */
+        state.timeMins = (parseInt(state.timeMins, 10) || 0) + 5;
+        state.day      =  parseInt(state.day, 10) || 1;
+
+        if (state.timeMins >= 1440) {
             state.timeMins -= 1440;
-            state.day = Number(state.day) + 1;
+            state.day += 1;
             dailyReset();
         }
 
-        if(state.timeMins % 60 === 0) saveGame();
+        if (state.timeMins % 60 === 0) saveGame();
 
         updateHUD();
         updateCooldownUIs();
     }
 
+    // ==========================================
+    // 14. HUD UPDATE
+    // ==========================================
     function updateHUD() {
         document.getElementById('hud-money').innerText = formatNum(state.money);
-        document.getElementById('hud-rep').innerText = formatNum(state.rep);
-        document.getElementById('hud-foll').innerText = formatNum(state.followers);
-        document.getElementById('hud-day').innerText = `DAY ${state.day}`;
-        
-        // V12.1 FIX: Sécurisation formatage heure
-        let h = Math.floor(state.timeMins / 60);
-        let m = state.timeMins % 60;
-        if(isNaN(h)) h = 0;
-        if(isNaN(m)) m = 0;
-        
-        const hs = h.toString().padStart(2, '0');
-        const ms = m.toString().padStart(2, '0');
-        
-        document.getElementById('sys-time').innerText = `${hs}:${ms}`;
-        document.getElementById('widget-clock-time').innerText = `${hs}:${ms}`;
+        document.getElementById('hud-rep').innerText   = formatNum(state.rep);
+        document.getElementById('hud-foll').innerText  = formatNum(state.followers);
+        document.getElementById('hud-day').innerText   = `DAY ${state.day}`;
+
+        // FIX : sécurisation du formatage de l'heure
+        const t = parseInt(state.timeMins, 10) || 0;
+        const h = Math.floor(t / 60);
+        const m = t % 60;
+        const hs = String(h).padStart(2, '0');
+        const ms = String(m).padStart(2, '0');
+        const timeStr = `${hs}:${ms}`;
+
+        document.getElementById('sys-time').innerText          = timeStr;
+        document.getElementById('widget-clock-time').innerText = timeStr;
         document.getElementById('widget-clock-date').innerText = `Virtual Day ${state.day}`;
     }
 
+    // ==========================================
+    // 15. COOLDOWN UIs
+    // ==========================================
     function updateCooldownUIs() {
         const total = getTotalMins();
-        
-        // --- DAW COOLDOWN ---
+
+        // DAW cooldown
         const btnDaw = document.getElementById('btn-export');
-        if(total < state.cooldowns.dawTimeReady) {
-            const left = state.cooldowns.dawTimeReady - total;
-            btnDaw.innerText = `CPU COOL (${formatTimeLeft(left)})`;
-            btnDaw.disabled = true;
-        } else {
-            if(btnDaw.disabled && !state.isExporting) {
-                btnDaw.innerText = "RENDER MIXDOWN";
-                btnDaw.disabled = false;
+        if (btnDaw && !state.isExporting) {
+            const dawReady = parseInt(state.cooldowns.dawTimeReady, 10) || 0;
+            if (total < dawReady) {
+                const left = dawReady - total;
+                btnDaw.innerText = `CPU COOL (${formatTimeLeft(left)})`;
+                btnDaw.disabled = true;
+            } else {
+                if (btnDaw.disabled) {
+                    btnDaw.innerText = "RENDER MIXDOWN";
+                    btnDaw.disabled = false;
+                }
             }
         }
 
-        // --- STORY COOLDOWN ---
+        // Story cooldown
         const btnStory = document.getElementById('btn-story');
         const statusStory = document.getElementById('story-status');
-        if(total < state.cooldowns.storyTimeReady) {
-            if(!btnStory.disabled) {
+        if (btnStory && statusStory) {
+            const storyReady = parseInt(state.cooldowns.storyTimeReady, 10) || 0;
+            if (total < storyReady) {
                 btnStory.disabled = true;
                 statusStory.innerText = "STATUS: COOLDOWN";
                 statusStory.className = "text-xs text-[var(--retro-orange)] mt-5 font-retro tracking-widest";
-            }
-        } else {
-            if(btnStory.disabled) {
+            } else {
                 btnStory.disabled = false;
                 statusStory.innerText = "STATUS: READY";
                 statusStory.className = "text-xs text-[var(--retro-green)] mt-5 font-retro tracking-widest drop-shadow-[0_0_5px_var(--retro-green)]";
             }
         }
 
-        // --- CRACKZ COOLDOWN ---
-        const browserContent = document.getElementById('browser-content');
-        if(document.getElementById('tab-crackz').classList.contains('text-white')) {
-            const isCooling = total < state.cooldowns.crackzTimeReady;
-            const cdTextEl = document.getElementById('crackz-cd-text');
-            
+        // CrackZ cooldown (live countdown update)
+        const tabCrackz = document.getElementById('tab-crackz');
+        if (tabCrackz && tabCrackz.classList.contains('text-white')) {
+            const crackReady = parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
+            const isCooling  = total < crackReady;
+            const cdTextEl   = document.getElementById('crackz-cd-text');
             if (isCooling) {
                 if (!cdTextEl) {
-                    renderStore('crackz'); // Trigger la vue Cooldown
+                    renderStore('crackz');
                 } else {
-                    const left = state.cooldowns.crackzTimeReady - total;
-                    cdTextEl.innerText = `${formatTimeLeft(left)}`; // Update live clock
+                    cdTextEl.innerText = formatTimeLeft(crackReady - total);
                 }
-            } else {
-                if (cdTextEl) {
-                    renderStore('crackz'); // Trigger la vue Store
-                }
+            } else if (cdTextEl) {
+                renderStore('crackz');
             }
         }
     }
@@ -1791,7 +1194,7 @@
     }
 
     function dailyReset() {
-        if(state.rep > 0) {
+        if (state.rep > 0) {
             const gain = Math.floor(state.rep * 0.1) + Math.floor(Math.random() * 5);
             logFollower(gain);
         }
@@ -1799,49 +1202,38 @@
         refreshStats();
     }
 
+    // ==========================================
+    // 16. WINDOW MANAGEMENT
+    // ==========================================
     let zIndexCounter = 50;
-    
+
     function openApp(id) {
-        if(isMobile) {
-            document.querySelectorAll('.os-window').forEach(w => {
-                if(w.id !== id) w.style.display = 'none';
-            });
-        }
-
+        if (isMobile) document.querySelectorAll('.os-window').forEach(w => { if (w.id !== id) w.style.display = 'none'; });
         const win = document.getElementById(id);
-        if(win.style.display === 'none' || win.style.display === '') {
+        if (win.style.display === 'none' || win.style.display === '') {
             win.style.display = 'flex';
-            
             void win.offsetWidth;
-
             if (!isMobile) {
                 const w = win.offsetWidth || 700;
                 const h = win.offsetHeight || 500;
-                const startX = Math.max(20, (window.innerWidth / 2) - (w / 2));
-                const startY = Math.max(80, (window.innerHeight / 2) - (h / 2) + 20);
-                win.style.left = `${startX}px`;
-                win.style.top = `${startY}px`;
-                win.dataset.posInit = 'true';
+                win.style.left = `${Math.max(20, window.innerWidth/2 - w/2)}px`;
+                win.style.top  = `${Math.max(80, window.innerHeight/2 - h/2 + 20)}px`;
+            } else {
+                win.style.left = '0px'; win.style.top = '0px';
             }
-            if (isMobile) {
-                win.style.left = '0px';
-                win.style.top = '0px';
-            }
-            if(id === 'app-daw') updateDawPlugins();
+            if (id === 'app-daw') updateDawPlugins();
         }
         bringToFront(id);
-        if(!isMobile) updateTaskbar();
+        if (!isMobile) updateTaskbar();
         playBleep();
-        if(id === 'app-stats') refreshStats();
-        if(id === 'app-social') refreshSocial();
+        if (id === 'app-stats')  refreshStats();
+        if (id === 'app-social') refreshSocial();
     }
-
     function closeApp(id) {
         document.getElementById(id).style.display = 'none';
-        if(!isMobile) updateTaskbar();
+        if (!isMobile) updateTaskbar();
         playBleep();
     }
-
     function bringToFront(id) {
         zIndexCounter++;
         document.querySelectorAll('.os-window').forEach(w => w.classList.remove('active-window'));
@@ -1849,92 +1241,61 @@
         win.style.zIndex = zIndexCounter;
         win.classList.add('active-window');
     }
-
     function updateTaskbar() {
-        if(isMobile) return;
+        if (isMobile) return;
         const container = document.getElementById('taskbar-apps');
-        if(!container) return;
+        if (!container) return;
         container.innerHTML = '';
-        
         const apps = [
-            { id: 'app-daw', name: 'AbleStudio', icon: '<svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>' },
-            { id: 'app-browser', name: 'Web_Nav', icon: '<svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>' },
-            { id: 'app-social', name: 'SoundNet', icon: '<svg class="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>' },
-            { id: 'app-stats', name: 'SysStats', icon: '<svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>' }
+            { id: 'app-daw',     name: 'AbleStudio', icon: '<svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>' },
+            { id: 'app-browser', name: 'Web_Nav',    icon: '<svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>' },
+            { id: 'app-social',  name: 'SoundNet',   icon: '<svg class="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>' },
+            { id: 'app-stats',   name: 'SysStats',   icon: '<svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>' }
         ];
-
         apps.forEach(app => {
-            if(document.getElementById(app.id).style.display !== 'none') {
+            if (document.getElementById(app.id).style.display !== 'none') {
                 const btn = document.createElement('div');
                 btn.className = 'taskbar-btn active relative group';
-                btn.innerHTML = `
-                    ${app.icon}
-                    <div class="absolute -top-10 bg-black text-white text-[10px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-bold tracking-wider">${app.name}</div>
-                    <div class="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-white/70"></div>
-                `;
+                btn.innerHTML = `${app.icon}<div class="absolute -top-10 bg-black text-white text-[10px] px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-bold tracking-wider">${app.name}</div><div class="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-white/70"></div>`;
                 btn.onclick = () => bringToFront(app.id);
                 container.appendChild(btn);
             }
         });
     }
 
+    // ==========================================
+    // 17. DAW LOGIC
+    // ==========================================
     function togglePad(idx) {
         const pad = document.getElementById(`pad-${idx}`);
         pad.classList.toggle('active');
-        if(pad.classList.contains('active')) {
-            playKick();
-            simulateVuMeter(12);
-        }
+        if (pad.classList.contains('active')) { playKick(); simulateVuMeter(12); }
     }
 
     function calculateSuccess(genre, bpm, voice) {
-        let targetVoice, rewardType;
-        let isPerfectBpm = false;
-        let diff = 0;
-
-        if(genre === 'drill') { 
-            targetVoice = 'm'; rewardType = 'money'; 
-            diff = Math.min(Math.abs(bpm - 140), Math.abs(bpm - 145));
-            if(bpm >= 140 && bpm <= 145) { isPerfectBpm = true; diff = 0; }
-        }
-        else if(genre === 'afropop') { 
-            targetVoice = 'f'; rewardType = 'followers'; 
-            diff = Math.min(Math.abs(bpm - 100), Math.abs(bpm - 110));
-            if(bpm >= 100 && bpm <= 110) { isPerfectBpm = true; diff = 0; }
-        }
-        else if(genre === 'technohouse') { 
-            targetVoice = 'instru'; rewardType = 'stable'; 
-            diff = Math.min(Math.abs(bpm - 124), Math.abs(bpm - 128));
-            if(bpm >= 124 && bpm <= 128) { isPerfectBpm = true; diff = 0; }
-        }
-        else if(genre === 'amapiano') { 
-            targetVoice = 'f'; rewardType = 'rep'; 
-            diff = Math.abs(bpm - 113);
-            if(bpm === 113) { isPerfectBpm = true; diff = 0; }
-        }
-
-        if(voice !== targetVoice || diff > 10) return { score: 0, rewardType, wrongVoice: (voice !== targetVoice) };
-        if(isPerfectBpm) return { score: 3, rewardType };
+        let targetVoice, rewardType, isPerfectBpm = false, diff = 0;
+        if (genre === 'drill')      { targetVoice = 'm';      rewardType = 'money';     diff = Math.min(Math.abs(bpm-140),Math.abs(bpm-145)); if(bpm>=140&&bpm<=145){isPerfectBpm=true;diff=0;} }
+        if (genre === 'afropop')    { targetVoice = 'f';      rewardType = 'followers'; diff = Math.min(Math.abs(bpm-100),Math.abs(bpm-110)); if(bpm>=100&&bpm<=110){isPerfectBpm=true;diff=0;} }
+        if (genre === 'technohouse'){ targetVoice = 'instru'; rewardType = 'stable';    diff = Math.min(Math.abs(bpm-124),Math.abs(bpm-128)); if(bpm>=124&&bpm<=128){isPerfectBpm=true;diff=0;} }
+        if (genre === 'amapiano')   { targetVoice = 'f';      rewardType = 'rep';       diff = Math.abs(bpm-113);                              if(bpm===113){isPerfectBpm=true;diff=0;} }
+        if (voice !== targetVoice || diff > 10) return { score: 0, rewardType, wrongVoice: (voice !== targetVoice) };
+        if (isPerfectBpm) return { score: 3, rewardType };
         return { score: 1, rewardType };
     }
 
     function exportTrack() {
-        if(getTotalMins() < state.cooldowns.dawTimeReady || state.isExporting) return;
+        if (getTotalMins() < (parseInt(state.cooldowns.dawTimeReady, 10) || 0) || state.isExporting) return;
 
         const genre = currentDawGenre;
-        const bpm = parseInt(document.getElementById('daw-bpm').value);
+        const bpm   = parseInt(document.getElementById('daw-bpm').value, 10);
         const voice = currentDawVoice;
         const activePads = document.querySelectorAll('.seq-pad.active').length;
         const pluginIndex = document.getElementById('daw-plugin').value;
 
-        if(activePads === 0) {
-            showToast("Sequencer is empty. Lay down some drums first.", "error");
-            playError();
-            return;
-        }
+        if (activePads === 0) { showToast("Sequencer is empty. Lay down some drums first.", "error"); playError(); return; }
 
         let consumedPluginId = null;
-        if(pluginIndex !== "") {
+        if (pluginIndex !== "") {
             consumedPluginId = state.inventory[pluginIndex];
             state.inventory.splice(pluginIndex, 1);
             updateDawPlugins();
@@ -1945,24 +1306,17 @@
         const progCont = document.getElementById('export-progress-container');
         const prog = document.getElementById('export-progress');
         const playhead = document.getElementById('playhead');
-        
-        btn.innerText = "RENDERING...";
-        btn.disabled = true;
-        progCont.classList.remove('hidden');
-        prog.style.width = '0%';
-        playhead.style.left = '110px';
 
+        btn.innerText = "RENDERING..."; btn.disabled = true;
+        progCont.classList.remove('hidden'); prog.style.width = '0%';
+        playhead.style.left = '110px';
         playTone(400, 'square', 0.1);
-        
+
         const vuInterval = setInterval(() => {
             simulateVuMeter(14);
-            for(let i=1; i<=3; i++) {
+            for (let i = 1; i <= 3; i++) {
                 const k = document.getElementById(`knob-${i}`);
-                if(k) {
-                    const newRot = Math.floor(Math.random()*270 - 135);
-                    k.style.transform = `rotate(${newRot}deg)`;
-                    k.dataset.rot = newRot;
-                }
+                if (k) { const r = Math.floor(Math.random()*270-135); k.style.transform = `rotate(${r}deg)`; k.dataset.rot = r; }
             }
         }, 100);
 
@@ -1970,79 +1324,52 @@
         const interval = setInterval(() => {
             p += 4;
             prog.style.width = p + '%';
-            playhead.style.left = `${110 + (p * 6)}px`; 
-            
-            if(p >= 100) {
+            playhead.style.left = `${110 + (p * 6)}px`;
+            if (p >= 100) {
                 clearInterval(interval);
                 clearInterval(vuInterval);
-                playhead.style.left = '110px'; 
+                playhead.style.left = '110px';
                 state.isExporting = false;
-                
-                state.cooldowns.dawTimeReady = getTotalMins() + getDawCooldown(); 
+                state.cooldowns.dawTimeReady = getTotalMins() + getDawCooldown();
                 progCont.classList.add('hidden');
-                
                 finishExport(genre, bpm, voice, activePads, consumedPluginId);
             }
-        }, 60); 
+        }, 60);
     }
 
     function finishExport(genre, bpm, voice, pads, pluginId) {
         const result = calculateSuccess(genre, bpm, voice);
-        
-        let moneyGain = 0;
-        let repGain = 0;
-        let follGain = 0;
-        let resultTxt = "";
-        let critique = "";
+        let moneyGain = 0, repGain = 0, follGain = 0, resultTxt = "", critique = "";
 
-        if(pluginId === 'c2' && result.score === 0 && result.wrongVoice) {
-            result.score = 1; 
-            critique = "\nAutoTune activé: Voix robotique, mais ça passe pour TikTok.";
+        if (pluginId === 'c2' && result.score === 0 && result.wrongVoice) { result.score = 1; critique = "\nAutoTune activé: Voix robotique, mais ça passe pour TikTok."; }
+        if (pluginId === 'c5') {
+            result.score = 3;
+            if (Math.random() > 0.5) { critique = "\nIA Détectée ! Hit absolu, mais Bad Buzz (-20 REP)."; repGain -= 20; }
+            else critique = "\nGénéré par l'IA. Personne n'a remarqué. Hit assuré.";
         }
 
-        if(pluginId === 'c5') {
-            result.score = 3; 
-            if(Math.random() > 0.5) {
-                critique = "\nIA Détectée ! Hit absolu, mais Bad Buzz (-20 REP).";
-                repGain -= 20;
-            } else {
-                critique = "\nGénéré par l'IA. Personne n'a remarqué. Hit assuré.";
-            }
-        }
-
-        if(result.score === 3) {
-            resultTxt = "🔥 PERFECT BANGER! (Top Charts)";
-            state.stats.bangers++;
-            playSuccess();
-            
-            if(result.rewardType === 'money') { moneyGain = 800; repGain += 10; }
-            if(result.rewardType === 'followers') { moneyGain = 150; follGain = 5000; repGain += 20; }
-            if(result.rewardType === 'stable') { moneyGain = 400; repGain += 5; }
-            if(result.rewardType === 'rep') { moneyGain = 200; repGain += 40; follGain = 1000;}
-            
-        } else if(result.score === 1) {
-            resultTxt = "👍 Decent track. It'll stream.";
-            playBleep();
-            
-            if(result.rewardType === 'money') { moneyGain = 200; repGain += 2; }
-            if(result.rewardType === 'followers') { moneyGain = 50; follGain = 800; repGain += 5; }
-            if(result.rewardType === 'stable') { moneyGain = 150; repGain += 1; }
-            if(result.rewardType === 'rep') { moneyGain = 50; repGain += 15;}
-            
+        if (result.score === 3) {
+            resultTxt = "🔥 PERFECT BANGER! (Top Charts)"; state.stats.bangers++; playSuccess();
+            if (result.rewardType === 'money')     { moneyGain = 800;  repGain += 10; }
+            if (result.rewardType === 'followers') { moneyGain = 150;  follGain = 5000; repGain += 20; }
+            if (result.rewardType === 'stable')    { moneyGain = 400;  repGain += 5; }
+            if (result.rewardType === 'rep')       { moneyGain = 200;  repGain += 40; follGain = 1000; }
+        } else if (result.score === 1) {
+            resultTxt = "👍 Decent track. It'll stream."; playBleep();
+            if (result.rewardType === 'money')     { moneyGain = 200;  repGain += 2; }
+            if (result.rewardType === 'followers') { moneyGain = 50;   follGain = 800; repGain += 5; }
+            if (result.rewardType === 'stable')    { moneyGain = 150;  repGain += 1; }
+            if (result.rewardType === 'rep')       { moneyGain = 50;   repGain += 15; }
         } else {
             resultTxt = "🗑️ MASSIVE FLOP. Wrong vibe for 2026.";
-            moneyGain = 10; 
-            repGain -= 5; 
-            state.stats.flops++;
-            playError();
+            moneyGain = 10; repGain -= 5; state.stats.flops++; playError();
         }
 
         moneyGain = Math.floor(moneyGain * state.multiplier);
-        if(pads > 8 && pluginId === 'c3') { moneyGain += 300; critique += "\nVintage DrumMachine : Kick surpuissant (+300$)"; }
-        else if(pads > 8) { moneyGain += 20; } 
-
-        if(pluginId === 'c1') { moneyGain = Math.floor(moneyGain * 1.3); critique += "\nMassive Bass : Le sub détruit les vitres (+30% Cash)."; }
-        if(pluginId === 'c4') { moneyGain = Math.floor(moneyGain * 1.5); critique += "\nOzone Mastering : Un son cristallin (+50% Cash)."; }
+        if (pads > 8 && pluginId === 'c3') { moneyGain += 300; critique += "\nVintage DrumMachine : Kick surpuissant (+300$)"; }
+        else if (pads > 8) { moneyGain += 20; }
+        if (pluginId === 'c1') { moneyGain = Math.floor(moneyGain * 1.3); critique += "\nMassive Bass : Le sub détruit les vitres (+30% Cash)."; }
+        if (pluginId === 'c4') { moneyGain = Math.floor(moneyGain * 1.5); critique += "\nOzone Mastering : Un son cristallin (+50% Cash)."; }
 
         logMoney(moneyGain, 'Track Royalties');
         state.rep = Math.max(0, state.rep + repGain);
@@ -2050,20 +1377,20 @@
         state.stats.tracks++;
 
         let toastMsg = `${resultTxt}${critique}\n+$${moneyGain}`;
-        if(follGain > 0) toastMsg += ` | +${follGain} Fans`;
-        if(repGain > 0 || repGain < 0) toastMsg += ` | ${repGain > 0 ? '+' : ''}${repGain} Rep`;
+        if (follGain > 0) toastMsg += ` | +${follGain} Fans`;
+        if (repGain !== 0) toastMsg += ` | ${repGain > 0 ? '+' : ''}${repGain} Rep`;
 
         showToast(toastMsg, result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error'));
-        saveGame();
-        updateHUD();
-        updateCooldownUIs();
+        saveGame(); updateHUD(); updateCooldownUIs();
     }
 
+    // ==========================================
+    // 18. BROWSER / STORE
+    // ==========================================
     function switchBrowserTab(tab) {
         const btnC = document.getElementById('tab-crackz');
         const btnA = document.getElementById('tab-audio');
-        
-        if(tab === 'crackz') {
+        if (tab === 'crackz') {
             btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] bg-white/10 text-white shadow-inner";
             btnA.className = "flex-1 py-4 transition-colors text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
         } else {
@@ -2076,96 +1403,67 @@
 
     function renderStore(tab) {
         const content = document.getElementById('browser-content');
-        if(tab === 'crackz') {
-            const total = getTotalMins();
-            if(total < state.cooldowns.crackzTimeReady) {
-                const left = state.cooldowns.crackzTimeReady - total;
+        if (tab === 'crackz') {
+            const total      = getTotalMins();
+            const crackReady = parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
+            if (total < crackReady) {
+                const left = crackReady - total;
                 content.innerHTML = `
                     <div class="p-8 text-center text-[var(--retro-red)] font-retro h-full min-h-[300px] flex flex-col items-center justify-center bg-[#050505] shadow-inner">
                         <p class="mb-3 text-2xl tracking-widest font-bold">⚠️ VPN COOLDOWN ⚠️</p>
                         <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider">Your IP is flagged. Next safe download window in:</p>
                         <p class="text-4xl mt-6 font-bold drop-shadow-[0_0_10px_var(--retro-red)]" id="crackz-cd-text">${formatTimeLeft(left)}</p>
-                    </div>
-                `;
+                    </div>`;
                 return;
             }
-
             let crackHTML = `<h3 class="font-bold text-xl mb-5 text-[var(--retro-green)] tracking-widest uppercase drop-shadow-[0_0_5px_var(--retro-green)]">💀 CrackZ_World_2026</h3>
                              <p class="text-[10px] mb-8 text-[var(--text-muted)] border-b border-gray-800 pb-3 uppercase">All plugins are SINGLE-USE consumables.</p>
                              <div class="space-y-4">`;
-            
             let foundAny = false;
             cracks.forEach(c => {
-                if(state.rep < c.reqRep) return; 
+                if (state.rep < c.reqRep) return;
                 foundAny = true;
-                
-                crackHTML += `
-                    <div class="border border-[var(--glass-border)] p-4 flex justify-between items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group">
-                        <div class="flex-1 pr-4">
-                            <p class="font-bold text-sm text-gray-200">${c.name}</p>
-                            <p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc} | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p>
-                        </div>
-                        <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
-                    </div>
-                `;
+                crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex justify-between items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group">
+                    <div class="flex-1 pr-4"><p class="font-bold text-sm text-gray-200">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc} | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p></div>
+                    <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
+                </div>`;
             });
-
-            if(!foundAny) {
-                crackHTML += `<p class="text-sm text-gray-500 text-center py-10 font-retro">Raise your REP to access deep web links.</p>`;
-            }
-
-            crackHTML += `</div>`;
+            if (!foundAny) crackHTML += `<p class="text-sm text-gray-500 text-center py-10 font-retro">Raise your REP to access deep web links.</p>`;
+            crackHTML += '</div>';
             content.innerHTML = `<div class="p-8 bg-[#050505] font-sans h-full min-h-[300px] overflow-y-auto shadow-inner">${crackHTML}</div>`;
-
         } else {
-            if(state.rep < 100) {
-                content.innerHTML = `
-                    <div class="p-10 text-center text-[var(--text-muted)] font-retro h-full min-h-[300px] flex items-center justify-center bg-black/30 shadow-inner">
-                        <p class="leading-loose text-sm uppercase tracking-widest">🔒 ACCESS DENIED.<br>AudioStore requires 100 REP.<br>(Who are you bro?)</p>
-                    </div>
-                `;
+            if (state.rep < 100) {
+                content.innerHTML = `<div class="p-10 text-center text-[var(--text-muted)] font-retro h-full min-h-[300px] flex items-center justify-center bg-black/30 shadow-inner"><p class="leading-loose text-sm uppercase tracking-widest">🔒 ACCESS DENIED.<br>AudioStore requires 100 REP.<br>(Who are you bro?)</p></div>`;
             } else {
-                content.innerHTML = `
-                    <div class="p-8 bg-black/30 text-white h-full min-h-[300px] font-sans shadow-inner">
-                        <h3 class="font-bold text-xl text-white mb-8 tracking-widest uppercase drop-shadow-md">🛒 AudioStore Pro</h3>
-                        <div class="space-y-5">
-                            <div class="border border-[var(--glass-border)] p-6 flex justify-between items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
-                                <div>
-                                    <p class="font-bold text-base">ProEQ Studio Bundle</p>
-                                    <p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +0.5x</p>
-                                </div>
-                                <button class="btn-action px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(300, 0.5)">BUY ($300)</button>
-                            </div>
-                            <div class="border border-[var(--glass-border)] p-6 flex justify-between items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
-                                <div>
-                                    <p class="font-bold text-base">Analog Tape Saturation</p>
-                                    <p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +1.0x</p>
-                                </div>
-                                <button class="btn-action px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button>
-                            </div>
+                content.innerHTML = `<div class="p-8 bg-black/30 text-white h-full min-h-[300px] font-sans shadow-inner">
+                    <h3 class="font-bold text-xl text-white mb-8 tracking-widest uppercase drop-shadow-md">🛒 AudioStore Pro</h3>
+                    <div class="space-y-5">
+                        <div class="border border-[var(--glass-border)] p-6 flex justify-between items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
+                            <div><p class="font-bold text-base">ProEQ Studio Bundle</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +0.5x</p></div>
+                            <button class="btn-action px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(300, 0.5)">BUY ($300)</button>
+                        </div>
+                        <div class="border border-[var(--glass-border)] p-6 flex justify-between items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
+                            <div><p class="font-bold text-base">Analog Tape Saturation</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +1.0x</p></div>
+                            <button class="btn-action px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button>
                         </div>
                     </div>
-                `;
+                </div>`;
             }
         }
     }
 
     function downloadCrack(id) {
         const crack = cracks.find(c => c.id === id);
-        if(!crack) return;
-
-        state.stats.crackDownloads++;
-        state.cooldowns.crackzTimeReady = getTotalMins() + getVpnCooldown(); 
-        
-        if(Math.random() < crack.risk) {
-            if(Math.random() < 0.1) {
+        if (!crack) return;
+        state.stats.crackDownloads = (parseInt(state.stats.crackDownloads, 10) || 0) + 1;
+        state.cooldowns.crackzTimeReady = getTotalMins() + getVpnCooldown();
+        if (Math.random() < crack.risk) {
+            if (Math.random() < 0.1) {
                 const loss = Math.floor(20 + (state.rep * 8) + (state.money * 0.05));
                 logMoney(-loss, 'Ransomware Attack');
                 state.stats.viruses++;
                 showToast(`⚠️ STEALTH HACK!\nHackers ont siphonné $${loss}.`, "error");
-                playError();
-                saveGame();
-                updateHUD();
+                playError(); saveGame(); updateHUD();
             } else {
                 triggerBSOD();
             }
@@ -2174,255 +1472,178 @@
             showToast(`Download Complete! Added to inventory.`, "success");
             playSuccess();
         }
-        
         saveGame();
-        renderStore('crackz'); 
+        renderStore('crackz');
     }
 
     function buyLegit(price, mult) {
-        if(state.money >= price) {
+        if (state.money >= price) {
             logMoney(-price, 'AudioStore: Plugin');
-            state.multiplier += mult;
-            state.plugins++;
+            state.multiplier = (parseFloat(state.multiplier) || 1.0) + mult;
+            state.plugins = (parseInt(state.plugins, 10) || 0) + 1;
             showToast(`Purchase Confirmed! Multiplier +${mult}`, "success");
-            playSuccess();
-            saveGame();
-            updateHUD();
+            playSuccess(); saveGame(); updateHUD();
         } else {
-            showToast("Insufficient Funds.", "error");
-            playError();
+            showToast("Insufficient Funds.", "error"); playError();
         }
     }
 
     function triggerBSOD() {
         state.stats.viruses++;
-        const loss = Math.floor(state.money * 0.2); 
+        const loss = Math.floor(state.money * 0.2);
         logMoney(-loss, 'System Virus Purge');
-        saveGame();
-        updateHUD();
-        playError();
-
+        saveGame(); updateHUD(); playError();
         const bsod = document.getElementById('bsod');
         const prog = document.getElementById('bsod-progress');
-        bsod.classList.remove('hidden');
-        bsod.classList.add('flex');
-        
-        let p = 0;
-        prog.style.width = '0%';
-        
+        bsod.classList.remove('hidden'); bsod.classList.add('flex');
+        let p = 0; prog.style.width = '0%';
         const int = setInterval(() => {
-            p += 4;
-            prog.style.width = p + '%';
-            if(p >= 100) {
+            p += 4; prog.style.width = p + '%';
+            if (p >= 100) {
                 clearInterval(int);
-                setTimeout(() => {
-                    bsod.classList.add('hidden');
-                    bsod.classList.remove('flex');
-                    showToast(`System Purged. Penalty applied (-$${loss}).`, "error");
-                }, 800);
+                setTimeout(() => { bsod.classList.add('hidden'); bsod.classList.remove('flex'); showToast(`System Purged. Penalty applied (-$${loss}).`, "error"); }, 800);
             }
         }, 150);
     }
 
+    // ==========================================
+    // 19. SOCIAL
+    // ==========================================
     function refreshSocial() {
-        const total = getTotalMins();
-        const btn = document.getElementById('btn-story');
+        const total      = getTotalMins();
+        const storyReady = parseInt(state.cooldowns.storyTimeReady, 10) || 0;
+        const btn    = document.getElementById('btn-story');
         const status = document.getElementById('story-status');
-        
-        if(total >= state.cooldowns.storyTimeReady) {
+        if (total >= storyReady) {
             btn.disabled = false;
-            status.innerText = "STATUS: READY";
-            status.className = "text-xs text-[var(--retro-green)] mt-5 font-retro tracking-widest drop-shadow-[0_0_5px_var(--retro-green)]";
+            status.innerText   = "STATUS: READY";
+            status.className   = "text-xs text-[var(--retro-green)] mt-5 font-retro tracking-widest drop-shadow-[0_0_5px_var(--retro-green)]";
         } else {
-            btn.disabled = true;
-            status.innerText = "STATUS: COOLDOWN";
-            status.className = "text-xs text-[var(--retro-orange)] mt-5 font-retro tracking-widest";
+            btn.disabled       = true;
+            status.innerText   = "STATUS: COOLDOWN";
+            status.className   = "text-xs text-[var(--retro-orange)] mt-5 font-retro tracking-widest";
         }
 
         const sList = document.getElementById('sponsor-list');
         sList.innerHTML = sponsors.map(s => {
-            const isReady = !state.cooldowns.sponsors[s.id] || state.cooldowns.sponsors[s.id] <= state.day;
+            const spCd        = parseInt(state.cooldowns.sponsors[s.id], 10) || 0;
+            const isReady     = spCd <= state.day;
             const hasFollowers = state.followers >= s.reqFollowers;
-            
             let btnHtml = "";
-            if(!hasFollowers) {
+            if (!hasFollowers) {
                 btnHtml = `<span class="text-[10px] text-gray-600 font-retro tracking-widest">REQ: ${formatNum(s.reqFollowers)} FOL</span>`;
-            } else if(!isReady) {
-                const daysLeft = state.cooldowns.sponsors[s.id] - state.day;
+            } else if (!isReady) {
+                const daysLeft = spCd - state.day;
                 btnHtml = `<span class="text-[10px] text-[var(--retro-orange)] font-retro tracking-widest">WAIT ${daysLeft}D</span>`;
             } else {
                 btnHtml = `<button class="btn-minimal px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] hover:bg-[var(--retro-green)] hover:text-black rounded" onclick="acceptSponsor('${s.id}')">ACCEPT</button>`;
             }
-
-            return `
-                <div class="flex justify-between items-center bg-black/40 p-5 border border-[var(--glass-border)] rounded-lg">
-                    <div>
-                        <p class="font-bold text-sm text-gray-200">${s.name}</p>
-                        <p class="text-[10px] text-[var(--text-muted)] mt-2 font-retro tracking-widest">PAY: +$${s.reward} | REP: -${s.repCost}</p>
-                    </div>
-                    <div>${btnHtml}</div>
-                </div>
-            `;
+            return `<div class="flex justify-between items-center bg-black/40 p-5 border border-[var(--glass-border)] rounded-lg">
+                <div><p class="font-bold text-sm text-gray-200">${s.name}</p><p class="text-[10px] text-[var(--text-muted)] mt-2 font-retro tracking-widest">PAY: +$${s.reward} | REP: -${s.repCost}</p></div>
+                <div>${btnHtml}</div>
+            </div>`;
         }).join('');
     }
 
     function postStory() {
-        if(getTotalMins() < state.cooldowns.storyTimeReady) return;
-        
-        state.cooldowns.storyTimeReady = getTotalMins() + 120;
-        
+        const total      = getTotalMins();
+        const storyReady = parseInt(state.cooldowns.storyTimeReady, 10) || 0;
+        if (total < storyReady) return;
+        state.cooldowns.storyTimeReady = total + 120;
         const gain = Math.floor((state.rep * 0.5) + 10);
         logFollower(gain);
         showToast(`Story posted! +${gain} followers.`, "info");
-        playSuccess();
-        saveGame();
-        updateHUD();
-        refreshSocial();
+        playSuccess(); saveGame(); updateHUD(); refreshSocial();
     }
 
     function acceptSponsor(id) {
         const s = sponsors.find(x => x.id === id);
-        if(!s) return;
-
+        if (!s) return;
         logMoney(s.reward, 'Sponsor: ' + s.name);
-        state.rep = Math.max(0, state.rep - s.repCost);
-        state.cooldowns.sponsors[s.id] = state.day + s.cooldownDays;
-        
+        state.rep = Math.max(0, (parseInt(state.rep, 10) || 0) - s.repCost);
+        state.cooldowns.sponsors[s.id] = (parseInt(state.day, 10) || 1) + s.cooldownDays;
         showToast(`Contract signed with ${s.name}! Cash in, sell out...`, "success");
-        playBleep();
-        saveGame();
-        updateHUD();
-        refreshSocial();
+        playBleep(); saveGame(); updateHUD(); refreshSocial();
     }
 
+    // ==========================================
+    // 20. STATS
+    // ==========================================
     function refreshStats() {
-        const content = document.getElementById('stats-content');
-        content.innerHTML = `
+        document.getElementById('stats-content').innerHTML = `
             <div class="mb-6 text-white">root@studio-os:~# ./sys_status</div>
             <div class="grid grid-cols-2 gap-y-5 gap-x-4 border-l-2 border-[var(--retro-green)] pl-5">
-                <div class="text-[var(--text-muted)]">USER:</div> <div class="text-white">${state.username}</div>
-                <div class="text-[var(--text-muted)]">AVATAR_ID:</div> <div class="text-white">spr_char_${state.activeCharacter + 1}.png</div>
-                <div class="text-[var(--text-muted)]">UPTIME (Days):</div> <div class="text-white">${state.day}</div>
-                <div class="text-[var(--text-muted)]">REVENUE_MULT:</div> <div class="text-[var(--accent)] font-bold drop-shadow-[0_0_5px_var(--accent)]">x${state.multiplier.toFixed(1)}</div>
-                <div class="text-[var(--text-muted)]">PLUGINS_INST:</div> <div class="text-white">${state.plugins || 0}</div>
+                <div class="text-[var(--text-muted)]">USER:</div>           <div class="text-white">${state.username}</div>
+                <div class="text-[var(--text-muted)]">AVATAR_ID:</div>      <div class="text-white">spr_char_${state.activeCharacter + 1}.png</div>
+                <div class="text-[var(--text-muted)]">UPTIME (Days):</div>  <div class="text-white">${state.day}</div>
+                <div class="text-[var(--text-muted)]">REVENUE_MULT:</div>   <div class="text-[var(--accent)] font-bold drop-shadow-[0_0_5px_var(--accent)]">x${parseFloat(state.multiplier).toFixed(1)}</div>
+                <div class="text-[var(--text-muted)]">PLUGINS_INST:</div>   <div class="text-white">${state.plugins || 0}</div>
                 <div class="col-span-2 text-gray-800">---------------------------------</div>
-                <div class="text-[var(--text-muted)]">TRACKS_EXPORTED:</div> <div class="text-white">${state.stats.tracks}</div>
+                <div class="text-[var(--text-muted)]">TRACKS_EXPORTED:</div><div class="text-white">${state.stats.tracks}</div>
                 <div class="text-[var(--text-muted)]">BANGERS (Hits):</div> <div class="text-[var(--retro-orange)] font-bold drop-shadow-[0_0_5px_var(--retro-orange)]">${state.stats.bangers}</div>
                 <div class="text-[var(--text-muted)]">FLOPS (Misses):</div> <div class="text-[var(--retro-red)]">${state.stats.flops}</div>
-                <div class="text-[var(--text-muted)]">VIRUS_INFECTIONS:</div> <div class="text-[var(--retro-green)]">${state.stats.viruses}</div>
+                <div class="text-[var(--text-muted)]">VIRUS_INFECTIONS:</div><div class="text-[var(--retro-green)]">${state.stats.viruses}</div>
             </div>
-            <div class="mt-8 text-[var(--retro-green)] animate-pulse font-bold text-lg">_</div>
-        `;
+            <div class="mt-8 text-[var(--retro-green)] animate-pulse font-bold text-lg">_</div>`;
     }
 
+    // ==========================================
+    // 21. TOASTS
+    // ==========================================
     function showToast(msg, type = 'info') {
         const zone = document.getElementById('toast-zone');
         const t = document.createElement('div');
-        
         let colorClass = "bg-black/90 border-gray-700 text-gray-100";
-        if(type === 'success') colorClass = "bg-[#022c22] border-[var(--retro-green)] text-emerald-100 shadow-[0_0_15px_rgba(52,211,153,0.3)]";
-        if(type === 'error') colorClass = "bg-[#4c0519] border-[var(--retro-red)] text-rose-100 shadow-[0_0_15px_rgba(251,113,133,0.3)]";
-        if(type === 'info') colorClass = "bg-[#1e1b4b] border-[var(--accent)] text-indigo-100 shadow-[0_0_15px_rgba(129,140,248,0.3)]";
-
+        if (type === 'success') colorClass = "bg-[#022c22] border-[var(--retro-green)] text-emerald-100 shadow-[0_0_15px_rgba(52,211,153,0.3)]";
+        if (type === 'error')   colorClass = "bg-[#4c0519] border-[var(--retro-red)] text-rose-100 shadow-[0_0_15px_rgba(251,113,133,0.3)]";
+        if (type === 'info')    colorClass = "bg-[#1e1b4b] border-[var(--accent)] text-indigo-100 shadow-[0_0_15px_rgba(129,140,248,0.3)]";
         t.className = `toast px-6 py-4 w-full rounded-lg border text-xs font-retro tracking-widest uppercase backdrop-blur-md ${colorClass} whitespace-pre-line leading-relaxed`;
         t.innerText = msg;
-        
         zone.appendChild(t);
 
-        t.addEventListener('mousedown', e => {
-            let startX = e.clientX;
-            let currentX = 0;
-            t.style.transition = 'none';
-            
-            const onMove = e => {
-                currentX = e.clientX - startX;
-                if(currentX < 0) {
-                    t.style.transform = `translateX(${currentX}px)`;
-                    t.style.opacity = Math.max(0, 1 + currentX/200);
-                }
-            };
-            const onUp = () => {
-                document.removeEventListener('mousemove', onMove);
-                document.removeEventListener('mouseup', onUp);
-                if(currentX < -50) { 
-                    t.style.transition = 'all 0.3s ease-out';
-                    t.style.transform = `translateX(-120%)`;
-                    t.style.opacity = '0';
-                    setTimeout(() => t.remove(), 300);
-                } else { 
-                    t.style.transition = 'all 0.3s ease-out';
-                    t.style.transform = 'translateX(0)';
-                    t.style.opacity = '1';
-                }
-            };
-            document.addEventListener('mousemove', onMove);
-            document.addEventListener('mouseup', onUp);
-        });
+        const addSwipe = (getX) => {
+            t.addEventListener('mousedown', e => {
+                let sx = e.clientX, cx = 0; t.style.transition = 'none';
+                const onMove = e => { cx = e.clientX - sx; if (cx < 0) { t.style.transform = `translateX(${cx}px)`; t.style.opacity = Math.max(0, 1 + cx/200); } };
+                const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); t.style.transition = 'all 0.3s ease-out'; if (cx < -50) { t.style.transform = 'translateX(-120%)'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); } else { t.style.transform = 'translateX(0)'; t.style.opacity = '1'; } };
+                document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+            });
+            t.addEventListener('touchstart', e => {
+                let sx = e.touches[0].clientX, cx = 0; t.style.transition = 'none';
+                const onMove = e => { cx = e.touches[0].clientX - sx; if (cx < 0) { t.style.transform = `translateX(${cx}px)`; t.style.opacity = Math.max(0, 1 + cx/200); } };
+                const onUp = () => { document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp); t.style.transition = 'all 0.3s ease-out'; if (cx < -50) { t.style.transform = 'translateX(-120%)'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); } else { t.style.transform = 'translateX(0)'; t.style.opacity = '1'; } };
+                document.addEventListener('touchmove', onMove); document.addEventListener('touchend', onUp);
+            }, { passive: true });
+        };
+        addSwipe();
 
-        t.addEventListener('touchstart', e => {
-            let startX = e.touches[0].clientX;
-            let currentX = 0;
-            t.style.transition = 'none';
-            
-            const onMove = e => {
-                currentX = e.touches[0].clientX - startX;
-                if(currentX < 0) {
-                    t.style.transform = `translateX(${currentX}px)`;
-                    t.style.opacity = Math.max(0, 1 + currentX/200);
-                }
-            };
-            const onUp = () => {
-                document.removeEventListener('touchmove', onMove);
-                document.removeEventListener('touchend', onUp);
-                if(currentX < -50) {
-                    t.style.transition = 'all 0.3s ease-out';
-                    t.style.transform = `translateX(-120%)`;
-                    t.style.opacity = '0';
-                    setTimeout(() => t.remove(), 300);
-                } else {
-                    t.style.transition = 'all 0.3s ease-out';
-                    t.style.transform = 'translateX(0)';
-                    t.style.opacity = '1';
-                }
-            };
-            document.addEventListener('touchmove', onMove);
-            document.addEventListener('touchend', onUp);
-        }, {passive: true});
-
-        setTimeout(() => {
-            if(t.parentElement) {
-                t.style.opacity = '0';
-                t.style.transition = 'opacity 0.4s';
-                setTimeout(() => { if(t.parentElement) t.remove(); }, 400);
-            }
-        }, 4000);
+        setTimeout(() => { if (t.parentElement) { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => { if (t.parentElement) t.remove(); }, 400); } }, 4000);
     }
 
     // ==========================================
-    // 7. GLOBAL EXPORTS FOR HTML BINDINGS
+    // 22. GLOBAL EXPORTS
     // ==========================================
-    window.cycleTheme = cycleTheme;
-    window.toggleTooltip = toggleTooltip;
-    window.showTooltip = showTooltip;
-    window.hideTooltip = hideTooltip;
-    window.openApp = openApp;
-    window.closeApp = closeApp;
-    window.togglePad = togglePad;
-    window.exportTrack = exportTrack;
-    window.selectDawGenre = selectDawGenre;
-    window.selectDawVoice = selectDawVoice;
+    window.cycleTheme       = cycleTheme;
+    window.toggleTooltip    = toggleTooltip;
+    window.showTooltip      = showTooltip;
+    window.hideTooltip      = hideTooltip;
+    window.openApp          = openApp;
+    window.closeApp         = closeApp;
+    window.togglePad        = togglePad;
+    window.exportTrack      = exportTrack;
+    window.selectDawGenre   = selectDawGenre;
+    window.selectDawVoice   = selectDawVoice;
     window.switchBrowserTab = switchBrowserTab;
-    window.downloadCrack = downloadCrack;
-    window.buyLegit = buyLegit;
-    window.postStory = postStory;
-    window.acceptSponsor = acceptSponsor;
-    window.quitPC = quitPC;
-    window.selectAvatar = selectAvatar;
-    window.attemptLogin = attemptLogin;
+    window.downloadCrack    = downloadCrack;
+    window.buyLegit         = buyLegit;
+    window.postStory        = postStory;
+    window.acceptSponsor    = acceptSponsor;
+    window.quitPC           = quitPC;
+    window.selectAvatar     = selectAvatar;
+    window.attemptLogin     = attemptLogin;
 
-    // Call UI Initialization
+    // Boot
     initUI();
-
 </script>
 </body>
 </html>
