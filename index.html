@@ -106,6 +106,7 @@
         .avatar-sel.selected { border-color: var(--accent); background: rgba(129, 140, 248, 0.2); box-shadow: 0 0 25px rgba(129, 140, 248, 0.4), inset 0 1px 1px rgba(255,255,255,0.3); }
         .pixelated { image-rendering: pixelated; }
         #mobile-nav { display: none; }
+        
         @media (max-width: 767px) {
             #taskbar-bottom { display: none !important; }
             #mobile-nav { display: flex !important; }
@@ -118,46 +119,52 @@
             .btn-minimal, .btn-action, .seq-pad { min-height: 44px; }
             .seq-pad { min-width: 44px; }
             #bpm-val { font-size: 18px !important; }
+            
+            /* DYNAMIC ISLAND MOBILE FIXES */
             #hud {
-                width: 95% !important; /* Prend presque toute la largeur */
+                width: 95% !important;
                 min-width: 0 !important;
-                max-width: 400px !important; /* Limite la taille sur les grands téléphones */
+                max-width: 400px !important;
                 top: 10px !important;
-                height: 54px !important; /* Un peu plus haut pour respirer */
-                padding: 5px 15px !important;
+                height: 54px !important;
+                padding: 5px 10px !important;
                 flex-wrap: nowrap !important;
-                gap: 10px !important;
-                justify-content: space-between !important; /* Espacement équitable */
+                gap: 5px !important;
+                justify-content: space-between !important;
             }
             
             #hud-avatar { 
                 width: 38px !important; 
-                height: 38px !important; 
+                height: 38px !important;
+                flex-shrink: 0 !important;
             }
             
             #hud-name { 
-                display: none !important; /* On garde le nom masqué pour gagner de la place */
+                display: none !important; 
             }
             
-            /* On force l'affichage des stats et on ajuste leur taille */
+            /* Forcing flex layout & visibility to override Tailwind hidden classes */
             .hud-stats-container { 
                 opacity: 1 !important; 
-                width: auto !important; 
-                gap: 8px !important; /* Espace réduit entre les stats */
+                width: 100% !important; 
+                display: flex !important;
+                overflow: visible !important; 
+                gap: 8px !important;
                 justify-content: flex-end !important;
                 flex: 1 !important;
             }
             
-            /* Ajustement de la taille du texte et des icônes des stats pour mobile */
             .hud-stats-container > div {
                 padding: 2px 4px !important;
+                flex-shrink: 0 !important; 
             }
             .hud-stats-container span {
-                font-size: 11px !important; /* Texte plus petit */
+                font-size: 11px !important; 
             }
             .hud-stats-container span:first-child {
-                font-size: 10px !important; /* Icône/Label ($$$, REP, FOL) plus petit */
+                font-size: 10px !important; 
             }
+
             #app-daw { min-width: 0 !important; }
             .daw-panel-neon { min-width: 0 !important; width: 100% !important; }
             .tl-track { min-width: 600px; }
