@@ -118,11 +118,46 @@
             .btn-minimal, .btn-action, .seq-pad { min-height: 44px; }
             .seq-pad { min-width: 44px; }
             #bpm-val { font-size: 18px !important; }
-            #hud { width: max-content !important; min-width: 200px !important; top: 10px !important; height: 48px !important; padding: 5px 15px !important; flex-wrap: nowrap !important; gap: 15px !important; }
-            #hud:hover { width: max-content !important; }
-            #hud-avatar { width: 32px !important; height: 32px !important; }
-            #hud-name { display: none !important; }
-            .hud-stats-container { opacity: 1 !important; width: auto !important; gap: 15px !important; }
+            #hud {
+                width: 95% !important; /* Prend presque toute la largeur */
+                min-width: 0 !important;
+                max-width: 400px !important; /* Limite la taille sur les grands téléphones */
+                top: 10px !important;
+                height: 54px !important; /* Un peu plus haut pour respirer */
+                padding: 5px 15px !important;
+                flex-wrap: nowrap !important;
+                gap: 10px !important;
+                justify-content: space-between !important; /* Espacement équitable */
+            }
+            
+            #hud-avatar { 
+                width: 38px !important; 
+                height: 38px !important; 
+            }
+            
+            #hud-name { 
+                display: none !important; /* On garde le nom masqué pour gagner de la place */
+            }
+            
+            /* On force l'affichage des stats et on ajuste leur taille */
+            .hud-stats-container { 
+                opacity: 1 !important; 
+                width: auto !important; 
+                gap: 8px !important; /* Espace réduit entre les stats */
+                justify-content: flex-end !important;
+                flex: 1 !important;
+            }
+            
+            /* Ajustement de la taille du texte et des icônes des stats pour mobile */
+            .hud-stats-container > div {
+                padding: 2px 4px !important;
+            }
+            .hud-stats-container span {
+                font-size: 11px !important; /* Texte plus petit */
+            }
+            .hud-stats-container span:first-child {
+                font-size: 10px !important; /* Icône/Label ($$$, REP, FOL) plus petit */
+            }
             #app-daw { min-width: 0 !important; }
             .daw-panel-neon { min-width: 0 !important; width: 100% !important; }
             .tl-track { min-width: 600px; }
@@ -131,13 +166,6 @@
             #global-tooltip { left: 50% !important; transform: translateX(-50%) !important; top: 105px !important; }
             #toast-zone { top: 110px !important; width: calc(100vw - 32px) !important; }
             #btn-quit-pc { top: auto; bottom: calc(85px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 90%; }
-            /* Fix de la croix et de l'en-tête sur mobile */
-            .window-header {
-                position: sticky !important;
-                top: 0;
-                z-index: 99;
-            }
-            
             
             .window-header button {
                 min-width: 44px;
