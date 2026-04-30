@@ -502,12 +502,25 @@
     floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true;
     scene.add(floor);
 
+    const floorEdges = new THREE.EdgesGeometry(floorGeo);
+    const floorLines = new THREE.LineSegments(floorEdges, new THREE.LineBasicMaterial({ color: '#000000', transparent: true, opacity: 0.4 }));
+    floor.add(floorLines);
+    
     const wallMat = new THREE.MeshStandardMaterial({ color: '#dce1e3', roughness: 0.9 });
     const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 0.5), wallMat);
     wallLeft.position.set(0, 4, -5); wallLeft.receiveShadow = true; scene.add(wallLeft);
+
+    const wallLeftEdges = new THREE.EdgesGeometry(wallLeftGeo);
+    const wallLeftLines = new THREE.LineSegments(wallLeftEdges, new THREE.LineBasicMaterial({ color: '#000000', transparent: true, opacity: 0.4 }));
+    wallLeft.add(wallLeftLines);
+    
     const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.5, 10, 10), wallMat);
     wallRight.position.set(-5, 4, 0); wallRight.receiveShadow = true; scene.add(wallRight);
 
+    const wallRightEdges = new THREE.EdgesGeometry(wallRightGeo);
+    const wallRightLines = new THREE.LineSegments(wallRightEdges, new THREE.LineBasicMaterial({ color: '#000000', transparent: true, opacity: 0.4 }));
+    wallRight.add(wallRightLines);
+    
     const deskTopMat = new THREE.MeshStandardMaterial({ color: '#b5b8c2', roughness: 0.7, metalness: 0.1 });
     const deskTop = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.1, 2.2), deskTopMat);
     deskTop.position.set(0, 0.7, 0); deskTop.castShadow = true; deskTop.receiveShadow = true; deskTop.name = 'pc_mesh';
