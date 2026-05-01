@@ -918,6 +918,12 @@
         time += 0.02;
         pcScreenMat.emissiveIntensity = 0.5 + Math.sin(time) * 0.3;
         renderer.render(scene, camera);
+        if (currentRoomAvatar) {
+            // Fait monter et descendre le torse de quelques millimètres
+            currentRoomAvatar.position.y = -1 + Math.sin(time * 2) * 0.03; 
+        }
+        
+        renderer.render(scene, camera);
     }
     animate3D();
 
@@ -1263,6 +1269,84 @@
         return dataUrl;
     }
 
+    // ==========================================
+    // INJECTION DU PERSONNAGE DANS LA ROOM
+    // ==========================================
+    let currentRoomAvatar = null;
+
+    function spawnAvatarInRoom(styleIndex) {
+        if (currentRoomAvatar) {
+            scene.remove(currentRoomAvatar); // Supprime l'ancien si on change
+        }
+
+        currentRoomAvatar = new THREE.Group();
+        
+        const skinColors = ['#f1c27d', '#8d5524', '#e0ac69', '#ffdbac'];
+        const skin = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.6 });
+        const clothesColors = ['#4b5563', '#111827', '#f8fafc', '#111111'];
+        const clothes = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.9 });
+        const darkMat = new THREE.MeshStandardMaterial({ color: '#111', roughness: 0.4 });
+
+        // Jambes (Ajoutées pour qu'il touche le sol)
+        const legGeo = new THREE.BoxGeometry(0.35, 1.0, 0.35);
+        const pants = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.8 });
+        const legL = new THREE.Mesh(legGeo, pants); legL.position.set(-0.25, 0.5, 0); legL.castShadow = true;
+        const legR = new THREE.Mesh(legGeo, pants); legR.position.set(0.25, 0.5, 0); legR.castShadow = true;
+        currentRoomAvatar.add(legL, legR);
+
+        // Torse
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.8, 0.45), clothes);
+        torso.position.y = 1.4; torso.castShadow = true; torso.receiveShadow = true;
+        currentRoomAvatar.add(torso);
+
+        // Bras
+        const armGeo = new THREE.BoxGeometry(0.35, 0.9, 0.35);
+        const armL = new THREE.Mesh(armGeo, clothes); armL.position.set(-0.65, 1.35, 0); armL.castShadow = true;
+        const armR = new THREE.Mesh(armGeo, clothes); armR.position.set(0.65, 1.35, 0); armR.castShadow = true;
+        currentRoomAvatar.add(armL, armR);
+
+        // Cou et Tête
+        const neck = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.3), skin);
+        neck.position.y = 1.9; neck.castShadow = true;
+        currentRoomAvatar.add(neck);
+
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), skin);
+        head.position.y = 2.25; head.castShadow = true; head.receiveShadow = true;
+        currentRoomAvatar.add(head);
+
+        // Accessoires (Ajustés en hauteur pour ce grand modèle)
+        if (styleIndex === 0) {
+            const padMat = new THREE.MeshStandardMaterial({ color: '#222', roughness: 0.9 });
+            const hpL = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.4, 0.4), padMat); hpL.position.set(-0.38, 2.25, 0); hpL.castShadow = true;
+            const hpR = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.4, 0.4), padMat); hpR.position.set(0.38, 2.25, 0); hpR.castShadow = true;
+            const band = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.1, 0.2), darkMat); band.position.set(0, 2.65, 0); band.castShadow = true;
+            currentRoomAvatar.add(hpL, hpR, band);
+        } else if (styleIndex === 1) {
+            const glowMat = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 1.5 });
+            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.2, 0.2), glowMat); visor.position.set(0, 2.3, 0.3);
+            const collar = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.3, 0.5), clothes); collar.position.set(0, 1.9, -0.05); collar.rotation.x = -Math.PI / 12; collar.castShadow = true;
+            currentRoomAvatar.add(visor, collar);
+        } else if (styleIndex === 2) {
+            const goldMat = new THREE.MeshStandardMaterial({ color: '#fbbf24', metalness: 0.8, roughness: 0.2 });
+            const chain = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.05), goldMat); chain.position.set(0, 1.6, 0.25); chain.castShadow = true;
+            const capMat = new THREE.MeshStandardMaterial({ color: '#fb7185' });
+            const cap = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.2, 0.72), capMat); cap.position.set(0, 2.65, 0); cap.castShadow = true;
+            const peak = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.05, 0.4), capMat); peak.position.set(0, 2.6, 0.4); peak.rotation.x = -Math.PI / 16; peak.castShadow = true;
+            currentRoomAvatar.add(chain, cap, peak);
+        } else if (styleIndex === 3) {
+            const shirt = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.46), new THREE.MeshStandardMaterial({ color: '#ffffff' })); shirt.position.set(0, 1.4, 0);
+            const shades = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.15, 0.1), darkMat); shades.position.set(0, 2.3, 0.36);
+            currentRoomAvatar.add(shirt, shades);
+        }
+
+        // Placement devant le bureau (Z=1.8), posé au sol (Y=-1), tourné vers l'écran
+        currentRoomAvatar.position.set(0, -1, 1.8);
+        currentRoomAvatar.rotation.y = Math.PI;
+        currentRoomAvatar.scale.set(1.15, 1.15, 1.15); // Mise à l'échelle
+
+        scene.add(currentRoomAvatar);
+    }
+
     // Déclaration des avatars avec rendu instantané
     const avatars = [
         { id: 'Beatmaker', img: generateAvatarImage(0) },
@@ -1585,7 +1669,9 @@
         document.getElementById('room-ui').style.display = 'flex';
         document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="w-full h-full pixelated object-cover" />`;
         document.getElementById('hud-name').innerText = state.username;
+        spawnAvatarInRoom(state.activeCharacter);
 
+        
         selectDawGenre('drill');
         selectDawVoice('m');
         updateDawPlugins();
