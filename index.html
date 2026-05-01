@@ -912,6 +912,65 @@
     const split = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.02, 0.15), new THREE.MeshStandardMaterial({ color: '#000' }));
     split.position.set(0, 0.08, -0.1); mouseGroup.add(split);
 
+
+    // ==========================================
+    // --- LE LIT (BEDROOM PRODUCER) ---
+    // ==========================================
+    const bedGroup = new THREE.Group();
+    // Position du lit : Dans le coin droit (X: 2.5), posé sur le sol (Y: -0.8), collé au mur arrière (Z: -2.5)
+    bedGroup.position.set(2.5, -0.8, -2.5);
+
+    // 1. Cadre du lit (Bed Frame)
+    const frameGeo = new THREE.BoxGeometry(2.4, 0.4, 4.2);
+    const frameMat = new THREE.MeshStandardMaterial({ color: '#3f3f46', roughness: 0.8 }); // Gris foncé mat
+    const frame = new THREE.Mesh(frameGeo, frameMat);
+    frame.castShadow = true;
+    frame.receiveShadow = true;
+    
+    // Ajout de la bordure noire (Outline) pour matcher avec tes murs
+    const frameEdges = new THREE.EdgesGeometry(frameGeo);
+    const frameLines = new THREE.LineSegments(frameEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
+    frame.add(frameLines);
+    bedGroup.add(frame);
+
+    // 2. Matelas (Mattress)
+    const mattressGeo = new THREE.BoxGeometry(2.2, 0.3, 4.0);
+    const mattressMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.9 }); // Blanc cassé
+    const mattress = new THREE.Mesh(mattressGeo, mattressMat);
+    mattress.position.set(0, 0.35, 0); // Posé sur le cadre
+    mattress.castShadow = true;
+    mattress.receiveShadow = true;
+    bedGroup.add(mattress);
+
+    // 3. Couette (Duvet/Blanket)
+    // Légèrement plus large que le matelas pour faire l'effet de retombée
+    const blanketGeo = new THREE.BoxGeometry(2.25, 0.32, 2.5);
+    const blanketMat = new THREE.MeshStandardMaterial({ color: '#312e81', roughness: 0.9 }); // Bleu nuit (var(--bg-color-4))
+    const blanket = new THREE.Mesh(blanketGeo, blanketMat);
+    blanket.position.set(0, 0.36, 0.75); // Décalée vers le bas du lit
+    blanket.castShadow = true;
+    blanket.receiveShadow = true;
+    bedGroup.add(blanket);
+
+    // 4. Oreillers (Pillows)
+    const pillowGeo = new THREE.BoxGeometry(0.8, 0.15, 0.5);
+    const pillowMat = new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.9 });
+    
+    const pillow1 = new THREE.Mesh(pillowGeo, pillowMat);
+    pillow1.position.set(-0.55, 0.55, -1.5);
+    pillow1.rotation.x = Math.PI / 12; // Légèrement incliné contre le mur
+    pillow1.castShadow = true;
+    
+    const pillow2 = new THREE.Mesh(pillowGeo, pillowMat);
+    pillow2.position.set(0.55, 0.55, -1.5);
+    pillow2.rotation.x = Math.PI / 12; // Légèrement incliné contre le mur
+    pillow2.castShadow = true;
+    
+    bedGroup.add(pillow1, pillow2);
+
+    // On ajoute tout le lit à la scène
+    scene.add(bedGroup);
+    
     let time = 0;
     function animate3D() {
         requestAnimationFrame(animate3D);
