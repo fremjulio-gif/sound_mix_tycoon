@@ -1095,12 +1095,91 @@
     // ==========================================
     // 8. CONSTANTS & DEFAULT STATE
     // ==========================================
+    // ==========================================
+    // GÉNÉRATEUR D'AVATARS 3D (LOW-POLY)
+    // ==========================================
+    function generateAvatarImage(styleIndex) {
+        // 1. Création d'un mini-studio photo invisible
+        const cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+        cam.position.set(0, 1.4, 3.5);
+        cam.lookAt(0, 0.6, 0);
+
+        const scn = new THREE.Scene();
+        // Couleurs de fond pour chaque perso
+        scn.background = new THREE.Color(['#1e1b4b', '#0f172a', '#064e3b', '#4c0519'][styleIndex]);
+
+        const rnd = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
+        rnd.setSize(128, 128); // Résolution de la photo
+
+        const light = new THREE.DirectionalLight(0xffffff, 1.2);
+        light.position.set(2, 3, 2);
+        scn.add(light);
+        scn.add(new THREE.AmbientLight(0x666666));
+
+        const group = new THREE.Group();
+
+        // 2. Modélisation du corps (Voxel Style)
+        const skinColors = ['#ffdbac', '#8d5524', '#f1c27d', '#e0ac69'];
+        const skin = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.8 });
+        
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), skin);
+        head.position.y = 1.1;
+        group.add(head);
+
+        const clothesColors = ['#818cf8', '#00e5ff', '#34d399', '#111111'];
+        const clothes = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.7 });
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.5), clothes);
+        body.position.y = 0.25;
+        group.add(body);
+
+        // 3. Accessoires uniques par personnage
+        if (styleIndex === 0) {
+            // Le Beatmaker : Gros Casque Audio
+            const hpMat = new THREE.MeshStandardMaterial({ color: '#111' });
+            const hpL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.4), hpMat); hpL.position.set(-0.45, 1.1, 0);
+            const hpR = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.4), hpMat); hpR.position.set(0.45, 1.1, 0);
+            const band = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.1, 0.2), hpMat); band.position.set(0, 1.55, 0);
+            group.add(hpL, hpR, band);
+        } else if (styleIndex === 1) {
+            // Le Cyber-DJ : Visière Néon
+            const visorMat = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 0.8 });
+            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.25, 0.2), visorMat);
+            visor.position.set(0, 1.15, 0.35);
+            group.add(visor);
+        } else if (styleIndex === 2) {
+            // Le Rappeur Street : Casquette à l'envers
+            const capMat = new THREE.MeshStandardMaterial({ color: '#fb7185' });
+            const cap = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.2, 0.82), capMat); cap.position.set(0, 1.55, 0);
+            const peak = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.1, 0.4), capMat); peak.position.set(0, 1.5, -0.6);
+            group.add(cap, peak);
+        } else if (styleIndex === 3) {
+            // L'Executive Prod : Lunettes noires
+            const shadesMat = new THREE.MeshStandardMaterial({ color: '#050505', roughness: 0.1 });
+            const shades = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.2, 0.1), shadesMat);
+            shades.position.set(0, 1.15, 0.41);
+            group.add(shades);
+        }
+
+        // On tourne légèrement le perso pour qu'il prenne la pose (3/4 face)
+        group.rotation.y = -Math.PI / 6;
+        scn.add(group);
+
+        // 4. On prend la photo !
+        rnd.render(scn, cam);
+        const dataUrl = rnd.domElement.toDataURL('image/png'); // Convertit le canvas en vraie image PNG
+        
+        rnd.dispose(); // Nettoyage de la RAM
+        return dataUrl;
+    }
+
+    // On génère nos 4 avatars directement au chargement du jeu
     const avatars = [
-        { id: 'Char 1', img: './spr_char_1.png' },
-        { id: 'Char 2', img: './spr_char_2.png' },
-        { id: 'Char 3', img: './spr_char_3.png' },
-        { id: 'Char 4', img: './spr_char_4.png' }
+        { id: 'Beatmaker', img: generateAvatarImage(0) },
+        { id: 'Cyber-DJ', img: generateAvatarImage(1) },
+        { id: 'Street_MC', img: generateAvatarImage(2) },
+        { id: 'Exec_Prod', img: generateAvatarImage(3) }
     ];
+    // ==========================================
     const sponsors = [
         { id: 'sp1', name: "Enerji Drink",  reqFollowers: 1000,  reward: 500,  repCost: 15, cooldownDays: 1 },
         { id: 'sp2', name: "CryptoCoinZ",   reqFollowers: 5000,  reward: 2500, repCost: 20, cooldownDays: 1 },
