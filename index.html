@@ -1096,81 +1096,181 @@
     // 8. CONSTANTS & DEFAULT STATE
     // ==========================================
     // ==========================================
-    // GÉNÉRATEUR D'AVATARS 3D (LOW-POLY)
+    // GÉNÉRATEUR D'AVATARS 3D (LOW-POLY AVANCÉ)
     // ==========================================
     function generateAvatarImage(styleIndex) {
-        // 1. Création d'un mini-studio photo invisible
+        // 1. Mini-studio photo
         const cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-        cam.position.set(0, 1.4, 3.5);
-        cam.lookAt(0, 0.6, 0);
+        cam.position.set(0, 1.3, 3.8); // Caméra légèrement ajustée pour voir le buste
+        cam.lookAt(0, 0.7, 0);
 
         const scn = new THREE.Scene();
-        // Couleurs de fond pour chaque perso
-        scn.background = new THREE.Color(['#1e1b4b', '#0f172a', '#064e3b', '#4c0519'][styleIndex]);
+        // Fonds thématiques légèrement plus vibrants
+        scn.background = new THREE.Color(['#1e1b4b', '#0f172a', '#064e3b', '#2e1025'][styleIndex]);
 
         const rnd = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
-        rnd.setSize(128, 128); // Résolution de la photo
+        rnd.setSize(128, 128);
+        rnd.shadowMap.enabled = true;
+        rnd.shadowMap.type = THREE.PCFSoftShadowMap;
 
-        const light = new THREE.DirectionalLight(0xffffff, 1.2);
-        light.position.set(2, 3, 2);
-        scn.add(light);
-        scn.add(new THREE.AmbientLight(0x666666));
+        // 2. Éclairage Studio (Key Light + Fill Light + Rim Light)
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        keyLight.position.set(2, 4, 3);
+        keyLight.castShadow = true;
+        keyLight.shadow.mapSize.width = 512;
+        keyLight.shadow.mapSize.height = 512;
+        scn.add(keyLight);
+
+        scn.add(new THREE.AmbientLight(0x404040, 1.5));
+
+        // Rim Light (Lumière de contour arrière pour le style)
+        const rimLight = new THREE.PointLight(['#818cf8', '#00e5ff', '#34d399', '#fb7185'][styleIndex], 2, 10);
+        rimLight.position.set(-2, 2, -2);
+        scn.add(rimLight);
 
         const group = new THREE.Group();
 
-        // 2. Modélisation du corps (Voxel Style)
-        const skinColors = ['#ffdbac', '#8d5524', '#f1c27d', '#e0ac69'];
-        const skin = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.8 });
+        // 3. Matériaux et Couleurs de base
+        const skinColors = ['#f1c27d', '#8d5524', '#e0ac69', '#ffdbac'];
+        const skin = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.6 });
         
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), skin);
-        head.position.y = 1.1;
+        // --- ANATOMIE DE BASE ---
+        // Tête
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), skin);
+        head.position.y = 1.2;
+        head.castShadow = true;
+        head.receiveShadow = true;
         group.add(head);
 
-        const clothesColors = ['#818cf8', '#00e5ff', '#34d399', '#111111'];
-        const clothes = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.7 });
-        const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.5), clothes);
-        body.position.y = 0.25;
-        group.add(body);
+        // Cou
+        const neck = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.3), skin);
+        neck.position.y = 0.85;
+        neck.castShadow = true;
+        group.add(neck);
 
-        // 3. Accessoires uniques par personnage
+        // Vêtements de base
+        const clothesColors = ['#4b5563', '#111827', '#f8fafc', '#111111'];
+        const clothes = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.9 });
+        
+        // Torse
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.8, 0.45), clothes);
+        torso.position.y = 0.4;
+        torso.castShadow = true;
+        torso.receiveShadow = true;
+        group.add(torso);
+
+        // Bras (Gauche et Droit)
+        const armGeo = new THREE.BoxGeometry(0.35, 0.9, 0.35);
+        const armL = new THREE.Mesh(armGeo, clothes);
+        armL.position.set(-0.65, 0.35, 0);
+        armL.castShadow = true;
+        const armR = new THREE.Mesh(armGeo, clothes);
+        armR.position.set(0.65, 0.35, 0);
+        armR.castShadow = true;
+        group.add(armL, armR);
+
+        // --- DÉTAILS ET ACCESSOIRES UNIQUES ---
+        const darkMat = new THREE.MeshStandardMaterial({ color: '#111', roughness: 0.4 });
+
         if (styleIndex === 0) {
-            // Le Beatmaker : Gros Casque Audio
-            const hpMat = new THREE.MeshStandardMaterial({ color: '#111' });
-            const hpL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.4), hpMat); hpL.position.set(-0.45, 1.1, 0);
-            const hpR = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.4), hpMat); hpR.position.set(0.45, 1.1, 0);
-            const band = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.1, 0.2), hpMat); band.position.set(0, 1.55, 0);
+            // BEATMAKER : Casque Audio Pro & Cordon
+            const padMat = new THREE.MeshStandardMaterial({ color: '#222', roughness: 0.9 });
+            const hpL = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.4, 0.4), padMat); hpL.position.set(-0.38, 1.2, 0);
+            const hpR = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.4, 0.4), padMat); hpR.position.set(0.38, 1.2, 0);
+            const band = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.1, 0.2), darkMat); band.position.set(0, 1.6, 0);
             group.add(hpL, hpR, band);
+            
+            // Cordon du casque
+            const cord = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.6, 0.05), darkMat);
+            cord.position.set(-0.4, 0.7, 0.1);
+            cord.rotation.z = Math.PI / 8;
+            group.add(cord);
+
         } else if (styleIndex === 1) {
-            // Le Cyber-DJ : Visière Néon
-            const visorMat = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 0.8 });
-            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.25, 0.2), visorMat);
-            visor.position.set(0, 1.15, 0.35);
-            group.add(visor);
+            // CYBER-DJ : Visière Néon & Col Montant
+            const glowMat = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 1.5 });
+            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.2, 0.2), glowMat);
+            visor.position.set(0, 1.25, 0.3);
+            
+            const collar = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.3, 0.5), clothes);
+            collar.position.set(0, 0.85, -0.05);
+            collar.rotation.x = -Math.PI / 12;
+
+            const shoulderGlowL = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.05, 0.4), glowMat);
+            shoulderGlowL.position.set(-0.65, 0.82, 0);
+            const shoulderGlowR = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.05, 0.4), glowMat);
+            shoulderGlowR.position.set(0.65, 0.82, 0);
+
+            group.add(visor, collar, shoulderGlowL, shoulderGlowR);
+
         } else if (styleIndex === 2) {
-            // Le Rappeur Street : Casquette à l'envers
+            // STREET MC : Grosse Chaîne en Or & Casquette
+            const goldMat = new THREE.MeshStandardMaterial({ color: '#fbbf24', metalness: 0.8, roughness: 0.2 });
+            const chain = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.05), goldMat);
+            chain.position.set(0, 0.6, 0.25);
+            const pendant = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.06), goldMat);
+            pendant.position.set(0, 0.45, 0.26);
+            pendant.rotation.z = Math.PI / 4;
+
             const capMat = new THREE.MeshStandardMaterial({ color: '#fb7185' });
-            const cap = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.2, 0.82), capMat); cap.position.set(0, 1.55, 0);
-            const peak = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.1, 0.4), capMat); peak.position.set(0, 1.5, -0.6);
-            group.add(cap, peak);
+            const cap = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.2, 0.72), capMat); 
+            cap.position.set(0, 1.6, 0);
+            const peak = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.05, 0.4), capMat); 
+            peak.position.set(0, 1.55, 0.4); // Visière vers l'avant
+            peak.rotation.x = -Math.PI / 16;
+            
+            group.add(chain, pendant, cap, peak);
+
         } else if (styleIndex === 3) {
-            // L'Executive Prod : Lunettes noires
-            const shadesMat = new THREE.MeshStandardMaterial({ color: '#050505', roughness: 0.1 });
-            const shades = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.2, 0.1), shadesMat);
-            shades.position.set(0, 1.15, 0.41);
-            group.add(shades);
+            // EXEC PROD : Costume, Cravate & Lunettes noires
+            const shirtMat = new THREE.MeshStandardMaterial({ color: '#ffffff' });
+            const tieMat = new THREE.MeshStandardMaterial({ color: '#9f1239' }); // Cravate rouge sombre
+            
+            // Chemise visible sous la veste
+            const shirt = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.46), shirtMat);
+            shirt.position.set(0, 0.4, 0);
+            
+            // Cravate
+            const tie = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.6, 0.47), tieMat);
+            tie.position.set(0, 0.3, 0);
+
+            // Lunettes
+            const shades = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.15, 0.1), darkMat);
+            shades.position.set(0, 1.25, 0.36);
+            const shadeArmL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.4), darkMat);
+            shadeArmL.position.set(-0.35, 1.25, 0.2);
+            const shadeArmR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.4), darkMat);
+            shadeArmR.position.set(0.35, 1.25, 0.2);
+
+            group.add(shirt, tie, shades, shadeArmL, shadeArmR);
         }
 
-        // On tourne légèrement le perso pour qu'il prenne la pose (3/4 face)
-        group.rotation.y = -Math.PI / 6;
+        // On tourne légèrement le perso (3/4 face) pour le dynamisme
+        group.rotation.y = -Math.PI / 5;
         scn.add(group);
 
-        // 4. On prend la photo !
+        // 4. Capture d'écran
         rnd.render(scn, cam);
-        const dataUrl = rnd.domElement.toDataURL('image/png'); // Convertit le canvas en vraie image PNG
+        const dataUrl = rnd.domElement.toDataURL('image/png');
         
-        rnd.dispose(); // Nettoyage de la RAM
+        // Nettoyage de la mémoire WebGL
+        head.geometry.dispose();
+        torso.geometry.dispose();
+        skin.dispose();
+        clothes.dispose();
+        rnd.dispose(); 
+
         return dataUrl;
     }
+
+    // Déclaration des avatars avec rendu instantané
+    const avatars = [
+        { id: 'Beatmaker', img: generateAvatarImage(0) },
+        { id: 'Cyber-DJ', img: generateAvatarImage(1) },
+        { id: 'Street_MC', img: generateAvatarImage(2) },
+        { id: 'Exec_Prod', img: generateAvatarImage(3) }
+    ];
+    // ==========================================
 
     // On génère nos 4 avatars directement au chargement du jeu
     const avatars = [
