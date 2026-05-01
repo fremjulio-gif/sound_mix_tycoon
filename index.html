@@ -913,18 +913,21 @@
     split.position.set(0, 0.08, -0.1); mouseGroup.add(split);
 
     let time = 0;
+    flet currentRoomAvatar = null; // <-- 1. DÉPLACÉ ICI (très important) !
+
     function animate3D() {
         requestAnimationFrame(animate3D);
         time += 0.02;
         pcScreenMat.emissiveIntensity = 0.5 + Math.sin(time) * 0.3;
         
-        // Sécurisé : ne s'anime que si le perso existe !
-        if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar !== null) {
+        // 2. Plus besoin de typeof, une simple vérification suffit
+        if (currentRoomAvatar) {
             currentRoomAvatar.position.y = -1 + Math.sin(time * 2) * 0.03; 
         }
         
         renderer.render(scene, camera);
     }
+    animate3D();
 
 
     // ==========================================
@@ -1104,7 +1107,6 @@
    // ==========================================
     // AVATARS : GÉNÉRATION 2D ET INJECTION 3D
     // ==========================================
-    let currentRoomAvatar = null; // Doit être déclaré ici, globalement !
 
     // On crée UN SEUL moteur de rendu temporaire pour ne pas faire exploser la RAM
     const tempRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
@@ -1187,6 +1189,7 @@
     ];
 
     // On supprime le moteur temporaire pour libérer la mémoire !
+    tempRenderer.forceContextLoss();
     tempRenderer.dispose();
 
     // Fonction pour injecter la version complète (avec jambes) dans la vraie pièce
