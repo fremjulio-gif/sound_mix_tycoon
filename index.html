@@ -42,6 +42,7 @@
         .font-handwriting { font-family: 'Caveat', cursive; letter-spacing: 0.05em; }
         .pixelated { image-rendering: pixelated; }
 
+        /* Disable double-tap zoom & delay on critical elements */
         button, select, .seq-pad, .btn-minimal, .btn-action, .desktop-icon, .taskbar-btn { touch-action: manipulation; }
         input[type="range"], .knob { touch-action: none; }
 
@@ -74,6 +75,7 @@
             padding-bottom: 10vh;
         }
 
+        /* --- DYNAMIC MESH BACKGROUND --- */
         #dynamic-bg {
             position: absolute;
             inset: 0;
@@ -137,6 +139,7 @@
         }
         #btn-quit-pc:hover { background: rgba(251, 113, 133, 0.2); border-color: var(--retro-red); }
 
+        /* --- LIQUID GLASS --- */
         .liquid-glass {
             background: var(--glass-bg);
             backdrop-filter: blur(28px) saturate(190%);
@@ -360,7 +363,7 @@
         #sleep-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.4); /* Rendu beaucoup moins opaque */
+            background: rgba(0, 0, 0, 0.5); /* Moins opaque */
             z-index: 999999;
             display: flex;
             flex-direction: column;
@@ -371,7 +374,7 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.5s ease;
-            backdrop-filter: blur(4px); /* Blur allégé pour voir l'avatar */
+            backdrop-filter: blur(5px); /* Moins de flou pour voir la chambre */
         }
         #sleep-overlay.active {
             opacity: 1;
@@ -414,6 +417,7 @@
             .os-window[style*="none"] { display: none !important; }
             .os-window[style*="flex"] { display: flex !important; }
             
+            /* Window header & close button fixes */
             .window-header { border-top: 1px solid rgba(255,255,255,0.1); border-radius: 0; }
             .window-content { padding-bottom: calc(85px + env(safe-area-inset-bottom)) !important; overflow-x: hidden; }
             .window-header button {
@@ -424,12 +428,16 @@
                 justify-content: center;
             }
             
+            /* Force closing via JS */
             .os-window[style*="display: none"] { display: none !important; }
 
             .btn-minimal, .btn-action, .seq-pad { min-height: 44px; }
             .seq-pad { min-width: 44px; }
             #bpm-val { font-size: 18px !important; }
 
+            
+
+            /* DAW Layout fixes */
             #app-daw { min-width: 0 !important; }
             .daw-panel-neon { min-width: 0 !important; width: 100% !important; }
             .tl-track { min-width: 600px; }
@@ -437,6 +445,7 @@
             .vu-led { width: 4px; height: 100%; margin-bottom: 0; margin-right: 2px; }
             #vu-meter-container { flex-direction: row !important; height: 16px !important; width: 100% !important; padding: 2px !important; }
             
+            /* Tooltips & UI Overlays */
             #global-tooltip { left: 50% !important; transform: translateX(-50%) !important; top: 105px !important; }
             #toast-zone { top: 110px !important; width: calc(100vw - 32px) !important; }
             #btn-quit-pc { top: auto; bottom: calc(85px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 90%; }
@@ -453,56 +462,52 @@
         <div id="sleep-progress-text" class="mt-4 text-sm text-gray-400">Réveil dans 15s...</div>
     </div>
 
-    <!-- BOUTON ZZZ SUR LE LIT -->
-    <button id="bed-zzz-btn" onclick="goSleep()" class="absolute z-[20] bg-black/80 border border-[var(--retro-red)] rounded-full px-3 py-2 text-[var(--retro-red)] font-retro text-xs md:text-sm animate-bounce shadow-[0_0_15px_rgba(255,0,60,0.5)] cursor-pointer hover:bg-[var(--retro-red)] hover:text-white transition-colors" style="display: none; transform: translate(-50%, -50%); pointer-events: auto;">
-        Zzz
-    </button>
-
    <!-- HUD RESPONSIVE FIXE -->
-    <div id="hud" class="liquid-glass-heavy min-h-[64px] md:min-h-[76px] fixed top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 rounded-[30px] flex items-center justify-between px-3 md:px-8 transition-all w-[96%] md:w-max max-w-6xl border border-white/10 shadow-2xl gap-2 md:gap-8">
+<div id="hud" class="liquid-glass-heavy min-h-[64px] md:min-h-[76px] fixed top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 rounded-[30px] flex items-center justify-between px-3 md:px-8 transition-all w-[96%] md:w-max max-w-6xl border border-white/10 shadow-2xl gap-2 md:gap-8">
+    
+    <!-- Bloc Avatar & Nom -->
+    <div class="flex items-center gap-3 shrink-0">
+        <div id="hud-avatar" class="w-[38px] h-[38px] md:w-[64px] h-[64px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shadow-[0_0_15px_rgba(129,140,248,0.5)]"></div>
+        <span id="hud-name" class="font-bold font-retro text-lg tracking-widest uppercase text-white hidden md:block">Artiste</span>
+    </div>
+    
+    <!-- Bloc Stats & Energie (Toujours visible) -->
+    <div class="flex items-center justify-between md:justify-center flex-1 md:flex-initial gap-1 md:gap-8 font-retro text-xs md:text-sm text-[var(--text-muted)] tracking-wider whitespace-nowrap overflow-visible opacity-100 w-auto">
         
-        <!-- Bloc Avatar & Nom -->
-        <div class="flex items-center gap-3 shrink-0">
-            <div id="hud-avatar" class="w-[38px] h-[38px] md:w-[64px] md:h-[64px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shadow-[0_0_15px_rgba(129,140,248,0.5)]"></div>
-            <span id="hud-name" class="font-bold font-retro text-lg tracking-widest uppercase text-white hidden md:block">Artiste</span>
+        <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('money', this)" onmouseenter="!isMobile && showTooltip('money', this)" onmouseleave="!isMobile && hideTooltip()">
+            <span class="text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] text-[10px] md:text-lg">$$$</span> <span id="hud-money" class="text-white text-[11px] md:text-lg">0</span>
         </div>
         
-        <!-- Bloc Stats & Energie (Toujours visible) -->
-        <div class="flex items-center justify-between md:justify-center flex-1 md:flex-initial gap-1 md:gap-8 font-retro text-xs md:text-sm text-[var(--text-muted)] tracking-wider whitespace-nowrap overflow-visible opacity-100 w-auto">
-            
-            <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('money', this)" onmouseenter="!isMobile && showTooltip('money', this)" onmouseleave="!isMobile && hideTooltip()">
-                <span class="text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] text-[10px] md:text-lg">$$$</span> <span id="hud-money" class="text-white text-[11px] md:text-lg">0</span>
-            </div>
-            
-            <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)" onmouseleave="!isMobile && hideTooltip()">
-                <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)] text-[10px] md:text-lg">REP</span> <span id="hud-rep" class="text-white text-[11px] md:text-lg">0</span>
-            </div>
-            
-            <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)" onmouseleave="!isMobile && hideTooltip()">
-                <span class="text-[var(--accent)] drop-shadow-[0_0_5px_var(--accent)] text-[10px] md:text-lg">FOL</span> <span id="hud-foll" class="text-white text-[11px] md:text-lg">0</span>
-            </div>
+        <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)" onmouseleave="!isMobile && hideTooltip()">
+            <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)] text-[10px] md:text-lg">REP</span> <span id="hud-rep" class="text-white text-[11px] md:text-lg">0</span>
+        </div>
+        
+        <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)" onmouseleave="!isMobile && hideTooltip()">
+            <span class="text-[var(--accent)] drop-shadow-[0_0_5px_var(--accent)] text-[10px] md:text-lg">FOL</span> <span id="hud-foll" class="text-white text-[11px] md:text-lg">0</span>
+        </div>
 
-            <!-- Jauge d'énergie "La Struggle" -->
-            <div class="flex items-center gap-2 px-1 md:px-4 py-2 border-l border-white/10 ml-1 md:ml-2">
-                <div class="flex flex-col gap-1 w-12 md:w-20 relative">
-                    <div class="flex justify-between text-[6px] md:text-[9px] font-retro text-[var(--retro-red)] font-bold tracking-widest">
-                        <span>NRJ</span>
-                        <span id="hud-energy-val">100%</span>
-                    </div>
-                    <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--retro-red)]/30 rounded-full overflow-hidden shadow-inner">
-                        <div id="hud-energy-bar" class="h-full bg-[var(--retro-red)] shadow-[0_0_5px_var(--retro-red)] transition-all duration-300" style="width: 100%;"></div>
-                    </div>
-                    <div id="energy-warning" class="absolute -bottom-4 md:-bottom-5 left-0 text-[6px] md:text-[9px] text-[var(--retro-red)] whitespace-nowrap animate-pulse hidden font-bold">Fatigue extrême</div>
+        <!-- Jauge d'énergie "La Struggle" -->
+        <div class="flex items-center gap-2 px-1 md:px-4 py-2 border-l border-white/10 ml-1 md:ml-2">
+            <div class="flex flex-col gap-1 w-12 md:w-20 relative">
+                <div class="flex justify-between text-[6px] md:text-[9px] font-retro text-[var(--retro-red)] font-bold tracking-widest">
+                    <span>NRJ</span>
+                    <span id="hud-energy-val">100%</span>
                 </div>
+                <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--retro-red)]/30 rounded-full overflow-hidden shadow-inner">
+                    <div id="hud-energy-bar" class="h-full bg-[var(--retro-red)] shadow-[0_0_5px_var(--retro-red)] transition-all duration-300" style="width: 100%;"></div>
+                </div>
+                <div id="energy-warning" class="absolute -bottom-4 md:-bottom-5 left-0 text-[6px] md:text-[9px] text-[var(--retro-red)] whitespace-nowrap animate-pulse hidden font-bold">Fatigue extrême</div>
             </div>
-        </div>
-        
-        <!-- Bloc Temps -->
-        <div class="font-retro text-right hidden md:flex flex-col justify-center items-end shrink-0 pr-2 pointer-events-none">
-            <div id="hud-day" class="text-white font-bold tracking-widest text-[12px]">DAY 1</div>
-            <div id="sys-time" class="text-sm text-[var(--accent)] mt-1 tracking-widest font-bold drop-shadow-[0_0_5px_var(--accent)]">08:00</div>
+            <!-- Bouton Zzz retiré d'ici, interaction sur le lit direct -->
         </div>
     </div>
+    
+    <!-- Bloc Temps -->
+    <div class="font-retro text-right hidden md:flex flex-col justify-center items-end shrink-0 pr-2 pointer-events-none">
+        <div id="hud-day" class="text-white font-bold tracking-widest text-[12px]">DAY 1</div>
+        <div id="sys-time" class="text-sm text-[var(--accent)] mt-1 tracking-widest font-bold drop-shadow-[0_0_5px_var(--accent)]">08:00</div>
+    </div>
+</div>
 
     <!-- 3D CANVAS -->
     <div id="three-canvas-container"></div>
@@ -510,7 +515,7 @@
     <!-- ROOM UI -->
     <div id="room-ui">
         <div class="bg-black/80 text-[var(--accent)] border border-[var(--accent)]/50 px-6 py-3 rounded-xl font-retro animate-[pulse_2s_ease-in-out_infinite] tracking-widest text-sm shadow-[0_0_15px_rgba(129,140,248,0.3)] mb-[15vh]">
-            CLICK PC TO START / FLOOR TO MOVE
+            CLICK PC TO START / FLOOR TO MOVE / BED TO SLEEP
         </div>
     </div>
 
@@ -817,7 +822,7 @@
             window.isMobile = isMobile;
 
             const aspect = window.innerWidth / window.innerHeight;
-            frustumSize = isMobile ? 22 : 14; 
+            frustumSize = isMobile ? 18 : 10; 
             
             camera.left = frustumSize * aspect / -2;
             camera.right = frustumSize * aspect / 2;
@@ -951,6 +956,8 @@
 
     scene.add(deskGroup);
 
+    
+    
     // BEDROOM PRODUCER
     const bedGroup = new THREE.Group();
     bedGroup.position.set(3.8, -0.8, -2.9);
@@ -960,6 +967,7 @@
     const frame = new THREE.Mesh(frameGeo, frameMat);
     frame.castShadow = true;
     frame.receiveShadow = true;
+    frame.name = 'bed_mesh'; // Assignation pour le Raycaster
     
     const bedFrameEdges = new THREE.EdgesGeometry(frameGeo);
     const bedFrameLines = new THREE.LineSegments(bedFrameEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
@@ -972,6 +980,7 @@
     mattress.position.set(0, 0.35, 0);
     mattress.castShadow = true;
     mattress.receiveShadow = true;
+    mattress.name = 'bed_mesh'; // Assignation pour le Raycaster
     bedGroup.add(mattress);
 
     const blanketGeo = new THREE.BoxGeometry(2.4, 0.38, 2.5);
@@ -980,6 +989,7 @@
     blanket.position.set(0, 0.36, 0.81);
     blanket.castShadow = true;
     blanket.receiveShadow = true;
+    blanket.name = 'bed_mesh'; // Assignation pour le Raycaster
     bedGroup.add(blanket);
 
     const pillowGeo = new THREE.BoxGeometry(0.8, 0.15, 0.5);
@@ -989,30 +999,36 @@
     pillow1.position.set(-0.55, 0.55, -1.5);
     pillow1.rotation.x = Math.PI / 12;
     pillow1.castShadow = true;
+    pillow1.name = 'bed_mesh'; // Assignation pour le Raycaster
     
     const pillow2 = new THREE.Mesh(pillowGeo, pillowMat);
     pillow2.position.set(0.55, 0.55, -1.5);
     pillow2.rotation.x = Math.PI / 12;
     pillow2.castShadow = true;
+    pillow2.name = 'bed_mesh'; // Assignation pour le Raycaster
     
     bedGroup.add(pillow1, pillow2);
     scene.add(bedGroup);
 
+
    // ==========================================
-    // TAPIS CENTRAL
+    // TAPIS CENTRAL (Agrandit et devant le canapé)
     // ==========================================
     const rugGroup = new THREE.Group();
+    // Décalé vers la gauche et aligné avec le canapé
     rugGroup.position.set(-0.5, -0.99, 1.5);
 
+    // Tapis plus grand (5.5 de large sur 4.0 de profondeur)
     const rugGeo = new THREE.BoxGeometry(5, 0.02, 4.0);
     const rugMat = new THREE.MeshStandardMaterial({ color: '#1e1b4b', roughness: 1.0 });
     const rug = new THREE.Mesh(rugGeo, rugMat);
     rug.receiveShadow = true;
     
+    // Bande décorative ajustée à la nouvelle largeur
     const stripeGeo = new THREE.BoxGeometry(5, 0.021, 0.3);
     const stripeMat = new THREE.MeshStandardMaterial({ color: '#818cf8', roughness: 1.0 });
     const stripe = new THREE.Mesh(stripeGeo, stripeMat);
-    stripe.position.set(0, 0, 1.4); 
+    stripe.position.set(0, 0, 1.4); // Légèrement décalée vers le bord
     
     rugGroup.add(rug, stripe);
     scene.add(rugGroup);
@@ -1041,10 +1057,12 @@
     const ledMatRed = new THREE.MeshStandardMaterial({ color: '#fb7185', emissive: '#fb7185' });
     const ledMatGreen = new THREE.MeshStandardMaterial({ color: '#34d399', emissive: '#34d399' });
 
+    // Génération de 4 machines dans le rack
     for(let i = 0; i < 4; i++) {
         const gear = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.3, 0.7), gearMat);
         gear.position.set(0, 0.35 + (i * 0.4), 0);
         
+        // Boutons et LEDs
         for(let l = 0; l < 3; l++) {
             const led = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.04), Math.random() > 0.5 ? ledMatRed : ledMatGreen);
             led.position.set(-0.3 + (l * 0.1), 0.35 + (i * 0.4), 0.36);
@@ -1058,6 +1076,9 @@
 
     scene.add(rackGroup);
 
+
+
+
     // ==========================================
     // PANNEAUX ACOUSTIQUES (Mousse)
     // ==========================================
@@ -1065,10 +1086,11 @@
     const panelGeo = new THREE.BoxGeometry(0.7, 0.7, 0.05);
     const panelMat = new THREE.MeshStandardMaterial({ color: '#27272a', roughness: 1.0 });
     
+    // Grille de 3x2 panneaux
     for(let x = 0; x < 3; x++) {
         for(let y = 0; y < 2; y++) {
             const panel = new THREE.Mesh(panelGeo, panelMat);
-            panel.position.set((x * 0.75) - 0.75, (y * 0.75) + 2.2, -4.96); 
+            panel.position.set((x * 0.75) - 0.75, (y * 0.75) + 2.2, -4.96); // Collés au mur du fond
             
             const edges = new THREE.EdgesGeometry(panelGeo);
             const lines = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.2 }));
@@ -1079,21 +1101,27 @@
     }
     scene.add(acousticGroup);
 
+
+
     // ==========================================
     // CANAPÉ STUDIO (Contre le mur de gauche)
     // ==========================================
     const sofaGroup = new THREE.Group();
+    // Placé contre le mur de gauche (x = -4.2), vers le bas de la pièce (z = 1.5)
     sofaGroup.position.set(-4.2, -1, 1.5);
-    sofaGroup.rotation.y = Math.PI / 2; 
+    sofaGroup.rotation.y = Math.PI / 2; // Orienté vers le centre de la pièce
 
     const fabricMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.9 });
     
+    // Assise élargie
     const seat = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.4, 1.2), fabricMat); 
     seat.position.set(0, 0.2, 0);
     
+    // Dossier élargi
     const back = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.8, 0.3), fabricMat); 
     back.position.set(0, 0.8, -0.45);
     
+    // Accoudoirs repoussés sur les côtés
     const armL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.6, 1.2), fabricMat); 
     armL.position.set(-1.55, 0.5, 0);
     const armR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.6, 1.2), fabricMat); 
@@ -1109,11 +1137,16 @@
 
     scene.add(sofaGroup);
 
+
+
+
     // ==========================================
     // PLANTE D'INTÉRIEUR (Posée sur le Rack)
     // ==========================================
     const plantGroup = new THREE.Group();
+    // On la place aux mêmes X/Z que le rack, mais on la monte à Y = 0.85
     plantGroup.position.set(1.3, 0.85, -4.5); 
+    // On réduit sa taille à 55%
     plantGroup.scale.set(0.55, 0.55, 0.55);
 
     const potGeo = new THREE.CylinderGeometry(0.25, 0.2, 0.5, 12);
@@ -1126,6 +1159,7 @@
     const potLines = new THREE.LineSegments(potEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3 }));
     pot.add(potLines);
 
+    // Feuilles simplifiées
     const leafGeo = new THREE.SphereGeometry(0.3, 8, 8);
     const leafMat = new THREE.MeshStandardMaterial({ color: '#34d399', roughness: 0.8 });
     
@@ -1138,6 +1172,13 @@
 
     scene.add(plantGroup);
 
+
+
+
+    
+    
+
+    
     // ==========================================
     // GÉNÉRATION DE L'AVATAR DANS LA ROOM (3D Mesh)
     // ==========================================
@@ -1199,18 +1240,25 @@
         if (x > -4.45 - r && x < 0.05 + r && z > -4.6 - r && z < -2.4 + r) return true; // Bureau
         if (x > 2.6 - r && x < 5.0 + r && z > -5.0 - r && z < -0.8 + r) return true;    // Lit
         if (x < -5 + r || x > 5 - r || z < -5 + r || z > 5 - r) return true;            // Murs
-        if (x > -5.0 - r && x < -3.6 + r && z > -0.2 - r && z < 3.2 + r) return true;   // Canapé
-        if (x > 0.75 - r && x < 1.85 + r && z > -4.9 - r && z < -4.1 + r) return true;  // Rack
+        // 3. NOUVEAU : CANAPé Lounge (x: 1.8 à 4.2, z: 1.3 à 3.7)
+        if (x > -5.0 - r && x < -3.6 + r && z > -0.2 - r && z < 3.2 + r) return true;
+        // 4. NOUVEAU : Rack Hardware Analogique (x: -4.8 à -3.6, z: 1.1 à 1.9)
+        if (x > 0.75 - r && x < 1.85 + r && z > -4.9 - r && z < -4.1 + r) return true;
+
+        // 5. NOUVEAU : Plante Verte (x: -4.4 à -3.6, z: -1.2 à -0.4)
+        if (x > -4.4 - r && x < -3.6 + r && z > -1.2 - r && z < -0.4 + r) return true;
         return false; 
     }
     
     let time = 0;
+    // Cible globale pour le lookAt de la caméra (optimisation mémoire)
     const cameraLookTarget = new THREE.Vector3(0, 0, 0);
 
     function animate3D() {
         requestAnimationFrame(animate3D);
         time += 0.02;
         
+        // Sécurité pour l'écran du PC
         if (typeof pcScreenMat !== 'undefined') {
             pcScreenMat.emissiveIntensity = 0.5 + Math.sin(time) * 0.3;
         }
@@ -1220,6 +1268,7 @@
             if (targetPosition) {
                 const distance = currentRoomAvatar.position.distanceTo(targetPosition);
 
+                // On vérifie la distance AVANT de faire un lookAt pour éviter le bug d'invisibilité
                 if (distance > 0.05) {
                     const dummy = new THREE.Object3D();
                     dummy.position.copy(currentRoomAvatar.position);
@@ -1243,10 +1292,12 @@
                         moved = true;
                     }
                     
+                    // Si bloqué par un mur/meuble
                     if (!moved) {
                         targetPosition = null;
                     }
                 } else {
+                    // Arrivé à destination
                     targetPosition = null; 
                 }
             }
@@ -1268,24 +1319,11 @@
             camera.lookAt(cameraLookTarget);
         }
 
-        // MAJ position du bouton Zzz sur le lit
-        const zzzBtn = document.getElementById('bed-zzz-btn');
-        if (state.energy < 50 && !state.isSleeping && document.getElementById('pc-ui-layer').style.display === 'none' && document.getElementById('login-screen').style.display === 'none') {
-            const bedVec = new THREE.Vector3(3.8, 0.5, -2.9);
-            bedVec.project(camera);
-            const x = (bedVec.x * 0.5 + 0.5) * window.innerWidth;
-            const y = (bedVec.y * -0.5 + 0.5) * window.innerHeight;
-            zzzBtn.style.left = `${x}px`;
-            zzzBtn.style.top = `${y}px`;
-            zzzBtn.style.display = 'block';
-        } else {
-            zzzBtn.style.display = 'none';
-        }
-
         renderer.render(scene, camera);
     }
     animate3D();
 
+    
     // ==========================================
     // 3. RAYCASTER & INTERACTION
     // ==========================================
@@ -1306,6 +1344,15 @@
             if (intersects[i].object.name === 'pc_mesh') { 
                 enterPC(); 
                 break; 
+            }
+            if (intersects[i].object.name === 'bed_mesh') {
+                if (state.energy < 50) {
+                    goSleep();
+                } else {
+                    showToast("Tu n'es pas assez fatigué pour dormir (< 50% NRJ).", "info");
+                    playBleep();
+                }
+                break;
             }
             if (intersects[i].object.name === 'floor_mesh') {
                 targetPosition = new THREE.Vector3(intersects[i].point.x, -0.74, intersects[i].point.z);
@@ -1494,7 +1541,7 @@
         group.add(head);
 
         const clothesColors = ['#818cf8', '#00e5ff', '#34d399', '#111111'];
-        const clothes = new MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.7 });
+        const clothes = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.7 });
         const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.5), clothes);
         body.position.y = 0.25;
         group.add(body);
@@ -1778,11 +1825,21 @@
         const progText = document.getElementById('sleep-progress-text');
         overlay.classList.add('active');
         
-        // Animation : s'allonger dans le lit
+        // Rend l'avatar transparent et l'allonge sur le lit
         if (currentRoomAvatar) {
-            targetPosition = null; 
-            currentRoomAvatar.position.set(3.8, -0.1, -3.5); 
-            currentRoomAvatar.rotation.set(-Math.PI / 2, 0, 0); 
+            currentRoomAvatar.userData.preSleepPos = currentRoomAvatar.position.clone();
+            currentRoomAvatar.userData.preSleepRot = currentRoomAvatar.rotation.clone();
+
+            // Position au centre du lit et rotation face vers le haut
+            currentRoomAvatar.position.set(3.8, -0.1, -3.2);
+            currentRoomAvatar.rotation.set(-Math.PI / 2, 0, 0);
+
+            currentRoomAvatar.traverse(child => {
+                if (child.isMesh && child.material) {
+                    child.material.transparent = true;
+                    child.material.opacity = 0.8;
+                }
+            });
         }
 
         playTone(200, 'sine', 1, 0.05);
@@ -1790,7 +1847,7 @@
         let ticks = 0;
         const maxTicks = 150; // 15s (tick toutes les 100ms)
         const playerLevel = Math.floor(state.rep / 50) + 1; 
-        const rechargePerTick = 0.5 + (playerLevel * 0.1); 
+        const rechargePerTick = 0.2 + (playerLevel * 0.1); 
 
         const sleepInt = setInterval(() => {
             ticks++;
@@ -1811,10 +1868,21 @@
         state.isSleeping = false;
         document.getElementById('sleep-overlay').classList.remove('active');
         
-        // Se relever à côté du lit
         if (currentRoomAvatar) {
-            currentRoomAvatar.position.set(2.0, -0.74, -2.9);
-            currentRoomAvatar.rotation.set(0, 0, 0);
+            if (currentRoomAvatar.userData.preSleepPos) {
+                currentRoomAvatar.position.copy(currentRoomAvatar.userData.preSleepPos);
+                currentRoomAvatar.rotation.copy(currentRoomAvatar.userData.preSleepRot);
+            } else {
+                currentRoomAvatar.position.set(2.5, -0.74, -2.9);
+                currentRoomAvatar.rotation.set(0, 0, 0);
+            }
+
+            currentRoomAvatar.traverse(child => {
+                if (child.isMesh && child.material) {
+                    child.material.transparent = false;
+                    child.material.opacity = 1;
+                }
+            });
         }
         
         showToast("Nuit terminée. T'es de nouveau frais !", "success");
@@ -2116,7 +2184,7 @@
 
         // VÉRIFICATION STRUGGLE
         if (state.energy <= 0) {
-            showToast("T'es KO, impossible de mixer. Rapproche-toi du lit pour dormir.", "error");
+            showToast("T'es KO, impossible de mixer. Clique sur le lit pour dormir.", "error");
             playError();
             return;
         }
@@ -2495,7 +2563,7 @@
     window.quitPC           = quitPC;
     window.selectAvatar     = selectAvatar;
     window.attemptLogin     = attemptLogin;
-    window.goSleep          = goSleep; 
+    window.goSleep          = goSleep; // Export du sommeil
 
     // Boot
     initUI();
