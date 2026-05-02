@@ -981,7 +981,7 @@
     mattress.receiveShadow = true;
     bedGroup.add(mattress);
 
-    const blanketGeo = new THREE.BoxGeometry(2.25, 0.32, 2.5);
+    const blanketGeo = new THREE.BoxGeometry(2.35, 0.4, 2.5);
     const blanketMat = new THREE.MeshStandardMaterial({ color: '#312e81', roughness: 0.9 });
     const blanket = new THREE.Mesh(blanketGeo, blanketMat);
     blanket.position.set(0, 0.36, 0.75);
@@ -2148,7 +2148,7 @@
         state.stats.crackDownloads = (parseInt(state.stats.crackDownloads, 10) || 0) + 1;
         state.cooldowns.crackzTimeReady = getTotalMins() + getVpnCooldown();
         if (Math.random() < crack.risk) {
-            if (Math.random() < 0.1) {
+            if (Math.random() < 0.35) {
                 const loss = Math.floor(20 + (state.rep * 8) + (state.money * 0.05));
                 logMoney(-loss, 'Ransomware Attack');
                 state.stats.viruses++;
