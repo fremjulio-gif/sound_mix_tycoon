@@ -54,7 +54,8 @@
             width: 100vw;
             height: 100dvh;
             display: flex;
-            flex-direction: column;
+            flex-direction: column;        
+<div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[999999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
         }
         #three-canvas-container {
             position: absolute;
@@ -122,7 +123,7 @@
         
         #btn-quit-pc {
             position: absolute;
-            top: 20px;
+            bottom: 20px;
             left: 20px;
             z-index: 90;
             padding: 8px 16px;
@@ -478,16 +479,37 @@
 
 
     <!-- TRACK REVIEW OVERLAY -->
-<div id="review-overlay" class="fixed inset-0 bg-black/90 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 hidden">
-    <div class="liquid-glass-heavy p-8 rounded-2xl w-[90%] max-w-lg border border-[var(--accent)] text-center">
-        <p id="review-track-name" class="text-xs font-retro text-[var(--text-muted)] mb-2 tracking-widest uppercase">Track #1</p>
-        <h2 class="text-2xl font-retro text-white mb-6 tracking-widest">📊 REVIEWS ARE IN</h2>
-        <div id="review-list" class="space-y-4 text-left mb-8"></div>
-        <div class="border-t border-white/10 pt-6 mb-6">
-            <p class="text-xs text-[var(--text-muted)] font-retro mb-2">AVERAGE SCORE</p>
-            <p id="review-average" class="text-6xl font-bold font-retro text-white">/10</p>
+<!-- TRACK REVIEW OVERLAY -->
+<div id="review-overlay" class="fixed inset-0 bg-black/90 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 hidden px-4">
+    <div class="liquid-glass-heavy rounded-2xl w-full max-w-lg border border-[var(--accent)] text-center overflow-hidden" style="max-height: 90dvh; display: flex; flex-direction: column;">
+        
+        <!-- PHASE 1 : SUSPENSE -->
+        <div id="review-phase-suspense" class="flex flex-col items-center justify-center p-8 flex-1">
+            <div id="suspense-title" class="text-xl font-retro text-white tracking-widest mb-2 uppercase"></div>
+            <div id="suspense-genre" class="text-xs font-retro text-[var(--text-muted)] mb-8 tracking-widest"></div>
+            <div class="flex gap-2 mb-6" id="suspense-dots">
+                <div class="w-3 h-3 rounded-full bg-[var(--accent)] animate-bounce" style="animation-delay:0s"></div>
+                <div class="w-3 h-3 rounded-full bg-[var(--accent)] animate-bounce" style="animation-delay:0.2s"></div>
+                <div class="w-3 h-3 rounded-full bg-[var(--accent)] animate-bounce" style="animation-delay:0.4s"></div>
+            </div>
+            <p id="suspense-text" class="text-sm font-retro text-[var(--text-muted)] tracking-widest animate-pulse">Les critiques écoutent...</p>
         </div>
-        <button onclick="closeReview()" class="btn-action py-3 px-10 rounded-lg text-xs font-retro tracking-widest">CLOSE</button>
+
+        <!-- PHASE 2 : RÉSULTATS -->
+        <div id="review-phase-results" class="hidden flex-col" style="max-height: 90dvh; overflow-y: auto;">
+            <div class="p-6 border-b border-white/10">
+                <p id="review-track-name" class="text-xs font-retro text-[var(--text-muted)] mb-1 tracking-widest uppercase"></p>
+                <h2 class="text-xl font-retro text-white tracking-widest">📊 REVIEWS ARE IN</h2>
+            </div>
+            <div id="review-list" class="space-y-3 p-6 overflow-y-auto"></div>
+            <div class="border-t border-white/10 px-6 py-4 flex items-center justify-between flex-shrink-0">
+                <div>
+                    <p class="text-xs text-[var(--text-muted)] font-retro mb-1">AVERAGE SCORE</p>
+                    <p id="review-average" class="text-5xl font-bold font-retro text-white">/10</p>
+                </div>
+                <button onclick="closeReview()" class="btn-action py-3 px-8 rounded-lg text-xs font-retro tracking-widest">CLOSE</button>
+            </div>
+        </div>
     </div>
 </div>
     
@@ -708,6 +730,10 @@
                                 <input type="range" id="daw-bpm" min="60" max="200" value="120" class="flex-1 accent-[var(--accent)] cursor-pointer" oninput="document.getElementById('bpm-val').innerHTML = this.value">
                             </div>
                         </div>
+                        
+                            <input type="text" id="track-title-input" maxlength="30"
+                                    class="w-full bg-black/60 border border-white/10 rounded px-4 py-3 text-white font-retro text-xs focus:outline-none focus:border-[var(--accent)] transition-all tracking-widest uppercase"
+                                     placeholder="TITRE DU SON..." />
                         <div class="relative w-full h-[50px] md:h-[40px] mt-2">
                             <button id="btn-export" class="w-full h-full btn-action rounded-lg text-[12px] md:text-[11px] drop-shadow-lg tracking-widest" onclick="exportTrack()">RENDER MIXDOWN</button>
                             <div id="export-progress-container" class="hidden absolute left-0 bottom-0 w-full h-1.5 bg-gray-900 overflow-hidden rounded-b-lg">
@@ -774,7 +800,7 @@
         </div>
 
         <!-- TOAST ZONE -->
-        <div id="toast-zone" class="absolute top-[90px] md:top-6 left-4 md:left-6 flex flex-col gap-3 z-[999999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
+        
     </div>
 
     <!-- BSOD -->
@@ -2503,6 +2529,8 @@
 
         if (activePads === 0) { showToast("Sequencer is empty. Lay down some drums first.", "error"); playError(); return; }
 
+        const trackTitle = document.getElementById('track-title-input').value.trim() || `UNTITLED_${state.stats.tracks + 1}`;
+
         // CALCUL DU TWIST (ÉNERGIE)
         const initialEnergy = state.energy;
         state.energy = Math.max(0, state.energy - 20); // Consomme 20 points
@@ -2560,12 +2588,12 @@
                 state.isExporting = false;
                 state.cooldowns.dawTimeReady = getTotalMins() + getDawCooldown();
                 progCont.classList.add('hidden');
-                finishExport(genre, bpm, voice, activePads, consumedPluginId);
+                finishExport(genre, bpm, voice, activePads, consumedPluginId, trackTitle);
             }
         }, 60);
     }
 
-    function finishExport(genre, bpm, voice, pads, pluginId) {
+    function finishExport(genre, bpm, voice, pads, pluginId, trackTitle) {
         const result = calculateSuccess(genre, bpm, voice);
         let moneyGain = 0, repGain = 0, follGain = 0, resultTxt = "", critique = "";
 
@@ -2611,7 +2639,8 @@
         const trackScore = result.score === 3 ? Math.floor(7 + Math.random() * 3) :
                    result.score === 1 ? Math.floor(4 + Math.random() * 3) :
                                         Math.floor(1 + Math.random() * 3);
-showTrackReview(trackScore);
+        
+        showTrackReview(trackScore, trackTitle);
         
         showToast(toastMsg, result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error'));
         saveGame(); updateHUD(); updateCooldownUIs();
@@ -3046,71 +3075,112 @@ function getReviewerComment(type, score) {
     return ["..."];
 }
 
-function showTrackReview(trackScore) {
+function showTrackReview(trackScore, trackTitle) {
     const overlay = document.getElementById('review-overlay');
+    const phaseSuspense = document.getElementById('review-phase-suspense');
+    const phaseResults = document.getElementById('review-phase-results');
     const reviewList = document.getElementById('review-list');
     const avgEl = document.getElementById('review-average');
     const trackNameEl = document.getElementById('review-track-name');
+    const suspenseTitle = document.getElementById('suspense-title');
+    const suspenseGenre = document.getElementById('suspense-genre');
+    const suspenseText = document.getElementById('suspense-text');
 
-    trackNameEl.innerText = `Track #${state.stats.tracks} — ${currentDawGenre.toUpperCase()} ${currentDawVoice.toUpperCase()}`;
+    // Reset
+    phaseSuspense.classList.remove('hidden');
+    phaseSuspense.style.display = 'flex';
+    phaseResults.classList.add('hidden');
+    phaseResults.style.display = 'none';
 
-    // Génère 3 reviews aléatoires
+    trackNameEl.innerText = `"${trackTitle}" — ${currentDawGenre.toUpperCase()} / ${currentDawVoice.toUpperCase()}`;
+    suspenseTitle.innerText = `"${trackTitle}"`;
+    suspenseGenre.innerText = `${currentDawGenre.toUpperCase()} · ${currentDawVoice.toUpperCase()} · DAY ${state.day}`;
+
+    // Génère les reviews
     const reviews = [];
     const usedTypes = [];
-
     while (reviews.length < 3) {
         const pool = reviewers[Math.floor(Math.random() * reviewers.length)];
         if (usedTypes.includes(pool.type)) continue;
         usedTypes.push(pool.type);
-
-        // Score individuel autour du score global ±2
         const individualScore = Math.min(10, Math.max(1, trackScore + Math.floor(Math.random() * 5) - 2));
         const name = pool.names[Math.floor(Math.random() * pool.names.length)];
         const comments = getReviewerComment(pool.type, individualScore);
         const comment = comments[Math.floor(Math.random() * comments.length)];
-
         reviews.push({ type: pool.type, name, score: individualScore, comment });
     }
-
     const avg = (reviews.reduce((s, r) => s + r.score, 0) / reviews.length).toFixed(1);
 
-    const typeColors = { critique: 'text-[var(--retro-blue)]', internaute: 'text-[var(--retro-green)]', rappeur: 'text-[var(--retro-orange)]' };
-    const typeLabels = { critique: '📰 CRITIQUE', internaute: '💬 INTERNAUTE', rappeur: '🎤 RAPPEUR' };
+    // Textes de suspense progressifs
+    const suspenseSteps = [
+        "Les critiques écoutent...",
+        "Ils prennent des notes...",
+        "Le verdict approche...",
+        "⚡ Résultats imminents..."
+    ];
 
-    reviewList.innerHTML = reviews.map(r => `
-        <div class="bg-black/40 border border-white/10 rounded-lg p-4">
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-[10px] font-retro ${typeColors[r.type]}">${typeLabels[r.type]}</span>
-                <span class="text-[10px] font-retro text-white">${r.name}</span>
-            </div>
-            <div class="flex justify-between items-center">
-                <p class="text-sm text-gray-300 italic flex-1 pr-4">"${r.comment}"</p>
-                <span class="text-2xl font-bold font-retro ${r.score >= 7 ? 'text-[var(--retro-green)]' : r.score >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]'}">${r.score}/10</span>
-            </div>
-        </div>
-    `).join('');
-
-    const avgColor = avg >= 7 ? 'text-[var(--retro-green)]' : avg >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]';
-    avgEl.className = `text-6xl font-bold font-retro ${avgColor}`;
-    avgEl.innerText = `${avg}/10`;
-
-    // Affichage après 3 secondes
+    // Affichage de l'overlay
+    overlay.classList.remove('hidden');
     setTimeout(() => {
-        overlay.classList.remove('hidden');
-        setTimeout(() => {
-            overlay.style.opacity = '1';
-            overlay.style.pointerEvents = 'all';
-        }, 50);
-        playTone(600, 'sine', 0.3, 0.08);
-    }, 3000);
-}
+        overlay.style.opacity = '1';
+        overlay.style.pointerEvents = 'all';
+    }, 50);
+    playTone(300, 'sine', 0.4, 0.05);
 
-function closeReview() {
-    const overlay = document.getElementById('review-overlay');
-    overlay.style.opacity = '0';
-    overlay.style.pointerEvents = 'none';
-    setTimeout(() => overlay.classList.add('hidden'), 500);
-    playBleep();
+    // Animation du suspense
+    let step = 0;
+    const suspenseInterval = setInterval(() => {
+        step++;
+        if (step < suspenseSteps.length) {
+            suspenseText.innerText = suspenseSteps[step];
+            playTone(200 + step * 80, 'sine', 0.15, 0.04);
+        }
+    }, 1200);
+
+    // Révélation des résultats après 5s
+    setTimeout(() => {
+        clearInterval(suspenseInterval);
+
+        // Transition entre les deux phases
+        phaseSuspense.style.display = 'none';
+        phaseSuspense.classList.add('hidden');
+
+        const typeColors = { critique: 'text-[var(--retro-blue)]', internaute: 'text-[var(--retro-green)]', rappeur: 'text-[var(--retro-orange)]' };
+        const typeLabels = { critique: '📰 CRITIQUE', internaute: '💬 INTERNAUTE', rappeur: '🎤 RAPPEUR' };
+
+        // Affiche les reviews une par une
+        reviewList.innerHTML = '';
+        reviews.forEach((r, i) => {
+            setTimeout(() => {
+                const div = document.createElement('div');
+                div.className = 'bg-black/40 border border-white/10 rounded-lg p-4 opacity-0 transition-opacity duration-500';
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[10px] font-retro ${typeColors[r.type]}">${typeLabels[r.type]}</span>
+                        <span class="text-[10px] font-retro text-white">${r.name}</span>
+                    </div>
+                    <div class="flex justify-between items-center gap-3">
+                        <p class="text-sm text-gray-300 italic flex-1">"${r.comment}"</p>
+                        <span class="text-2xl font-bold font-retro flex-shrink-0 ${r.score >= 7 ? 'text-[var(--retro-green)]' : r.score >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]'}">${r.score}/10</span>
+                    </div>`;
+                reviewList.appendChild(div);
+                setTimeout(() => div.style.opacity = '1', 50);
+                playTone(300 + (r.score * 40), 'sine', 0.15, 0.06);
+            }, i * 800);
+        });
+
+        // Score final après toutes les reviews
+        setTimeout(() => {
+            const avgColor = avg >= 7 ? 'text-[var(--retro-green)]' : avg >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]';
+            avgEl.className = `text-5xl font-bold font-retro ${avgColor}`;
+            avgEl.innerText = `${avg}/10`;
+            playSuccess();
+        }, reviews.length * 800 + 300);
+
+        phaseResults.style.display = 'flex';
+        phaseResults.classList.remove('hidden');
+
+    }, 5000);
 }
 
 
