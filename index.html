@@ -998,13 +998,31 @@
             group.add(shades);
         }
 
-        // On scale légèrement pour bien fitter dans la chambre
-        group.scale.set(0.65, 0.65, 0.65);
-        // Position initiale dans la chambre (Y = -1 pour être sur le sol)
-        group.position.set(0, -1, 2);
+        // On scale 2x plus grand
+        group.scale.set(1.3, 1.3, 1.3);
+        // Position initiale dans la chambre (Y = -0.74 pour être collé au sol à cause du scale)
+        group.position.set(0, -0.74, 3);
 
         scene.add(group);
         currentRoomAvatar = group;
+    }
+
+    // ==========================================
+    // GESTION DES COLLISIONS (AABB simples)
+    // ==========================================
+    function checkCollision(x, z) {
+        const r = 0.6; // Rayon de l'avatar (ajusté pour la taille x2)
+        
+        // 1. Bureau (Centre x:0, z:0. Largeur 4.5, Profondeur 2.2)
+        if (x > -2.25 - r && x < 2.25 + r && z > -1.1 - r && z < 1.1 + r) return true;
+        
+        // 2. Lit (Coin haut/droit. x: 2.6 à 5.0, z: -5.0 à -0.8)
+        if (x > 2.6 - r && x < 5.0 + r && z > -5.0 - r && z < -0.8 + r) return true;
+        
+        // 3. Murs de la pièce (Limites du sol 10x10)
+        if (x < -5 + r || x > 5 - r || z < -5 + r || z > 5 - r) return true;
+        
+        return false; // Voie libre !
     }
 
     let time = 0;
@@ -1013,20 +1031,43 @@
         time += 0.02;
         pcScreenMat.emissiveIntensity = 0.5 + Math.sin(time) * 0.3;
 
-        // ANIMATION DE DÉPLACEMENT & ROTATION (Point & Click)
+        // ANIMATION DE DÉPLACEMENT & ROTATION (Point & Click avec Collisions)
         if (currentRoomAvatar && targetPosition) {
-            // Lerp de la position (Avance fluide vers la cible)
-            currentRoomAvatar.position.lerp(targetPosition, 0.08);
-
-            // Slerp de la rotation (S'oriente fluidement vers la cible)
+            // Orientation (Slerp fluide)
             const dummy = new THREE.Object3D();
             dummy.position.copy(currentRoomAvatar.position);
             dummy.lookAt(targetPosition);
-            currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.15);
+            currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.12);
 
-            // Arrêt quand on est assez proche
-            if (currentRoomAvatar.position.distanceTo(targetPosition) < 0.05) {
-                targetPosition = null;
+            // Déplacement linéaire et réaliste (vitesse fixe)
+            const distance = currentRoomAvatar.position.distanceTo(targetPosition);
+            const speed = 0.04; // Vitesse de marche ralentie et réaliste
+
+            if (distance > 0.05) {
+                const dir = new THREE.Vector3().subVectors(targetPosition, currentRoomAvatar.position).normalize();
+                const nextX = currentRoomAvatar.position.x + dir.x * speed;
+                const nextZ = currentRoomAvatar.position.z + dir.z * speed;
+                
+                let moved = false;
+                
+                // On glisse sur l'axe X si c'est libre
+                if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
+                    currentRoomAvatar.position.x = nextX;
+                    moved = true;
+                }
+                
+                // On glisse sur l'axe Z si c'est libre
+                if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
+                    currentRoomAvatar.position.z = nextZ;
+                    moved = true;
+                }
+                
+                // Si on est complètement bloqué (dans un coin ou face à un mur direct) on annule la cible
+                if (!moved) {
+                    targetPosition = null;
+                }
+            } else {
+                targetPosition = null; // Arrivé à destination
             }
         }
 
@@ -1056,8 +1097,8 @@
                 break; 
             }
             if (intersects[i].object.name === 'floor_mesh') {
-                // Définir la cible de déplacement pour l'avatar (Y forcé au niveau du sol)
-                targetPosition = new THREE.Vector3(intersects[i].point.x, -1, intersects[i].point.z);
+                // Définir la cible (Y forcé au niveau du sol, ajusté pour la nouvelle taille)
+                targetPosition = new THREE.Vector3(intersects[i].point.x, -0.74, intersects[i].point.z);
                 break;
             }
         }
