@@ -2263,31 +2263,46 @@
         window.gameInterval = setInterval(gameTick, 1000);
     }
 
-        // ==========================================
+            // ==========================================
     // SYSTÈME D'ÉVÉNEMENTS ALÉATOIRES (EDR)
     // ==========================================
     const knownRappers = ["Yannvs", "Zandame", "Kali", "Disiznot", "Khabat & Jean-Jacque", "Lescram", "JeuneTortue", "Luthier", "Joule", "SCHash", "Adèle Tatillon", "Jolared44"];
     const unknownRappers = ["Fto", "Tom B", "Romsmii", "36Morphé", "44ASKIP", "9Rookie", "Nus", "GrandeSœur", "JaimeRose"];
+    
+    const thiefRappersKnown = ["Mhoudi", "Niño", "Maïreau", "Bushit", "Letard"];
+    const thiefRappersUnknown = ["909Dia", "Anybody", "Asinone", "m4n4phy", "36murpho", "sam01"];
+    
+    const cancelledRappers = ["Keycade", "Abdel32", "SummerZuko", "Femtogros", "Rouhni", "Snap", "Lomepoule", "Firenek", "Kenny East"];
 
     function checkRandomEvents() {
-        // Environ 1.5% de chance de pop à chaque Tick (soit toutes les 5 mins in-game)
-        // Ça laisse le temps au joueur de souffler entre deux events.
+        // Environ 1.5% de chance de pop à chaque Tick (toutes les 5 mins in-game)
         if (Math.random() < 0.015) {
-            triggerEventEDR2_Rapper();
+            const evRoll = Math.random();
+            
+            // Répartition par rareté (EDR)
+            if (evRoll < 0.50) {
+                // 50% de chance - EDR 2
+                triggerEventEDR2_Rapper();
+            } else if (evRoll < 0.85) {
+                // 35% de chance - EDR 3
+                triggerEventEDR3_Theft();
+            } else {
+                // 15% de chance - EDR 4 (Le plus rare)
+                triggerEventEDR4_Cancel();
+            }
         }
     }
 
+    // --- ÉVÉNEMENT EDR 2 : PLACEMENT DE PROD ---
     function triggerEventEDR2_Rapper() {
-        state.isEventActive = true; // Met le jeu entier en pause
+        state.isEventActive = true; 
         
-        // Plus on a de REP, plus on a de chance de taper un "connu" (max 35% de chance)
         const repFactor = Math.min(0.35, state.rep / 5000); 
         const isKnown = Math.random() < repFactor;
         
         const rapperList = isKnown ? knownRappers : unknownRappers;
         const rapper = rapperList[Math.floor(Math.random() * rapperList.length)];
         
-        // Les connus paient 10x plus cher
         const basePrice = isKnown ? 500 : 50;
         
         const title = "NOUVEAU DM INSTA";
@@ -2317,24 +2332,114 @@
 
     function resolveRapperDeal(rapper, price, chance, type) {
         hideEventModal();
-        
         if (Math.random() < chance) {
-            // Succès !
             logMoney(price, `Placement ${type} - ${rapper}`);
             const repGain = Math.floor(price / 50);
             state.rep += repGain;
             showToast(`🔥 BANGER ! @${rapper} a acheté le ${type} pour $${price}. (+${repGain} REP)`, "success");
             playSuccess();
         } else {
-            // Échec...
             showToast(`❌ "C'est reuch mon reuf..." - @${rapper} t'a mis un gros Vu.`, "error");
             playError();
         }
-        
-        // Enlève la pause après un court instant pour adoucir la transition
         setTimeout(() => { state.isEventActive = false; }, 500);
+        updateHUD();
     }
 
+    // --- ÉVÉNEMENT EDR 3 : VOL DE PROD ---
+    function triggerEventEDR3_Theft() {
+        state.isEventActive = true; 
+        
+        const repFactor = Math.min(0.35, state.rep / 5000); 
+        const isKnown = Math.random() < repFactor;
+        const rapperList = isKnown ? thiefRappersKnown : thiefRappersUnknown;
+        const rapper = rapperList[Math.floor(Math.random() * rapperList.length)];
+        
+        const title = "LITIGE COPYRIGHT 🚨";
+        const subtitle = "EDR 3 - Vol de Prod";
+        const desc = `Belek à toi, <span class="text-[var(--retro-red)] font-bold">@${rapper}</span> t'a volé une prod, que souhaites-tu faire ?`;
+
+        const choices = [
+            {
+                text: `Porter plainte`,
+                desc: "Pénalité : Grosse perte de réputation (le milieu déteste les balances).",
+                action: () => {
+                    hideEventModal();
+                    const repLoss = Math.floor(state.rep * 0.25) + 15;
+                    state.rep = Math.max(0, state.rep - repLoss);
+                    showToast(`⚖️ T'as porté plainte. L'industrie t'a tourné le dos (-${repLoss} REP).`, "error");
+                    playError();
+                    setTimeout(() => { state.isEventActive = false; }, 500);
+                    updateHUD();
+                }
+            },
+            {
+                text: `Arrangement à l'amiable`,
+                desc: "Pénalité : Pertes d'argent minimes (frais juridiques).",
+                action: () => {
+                    hideEventModal();
+                    const moneyLoss = Math.floor(state.money * 0.1) + 80;
+                    logMoney(-moneyLoss, `Frais arrange. vs ${rapper}`);
+                    showToast(`🤝 Arrangement trouvé. Les frais d'avocat piquent (-$${moneyLoss}).`, "info");
+                    playBleep();
+                    setTimeout(() => { state.isEventActive = false; }, 500);
+                    updateHUD();
+                }
+            },
+            {
+                text: `Ne rien faire`,
+                desc: "Pénalité : Perte d'argent aléatoire énorme et grosse perte de followers.",
+                action: () => {
+                    hideEventModal();
+                    const moneyLoss = Math.floor(state.money * (0.2 + Math.random() * 0.3)) + 150;
+                    const folLoss = Math.floor(state.followers * 0.15) + 800;
+                    
+                    logMoney(-moneyLoss, `Manque à gagner - Vol de prod`);
+                    state.followers = Math.max(0, state.followers - folLoss);
+                    
+                    showToast(`🤦‍♂️ T'as laissé passer. T'as perdu au moins $${moneyLoss} et -${folLoss} Fans.`, "error");
+                    playError();
+                    setTimeout(() => { state.isEventActive = false; }, 500);
+                    updateHUD();
+                }
+            }
+        ];
+
+        showEventModal(title, subtitle, desc, choices);
+    }
+
+    // --- ÉVÉNEMENT EDR 4 : BAD BUZZ CANCEL ---
+    function triggerEventEDR4_Cancel() {
+        state.isEventActive = true; 
+        const rapper = cancelledRappers[Math.floor(Math.random() * cancelledRappers.length)];
+        
+        const title = "BAD BUZZ CRITIQUE 📉";
+        const subtitle = "EDR 4 - Rappeur Cancel";
+        const desc = `Vous avez failli collaborer avec <span class="text-[var(--retro-red)] font-bold">@${rapper}</span> juste avant qu'il ne se fasse cancel sur les réseaux. Les rumeurs ont fuité, vous perdez de la crédibilité et des followers.`;
+
+        const repLoss = Math.floor(state.rep * 0.3) + 25;
+        const folLoss = Math.floor(state.followers * 0.2) + 1500;
+
+        const choices = [
+            {
+                text: "Subir la vague sur Twitter...",
+                desc: `Pénalité inévitable : -${repLoss} REP | -${folLoss} Fans`,
+                action: () => {
+                    hideEventModal();
+                    state.rep = Math.max(0, state.rep - repLoss);
+                    state.followers = Math.max(0, state.followers - folLoss);
+                    showToast(`💥 La sauce t'a éclaboussé. -${repLoss} REP, -${folLoss} Fans.`, "error");
+                    playError();
+                    setTimeout(() => { state.isEventActive = false; }, 500);
+                    updateHUD();
+                }
+            }
+        ];
+
+        showEventModal(title, subtitle, desc, choices);
+    }
+
+    // --- LOGIQUE D'AFFICHAGE DU MODAL ---
     function showEventModal(title, subtitle, desc, choices) {
         const modal = document.getElementById('event-modal');
         const box = document.getElementById('event-box');
@@ -2357,7 +2462,6 @@
         modal.classList.remove('hidden');
         modal.classList.add('flex');
         
-        // Pop effect
         setTimeout(() => {
             box.classList.remove('scale-95', 'opacity-0');
             box.classList.add('scale-100', 'opacity-100');
