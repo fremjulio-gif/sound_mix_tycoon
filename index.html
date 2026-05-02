@@ -1079,28 +1079,61 @@
 
 
 
-    // ==========================================
-    // PANNEAUX ACOUSTIQUES (Mousse)
+   // ==========================================
+    // PANNEAUX ACOUSTIQUES (Mousse Studio Réaliste)
     // ==========================================
     const acousticGroup = new THREE.Group();
-    const panelGeo = new THREE.BoxGeometry(0.7, 0.7, 0.05);
-    const panelMat = new THREE.MeshStandardMaterial({ color: '#27272a', roughness: 1.0 });
+
+    // Matériaux : Noir ultra-mat pour absorber la lumière (et le son)
+    const foamMat = new THREE.MeshStandardMaterial({ color: '#18181b', roughness: 1.0 });
+    const edgeMat = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.5 });
+
+    // 1. Création d'un Master Template pour 1 Panneau
+    const singlePanelGroup = new THREE.Group();
     
-    // Grille de 3x2 panneaux
-    for(let x = 0; x < 3; x++) {
-        for(let y = 0; y < 2; y++) {
-            const panel = new THREE.Mesh(panelGeo, panelMat);
-            panel.position.set((x * 0.75) - 0.75, (y * 0.75) + 2.2, -4.96); // Collés au mur du fond
-            
-            const edges = new THREE.EdgesGeometry(panelGeo);
-            const lines = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.2 }));
-            panel.add(lines);
-            
-            acousticGroup.add(panel);
+    // Base plate du panneau
+    const baseGeo = new THREE.BoxGeometry(0.7, 0.7, 0.04);
+    const baseMesh = new THREE.Mesh(baseGeo, foamMat);
+    baseMesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(baseGeo), edgeMat));
+    singlePanelGroup.add(baseMesh);
+
+    // Ajout des 4 crêtes en relief (effet "Egg Crate" typique)
+    const ridgeGeo = new THREE.BoxGeometry(0.7, 0.08, 0.04);
+    for (let r = 0; r < 4; r++) {
+        const ridge = new THREE.Mesh(ridgeGeo, foamMat);
+        ridge.position.set(0, -0.24 + (r * 0.16), 0.04); // Décalé vers l'avant
+        ridge.add(new THREE.LineSegments(new THREE.EdgesGeometry(ridgeGeo), edgeMat));
+        singlePanelGroup.add(ridge);
+    }
+
+    // 2. Fonction pour plaquer une grille de panneaux sur n'importe quel mur
+    function createAcousticWall(startX, startY, startZ, isLeftWall) {
+        for (let col = 0; col < 3; col++) {
+            for (let row = 0; row < 2; row++) {
+                const panel = singlePanelGroup.clone();
+                
+                // On tourne 1 panneau sur 2 à 90° pour le vrai style studio
+                if ((col + row) % 2 === 0) panel.rotation.z = Math.PI / 2;
+
+                if (isLeftWall) {
+                    panel.position.set(startX, startY + (row * 0.75), startZ + (col * 0.75));
+                    panel.rotation.y = Math.PI / 2; // Orienté vers la pièce
+                } else {
+                    panel.position.set(startX + (col * 0.75), startY + (row * 0.75), startZ);
+                }
+                
+                acousticGroup.add(panel);
+            }
         }
     }
-    scene.add(acousticGroup);
 
+    // Mur du fond (Derrière l'écran / bureau)
+    createAcousticWall(-1.5, 2.2, -4.95, false);
+
+    // Mur de gauche (Au-dessus du canapé)
+    createAcousticWall(-4.95, 2.2, 0.5, true);
+
+    scene.add(acousticGroup);
 
 
     // ==========================================
