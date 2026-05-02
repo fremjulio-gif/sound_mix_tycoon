@@ -308,15 +308,38 @@
                 padding-bottom: 12px !important; 
                 overflow: visible !important;
             }
-            #app-daw { width: 950px; min-width: 700px; }
-        }
+            /* DAW Layout fixes */
+            #app-daw { 
+                min-width: 0 !important; 
+                overflow: hidden !important; /* Seul le contenu doit scroller, pas la fenêtre entière */
+            }
+            
+            #app-daw .window-content {
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                height: auto !important;
+            }
 
-        .daw-panel-neon {
-            background: rgba(10, 10, 15, 0.8);
-            border: 1px solid var(--accent); border-radius: 8px;
-            box-shadow: inset 0 0 15px rgba(129, 140, 248, 0.1), 0 0 10px rgba(129, 140, 248, 0.2);
-            display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box;
-        }
+            .daw-panel-neon { 
+                min-width: 0 !important; 
+                width: 100% !important; 
+                flex: none !important; /* FIX : Annule le flex-1 de Tailwind sur mobile */
+                flex-shrink: 0 !important; /* FIX : Empêche le panneau de se faire écraser */
+            }
+            
+            .tl-track { min-width: 600px; }
+            
+            .daw-grid-container { 
+                height: auto !important; 
+                min-height: max-content !important; 
+                display: flex !important; 
+                flex-direction: column !important; 
+                padding-bottom: 120px !important; 
+                overflow: visible !important; 
+            }
+            
+            .vu-led { width: 4px; height: 100%; margin-bottom: 0; margin-right: 2px; }
+            #vu-meter-container { flex-direction: row !important; height: 16px !important; width: 100% !important; padding: 2px !important; }
         
         .seq-pad { width: 100%; aspect-ratio: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 3px; cursor: pointer; transition: all 0.1s; }
         .seq-pad:active { transform: scale(0.9); }
@@ -454,10 +477,6 @@
             .seq-pad { min-width: 44px; }
             #bpm-val { font-size: 18px !important; }
 
-            /* DAW Layout fixes */
-            #app-daw { min-width: 0 !important; }
-            .daw-panel-neon { min-width: 0 !important; width: 100% !important; }
-            .tl-track { min-width: 600px; }
             
             /* FIX: Réduction du padding bottom de 250px à une valeur standard pour éviter l'espace vide énorme */
             .daw-grid-container { 
@@ -682,6 +701,10 @@
             </div>
         </div>
 
+
+
+    
+        
         <!-- MOBILE NAV -->
         <div id="mobile-nav" class="fixed bottom-0 left-0 w-full liquid-glass-heavy justify-around items-center px-2 pt-2 z-[60] border-t border-white/10" style="padding-bottom: env(safe-area-inset-bottom);">
             <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="openApp('app-daw')">
@@ -705,8 +728,6 @@
                 <span class="text-[9px] font-retro text-[var(--accent)]">THEME</span>
             </div>
         </div>
-
-        <!-- APP WINDOWS -->
 
         <!-- DAW PRO -->
         <div id="app-daw" class="os-window liquid-glass flex-col font-sans" style="display:none;">
