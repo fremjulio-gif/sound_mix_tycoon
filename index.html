@@ -791,6 +791,7 @@
     // ==========================================
     let currentRoomAvatar = null;
     let targetPosition = null;
+    let rackLeds = [];
 
     const container = document.getElementById('three-canvas-container');
     const scene = new THREE.Scene();
@@ -1061,18 +1062,18 @@
         const gear = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.3, 0.7), gearMat);
         gear.position.set(0, 0.35 + (i * 0.4), 0);
         
-        // Boutons et LEDs
+        /// Boutons et LEDs
         for(let l = 0; l < 3; l++) {
-            const led = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.04), Math.random() > 0.5 ? ledMatRed : ledMatGreen);
+            // On choisit la couleur et on CLONE le matériau pour qu'il soit indépendant
+            const isRed = Math.random() > 0.5;
+            const mat = isRed ? ledMatRed.clone() : ledMatGreen.clone();
+            
+            const led = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.04), mat);
             led.position.set(-0.3 + (l * 0.1), 0.35 + (i * 0.4), 0.36);
+            
             rackGroup.add(led);
+            rackLeds.push(led); // On stocke la LED pour l'animer plus tard
         }
-        const bigKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 16), woodMat);
-        bigKnob.rotation.x = Math.PI / 2;
-        bigKnob.position.set(0.25, 0.35 + (i * 0.4), 0.36);
-        rackGroup.add(gear, bigKnob);
-    }
-
     scene.add(rackGroup);
 
 
@@ -1538,6 +1539,18 @@
                 }
             }
 
+
+            // --- ANIMATION DES LEDS DU RACK ---
+        rackLeds.forEach(led => {
+            // 2% de chance par frame qu'une LED "saute" (baisse d'intensité)
+            if (Math.random() < 0.02) {
+                led.material.emissiveIntensity = 0.1; // Presque éteint
+            } else {
+                // Revient doucement à son intensité max (1.0)
+                led.material.emissiveIntensity += (1.0 - led.material.emissiveIntensity) * 0.1;
+            }
+        });
+            
             // --- 2. SUIVI DE CAMÉRA ---
             const followIntensity = 0.15;
             const targetCamX = 20 + (currentRoomAvatar.position.x * followIntensity);
