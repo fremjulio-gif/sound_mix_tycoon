@@ -302,7 +302,18 @@
             box-sizing: border-box;
         }
         @media (min-width: 768px) {
-            .daw-grid-container { flex-direction: row !important; height: 100% !important; padding-bottom: 12px !important; }
+            .daw-grid-container {
+    height: auto !important;
+    min-height: max-content !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px;
+    padding: 12px;
+    padding-bottom: 120px !important;
+    background: rgba(0,0,0,0.4);
+    box-sizing: border-box;
+    overflow: visible !important;
+}
             #app-daw { width: 950px; min-width: 700px; }
         }
 
@@ -453,7 +464,14 @@
             #app-daw { min-width: 0 !important; }
             .daw-panel-neon { min-width: 0 !important; width: 100% !important; }
             .tl-track { min-width: 600px; }
-            .daw-grid-container { height: auto !important; min-height: max-content !important; display: flex !important; flex-direction: column !important; padding-bottom: 200px !important; }
+            .daw-grid-container { 
+    height: auto !important; 
+    min-height: max-content !important; 
+    display: flex !important; 
+    flex-direction: column !important; 
+    padding-bottom: 250px !important;
+    overflow: visible !important;
+}
             .vu-led { width: 4px; height: 100%; margin-bottom: 0; margin-right: 2px; }
             #vu-meter-container { flex-direction: row !important; height: 16px !important; width: 100% !important; padding: 2px !important; }
             
@@ -707,7 +725,7 @@
                     <div class="grid grid-cols-4 gap-2 mb-4 w-full max-w-[200px] md:max-w-[120px]" id="sequencer-grid"></div>
                     <p class="text-[8px] text-gray-500 font-retro tracking-widest mt-auto text-center border border-white/10 p-2 rounded w-full">Live Input</p>
                 </div>
-                <div class="daw-panel-neon flex-1 p-4 flex flex-col relative md:min-w-[450px] min-w-0">
+                <div class="daw-panel-neon flex-1 p-4 flex flex-col relative md:min-w-[450px] min-w-full">
                     <label class="block text-[10px] text-gray-300 mb-3 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2">Timeline Arrangement</label>
                     <div class="h-32 border border-white/10 rounded-lg flex flex-col overflow-x-auto overflow-y-hidden relative bg-black/60 cursor-crosshair shadow-inner mb-4" id="timeline-container">
                         <div class="h-5 bg-black/80 border-b border-white/10 flex items-center font-retro text-[8px] text-gray-500 px-3 tracking-widest min-w-[700px] select-none">1...|...5...|...9...|...13...|...17...|...21...|...25...|...29...|...33</div>
