@@ -514,7 +514,7 @@
     <!-- ROOM UI -->
     <div id="room-ui">
         <div class="bg-black/80 text-[var(--accent)] border border-[var(--accent)]/50 px-6 py-3 rounded-xl font-retro animate-[pulse_2s_ease-in-out_infinite] tracking-widest text-sm shadow-[0_0_15px_rgba(129,140,248,0.3)] mb-[15vh]">
-            CLICK PC TO START / FLOOR TO MOVE / BED TO SLEEP
+            Appuie sur l'ordi pour l'ouvrir - Le sol pour se déplacer - Le lit quand tu es fatigué
         </div>
     </div>
 
@@ -1412,7 +1412,106 @@
 
     scene.add(guitarGroup);
     
+    // ==========================================
+    // CHAISE DE BUREAU / GAMER (En bazar)
+    // ==========================================
+    const chairGroup = new THREE.Group();
+
+    // Position : Entre le bureau (z: -3.5) et le canapé (z: 1.5), légèrement décalée (x: -2.8)
+    chairGroup.position.set(-2.8, -1, -1.8); 
+    // Rotation "en bazar" (pas alignée avec les axes)
+    chairGroup.rotation.y = Math.PI / 3.5; 
+
+    // --- Matériaux ---
+    const chairFabricMat = new THREE.MeshStandardMaterial({ color: '#27272a', roughness: 0.9 }); // Tissu sombre
+    const chairAccentMat = new THREE.MeshStandardMaterial({ color: '#818cf8', roughness: 0.7 }); // Accent assorti au thème
+    const chairPlasticMat = new THREE.MeshStandardMaterial({ color: '#09090b', roughness: 0.8 }); // Plastique noir (accoudoirs, roues)
+    const chairMetalMat = new THREE.MeshStandardMaterial({ color: '#d1d5db', roughness: 0.3, metalness: 0.7 }); // Métal du pied
+
+    // --- Assise (Seat) ---
+    const seatGeo = new THREE.BoxGeometry(0.6, 0.1, 0.55);
+    const seatMesh = new THREE.Mesh(seatGeo, chairFabricMat);
+    seatMesh.position.set(0, 0.45, 0); // Hauteur par rapport au sol
+    chairGroup.add(seatMesh);
+
+    // --- Dossier (Backrest) ---
+    const backGeo = new THREE.BoxGeometry(0.55, 0.7, 0.08);
+    const backMesh = new THREE.Mesh(backGeo, chairFabricMat);
+    backMesh.position.set(0, 0.85, -0.22);
+    backMesh.rotation.x = -0.15; // Légèrement incliné vers l'arrière
+    chairGroup.add(backMesh);
+
+    // Détail couleur sur le dossier (Gamer stripe)
+    const stripeGeo = new THREE.BoxGeometry(0.15, 0.701, 0.081);
+    const backStripe = new THREE.Mesh(stripeGeo, chairAccentMat);
+    backStripe.position.set(0, 0.85, -0.22);
+    backStripe.rotation.x = -0.15;
+    chairGroup.add(backStripe);
+
+    // --- Piston central ---
+    const stemGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.35, 8);
+    const stemMesh = new THREE.Mesh(stemGeo, chairMetalMat);
+    stemMesh.position.set(0, 0.25, 0);
+    chairGroup.add(stemMesh);
+
+    // --- Accoudoirs (Armrests) ---
+    const armSupportGeo = new THREE.BoxGeometry(0.04, 0.2, 0.04);
+    const armTopGeo = new THREE.BoxGeometry(0.08, 0.04, 0.3);
     
+    // Accoudoir Gauche
+    const armLG = new THREE.Group();
+    const armLSup = new THREE.Mesh(armSupportGeo, chairPlasticMat); armLSup.position.set(0, 0.1, 0);
+    const armLTop = new THREE.Mesh(armTopGeo, chairPlasticMat); armLTop.position.set(0, 0.2, 0.05);
+    armLG.add(armLSup, armLTop);
+    armLG.position.set(-0.33, 0.45, -0.05);
+    chairGroup.add(armLG);
+
+    // Accoudoir Droit
+    const armRG = new THREE.Group();
+    const armRSup = new THREE.Mesh(armSupportGeo, chairPlasticMat); armRSup.position.set(0, 0.1, 0);
+    const armRTop = new THREE.Mesh(armTopGeo, chairPlasticMat); armRTop.position.set(0, 0.2, 0.05);
+    armRG.add(armRSup, armRTop);
+    armRG.position.set(0.33, 0.45, -0.05);
+    chairGroup.add(armRG);
+
+    // --- Pied en étoile (Star Base) & Roulettes ---
+    const legGeo = new THREE.BoxGeometry(0.05, 0.04, 0.35);
+    const wheelGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.03, 8);
+    wheelGeo.rotateZ(Math.PI / 2);
+
+    for (let i = 0; i < 5; i++) {
+        const angle = (i * Math.PI * 2) / 5;
+        
+        // Branche métallique
+        const leg = new THREE.Mesh(legGeo, chairMetalMat);
+        // On décale le centre de la boîte pour qu'elle parte du piston
+        leg.position.set(Math.sin(angle) * 0.16, 0.08, Math.cos(angle) * 0.16);
+        leg.rotation.y = angle;
+        chairGroup.add(leg);
+
+        // Roulette
+        const wheel = new THREE.Mesh(wheelGeo, chairPlasticMat);
+        wheel.position.set(Math.sin(angle) * 0.32, 0.04, Math.cos(angle) * 0.32);
+        // Orientation aléatoire pour faire réaliste
+        wheel.rotation.y = angle + Math.random(); 
+        chairGroup.add(wheel);
+    }
+
+    // --- Ombres et Contours (Edges) ---
+    chairGroup.traverse((child) => {
+        if (child.isMesh && child.geometry) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            // On ajoute les contours noirs style cel-shading (sauf pour les roues et le cylindre pour garder ça clean)
+            if (child.geometry.type === 'BoxGeometry') {
+                const edges = new THREE.EdgesGeometry(child.geometry);
+                const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
+                child.add(line);
+            }
+        }
+    });
+
+    scene.add(chairGroup);
 
     
     // ==========================================
