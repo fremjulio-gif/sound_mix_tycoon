@@ -381,6 +381,20 @@
             pointer-events: all;
         }
 
+
+
+        <!-- RANDOM EVENTS OVERLAY -->
+    <div id="event-overlay" class="fixed inset-0 bg-black/90 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden">
+        <div class="liquid-glass-heavy p-8 md:p-10 rounded-2xl w-[90%] max-w-lg border border-[var(--accent)] text-center shadow-[0_0_60px_rgba(0,0,0,0.8)]">
+            <h2 id="event-title" class="text-3xl font-retro mb-4 tracking-widest uppercase drop-shadow-lg">ÉVÈNEMENT !</h2>
+            <p id="event-desc" class="text-sm text-gray-200 mb-8 font-sans leading-relaxed">Description de l'évènement ici...</p>
+            <div id="event-choices" class="flex flex-col gap-3 w-full">
+                <!-- Les boutons seront générés ici par le JS -->
+            </div>
+        </div>
+    </div>
+
+        
         /* =========================================
            9. MOBILE RESPONSIVE RULES (Max 767px)
            ========================================= */
@@ -454,24 +468,6 @@
 </head>
 <body data-theme="neon">
 <div id="game-container">
-
-        <!-- EVENT POP-UP (EDR SYSTEM) -->
-    <div id="event-modal" class="fixed inset-0 z-[999999] bg-black/80 backdrop-blur-md hidden flex-col items-center justify-center p-4">
-        <div class="liquid-glass-heavy p-8 rounded-2xl w-full max-w-lg border border-[var(--accent)] shadow-[0_0_40px_rgba(129,140,248,0.2)] transform transition-all duration-300 scale-95 opacity-0" id="event-box">
-            <div class="flex items-center gap-4 mb-6 border-b border-white/10 pb-4">
-                <div class="w-12 h-12 rounded-full bg-[var(--accent)]/20 flex items-center justify-center text-2xl border border-[var(--accent)] shadow-[0_0_15px_rgba(129,140,248,0.4)]">📱</div>
-                <div>
-                    <h2 class="text-xl font-retro font-bold text-white tracking-widest uppercase" id="event-title">Incoming Message</h2>
-                    <p class="text-[10px] text-[var(--accent)] font-retro tracking-widest mt-1" id="event-subtitle">EDR: ? - Unknown</p>
-                </div>
-            </div>
-            <p class="text-sm text-gray-200 mb-8 leading-relaxed font-sans" id="event-desc">Un message glisse dans tes DMs...</p>
-            <div class="flex flex-col gap-3" id="event-choices">
-                <!-- Les boutons seront injectés ici par le JS -->
-            </div>
-        </div>
-    </div>
-
 
     <!-- SLEEP OVERLAY -->
     <div id="sleep-overlay">
@@ -1872,6 +1868,15 @@
         { id: 'sp2', name: "CryptoCoinZ",   reqFollowers: 5000,  reward: 2500, repCost: 20, cooldownDays: 1 },
         { id: 'sp3', name: "AudioGear Pro", reqFollowers: 10000, reward: 8000, repCost: 5,  cooldownDays: 2 }
     ];
+
+    // LISTES DES RAPPEURS POUR ÉVÈNEMENTS ALÉATOIRES
+    const rappersConnus = ["Yannvs", "Zandame", "Kali", "Disiznot", "Khabat & Jean-Jacque", "Lescram", "JeuneTortue", "Luthier", "Joule", "SCHash", "Adèle Tatillon", "Jolared44"];
+    const rappersPasConnus = ["Fto", "Tom B", "Rosmii", "36Morphé", "44ASKIP", "9Rookie", "Nus", "GrandeSœur", "JaimeRose"];
+    const voleursConnus = ["Mhoudi", "Niño", "Maïreau", "Bushit", "Letard"];
+    const voleursPasConnus = ["909Dia", "Anybody", "Asinone", "m4n4phy", "36murpho", "sam01"];
+    const rappersCancel = ["Keycade", "Abdel32", "SummerZuko", "Femtogros", "Rouhni", "Snap", "Lomepoule", "Firenek", "Kenny East", "505Bill"];
+
+    
     const cracks = [
         { id: 'c1', name: "Massive_Bass_CRACK",      risk: 0.15, reqRep: 0,   desc: "+20% Cash. Heavy bass." },
         { id: 'c2', name: "AutoTune_Pro_Patcher",    risk: 0.25, reqRep: 10,  desc: "Fixes bad vocal choices." },
@@ -1880,7 +1885,7 @@
         { id: 'c5', name: "Ghost_Prod_AI_Engine",    risk: 0.60, reqRep: 150, desc: "Guaranteed Banger. High rep risk." }
     ];
 
-        const DEFAULT_STATE = {
+    const DEFAULT_STATE = {
         username: '', activeCharacter: 0,
         money: 100, rep: 10, followers: 0, energy: 100,
         timeMins: 8 * 60,
@@ -1892,7 +1897,6 @@
         history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
         isExporting: false, isSleeping: false, isEventActive: false
     };
-
 
     let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
     let selectedAvatarIndex = 0;
@@ -2181,9 +2185,6 @@
         const username = document.getElementById('login-username').value.trim();
         if (!username) { document.getElementById('login-error').classList.remove('hidden'); playError(); return; }
 
-        state.isEventActive = false
-
-
         const savedData = SafeStorage.get('smt_save_' + username);
         if (savedData) {
             try {
@@ -2211,6 +2212,9 @@
                 state.cooldowns.crackzTimeReady= parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
                 state.cooldowns.storyTimeReady = parseInt(state.cooldowns.storyTimeReady, 10)  || 0;
                 state.cooldowns.sponsors       = state.cooldowns.sponsors || {};
+
+                
+                state.isEventActive = false;
 
                 Object.keys(state.cooldowns.sponsors).forEach(k => {
                     state.cooldowns.sponsors[k] = parseInt(state.cooldowns.sponsors[k], 10) || 0;
@@ -2263,128 +2267,11 @@
         window.gameInterval = setInterval(gameTick, 1000);
     }
 
-        // ==========================================
-    // SYSTÈME D'ÉVÉNEMENTS ALÉATOIRES (EDR)
-    // ==========================================
-    const knownRappers = ["Yannvs", "Zandame", "Kali", "Disiznot", "Khabat & Jean-Jacque", "Lescram", "JeuneTortue", "Luthier", "Joule", "SCHash", "Adèle Tatillon", "Jolared44"];
-    const unknownRappers = ["Fto", "Tom B", "Romsmii", "36Morphé", "44ASKIP", "9Rookie", "Nus", "GrandeSœur", "JaimeRose"];
-
-    function checkRandomEvents() {
-        // Environ 1.5% de chance de pop à chaque Tick (soit toutes les 5 mins in-game)
-        // Ça laisse le temps au joueur de souffler entre deux events.
-        if (Math.random() < 0.015) {
-            triggerEventEDR2_Rapper();
-        }
-    }
-
-    function triggerEventEDR2_Rapper() {
-        state.isEventActive = true; // Met le jeu entier en pause
-        
-        // Plus on a de REP, plus on a de chance de taper un "connu" (max 35% de chance)
-        const repFactor = Math.min(0.35, state.rep / 5000); 
-        const isKnown = Math.random() < repFactor;
-        
-        const rapperList = isKnown ? knownRappers : unknownRappers;
-        const rapper = rapperList[Math.floor(Math.random() * rapperList.length)];
-        
-        // Les connus paient 10x plus cher
-        const basePrice = isKnown ? 500 : 50;
-        
-        const title = "NOUVEAU DM INSTA";
-        const subtitle = "EDR 2 - Placement de Prod";
-        const desc = `Le rappeur <span class="text-[var(--accent)] font-bold">@${rapper}</span> cherche des prods pour son projet. Il te demande tes tarifs en DM. Qu'est-ce que tu lui proposes ?`;
-
-        const choices = [
-            {
-                text: `Lui envoyer un MP3 ($${basePrice})`,
-                desc: "Qualité standard. Grande chance qu'il accepte l'offre (80%).",
-                action: () => resolveRapperDeal(rapper, basePrice, 0.80, "MP3")
-            },
-            {
-                text: `Lui envoyer le WAV ($${basePrice * 2})`,
-                desc: "Haute qualité. Chance moyenne qu'il ait le budget (50%).",
-                action: () => resolveRapperDeal(rapper, basePrice * 2, 0.50, "WAV")
-            },
-            {
-                text: `Lui vendre les Stems ($${basePrice * 5})`,
-                desc: "Pistes séparées. Gros cachet, mais très risqué (20%).",
-                action: () => resolveRapperDeal(rapper, basePrice * 5, 0.20, "Stems Exclusifs")
-            }
-        ];
-
-        showEventModal(title, subtitle, desc, choices);
-    }
-
-    function resolveRapperDeal(rapper, price, chance, type) {
-        hideEventModal();
-        
-        if (Math.random() < chance) {
-            // Succès !
-            logMoney(price, `Placement ${type} - ${rapper}`);
-            const repGain = Math.floor(price / 50);
-            state.rep += repGain;
-            showToast(`🔥 BANGER ! @${rapper} a acheté le ${type} pour $${price}. (+${repGain} REP)`, "success");
-            playSuccess();
-        } else {
-            // Échec...
-            showToast(`❌ "C'est reuch mon reuf..." - @${rapper} t'a mis un gros Vu.`, "error");
-            playError();
-        }
-        
-        // Enlève la pause après un court instant pour adoucir la transition
-        setTimeout(() => { state.isEventActive = false; }, 500);
-    }
-
-    function showEventModal(title, subtitle, desc, choices) {
-        const modal = document.getElementById('event-modal');
-        const box = document.getElementById('event-box');
-        
-        document.getElementById('event-title').innerHTML = title;
-        document.getElementById('event-subtitle').innerHTML = subtitle;
-        document.getElementById('event-desc').innerHTML = desc;
-        
-        const choicesContainer = document.getElementById('event-choices');
-        choicesContainer.innerHTML = '';
-        
-        choices.forEach(c => {
-            const btn = document.createElement('button');
-            btn.className = "flex flex-col items-start w-full bg-black/40 border border-[var(--glass-border)] p-4 rounded-lg hover:border-[var(--accent)] hover:bg-white/5 transition-all text-left group";
-            btn.innerHTML = `<span class="font-retro font-bold text-white group-hover:text-[var(--accent)] transition-colors">${c.text}</span><span class="text-[10px] text-gray-400 mt-1">${c.desc}</span>`;
-            btn.onclick = c.action;
-            choicesContainer.appendChild(btn);
-        });
-        
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        
-        // Pop effect
-        setTimeout(() => {
-            box.classList.remove('scale-95', 'opacity-0');
-            box.classList.add('scale-100', 'opacity-100');
-        }, 10);
-        
-        playTone(500, 'square', 0.2, 0.1);
-    }
-
-    function hideEventModal() {
-        const modal = document.getElementById('event-modal');
-        const box = document.getElementById('event-box');
-        
-        box.classList.remove('scale-100', 'opacity-100');
-        box.classList.add('scale-95', 'opacity-0');
-        
-        setTimeout(() => {
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
-        }, 300);
-    }
-
-
     // ==========================================
     // 13. GAME TICK
     // ==========================================
     function gameTick() {
-        if (state.isSleeping) return; // Le temps s'arrête presque quand on dort
+        if (state.isSleeping || state.isEventActive) return; // Le temps s'arrête presque quand on dort
 
         state.timeMins = (parseInt(state.timeMins, 10) || 0) + 5;
         state.day      =  parseInt(state.day, 10) || 1;
@@ -2399,6 +2286,8 @@
 
         updateHUD();
         updateCooldownUIs();
+
+        if (Math.random() < 0.00125) triggerRandomEvent();
     }
 
     // ==========================================
@@ -2944,6 +2833,171 @@
         setTimeout(() => { if (t.parentElement) { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => { if (t.parentElement) t.remove(); }, 400); } }, 4000);
     }
 
+
+    // ==========================================
+    // SYSTÈME D'ÉVÈNEMENTS ALÉATOIRES
+    // ==========================================
+    function triggerRandomEvent() {
+        state.isEventActive = true; // Met le jeu en pause
+        const overlay = document.getElementById('event-overlay');
+        const title = document.getElementById('event-title');
+        const desc = document.getElementById('event-desc');
+        const choicesDiv = document.getElementById('event-choices');
+
+        // Affichage fluide
+        overlay.classList.remove('hidden');
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'all';
+        }, 10);
+
+        playTone(500, 'square', 0.2, 0.1); // Son d'alerte
+        choicesDiv.innerHTML = ''; // Reset des anciens boutons
+
+        const rand = Math.random();
+        
+        // Rareté 2/5 (Collaboration) : ~45% d'apparition
+        if (rand < 0.45) {
+            const isKnown = Math.random() < 0.2; // 20% de chance que ce soit un grand rappeur
+            const rapper = isKnown ? rappersConnus[Math.floor(Math.random() * rappersConnus.length)] : rappersPasConnus[Math.floor(Math.random() * rappersPasConnus.length)];
+
+            title.innerText = "🤝 COLLABORATION";
+            title.className = "text-3xl font-retro text-[var(--retro-green)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-green)]";
+            desc.innerHTML = `<span class="text-white font-bold text-base">"${rapper}"</span> te contacte pour collaborer sur un son, mais il essaie de t'arnaquer et marchande. Tu fixes les tarots. Que proposes-tu ?`;
+
+            const btn1 = document.createElement('button');
+            btn1.className = "btn-action py-3 px-4 rounded-lg font-retro text-xs text-[var(--retro-green)] border-[var(--retro-green)] hover:bg-[var(--retro-green)] hover:text-black transition-colors";
+            btn1.innerText = "Un MP3 - Pas cher (80% d'acceptation)";
+            btn1.onclick = () => resolveCollabEvent(rapper, 80, 150 + Math.random() * 150);
+
+            const btn2 = document.createElement('button');
+            btn2.className = "btn-action py-3 px-4 rounded-lg font-retro text-xs text-[var(--retro-orange)] border-[var(--retro-orange)] hover:bg-[var(--retro-orange)] hover:text-black transition-colors";
+            btn2.innerText = "Un WAV - Mid price (50% d'acceptation)";
+            btn2.onclick = () => resolveCollabEvent(rapper, 50, 400 + Math.random() * 400);
+
+            const btn3 = document.createElement('button');
+            btn3.className = "btn-action py-3 px-4 rounded-lg font-retro text-xs text-[var(--retro-red)] border-[var(--retro-red)] hover:bg-[var(--retro-red)] hover:text-white transition-colors";
+            btn3.innerText = "Les Stems - Très cher (20% d'acceptation)";
+            btn3.onclick = () => resolveCollabEvent(rapper, 20, 1000 + Math.random() * 1500);
+
+            choicesDiv.append(btn1, btn2, btn3);
+
+        } 
+        // Rareté 3/5 (Vole de Prod) : ~35% d'apparition
+        else if (rand < 0.80) {
+            const isKnown = Math.random() < 0.2;
+            const voleur = isKnown ? voleursConnus[Math.floor(Math.random() * voleursConnus.length)] : voleursPasConnus[Math.floor(Math.random() * voleursPasConnus.length)];
+
+            title.innerText = "🚨 VOL DE PROD";
+            title.className = "text-3xl font-retro text-[var(--retro-orange)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-orange)]";
+            desc.innerHTML = `Belek à toi, <span class="text-white font-bold text-base">"${voleur}"</span> t'a volé une prod pour son nouvel album. Que souhaites-tu faire ?`;
+
+            const btn1 = document.createElement('button');
+            btn1.className = "btn-minimal py-3 px-4 rounded-lg text-xs tracking-widest";
+            btn1.innerText = "Porter plainte (-20 REP, 50% de gagner le procès)";
+            btn1.onclick = () => resolveTheftEvent('plainte', voleur);
+
+            const btn2 = document.createElement('button');
+            btn2.className = "btn-minimal py-3 px-4 rounded-lg text-xs tracking-widest";
+            btn2.innerText = "Ne rien faire (Perte d'argent + Perte Followers)";
+            btn2.onclick = () => resolveTheftEvent('rien', voleur);
+
+            const btn3 = document.createElement('button');
+            btn3.className = "btn-minimal py-3 px-4 rounded-lg text-xs tracking-widest";
+            btn3.innerText = "Arrangement à l'amiable (Légère perte $, +10 REP)";
+            btn3.onclick = () => resolveTheftEvent('amiable', voleur);
+
+            choicesDiv.append(btn1, btn2, btn3);
+
+        } 
+        // Rareté 4/5 (Rappeur Cancel) : ~20% d'apparition
+        else {
+            const cancelled = rappersCancel[Math.floor(Math.random() * rappersCancel.length)];
+
+            title.innerText = "❌ BAD BUZZ";
+            title.className = "text-3xl font-retro text-[var(--retro-red)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-red)]";
+            desc.innerHTML = `Catastrophe. Vous avez failli collaborer avec <span class="text-white font-bold text-base">"${cancelled}"</span>. La rumeur a fuité sur Twitter. Vous perdez en crédibilité.`;
+
+            const btn1 = document.createElement('button');
+            btn1.className = "btn-action py-3 px-4 rounded-lg font-retro text-xs text-white bg-[var(--retro-red)] border-[var(--retro-red)]";
+            btn1.innerText = "La honte... (Fermer)";
+            btn1.onclick = () => {
+                const repLost = 30;
+                const follLost = Math.floor(500 + Math.random() * 1500);
+                state.rep = Math.max(0, state.rep - repLost);
+                state.followers = Math.max(0, state.followers - follLost);
+                showToast(`Bad Buzz avec ${cancelled} : -${repLost} REP | -${follLost} Followers`, "error");
+                playError();
+                closeRandomEvent();
+            };
+
+            choicesDiv.appendChild(btn1);
+        }
+    }
+
+    // Gestion conséquences Collab
+    function resolveCollabEvent(rapper, chance, rawPrice) {
+        if (Math.random() * 100 <= chance) {
+            const finalPrice = Math.floor(rawPrice * state.multiplier);
+            logMoney(finalPrice, `Collab: ${rapper}`);
+            state.rep += 10;
+            showToast(`${rapper} a accepté ! +$${finalPrice} | +10 REP`, "success");
+            playSuccess();
+        } else {
+            showToast(`${rapper} t'a lu et t'a ghosté. C'était trop cher pour lui.`, "info");
+            playError();
+        }
+        closeRandomEvent();
+    }
+
+    // Gestion conséquences Vol
+    function resolveTheftEvent(action, voleur) {
+        if (action === 'plainte') {
+            state.rep = Math.max(0, state.rep - 20);
+            if (Math.random() > 0.5) {
+                const winAmt = Math.floor(1000 + Math.random() * 1000);
+                logMoney(winAmt, `Procès gagné contre ${voleur}`);
+                showToast(`Procès gagné ! +$${winAmt} (Mais -20 REP pour avoir balancé)`, "success");
+                playSuccess();
+            } else {
+                const lossAmt = Math.floor(300 + Math.random() * 300);
+                logMoney(-lossAmt, `Frais d'avocats perdus`);
+                showToast(`Procès perdu... Les frais t'ont coûté $${lossAmt}. (-20 REP)`, "error");
+                playError();
+            }
+        } 
+        else if (action === 'rien') {
+            const lossAmt = Math.floor(100 + Math.random() * 400);
+            const follLost = Math.floor(50 + Math.random() * 150);
+            logMoney(-lossAmt, `Prod volée (Manque à gagner)`);
+            state.followers = Math.max(0, state.followers - follLost);
+            showToast(`Tu t'es fait marcher dessus. -$${lossAmt} | -${follLost} Followers`, "error");
+            playError();
+        } 
+        else if (action === 'amiable') {
+            const lossAmt = Math.floor(50 + Math.random() * 150);
+            logMoney(-lossAmt, `Arrangement avec ${voleur}`);
+            state.rep += 10;
+            showToast(`Arrangement trouvé. -$${lossAmt} mais tu passes pour un mec réglo (+10 REP)`, "info");
+            playBleep();
+        }
+        closeRandomEvent();
+    }
+
+    // Fonction pour fermer la fenêtre et reprendre le temps
+    function closeRandomEvent() {
+        const overlay = document.getElementById('event-overlay');
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+        updateHUD();
+        saveGame();
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+            state.isEventActive = false; // Reprise du jeu
+        }, 300);
+    }
+
+    
     // ==========================================
     // 22. GLOBAL EXPORTS
     // ==========================================
@@ -2966,7 +3020,7 @@
     window.selectAvatar     = selectAvatar;
     window.attemptLogin     = attemptLogin;
     window.goSleep          = goSleep; // Export du sommeil
-
+    
     // Boot
     initUI();
 </script>
