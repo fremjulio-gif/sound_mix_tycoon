@@ -455,6 +455,24 @@
 <body data-theme="neon">
 <div id="game-container">
 
+        <!-- EVENT POP-UP (EDR SYSTEM) -->
+    <div id="event-modal" class="fixed inset-0 z-[999999] bg-black/80 backdrop-blur-md hidden flex-col items-center justify-center p-4">
+        <div class="liquid-glass-heavy p-8 rounded-2xl w-full max-w-lg border border-[var(--accent)] shadow-[0_0_40px_rgba(129,140,248,0.2)] transform transition-all duration-300 scale-95 opacity-0" id="event-box">
+            <div class="flex items-center gap-4 mb-6 border-b border-white/10 pb-4">
+                <div class="w-12 h-12 rounded-full bg-[var(--accent)]/20 flex items-center justify-center text-2xl border border-[var(--accent)] shadow-[0_0_15px_rgba(129,140,248,0.4)]">📱</div>
+                <div>
+                    <h2 class="text-xl font-retro font-bold text-white tracking-widest uppercase" id="event-title">Incoming Message</h2>
+                    <p class="text-[10px] text-[var(--accent)] font-retro tracking-widest mt-1" id="event-subtitle">EDR: ? - Unknown</p>
+                </div>
+            </div>
+            <p class="text-sm text-gray-200 mb-8 leading-relaxed font-sans" id="event-desc">Un message glisse dans tes DMs...</p>
+            <div class="flex flex-col gap-3" id="event-choices">
+                <!-- Les boutons seront injectés ici par le JS -->
+            </div>
+        </div>
+    </div>
+
+
     <!-- SLEEP OVERLAY -->
     <div id="sleep-overlay">
         <div class="text-4xl animate-pulse mb-4">Zzz...</div>
@@ -1862,7 +1880,7 @@
         { id: 'c5', name: "Ghost_Prod_AI_Engine",    risk: 0.60, reqRep: 150, desc: "Guaranteed Banger. High rep risk." }
     ];
 
-    const DEFAULT_STATE = {
+        const DEFAULT_STATE = {
         username: '', activeCharacter: 0,
         money: 100, rep: 10, followers: 0, energy: 100,
         timeMins: 8 * 60,
@@ -1872,8 +1890,9 @@
         cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, sponsors: {} },
         inventory: [],
         history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
-        isExporting: false, isSleeping: false
+        isExporting: false, isSleeping: false, isEventActive: false
     };
+
 
     let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
     let selectedAvatarIndex = 0;
@@ -2162,6 +2181,9 @@
         const username = document.getElementById('login-username').value.trim();
         if (!username) { document.getElementById('login-error').classList.remove('hidden'); playError(); return; }
 
+        state.isEventActive = false
+
+
         const savedData = SafeStorage.get('smt_save_' + username);
         if (savedData) {
             try {
@@ -2240,6 +2262,123 @@
         if (window.gameInterval) { clearInterval(window.gameInterval); window.gameInterval = null; }
         window.gameInterval = setInterval(gameTick, 1000);
     }
+
+        // ==========================================
+    // SYSTÈME D'ÉVÉNEMENTS ALÉATOIRES (EDR)
+    // ==========================================
+    const knownRappers = ["Yannvs", "Zandame", "Kali", "Disiznot", "Khabat & Jean-Jacque", "Lescram", "JeuneTortue", "Luthier", "Joule", "SCHash", "Adèle Tatillon", "Jolared44"];
+    const unknownRappers = ["Fto", "Tom B", "Romsmii", "36Morphé", "44ASKIP", "9Rookie", "Nus", "GrandeSœur", "JaimeRose"];
+
+    function checkRandomEvents() {
+        // Environ 1.5% de chance de pop à chaque Tick (soit toutes les 5 mins in-game)
+        // Ça laisse le temps au joueur de souffler entre deux events.
+        if (Math.random() < 0.015) {
+            triggerEventEDR2_Rapper();
+        }
+    }
+
+    function triggerEventEDR2_Rapper() {
+        state.isEventActive = true; // Met le jeu entier en pause
+        
+        // Plus on a de REP, plus on a de chance de taper un "connu" (max 35% de chance)
+        const repFactor = Math.min(0.35, state.rep / 5000); 
+        const isKnown = Math.random() < repFactor;
+        
+        const rapperList = isKnown ? knownRappers : unknownRappers;
+        const rapper = rapperList[Math.floor(Math.random() * rapperList.length)];
+        
+        // Les connus paient 10x plus cher
+        const basePrice = isKnown ? 500 : 50;
+        
+        const title = "NOUVEAU DM INSTA";
+        const subtitle = "EDR 2 - Placement de Prod";
+        const desc = `Le rappeur <span class="text-[var(--accent)] font-bold">@${rapper}</span> cherche des prods pour son projet. Il te demande tes tarifs en DM. Qu'est-ce que tu lui proposes ?`;
+
+        const choices = [
+            {
+                text: `Lui envoyer un MP3 ($${basePrice})`,
+                desc: "Qualité standard. Grande chance qu'il accepte l'offre (80%).",
+                action: () => resolveRapperDeal(rapper, basePrice, 0.80, "MP3")
+            },
+            {
+                text: `Lui envoyer le WAV ($${basePrice * 2})`,
+                desc: "Haute qualité. Chance moyenne qu'il ait le budget (50%).",
+                action: () => resolveRapperDeal(rapper, basePrice * 2, 0.50, "WAV")
+            },
+            {
+                text: `Lui vendre les Stems ($${basePrice * 5})`,
+                desc: "Pistes séparées. Gros cachet, mais très risqué (20%).",
+                action: () => resolveRapperDeal(rapper, basePrice * 5, 0.20, "Stems Exclusifs")
+            }
+        ];
+
+        showEventModal(title, subtitle, desc, choices);
+    }
+
+    function resolveRapperDeal(rapper, price, chance, type) {
+        hideEventModal();
+        
+        if (Math.random() < chance) {
+            // Succès !
+            logMoney(price, `Placement ${type} - ${rapper}`);
+            const repGain = Math.floor(price / 50);
+            state.rep += repGain;
+            showToast(`🔥 BANGER ! @${rapper} a acheté le ${type} pour $${price}. (+${repGain} REP)`, "success");
+            playSuccess();
+        } else {
+            // Échec...
+            showToast(`❌ "C'est reuch mon reuf..." - @${rapper} t'a mis un gros Vu.`, "error");
+            playError();
+        }
+        
+        // Enlève la pause après un court instant pour adoucir la transition
+        setTimeout(() => { state.isEventActive = false; }, 500);
+    }
+
+    function showEventModal(title, subtitle, desc, choices) {
+        const modal = document.getElementById('event-modal');
+        const box = document.getElementById('event-box');
+        
+        document.getElementById('event-title').innerHTML = title;
+        document.getElementById('event-subtitle').innerHTML = subtitle;
+        document.getElementById('event-desc').innerHTML = desc;
+        
+        const choicesContainer = document.getElementById('event-choices');
+        choicesContainer.innerHTML = '';
+        
+        choices.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = "flex flex-col items-start w-full bg-black/40 border border-[var(--glass-border)] p-4 rounded-lg hover:border-[var(--accent)] hover:bg-white/5 transition-all text-left group";
+            btn.innerHTML = `<span class="font-retro font-bold text-white group-hover:text-[var(--accent)] transition-colors">${c.text}</span><span class="text-[10px] text-gray-400 mt-1">${c.desc}</span>`;
+            btn.onclick = c.action;
+            choicesContainer.appendChild(btn);
+        });
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        // Pop effect
+        setTimeout(() => {
+            box.classList.remove('scale-95', 'opacity-0');
+            box.classList.add('scale-100', 'opacity-100');
+        }, 10);
+        
+        playTone(500, 'square', 0.2, 0.1);
+    }
+
+    function hideEventModal() {
+        const modal = document.getElementById('event-modal');
+        const box = document.getElementById('event-box');
+        
+        box.classList.remove('scale-100', 'opacity-100');
+        box.classList.add('scale-95', 'opacity-0');
+        
+        setTimeout(() => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
 
     // ==========================================
     // 13. GAME TICK
