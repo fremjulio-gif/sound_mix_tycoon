@@ -417,7 +417,19 @@
            ========================================= */
         @media (max-width: 767px) {
             #taskbar-bottom { display: none !important; }
-            #mobile-nav { display: flex !important; }
+           #mobile-nav { 
+                display: flex !important; 
+                flex-direction: row !important; /* Force l'alignement horizontal */
+                justify-content: space-around !important; /* Espace uniformément les icônes */
+                align-items: center !important;
+                width: 100% !important;
+                left: 0 !important;
+            }
+            
+            /* S'assurer que chaque bouton dans la nav reste bien proportionné */
+            #mobile-nav > div {
+                flex: 1 !important;
+            }
             
             #desktop-content { 
                 padding-top: 100px !important; 
