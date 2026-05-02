@@ -475,6 +475,21 @@
             </div> 
         </div> 
     </div>
+
+
+    <!-- TRACK REVIEW OVERLAY -->
+<div id="review-overlay" class="fixed inset-0 bg-black/90 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 hidden">
+    <div class="liquid-glass-heavy p-8 rounded-2xl w-[90%] max-w-lg border border-[var(--accent)] text-center">
+        <p id="review-track-name" class="text-xs font-retro text-[var(--text-muted)] mb-2 tracking-widest uppercase">Track #1</p>
+        <h2 class="text-2xl font-retro text-white mb-6 tracking-widest">📊 REVIEWS ARE IN</h2>
+        <div id="review-list" class="space-y-4 text-left mb-8"></div>
+        <div class="border-t border-white/10 pt-6 mb-6">
+            <p class="text-xs text-[var(--text-muted)] font-retro mb-2">AVERAGE SCORE</p>
+            <p id="review-average" class="text-6xl font-bold font-retro text-white">/10</p>
+        </div>
+        <button onclick="closeReview()" class="btn-action py-3 px-10 rounded-lg text-xs font-retro tracking-widest">CLOSE</button>
+    </div>
+</div>
     
    <!-- HUD RESPONSIVE FIXE -->
 <div id="hud" class="liquid-glass-heavy min-h-[64px] md:min-h-[76px] fixed top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 rounded-[30px] flex items-center justify-between px-3 md:px-8 transition-all w-[96%] md:w-max max-w-6xl border border-white/10 shadow-2xl gap-2 md:gap-8">
@@ -2593,6 +2608,11 @@
         if (follGain > 0) toastMsg += ` | +${follGain} Fans`;
         if (repGain !== 0) toastMsg += ` | ${repGain > 0 ? '+' : ''}${repGain} Rep`;
 
+        const trackScore = result.score === 3 ? Math.floor(7 + Math.random() * 3) :
+                   result.score === 1 ? Math.floor(4 + Math.random() * 3) :
+                                        Math.floor(1 + Math.random() * 3);
+showTrackReview(trackScore);
+        
         showToast(toastMsg, result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error'));
         saveGame(); updateHUD(); updateCooldownUIs();
     }
@@ -2997,6 +3017,103 @@
         }, 300);
     }
 
+
+    // ==========================================
+// TRACK REVIEW SYSTEM
+// ==========================================
+const reviewers = [
+    { type: 'critique', names: ['PitchFork_FR', 'RapActu', 'LeSonDuMois', 'NoFuture_Mag'] },
+    { type: 'internaute', names: ['@user4829', '@drillfreak99', '@anonyme_musik', '@rateyourprod'] },
+    { type: 'rappeur', names: rappersConnus }
+];
+
+function getReviewerComment(type, score) {
+    if (type === 'critique') {
+        if (score >= 8) return ["Un chef d'œuvre sonique.", "Production irréprochable.", "Incontournable de 2026."];
+        if (score >= 5) return ["Correct sans être mémorable.", "Quelques bonnes idées mal exploitées.", "Ça se laisse écouter."];
+        return ["Un désastre commercial.", "On a entendu ça 1000 fois.", "Skip immédiat."];
+    }
+    if (type === 'internaute') {
+        if (score >= 8) return ["bro ce son 🔥🔥🔥", "j'ai mis ça en boucle depuis 3h", "validé par les rues"];
+        if (score >= 5) return ["mouais c'est pas mal", "ça passe en soirée", "y'a des trucs bien"];
+        return ["c'est quoi ce bruit 💀", "delete this", "mon chat fait mieux"];
+    }
+    if (type === 'rappeur') {
+        if (score >= 8) return ["Respect au prod, c'est solide.", "Je veux un feat.", "Top niveau."];
+        if (score >= 5) return ["C'est correct, continue.", "Travaille encore.", "Pas mal pour un débutant."];
+        return ["Arrête de polluer les ondes.", "C'est moi qui suis la référence.", "Retourne à l'école."];
+    }
+    return ["..."];
+}
+
+function showTrackReview(trackScore) {
+    const overlay = document.getElementById('review-overlay');
+    const reviewList = document.getElementById('review-list');
+    const avgEl = document.getElementById('review-average');
+    const trackNameEl = document.getElementById('review-track-name');
+
+    trackNameEl.innerText = `Track #${state.stats.tracks} — ${currentDawGenre.toUpperCase()} ${currentDawVoice.toUpperCase()}`;
+
+    // Génère 3 reviews aléatoires
+    const reviews = [];
+    const usedTypes = [];
+
+    while (reviews.length < 3) {
+        const pool = reviewers[Math.floor(Math.random() * reviewers.length)];
+        if (usedTypes.includes(pool.type)) continue;
+        usedTypes.push(pool.type);
+
+        // Score individuel autour du score global ±2
+        const individualScore = Math.min(10, Math.max(1, trackScore + Math.floor(Math.random() * 5) - 2));
+        const name = pool.names[Math.floor(Math.random() * pool.names.length)];
+        const comments = getReviewerComment(pool.type, individualScore);
+        const comment = comments[Math.floor(Math.random() * comments.length)];
+
+        reviews.push({ type: pool.type, name, score: individualScore, comment });
+    }
+
+    const avg = (reviews.reduce((s, r) => s + r.score, 0) / reviews.length).toFixed(1);
+
+    const typeColors = { critique: 'text-[var(--retro-blue)]', internaute: 'text-[var(--retro-green)]', rappeur: 'text-[var(--retro-orange)]' };
+    const typeLabels = { critique: '📰 CRITIQUE', internaute: '💬 INTERNAUTE', rappeur: '🎤 RAPPEUR' };
+
+    reviewList.innerHTML = reviews.map(r => `
+        <div class="bg-black/40 border border-white/10 rounded-lg p-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[10px] font-retro ${typeColors[r.type]}">${typeLabels[r.type]}</span>
+                <span class="text-[10px] font-retro text-white">${r.name}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <p class="text-sm text-gray-300 italic flex-1 pr-4">"${r.comment}"</p>
+                <span class="text-2xl font-bold font-retro ${r.score >= 7 ? 'text-[var(--retro-green)]' : r.score >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]'}">${r.score}/10</span>
+            </div>
+        </div>
+    `).join('');
+
+    const avgColor = avg >= 7 ? 'text-[var(--retro-green)]' : avg >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]';
+    avgEl.className = `text-6xl font-bold font-retro ${avgColor}`;
+    avgEl.innerText = `${avg}/10`;
+
+    // Affichage après 3 secondes
+    setTimeout(() => {
+        overlay.classList.remove('hidden');
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'all';
+        }, 50);
+        playTone(600, 'sine', 0.3, 0.08);
+    }, 3000);
+}
+
+function closeReview() {
+    const overlay = document.getElementById('review-overlay');
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+    setTimeout(() => overlay.classList.add('hidden'), 500);
+    playBleep();
+}
+
+
     
     // ==========================================
     // 22. GLOBAL EXPORTS
@@ -3020,6 +3137,7 @@
     window.selectAvatar     = selectAvatar;
     window.attemptLogin     = attemptLogin;
     window.goSleep          = goSleep; // Export du sommeil
+    window.closeReview = closeReview;
     
     // Boot
     initUI();
