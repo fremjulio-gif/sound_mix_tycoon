@@ -2181,7 +2181,6 @@
         const username = document.getElementById('login-username').value.trim();
         if (!username) { document.getElementById('login-error').classList.remove('hidden'); playError(); return; }
 
-        state.isEventActive = false
 
 
         const savedData = SafeStorage.get('smt_save_' + username);
@@ -2226,6 +2225,7 @@
                 state.history                = state.history || { money: [], followers: [] };
                 state.isExporting            = false;
                 state.isSleeping             = false;
+                state.isEventActive = false;
                 state.activeCharacter        = parseInt(state.activeCharacter ?? state.avatar, 10) || 0;
                 if (state.activeCharacter < 0 || state.activeCharacter >= avatars.length) state.activeCharacter = 0;
 
