@@ -1008,26 +1008,27 @@
     scene.add(bedGroup);
 
 
-    // ==========================================
-    // TAPIS CENTRAL
+   // ==========================================
+    // TAPIS CENTRAL (Agrandit et devant le canapé)
     // ==========================================
     const rugGroup = new THREE.Group();
-    rugGroup.position.set(0.5, -0.99, 0.5);
+    // Décalé vers la gauche et aligné avec le canapé
+    rugGroup.position.set(-1.5, -0.99, 1.5);
 
-    const rugGeo = new THREE.BoxGeometry(3, 0.02, 3.5);
-    const rugMat = new THREE.MeshStandardMaterial({ color: '#2b2855', roughness: 1.0 }); // Couleur var(--bg-color-2)
+    // Tapis plus grand (5.5 de large sur 4.0 de profondeur)
+    const rugGeo = new THREE.BoxGeometry(5.5, 0.02, 4.0);
+    const rugMat = new THREE.MeshStandardMaterial({ color: '#1e1b4b', roughness: 1.0 });
     const rug = new THREE.Mesh(rugGeo, rugMat);
     rug.receiveShadow = true;
     
-    // Bande décorative sur le tapis
-    const stripeGeo = new THREE.BoxGeometry(3, 0.021, 0.3);
+    // Bande décorative ajustée à la nouvelle largeur
+    const stripeGeo = new THREE.BoxGeometry(5.5, 0.021, 0.3);
     const stripeMat = new THREE.MeshStandardMaterial({ color: '#818cf8', roughness: 1.0 });
     const stripe = new THREE.Mesh(stripeGeo, stripeMat);
-    stripe.position.set(0, 0, 1.2);
+    stripe.position.set(0, 0, 1.4); // Légèrement décalée vers le bord
     
     rugGroup.add(rug, stripe);
     scene.add(rugGroup);
-
 
     // ==========================================
     // RACK HARDWARE ANALOGIQUE
