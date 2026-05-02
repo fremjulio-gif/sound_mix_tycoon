@@ -2305,19 +2305,19 @@
 
         if (result.score === 3) {
             resultTxt = "🔥 PERFECT BANGER! (Top Charts)"; state.stats.bangers++; playSuccess();
-            if (result.rewardType === 'money')     { moneyGain = 800;  repGain += 10; }
-            if (result.rewardType === 'followers') { moneyGain = 150;  follGain = 5000; repGain += 20; }
-            if (result.rewardType === 'stable')    { moneyGain = 400;  repGain += 5; }
-            if (result.rewardType === 'rep')       { moneyGain = 200;  repGain += 40; follGain = 1000; }
+            if (result.rewardType === 'money')     { moneyGain = 600;  repGain += 15; }
+            if (result.rewardType === 'followers') { moneyGain = 100;  follGain = 5000; repGain += 20; }
+            if (result.rewardType === 'stable')    { moneyGain = 300;  repGain += 15; }
+            if (result.rewardType === 'rep')       { moneyGain = 100;  repGain += 45; follGain = 1000; }
         } else if (result.score === 1) {
             resultTxt = "👍 Decent track. It'll stream."; playBleep();
-            if (result.rewardType === 'money')     { moneyGain = 200;  repGain += 2; }
-            if (result.rewardType === 'followers') { moneyGain = 50;   follGain = 800; repGain += 5; }
-            if (result.rewardType === 'stable')    { moneyGain = 150;  repGain += 1; }
-            if (result.rewardType === 'rep')       { moneyGain = 50;   repGain += 15; }
+            if (result.rewardType === 'money')     { moneyGain = 150;  repGain += 7; }
+            if (result.rewardType === 'followers') { moneyGain = 35;   follGain = 800; repGain += 8; }
+            if (result.rewardType === 'stable')    { moneyGain = 100;  repGain += 1; }
+            if (result.rewardType === 'rep')       { moneyGain = 30;   repGain += 15; }
         } else {
             resultTxt = "🗑️ MASSIVE FLOP. Wrong vibe for 2026.";
-            moneyGain = 10; repGain -= 5; state.stats.flops++; playError();
+            moneyGain = 15; repGain -= 5; state.stats.flops++; playError();
         }
 
         moneyGain = Math.floor(moneyGain * state.multiplier);
