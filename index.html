@@ -1100,17 +1100,28 @@
 
 
     // ==========================================
-    // FAUTEUIL LOUNGE
+    // CANAPÉ STUDIO (Contre le mur de gauche)
     // ==========================================
     const sofaGroup = new THREE.Group();
-    sofaGroup.position.set(3, -1, 2.5);
-    sofaGroup.rotation.y = -Math.PI / 5; // Orienté vers le bureau
+    // Placé contre le mur de gauche (x = -4.2), vers le bas de la pièce (z = 1.5)
+    sofaGroup.position.set(-4.2, -1, 1.5);
+    sofaGroup.rotation.y = Math.PI / 2; // Orienté vers le centre de la pièce
 
     const fabricMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.9 });
-    const seat = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.4, 1.2), fabricMat); seat.position.set(0, 0.2, 0);
-    const back = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 0.3), fabricMat); back.position.set(0, 0.8, -0.45);
-    const armL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.6, 1.2), fabricMat); armL.position.set(-0.85, 0.5, 0);
-    const armR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.6, 1.2), fabricMat); armR.position.set(0.85, 0.5, 0);
+    
+    // Assise élargie
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.4, 1.2), fabricMat); 
+    seat.position.set(0, 0.2, 0);
+    
+    // Dossier élargi
+    const back = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.8, 0.3), fabricMat); 
+    back.position.set(0, 0.8, -0.45);
+    
+    // Accoudoirs repoussés sur les côtés
+    const armL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.6, 1.2), fabricMat); 
+    armL.position.set(-1.55, 0.5, 0);
+    const armR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.6, 1.2), fabricMat); 
+    armR.position.set(1.55, 0.5, 0);
 
     [seat, back, armL, armR].forEach(mesh => {
         mesh.castShadow = true; mesh.receiveShadow = true;
@@ -1222,9 +1233,8 @@
         if (x > -4.45 - r && x < 0.05 + r && z > -4.6 - r && z < -2.4 + r) return true; // Bureau
         if (x > 2.6 - r && x < 5.0 + r && z > -5.0 - r && z < -0.8 + r) return true;    // Lit
         if (x < -5 + r || x > 5 - r || z < -5 + r || z > 5 - r) return true;            // Murs
-        // 3. NOUVEAU : Fauteuil Lounge (x: 1.8 à 4.2, z: 1.3 à 3.7)
-        if (x > 1.8 - r && x < 4.2 + r && z > 1.3 - r && z < 3.7 + r) return true;
-
+        // 3. NOUVEAU : CANAPé Lounge (x: 1.8 à 4.2, z: 1.3 à 3.7)
+        if (x > -5.0 - r && x < -3.6 + r && z > -0.2 - r && z < 3.2 + r) return true;
         // 4. NOUVEAU : Rack Hardware Analogique (x: -4.8 à -3.6, z: 1.1 à 1.9)
         if (x > 0.75 - r && x < 1.85 + r && z > -4.9 - r && z < -4.1 + r) return true;
 
