@@ -800,7 +800,7 @@
     scene.background = new THREE.Color('#7f889c');
 
     const aspect = window.innerWidth / window.innerHeight;
-    let frustumSize = window.innerWidth <= 767 ? 18 : 10;
+    let frustumSize = window.innerWidth <= 767 ? 22 : 14;
     const camera = new THREE.OrthographicCamera(
         frustumSize * aspect / -2, frustumSize * aspect / 2,
         frustumSize / 2, frustumSize / -2, 1, 1000
@@ -1244,47 +1244,67 @@
     }
     
     let time = 0;
+    
     function animate3D() {
         requestAnimationFrame(animate3D);
         time += 0.02;
         pcScreenMat.emissiveIntensity = 0.5 + Math.sin(time) * 0.3;
 
-        if (currentRoomAvatar && targetPosition) {
-            const dummy = new THREE.Object3D();
-            dummy.position.copy(currentRoomAvatar.position);
-            dummy.lookAt(targetPosition);
-            currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.12);
+        if (currentRoomAvatar) {
+            // --- LOGIQUE DE DÉPLACEMENT (Inchangée) ---
+            if (targetPosition) {
+                const dummy = new THREE.Object3D();
+                dummy.position.copy(currentRoomAvatar.position);
+                dummy.lookAt(targetPosition);
+                currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.12);
 
-            const distance = currentRoomAvatar.position.distanceTo(targetPosition);
-            const speed = 0.04; 
+                const distance = currentRoomAvatar.position.distanceTo(targetPosition);
+                const speed = 0.04; 
 
-            if (distance > 0.05) {
-                const dir = new THREE.Vector3().subVectors(targetPosition, currentRoomAvatar.position).normalize();
-                const nextX = currentRoomAvatar.position.x + dir.x * speed;
-                const nextZ = currentRoomAvatar.position.z + dir.z * speed;
-                
-                let moved = false;
-                
-                if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
-                    currentRoomAvatar.position.x = nextX;
-                    moved = true;
+                if (distance > 0.05) {
+                    const dir = new THREE.Vector3().subVectors(targetPosition, currentRoomAvatar.position).normalize();
+                    const nextX = currentRoomAvatar.position.x + dir.x * speed;
+                    const nextZ = currentRoomAvatar.position.z + dir.z * speed;
+                    
+                    let moved = false;
+                    
+                    if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
+                        currentRoomAvatar.position.x = nextX;
+                        moved = true;
+                    }
+                    
+                    if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
+                        currentRoomAvatar.position.z = nextZ;
+                        moved = true;
+                    }
+                    
+                    if (!moved) targetPosition = null;
+                } else {
+                    targetPosition = null; 
                 }
-                
-                if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
-                    currentRoomAvatar.position.z = nextZ;
-                    moved = true;
-                }
-                
-                if (!moved) targetPosition = null;
-            } else {
-                targetPosition = null; 
             }
+
+            // --- NOUVEAU : SUIVI DE CAMÉRA HYPER LÉGER ---
+            // Intensité à 15% (le perso bouge d'1 mètre, la caméra bouge de 0.15 mètre)
+            const followIntensity = 0.05;
+            
+            // Calcul de la position idéale de la caméra (base 20 + offset du perso)
+            const targetCamX = 20 + (currentRoomAvatar.position.x * followIntensity);
+            const targetCamZ = 20 + (currentRoomAvatar.position.z * followIntensity);
+            
+            // Interpolation (Lerp) pour que le mouvement de la caméra soit un peu en retard sur l'avatar (effet de lissage)
+            camera.position.x += (targetCamX - camera.position.x) * 0.05;
+            camera.position.z += (targetCamZ - camera.position.z) * 0.05;
+
+            // Décalage hyper subtil du centre de la pièce vers l'avatar
+            cameraLookTarget.x += ((currentRoomAvatar.position.x * followIntensity) - cameraLookTarget.x) * 0.05;
+            cameraLookTarget.z += ((currentRoomAvatar.position.z * followIntensity) - cameraLookTarget.z) * 0.05;
+            camera.lookAt(cameraLookTarget);
         }
 
         renderer.render(scene, camera);
     }
     animate3D();
-
     // ==========================================
     // 3. RAYCASTER & INTERACTION
     // ==========================================
