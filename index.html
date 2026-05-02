@@ -750,6 +750,32 @@
         }
     });
 
+
+    window.addEventListener('resize', () => {
+    isMobile = window.innerWidth <= 767;
+    window.isMobile = isMobile;
+
+    // --- RECALCUL DU ZOOM ET DE LA CAMÉRA 3D ---
+    const aspect = window.innerWidth / window.innerHeight;
+    frustumSize = isMobile ? 18 : 10; // Pense à reporter la même valeur ici
+    
+    camera.left = frustumSize * aspect / -2;
+    camera.right = frustumSize * aspect / 2;
+    camera.top = frustumSize / 2;
+    camera.bottom = frustumSize / -2;
+    camera.updateProjectionMatrix(); // Obligatoire pour appliquer les changements
+    
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    // -------------------------------------------
+
+    if (isMobile) {
+        document.querySelectorAll('.os-window').forEach(win => {
+            if (win.style.display !== 'none') { win.style.left = '0px'; win.style.top = '0px'; }
+        });
+    }
+});
+
+    
     const themesList = [
         { name: 'neon',   vars: ['#09090b', '#1e1b4b', '#0f172a', '#312e81'] },
         { name: 'synth',  vars: ['#1a0b2e', '#ff007f', '#7928ca', '#00d4ff'] },
@@ -780,7 +806,7 @@
     scene.background = new THREE.Color('#7f889c');
 
     const aspect = window.innerWidth / window.innerHeight;
-    const frustumSize = 10;
+    const frustumSize = window.innerWidth <= 767 ? 18 : 10;;
     const camera = new THREE.OrthographicCamera(
         frustumSize * aspect / -2, frustumSize * aspect / 2,
         frustumSize / 2, frustumSize / -2, 1, 1000
