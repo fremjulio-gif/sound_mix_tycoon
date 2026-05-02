@@ -388,7 +388,6 @@
                 padding-top: 85px; 
                 background: rgba(10, 10, 15, 0.98) !important; 
                 box-shadow: none !important; 
-                /* On a supprimé le "display: block !important" qui bloquait tout */
             }
 
             .os-window[style*="none"] { display: none !important; }
@@ -414,33 +413,33 @@
 
             /* HUD tweaks (Dynamic Island adaptée pour Mobile) */
             #hud {
-                width: 95% !important; /* Prend presque toute la largeur */
+                width: 95% !important; 
                 min-width: 0 !important;
-                max-width: 400px !important; /* Limite la taille sur les grands téléphones */
+                max-width: 400px !important; 
                 top: 10px !important;
-                height: 54px !important; /* Un peu plus haut pour respirer */
+                height: 54px !important; 
                 padding: 5px 15px !important;
                 flex-wrap: nowrap !important;
                 gap: 10px !important;
-                justify-content: space-between !important; /* Espacement équitable */
+                justify-content: space-between !important; 
             }
             
             #hud-avatar { width: 38px !important; height: 38px !important; }
-            #hud-name { display: none !important; /* On garde le nom masqué pour gagner de la place */ }
+            #hud-name { display: none !important; }
             
             /* On force l'affichage des stats et on ajuste leur taille */
             .hud-stats-container { 
                 opacity: 1 !important; 
                 width: auto !important; 
-                gap: 8px !important; /* Espace réduit entre les stats */
+                gap: 8px !important; 
                 justify-content: flex-end !important;
                 flex: 1 !important;
             }
             
             /* Ajustement de la taille du texte et des icônes des stats pour mobile */
             .hud-stats-container > div { padding: 2px 4px !important; }
-            .hud-stats-container span { font-size: 11px !important; /* Texte plus petit */ }
-            .hud-stats-container span:first-child { font-size: 10px !important; /* Icône/Label plus petit */ }
+            .hud-stats-container span { font-size: 11px !important; }
+            .hud-stats-container span:first-child { font-size: 10px !important; }
 
             /* DAW Layout fixes */
             #app-daw { min-width: 0 !important; }
@@ -489,7 +488,7 @@
     <!-- ROOM UI -->
     <div id="room-ui">
         <div class="bg-black/80 text-[var(--accent)] border border-[var(--accent)]/50 px-6 py-3 rounded-xl font-retro animate-[pulse_2s_ease-in-out_infinite] tracking-widest text-sm shadow-[0_0_15px_rgba(129,140,248,0.3)] mb-[15vh]">
-            CLICK PC TO START
+            CLICK PC TO START / FLOOR TO MOVE
         </div>
     </div>
 
@@ -737,17 +736,6 @@
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
     // ==========================================
-    // V12.2 — CORRECTIF CRITIQUE : TEMPS & COOLDOWNS
-    // Résumé des correctifs :
-    // 1. formatNum() ajouté (était manquant → crash silencieux)
-    // 2. getTotalMins() sécurisé : parseInt sur day ET timeMins
-    // 3. gameTick() : incrément timeMins sécurisé + rollover propre
-    // 4. Chargement save : tous les cooldowns castés en parseInt
-    // 5. setInterval unique avec clearInterval systématique avant relance
-    // 6. simulateVuMeter() déclaré AVANT son premier appel
-    // ==========================================
-
-    // ==========================================
     // 1. RESPONSIVE & GLOBALS
     // ==========================================
     let isMobile = window.innerWidth <= 767;
@@ -784,6 +772,9 @@
     // ==========================================
     // 2. THREE.JS SCENE
     // ==========================================
+    let currentRoomAvatar = null;
+    let targetPosition = null;
+
     const container = document.getElementById('three-canvas-container');
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#7f889c');
@@ -818,14 +809,14 @@
     dirLight.shadow.camera.top = 15;   dirLight.shadow.camera.bottom = -15;
     scene.add(dirLight);
 
-    // Room
+    // Room Floor
     const floorGeo = new THREE.PlaneGeometry(10, 10);
     const floorMat = new THREE.MeshStandardMaterial({ color: '#cda87c', roughness: 0.9, metalness: 0.1 });
     const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.name = 'floor_mesh'; // Added Name here for Raycaster
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -1;
     floor.receiveShadow = true;
-    // Lignes noires Sol
     const floorEdges = new THREE.EdgesGeometry(floorGeo);
     const floorLines = new THREE.LineSegments(floorEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
     floor.add(floorLines);
@@ -838,7 +829,6 @@
     const wallLeft = new THREE.Mesh(wallLeftGeo, wallMat);
     wallLeft.position.set(0, 1.5, -5); 
     wallLeft.receiveShadow = true;
-    // Lignes noires Mur Gauche
     const wallLeftEdges = new THREE.EdgesGeometry(wallLeftGeo);
     const wallLeftLines = new THREE.LineSegments(wallLeftEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
     wallLeft.add(wallLeftLines);
@@ -849,11 +839,11 @@
     const wallRight = new THREE.Mesh(wallRightGeo, wallMat);
     wallRight.position.set(-5, 1.5, 0); 
     wallRight.receiveShadow = true;
-    // Lignes noires Mur Droit
     const wallRightEdges = new THREE.EdgesGeometry(wallRightGeo);
     const wallRightLines = new THREE.LineSegments(wallRightEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
     wallRight.add(wallRightLines);
     scene.add(wallRight);
+
     // DESK, etc
     const deskTopMat = new THREE.MeshStandardMaterial({ color: '#b5b8c2', roughness: 0.7, metalness: 0.1 });
     const deskTop = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.1, 2.2), deskTopMat);
@@ -912,70 +902,134 @@
     const split = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.02, 0.15), new THREE.MeshStandardMaterial({ color: '#000' }));
     split.position.set(0, 0.08, -0.1); mouseGroup.add(split);
 
-
-    // ==========================================
-    // --- LE LIT (BEDROOM PRODUCER) ---
-    // ==========================================
+    // BEDROOM PRODUCER
     const bedGroup = new THREE.Group();
-    // Position du lit : Dans le coin droit (X: 2.5), posé sur le sol (Y: -0.8), collé au mur arrière (Z: -2.5)
     bedGroup.position.set(3.8, -0.8, -2.9);
 
-    // 1. Cadre du lit (Bed Frame)
     const frameGeo = new THREE.BoxGeometry(2.4, 0.4, 4.2);
-    const frameMat = new THREE.MeshStandardMaterial({ color: '#3f3f46', roughness: 0.8 }); // Gris foncé mat
+    const frameMat = new THREE.MeshStandardMaterial({ color: '#3f3f46', roughness: 0.8 });
     const frame = new THREE.Mesh(frameGeo, frameMat);
     frame.castShadow = true;
     frame.receiveShadow = true;
     
-    // Ajout de la bordure noire (Outline) pour matcher avec tes murs
-    const frameEdges = new THREE.EdgesGeometry(frameGeo);
-    const frameLines = new THREE.LineSegments(frameEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
-    frame.add(frameLines);
+    const bedFrameEdges = new THREE.EdgesGeometry(frameGeo);
+    const bedFrameLines = new THREE.LineSegments(bedFrameEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
+    frame.add(bedFrameLines);
     bedGroup.add(frame);
 
-    // 2. Matelas (Mattress)
     const mattressGeo = new THREE.BoxGeometry(2.2, 0.3, 4.0);
-    const mattressMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.9 }); // Blanc cassé
+    const mattressMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.9 });
     const mattress = new THREE.Mesh(mattressGeo, mattressMat);
-    mattress.position.set(0, 0.35, 0); // Posé sur le cadre
+    mattress.position.set(0, 0.35, 0);
     mattress.castShadow = true;
     mattress.receiveShadow = true;
     bedGroup.add(mattress);
 
-    // 3. Couette (Duvet/Blanket)
-    // Légèrement plus large que le matelas pour faire l'effet de retombée
     const blanketGeo = new THREE.BoxGeometry(2.25, 0.32, 2.5);
-    const blanketMat = new THREE.MeshStandardMaterial({ color: '#312e81', roughness: 0.9 }); // Bleu nuit (var(--bg-color-4))
+    const blanketMat = new THREE.MeshStandardMaterial({ color: '#312e81', roughness: 0.9 });
     const blanket = new THREE.Mesh(blanketGeo, blanketMat);
-    blanket.position.set(0, 0.36, 0.75); // Décalée vers le bas du lit
+    blanket.position.set(0, 0.36, 0.75);
     blanket.castShadow = true;
     blanket.receiveShadow = true;
     bedGroup.add(blanket);
 
-    // 4. Oreillers (Pillows)
     const pillowGeo = new THREE.BoxGeometry(0.8, 0.15, 0.5);
     const pillowMat = new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.9 });
     
     const pillow1 = new THREE.Mesh(pillowGeo, pillowMat);
     pillow1.position.set(-0.55, 0.55, -1.5);
-    pillow1.rotation.x = Math.PI / 12; // Légèrement incliné contre le mur
+    pillow1.rotation.x = Math.PI / 12;
     pillow1.castShadow = true;
     
     const pillow2 = new THREE.Mesh(pillowGeo, pillowMat);
     pillow2.position.set(0.55, 0.55, -1.5);
-    pillow2.rotation.x = Math.PI / 12; // Légèrement incliné contre le mur
+    pillow2.rotation.x = Math.PI / 12;
     pillow2.castShadow = true;
     
     bedGroup.add(pillow1, pillow2);
-
-    // On ajoute tout le lit à la scène
     scene.add(bedGroup);
-    
+
+    // ==========================================
+    // GÉNÉRATION DE L'AVATAR DANS LA ROOM (3D Mesh)
+    // ==========================================
+    function spawnRoomAvatar(styleIndex) {
+        if (currentRoomAvatar) {
+            scene.remove(currentRoomAvatar);
+            targetPosition = null; 
+        }
+
+        const group = new THREE.Group();
+
+        const skinColors = ['#ffdbac', '#8d5524', '#f1c27d', '#e0ac69'];
+        const skin = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.8 });
+        
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), skin);
+        head.position.y = 1.1;
+        head.castShadow = true;
+        group.add(head);
+
+        const clothesColors = ['#818cf8', '#00e5ff', '#34d399', '#111111'];
+        const clothes = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.7 });
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.5), clothes);
+        body.position.y = 0.25;
+        body.castShadow = true;
+        group.add(body);
+
+        if (styleIndex === 0) {
+            const hpMat = new THREE.MeshStandardMaterial({ color: '#111' });
+            const hpL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.4), hpMat); hpL.position.set(-0.45, 1.1, 0); hpL.castShadow = true;
+            const hpR = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.4), hpMat); hpR.position.set(0.45, 1.1, 0); hpR.castShadow = true;
+            const band = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.1, 0.2), hpMat); band.position.set(0, 1.55, 0); band.castShadow = true;
+            group.add(hpL, hpR, band);
+        } else if (styleIndex === 1) {
+            const visorMat = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 0.8 });
+            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.25, 0.2), visorMat);
+            visor.position.set(0, 1.15, 0.35);
+            group.add(visor);
+        } else if (styleIndex === 2) {
+            const capMat = new THREE.MeshStandardMaterial({ color: '#fb7185' });
+            const cap = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.2, 0.82), capMat); cap.position.set(0, 1.55, 0); cap.castShadow = true;
+            const peak = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.1, 0.4), capMat); peak.position.set(0, 1.5, -0.6); peak.castShadow = true;
+            group.add(cap, peak);
+        } else if (styleIndex === 3) {
+            const shadesMat = new THREE.MeshStandardMaterial({ color: '#050505', roughness: 0.1 });
+            const shades = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.2, 0.1), shadesMat);
+            shades.position.set(0, 1.15, 0.41);
+            group.add(shades);
+        }
+
+        // On scale légèrement pour bien fitter dans la chambre
+        group.scale.set(0.65, 0.65, 0.65);
+        // Position initiale dans la chambre (Y = -1 pour être sur le sol)
+        group.position.set(0, -1, 2);
+
+        scene.add(group);
+        currentRoomAvatar = group;
+    }
+
     let time = 0;
     function animate3D() {
         requestAnimationFrame(animate3D);
         time += 0.02;
         pcScreenMat.emissiveIntensity = 0.5 + Math.sin(time) * 0.3;
+
+        // ANIMATION DE DÉPLACEMENT & ROTATION (Point & Click)
+        if (currentRoomAvatar && targetPosition) {
+            // Lerp de la position (Avance fluide vers la cible)
+            currentRoomAvatar.position.lerp(targetPosition, 0.08);
+
+            // Slerp de la rotation (S'oriente fluidement vers la cible)
+            const dummy = new THREE.Object3D();
+            dummy.position.copy(currentRoomAvatar.position);
+            dummy.lookAt(targetPosition);
+            currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.15);
+
+            // Arrêt quand on est assez proche
+            if (currentRoomAvatar.position.distanceTo(targetPosition) < 0.05) {
+                targetPosition = null;
+            }
+        }
+
         renderer.render(scene, camera);
     }
     animate3D();
@@ -994,9 +1048,18 @@
         mousePos.x = (clientX / window.innerWidth) * 2 - 1;
         mousePos.y = -(clientY / window.innerHeight) * 2 + 1;
         raycaster.setFromCamera(mousePos, camera);
+        
         const intersects = raycaster.intersectObjects(scene.children, true);
         for (let i = 0; i < intersects.length; i++) {
-            if (intersects[i].object.name === 'pc_mesh') { enterPC(); break; }
+            if (intersects[i].object.name === 'pc_mesh') { 
+                enterPC(); 
+                break; 
+            }
+            if (intersects[i].object.name === 'floor_mesh') {
+                // Définir la cible de déplacement pour l'avatar (Y forcé au niveau du sol)
+                targetPosition = new THREE.Vector3(intersects[i].point.x, -1, intersects[i].point.z);
+                break;
+            }
         }
     }
     document.getElementById('three-canvas-container').addEventListener('pointerdown', onPointerDown);
@@ -1099,7 +1162,7 @@
     }
 
     // ==========================================
-    // 6. VU METER — déclaré avant tout appel
+    // 6. VU METER
     // ==========================================
     function simulateVuMeter(level) {
         for (let i = 1; i <= 14; i++) {
@@ -1154,21 +1217,16 @@
     // ==========================================
     // 8. CONSTANTS & DEFAULT STATE
     // ==========================================
-    // ==========================================
-    // GÉNÉRATEUR D'AVATARS 3D (LOW-POLY)
-    // ==========================================
     function generateAvatarImage(styleIndex) {
-        // 1. Création d'un mini-studio photo invisible
         const cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
         cam.position.set(0, 1.4, 3.5);
         cam.lookAt(0, 0.6, 0);
 
         const scn = new THREE.Scene();
-        // Couleurs de fond pour chaque perso
         scn.background = new THREE.Color(['#1e1b4b', '#0f172a', '#064e3b', '#4c0519'][styleIndex]);
 
         const rnd = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
-        rnd.setSize(128, 128); // Résolution de la photo
+        rnd.setSize(128, 128); 
 
         const light = new THREE.DirectionalLight(0xffffff, 1.2);
         light.position.set(2, 3, 2);
@@ -1177,7 +1235,6 @@
 
         const group = new THREE.Group();
 
-        // 2. Modélisation du corps (Voxel Style)
         const skinColors = ['#ffdbac', '#8d5524', '#f1c27d', '#e0ac69'];
         const skin = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.8 });
         
@@ -1191,54 +1248,46 @@
         body.position.y = 0.25;
         group.add(body);
 
-        // 3. Accessoires uniques par personnage
         if (styleIndex === 0) {
-            // Le Beatmaker : Gros Casque Audio
             const hpMat = new THREE.MeshStandardMaterial({ color: '#111' });
             const hpL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.4), hpMat); hpL.position.set(-0.45, 1.1, 0);
             const hpR = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.4), hpMat); hpR.position.set(0.45, 1.1, 0);
             const band = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.1, 0.2), hpMat); band.position.set(0, 1.55, 0);
             group.add(hpL, hpR, band);
         } else if (styleIndex === 1) {
-            // Le Cyber-DJ : Visière Néon
             const visorMat = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 0.8 });
             const visor = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.25, 0.2), visorMat);
             visor.position.set(0, 1.15, 0.35);
             group.add(visor);
         } else if (styleIndex === 2) {
-            // Le Rappeur Street : Casquette à l'envers
             const capMat = new THREE.MeshStandardMaterial({ color: '#fb7185' });
             const cap = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.2, 0.82), capMat); cap.position.set(0, 1.55, 0);
             const peak = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.1, 0.4), capMat); peak.position.set(0, 1.5, -0.6);
             group.add(cap, peak);
         } else if (styleIndex === 3) {
-            // L'Executive Prod : Lunettes noires
             const shadesMat = new THREE.MeshStandardMaterial({ color: '#050505', roughness: 0.1 });
             const shades = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.2, 0.1), shadesMat);
             shades.position.set(0, 1.15, 0.41);
             group.add(shades);
         }
 
-        // On tourne légèrement le perso pour qu'il prenne la pose (3/4 face)
         group.rotation.y = -Math.PI / 6;
         scn.add(group);
 
-        // 4. On prend la photo !
         rnd.render(scn, cam);
-        const dataUrl = rnd.domElement.toDataURL('image/png'); // Convertit le canvas en vraie image PNG
+        const dataUrl = rnd.domElement.toDataURL('image/png'); 
         
-        rnd.dispose(); // Nettoyage de la RAM
+        rnd.dispose(); 
         return dataUrl;
     }
 
-    // On génère nos 4 avatars directement au chargement du jeu
     const avatars = [
         { id: 'Beatmaker', img: generateAvatarImage(0) },
         { id: 'Cyber-DJ', img: generateAvatarImage(1) },
         { id: 'Street_MC', img: generateAvatarImage(2) },
         { id: 'Exec_Prod', img: generateAvatarImage(3) }
     ];
-    // ==========================================
+
     const sponsors = [
         { id: 'sp1', name: "Enerji Drink",  reqFollowers: 1000,  reward: 500,  repCost: 15, cooldownDays: 1 },
         { id: 'sp2', name: "CryptoCoinZ",   reqFollowers: 5000,  reward: 2500, repCost: 20, cooldownDays: 1 },
@@ -1255,7 +1304,7 @@
     const DEFAULT_STATE = {
         username: '', activeCharacter: 0,
         money: 100, rep: 10, followers: 0,
-        timeMins: 8 * 60,   // FIX: commence à 8h00, pas 12h00
+        timeMins: 8 * 60,
         day: 1,
         multiplier: 1.0, plugins: 0,
         stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0 },
@@ -1280,14 +1329,8 @@
     };
 
     // ==========================================
-    // 10. HELPERS — formatNum AJOUTÉ ICI (V12.2 FIX)
+    // 10. HELPERS
     // ==========================================
-
-    /**
-     * FIX V12.2 : formatNum était absent du code d'origine → crash silencieux
-     * à chaque appel (updateHUD, tooltip...). Cela empêchait le HUD de se
-     * rafraîchir et donnait l'illusion que le temps était figé.
-     */
     function formatNum(n) {
         n = Number(n);
         if (isNaN(n)) return '0';
@@ -1296,11 +1339,6 @@
         return Math.floor(n).toString();
     }
 
-    /**
-     * FIX V12.2 : getTotalMins() sécurisé avec parseInt sur les deux membres.
-     * Sans ça, (day * 1440) peut produire NaN si day est une string,
-     * rendant TOUS les cooldowns invalides (NaN < NaN === false toujours).
-     */
     function getTotalMins() {
         const d = parseInt(state.day, 10) || 1;
         const t = parseInt(state.timeMins, 10) || 0;
@@ -1475,7 +1513,7 @@
     }
 
     // ==========================================
-    // 12. LOGIN — FIX CHARGEMENT SAVE (V12.2)
+    // 12. LOGIN
     // ==========================================
     function attemptLogin() {
         initAudio();
@@ -1488,14 +1526,6 @@
                 const parsed = JSON.parse(savedData);
                 state = { ...JSON.parse(JSON.stringify(DEFAULT_STATE)), ...parsed };
 
-                /**
-                 * FIX V12.2 CRITIQUE : Tous les champs numériques doivent être
-                 * castés en entier. Sans ça, des strings comme "480" persistent
-                 * depuis le JSON.parse() et causent :
-                 *   - "480" + 5 = "4805"  (concaténation string → temps figé)
-                 *   - "480" >= 1440 → false toujours (rollover jour jamais déclenché)
-                 *   - getTotalMins() = NaN → tous les cooldowns bloqués
-                 */
                 state.timeMins        = parseInt(state.timeMins, 10);
                 state.day             = parseInt(state.day, 10);
                 state.money           = parseInt(state.money, 10);
@@ -1504,21 +1534,18 @@
                 state.multiplier      = parseFloat(state.multiplier) || 1.0;
                 state.plugins         = parseInt(state.plugins, 10) || 0;
 
-                // Valeurs par défaut si NaN ou manquantes
                 if (isNaN(state.timeMins)) state.timeMins = 8 * 60;
                 if (isNaN(state.day) || state.day < 1) state.day = 1;
                 if (isNaN(state.money)) state.money = 100;
                 if (isNaN(state.rep)) state.rep = 10;
                 if (isNaN(state.followers)) state.followers = 0;
 
-                // FIX : Cooldowns castés en entier
                 state.cooldowns = state.cooldowns || {};
                 state.cooldowns.dawTimeReady   = parseInt(state.cooldowns.dawTimeReady, 10)   || 0;
                 state.cooldowns.crackzTimeReady= parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
                 state.cooldowns.storyTimeReady = parseInt(state.cooldowns.storyTimeReady, 10)  || 0;
                 state.cooldowns.sponsors       = state.cooldowns.sponsors || {};
 
-                // FIX : Sponsors castés en entier
                 Object.keys(state.cooldowns.sponsors).forEach(k => {
                     state.cooldowns.sponsors[k] = parseInt(state.cooldowns.sponsors[k], 10) || 0;
                 });
@@ -1549,6 +1576,9 @@
             showToast("New Profile Registered.", "info");
         }
 
+        // GÉNÉRATION DE L'AVATAR DANS LA PIÈCE
+        spawnRoomAvatar(state.activeCharacter);
+
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('room-ui').style.display = 'flex';
         document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="w-full h-full pixelated object-cover" />`;
@@ -1563,24 +1593,14 @@
         refreshSocial();
         drawSysGraphUI();
 
-        // FIX V12.2 : Nettoyage de l'intervalle précédent AVANT relance
         if (window.gameInterval) { clearInterval(window.gameInterval); window.gameInterval = null; }
         window.gameInterval = setInterval(gameTick, 1000);
     }
 
     // ==========================================
-    // 13. GAME TICK — FIX PRINCIPAL (V12.2)
+    // 13. GAME TICK
     // ==========================================
     function gameTick() {
-        /**
-         * FIX V12.2 PRINCIPAL :
-         * L'ancienne version faisait state.timeMins += 5 sans parseInt préalable.
-         * Si state.timeMins était une string "480" (chargée depuis JSON),
-         * l'opération produisait "4805", "48010", "480155"... → jamais >= 1440
-         * → le jour ne changeait jamais → les cooldowns ne se décomptaient pas.
-         *
-         * Solution : parseInt() systématique avant l'incrément.
-         */
         state.timeMins = (parseInt(state.timeMins, 10) || 0) + 5;
         state.day      =  parseInt(state.day, 10) || 1;
 
@@ -1605,7 +1625,6 @@
         document.getElementById('hud-foll').innerText  = formatNum(state.followers);
         document.getElementById('hud-day').innerText   = `DAY ${state.day}`;
 
-        // FIX : sécurisation du formatage de l'heure
         const t = parseInt(state.timeMins, 10) || 0;
         const h = Math.floor(t / 60);
         const m = t % 60;
@@ -1624,7 +1643,6 @@
     function updateCooldownUIs() {
         const total = getTotalMins();
 
-        // DAW cooldown
         const btnDaw = document.getElementById('btn-export');
         if (btnDaw && !state.isExporting) {
             const dawReady = parseInt(state.cooldowns.dawTimeReady, 10) || 0;
@@ -1640,7 +1658,6 @@
             }
         }
 
-        // Story cooldown
         const btnStory = document.getElementById('btn-story');
         const statusStory = document.getElementById('story-status');
         if (btnStory && statusStory) {
@@ -1656,7 +1673,6 @@
             }
         }
 
-        // CrackZ cooldown (live countdown update)
         const tabCrackz = document.getElementById('tab-crackz');
         if (tabCrackz && tabCrackz.classList.contains('text-white')) {
             const crackReady = parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
@@ -2058,8 +2074,8 @@
         document.getElementById('stats-content').innerHTML = `
             <div class="mb-6 text-white">root@studio-os:~# ./sys_status</div>
             <div class="grid grid-cols-2 gap-y-5 gap-x-4 border-l-2 border-[var(--retro-green)] pl-5">
-                <div class="text-[var(--text-muted)]">USER:</div>           <div class="text-white">${state.username}</div>
-                <div class="text-[var(--text-muted)]">AVATAR_ID:</div>      <div class="text-white">spr_char_${state.activeCharacter + 1}.png</div>
+                <div class="text-[var(--text-muted)]">USER:</div>            <div class="text-white">${state.username}</div>
+                <div class="text-[var(--text-muted)]">AVATAR_ID:</div>       <div class="text-white">spr_char_${state.activeCharacter + 1}.png</div>
                 <div class="text-[var(--text-muted)]">UPTIME (Days):</div>  <div class="text-white">${state.day}</div>
                 <div class="text-[var(--text-muted)]">REVENUE_MULT:</div>   <div class="text-[var(--accent)] font-bold drop-shadow-[0_0_5px_var(--accent)]">x${parseFloat(state.multiplier).toFixed(1)}</div>
                 <div class="text-[var(--text-muted)]">PLUGINS_INST:</div>   <div class="text-white">${state.plugins || 0}</div>
