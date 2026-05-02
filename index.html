@@ -462,44 +462,50 @@
         <div id="sleep-progress-text" class="mt-4 text-sm text-gray-400">Réveil dans 15s...</div>
     </div>
 
-    <!-- HUD RESPONSIVE -->
-<div id="hud" class="liquid-glass-heavy min-h-[64px] md:min-h-[76px] fixed top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 rounded-[30px] flex items-center justify-between px-3 md:px-6 transition-all duration-500 w-[96%] md:w-max border border-white/10 shadow-2xl gap-2 md:gap-6">
+   <!-- HUD RESPONSIVE FIXE -->
+<div id="hud" class="liquid-glass-heavy min-h-[64px] md:min-h-[76px] fixed top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 rounded-[30px] flex items-center justify-between px-3 md:px-8 transition-all w-[96%] md:w-max max-w-6xl border border-white/10 shadow-2xl gap-2 md:gap-8">
     
+    <!-- Bloc Avatar & Nom -->
     <div class="flex items-center gap-3 shrink-0">
-        <div id="hud-avatar" class="w-[38px] h-[38px] md:w-[64px] md:h-[64px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shrink-0 shadow-[0_0_15px_rgba(129,140,248,0.5)]"></div>
+        <div id="hud-avatar" class="w-[38px] h-[38px] md:w-[64px] md:h-[64px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shadow-[0_0_15px_rgba(129,140,248,0.5)]"></div>
         <span id="hud-name" class="font-bold font-retro text-lg tracking-widest uppercase text-white hidden md:block">Artiste</span>
     </div>
     
-    <div class="hud-stats-container flex items-center justify-around flex-1 md:flex-initial gap-1 md:gap-8 font-retro text-xs md:text-sm text-[var(--text-muted)] tracking-wider whitespace-nowrap">
-        <div class="relative flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('money', this)" onmouseenter="!isMobile && showTooltip('money', this)" onmouseleave="!isMobile && hideTooltip()">
+    <!-- Bloc Stats & Energie (Toujours visible) -->
+    <div class="flex items-center justify-between md:justify-center flex-1 md:flex-initial gap-1 md:gap-8 font-retro text-xs md:text-sm text-[var(--text-muted)] tracking-wider whitespace-nowrap overflow-visible opacity-100 w-auto">
+        
+        <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('money', this)" onmouseenter="!isMobile && showTooltip('money', this)" onmouseleave="!isMobile && hideTooltip()">
             <span class="text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] text-[10px] md:text-lg">$$$</span> <span id="hud-money" class="text-white text-[11px] md:text-lg">0</span>
         </div>
-        <div class="relative flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)" onmouseleave="!isMobile && hideTooltip()">
+        
+        <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)" onmouseleave="!isMobile && hideTooltip()">
             <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)] text-[10px] md:text-lg">REP</span> <span id="hud-rep" class="text-white text-[11px] md:text-lg">0</span>
         </div>
-        <div class="relative flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)" onmouseleave="!isMobile && hideTooltip()">
+        
+        <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)" onmouseleave="!isMobile && hideTooltip()">
             <span class="text-[var(--accent)] drop-shadow-[0_0_5px_var(--accent)] text-[10px] md:text-lg">FOL</span> <span id="hud-foll" class="text-white text-[11px] md:text-lg">0</span>
         </div>
 
-        <!-- JAUGE D'ÉNERGIE -->
-        <div class="relative flex items-center gap-2 px-1 md:px-3 py-2 border-l border-white/10 pl-2 md:pl-4 ml-1 md:ml-2">
-            <div class="flex flex-col gap-1 w-10 md:w-16">
-                <div class="flex justify-between text-[6px] md:text-[8px] font-retro text-[var(--retro-red)] font-bold tracking-widest">
+        <!-- Jauge d'énergie "La Struggle" -->
+        <div class="flex items-center gap-2 px-1 md:px-4 py-2 border-l border-white/10 ml-1 md:ml-2">
+            <div class="flex flex-col gap-1 w-12 md:w-20 relative">
+                <div class="flex justify-between text-[6px] md:text-[9px] font-retro text-[var(--retro-red)] font-bold tracking-widest">
                     <span>NRJ</span>
                     <span id="hud-energy-val">100%</span>
                 </div>
-                <div class="w-full h-1 md:h-1.5 bg-black border border-[var(--retro-red)]/30 rounded-full overflow-hidden shadow-inner">
+                <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--retro-red)]/30 rounded-full overflow-hidden shadow-inner">
                     <div id="hud-energy-bar" class="h-full bg-[var(--retro-red)] shadow-[0_0_5px_var(--retro-red)] transition-all duration-300" style="width: 100%;"></div>
                 </div>
-                <div id="energy-warning" class="absolute -bottom-4 md:-bottom-5 left-0 md:left-4 text-[6px] md:text-[8px] text-[var(--retro-red)] whitespace-nowrap animate-pulse hidden font-bold">Fatigue extrême</div>
+                <div id="energy-warning" class="absolute -bottom-4 md:-bottom-5 left-0 text-[6px] md:text-[9px] text-[var(--retro-red)] whitespace-nowrap animate-pulse hidden font-bold">Fatigue extrême</div>
             </div>
-            <button id="btn-sleep" onclick="goSleep()" class="bg-black/50 border border-[var(--glass-border)] rounded-md p-1 hover:border-[var(--retro-red)] transition-colors group cursor-pointer" title="Dormir">
-                <span class="text-[8px] md:text-[10px] font-retro text-[var(--retro-red)] group-hover:drop-shadow-[0_0_5px_var(--retro-red)]">Zzz</span>
+            <button id="btn-sleep" onclick="goSleep()" class="bg-black/50 border border-[var(--glass-border)] rounded-md p-1.5 md:p-2 hover:border-[var(--retro-red)] transition-colors cursor-pointer group" title="Dormir">
+                <span class="text-[8px] md:text-[12px] font-retro text-[var(--retro-red)] group-hover:drop-shadow-[0_0_5px_var(--retro-red)]">Zzz</span>
             </button>
         </div>
     </div>
     
-    <div class="font-retro text-right flex flex-col justify-center items-end shrink-0 pr-2 pointer-events-none hidden md:flex">
+    <!-- Bloc Temps -->
+    <div class="font-retro text-right hidden md:flex flex-col justify-center items-end shrink-0 pr-2 pointer-events-none">
         <div id="hud-day" class="text-white font-bold tracking-widest text-[12px]">DAY 1</div>
         <div id="sys-time" class="text-sm text-[var(--accent)] mt-1 tracking-widest font-bold drop-shadow-[0_0_5px_var(--accent)]">08:00</div>
     </div>
