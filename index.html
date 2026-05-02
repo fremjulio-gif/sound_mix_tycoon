@@ -822,7 +822,7 @@
             window.isMobile = isMobile;
 
             const aspect = window.innerWidth / window.innerHeight;
-            frustumSize = isMobile ? 18 : 8; 
+            frustumSize = isMobile ? 18 : 9.5; 
             
             camera.left = frustumSize * aspect / -2;
             camera.right = frustumSize * aspect / 2;
@@ -1559,16 +1559,23 @@
 
             // --- 2. SUIVI DE CAMÉRA ---
             const followIntensity = 0.15;
+            // On décale la caméra vers le haut de +3 sur PC pour "tasser" la pièce vers le bas
+            const yPan = isMobile ? 0 : 3.0; 
+            
             const targetCamX = 20 + (currentRoomAvatar.position.x * followIntensity);
+            const targetCamY = 20 + yPan;
             const targetCamZ = 20 + (currentRoomAvatar.position.z * followIntensity);
             
             camera.position.x += (targetCamX - camera.position.x) * 0.05;
+            camera.position.y += (targetCamY - camera.position.y) * 0.05;
             camera.position.z += (targetCamZ - camera.position.z) * 0.05;
 
             const targetLookX = currentRoomAvatar.position.x * followIntensity;
+            const targetLookY = 0 + yPan;
             const targetLookZ = currentRoomAvatar.position.z * followIntensity;
             
             cameraLookTarget.x += (targetLookX - cameraLookTarget.x) * 0.05;
+            cameraLookTarget.y += (targetLookY - cameraLookTarget.y) * 0.05;
             cameraLookTarget.z += (targetLookZ - cameraLookTarget.z) * 0.05;
             
             camera.lookAt(cameraLookTarget);
