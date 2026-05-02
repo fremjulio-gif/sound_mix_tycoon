@@ -1908,7 +1908,7 @@
         day: 1,
         multiplier: 1.0, plugins: 0,
         stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0 },
-        cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, sponsors: {} },
+        cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, nextRandomEvent: 0, sponsors: {} },
         inventory: [],
         history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
         isExporting: false, isSleeping: false, isEventActive: false
@@ -2227,6 +2227,7 @@
                 if (isNaN(state.energy)) state.energy = 100;
 
                 state.cooldowns = state.cooldowns || {};
+                state.cooldowns.nextRandomEvent = parseInt(state.cooldowns.nextRandomEvent, 10) || 0;
                 state.cooldowns.dawTimeReady   = parseInt(state.cooldowns.dawTimeReady, 10)   || 0;
                 state.cooldowns.crackzTimeReady= parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
                 state.cooldowns.storyTimeReady = parseInt(state.cooldowns.storyTimeReady, 10)  || 0;
@@ -2295,12 +2296,21 @@
     
     const cancelledRappers = ["Keycade", "Abdel32", "SummerZuko", "Femtogros", "Rouhni", "Snap", "Lomepoule", "Firenek", "Kenny East"];
 
-    function checkRandomEvents() {
-        // Environ 1.5% de chance de pop à chaque Tick (toutes les 5 mins in-game)
-        if (Math.random() < 0.015) {
+        function checkRandomEvents() {
+        const currentMins = getTotalMins();
+
+        // 1. Initialisation au tout début d'une partie
+        if (!state.cooldowns.nextRandomEvent || state.cooldowns.nextRandomEvent === 0) {
+            scheduleNextEvent(currentMins);
+            return;
+        }
+
+        // 2. Vérification : Est-ce que le temps défini est écoulé ?
+        if (currentMins >= state.cooldowns.nextRandomEvent) {
+            
+            // Le jet de dés pour choisir LA RARETÉ de l'événement
             const evRoll = Math.random();
             
-            // Répartition par rareté (EDR)
             if (evRoll < 0.50) {
                 // 50% de chance - EDR 2
                 triggerEventEDR2_Rapper();
@@ -2308,11 +2318,29 @@
                 // 35% de chance - EDR 3
                 triggerEventEDR3_Theft();
             } else {
-                // 15% de chance - EDR 4 (Le plus rare)
+                // 15% de chance - EDR 4
                 triggerEventEDR4_Cancel();
             }
+
+            // 3. Une fois l'événement déclenché, on programme le suivant !
+            scheduleNextEvent(currentMins);
         }
     }
+
+    function scheduleNextEvent(currentMins) {
+        // Sachant que 1 Jour in-game = 1440 minutes :
+        // 0.5 jour = 720 minutes
+        // 3 jours = 4320 minutes
+        const minMins = 720;
+        const maxMins = 4320;
+        
+        // Choisi un délai aléatoire entre minMins et maxMins
+        const randomDelay = Math.floor(Math.random() * (maxMins - minMins + 1)) + minMins;
+        
+        // Enregistre l'heure in-game exacte à laquelle le prochain événement devra pop
+        state.cooldowns.nextRandomEvent = currentMins + randomDelay;
+    }
+
 
     // --- ÉVÉNEMENT EDR 2 : PLACEMENT DE PROD ---
     function triggerEventEDR2_Rapper() {
