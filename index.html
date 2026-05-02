@@ -1208,95 +1208,209 @@
 
 
     // ==========================================
-    // GUITARE ÉLECTRIQUE AU MUR (Mur gauche, au-dessus du bureau)
+    // GUITARE ÉLECTRIQUE RÉALISTE AU MUR (Horizontale)
     // ==========================================
     const guitarGroup = new THREE.Group();
 
-    // Positionnement : mur de gauche (x = -4.9), en hauteur (y = 2.4), au niveau du bureau (z = -3.5)
-    guitarGroup.position.set(-4.9, 2.4, -3.5);
-    
-    // Rotation pour l'accrocher au mur : face vers la droite de la pièce, légèrement inclinée
-    guitarGroup.rotation.y = Math.PI / 2;
-    guitarGroup.rotation.z = -Math.PI / 12; // Incline le manche
+    // Positionnement : mur de gauche
+    guitarGroup.position.set(-4.9, 2.0, -3.5); // Abaissée légèrement pour l'horizontale
+    guitarGroup.rotation.y = Math.PI / 2; // Face à la pièce
+    guitarGroup.rotation.z = -Math.PI / 2; // Horizontale (manche vers l'avant de la pièce)
 
     // --- Matériaux ---
-    const bodyMat = new THREE.MeshStandardMaterial({ color: '#818cf8', roughness: 0.4, metalness: 0.3 }); // Couleur accent du jeu
-    const neckMat = new THREE.MeshStandardMaterial({ color: '#d4a373', roughness: 0.8 }); // Bois clair
-    const fretboardMat = new THREE.MeshStandardMaterial({ color: '#27272a', roughness: 0.9 }); // Bois sombre / Noir
-    const hardwareMat = new THREE.MeshStandardMaterial({ color: '#d1d5db', roughness: 0.2, metalness: 0.8 }); // Métal
-    const pickguardMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.6 });
+    const bodyMat = new THREE.MeshStandardMaterial({ color: '#991b1b', roughness: 0.3, metalness: 0.2 }); // Rouge cerise
+    const neckMat = new THREE.MeshStandardMaterial({ color: '#e6c280', roughness: 0.7 }); // Bois érable
+    const fretboardMat = new THREE.MeshStandardMaterial({ color: '#292524', roughness: 0.9 }); // Palissandre
+    const hardwareMat = new THREE.MeshStandardMaterial({ color: '#f3f4f6', roughness: 0.1, metalness: 0.9 }); // Chrome
+    const plasticMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.6 }); // Plastique noir
+    const pickguardMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.5 }); // Plaque blanche
+    
+    // --- Corps (Extrusion détaillée avec Cutaway) ---
+    const bodyShape = new THREE.Shape();
+    bodyShape.moveTo(0, -1.0);
+    bodyShape.bezierCurveTo(-0.35, -1.0, -0.55, -0.8, -0.45, -0.4);
+    bodyShape.bezierCurveTo(-0.35, -0.1, -0.3, 0.0, -0.35, 0.2);
+    bodyShape.bezierCurveTo(-0.4, 0.4, -0.2, 0.5, 0, 0.5);
+    bodyShape.lineTo(0.1, 0.5);
+    bodyShape.bezierCurveTo(0.35, 0.5, 0.45, 0.3, 0.25, 0.15); // Corne du cutaway
+    bodyShape.bezierCurveTo(0.15, 0.05, 0.35, -0.1, 0.45, -0.4);
+    bodyShape.bezierCurveTo(0.55, -0.8, 0.35, -1.0, 0, -1.0);
 
-    // --- Corps (Body) ---
-    const bodyBase = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.0, 0.12), bodyMat);
-    bodyBase.castShadow = true;
-    guitarGroup.add(bodyBase);
+    const extrudeSettings = { depth: 0.12, bevelEnabled: true, bevelSegments: 4, steps: 1, bevelSize: 0.03, bevelThickness: 0.03 };
+    const bodyGeo = new THREE.ExtrudeGeometry(bodyShape, extrudeSettings);
+    // Centrer l'extrusion sur Z
+    bodyGeo.translate(0, 0, -0.06);
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.castShadow = true;
+    body.receiveShadow = true;
+    guitarGroup.add(body);
 
-    // Pickguard (plaque de protection)
-    const pickguard = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.6, 0.13), pickguardMat);
-    pickguard.position.set(0.1, -0.1, 0);
+    // Pickguard
+    const pgShape = new THREE.Shape();
+    pgShape.moveTo(0, -0.6);
+    pgShape.lineTo(-0.25, -0.6);
+    pgShape.bezierCurveTo(-0.3, -0.2, -0.25, 0.0, -0.2, 0.2);
+    pgShape.lineTo(0, 0.2);
+    pgShape.lineTo(0, -0.6);
+    const pgGeo = new THREE.ExtrudeGeometry(pgShape, { depth: 0.02, bevelEnabled: false });
+    const pickguard = new THREE.Mesh(pgGeo, pickguardMat);
+    pickguard.position.set(0, 0, 0.06);
     guitarGroup.add(pickguard);
 
-    // Micros (Pickups)
-    const pickup1 = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.08, 0.14), fretboardMat);
-    pickup1.position.set(0, -0.1, 0);
-    const pickup2 = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.08, 0.14), fretboardMat);
-    pickup2.position.set(0, 0.15, 0);
-    guitarGroup.add(pickup1, pickup2);
-
-    // Chevalet (Bridge)
-    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.1, 0.15), hardwareMat);
-    bridge.position.set(0, -0.35, 0);
-    bridge.castShadow = true;
-    guitarGroup.add(bridge);
-
-    // Boutons (Knobs)
-    const guitarKnobGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.15, 12);
-    const knob1 = new THREE.Mesh(guitarKnobGeo, hardwareMat);
-    knob1.rotation.x = Math.PI / 2;
-    knob1.position.set(0.2, -0.3, 0.05);
-    const knob2 = new THREE.Mesh(guitarKnobGeo, hardwareMat);
-    knob2.rotation.x = Math.PI / 2;
-    knob2.position.set(0.25, -0.4, 0.05);
-    guitarGroup.add(knob1, knob2);
-
-    // --- Manche (Neck) ---
-    const neck = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.2, 0.08), neckMat);
-    neck.position.set(0, 1.1, -0.02);
+    // --- Manche et Touche ---
+    const neck = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.5, 0.07), neckMat);
+    neck.position.set(0, 1.25, -0.02);
     neck.castShadow = true;
     guitarGroup.add(neck);
 
-    // Touche (Fretboard)
-    const fretboard = new THREE.Mesh(new THREE.BoxGeometry(0.13, 1.2, 0.02), fretboardMat);
-    fretboard.position.set(0, 1.1, 0.03);
+    const fretboard = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1.5, 0.02), fretboardMat);
+    fretboard.position.set(0, 1.25, 0.025);
+    fretboard.castShadow = true;
     guitarGroup.add(fretboard);
 
-    // --- Tête (Headstock) ---
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.35, 0.08), neckMat);
-    head.position.set(0.04, 1.85, -0.02);
+    // --- Tête (Headstock inclinée) ---
+    const headGroup = new THREE.Group();
+    headGroup.position.set(0, 2.0, -0.02);
+    headGroup.rotation.x = -0.15; // Inclinée vers l'arrière
+    
+    const headShape = new THREE.Shape();
+    headShape.moveTo(-0.07, 0);
+    headShape.lineTo(0.07, 0);
+    headShape.lineTo(0.1, 0.15);
+    headShape.bezierCurveTo(0.12, 0.25, 0.08, 0.35, 0, 0.35);
+    headShape.bezierCurveTo(-0.08, 0.35, -0.12, 0.25, -0.1, 0.15);
+    const headGeo = new THREE.ExtrudeGeometry(headShape, { depth: 0.05, bevelEnabled: true, bevelSize: 0.01, bevelThickness: 0.01 });
+    headGeo.translate(0, 0, -0.025);
+    const head = new THREE.Mesh(headGeo, neckMat);
     head.castShadow = true;
-    guitarGroup.add(head);
+    headGroup.add(head);
+    guitarGroup.add(headGroup);
 
-    // Mécaniques (Tuners)
-    const tunerGeo = new THREE.BoxGeometry(0.08, 0.04, 0.04);
-    for(let i = 0; i < 6; i++) {
-        const tuner = new THREE.Mesh(tunerGeo, hardwareMat);
-        tuner.position.set(-0.1, 1.73 + (i * 0.05), -0.02);
-        guitarGroup.add(tuner);
+    // --- Micros (Pickups) ---
+    const pickupGeo = new THREE.BoxGeometry(0.24, 0.08, 0.04);
+    const p1 = new THREE.Mesh(pickupGeo, plasticMat);
+    p1.position.set(0, 0.1, 0.07);
+    const p2 = new THREE.Mesh(pickupGeo, plasticMat);
+    p2.position.set(0, -0.15, 0.07);
+    guitarGroup.add(p1, p2);
+
+    // Plots magnétiques sur les micros
+    const poleGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.05, 8);
+    poleGeo.rotateX(Math.PI/2);
+    for(let i=0; i<6; i++) {
+        const px = -0.09 + (i * 0.036);
+        const pole1 = new THREE.Mesh(poleGeo, hardwareMat);
+        pole1.position.set(px, 0.1, 0.07);
+        const pole2 = new THREE.Mesh(poleGeo, hardwareMat);
+        pole2.position.set(px, -0.15, 0.07);
+        guitarGroup.add(pole1, pole2);
     }
 
-    // --- Support mural (Wall mount) ---
-    const mountGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.2, 8);
-    const mount = new THREE.Mesh(mountGeo, fretboardMat);
-    mount.rotation.x = Math.PI / 2;
-    mount.position.set(0, 1.7, -0.15); // Tige qui relie le manche au mur
-    guitarGroup.add(mount);
+    // --- Chevalet (Bridge) ---
+    const bridgeBase = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.12, 0.04), hardwareMat);
+    bridgeBase.position.set(0, -0.4, 0.07);
+    bridgeBase.castShadow = true;
+    guitarGroup.add(bridgeBase);
+    
+    // Pontets
+    const saddleGeo = new THREE.BoxGeometry(0.03, 0.04, 0.05);
+    for(let i=0; i<6; i++) {
+        const saddle = new THREE.Mesh(saddleGeo, hardwareMat);
+        saddle.position.set(-0.09 + (i * 0.036), -0.38 + (Math.random()*0.01), 0.08); // Léger décalage réaliste
+        guitarGroup.add(saddle);
+    }
 
-    // --- Contours (Edges) pour le style cel-shading ---
-    guitarGroup.children.forEach(mesh => {
-        if(mesh.geometry) {
-            const edges = new THREE.EdgesGeometry(mesh.geometry);
-            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
-            mesh.add(line);
+    // --- Boutons (Knobs) ---
+    const knobGeo = new THREE.CylinderGeometry(0.04, 0.045, 0.06, 16);
+    knobGeo.rotateX(Math.PI/2);
+    const k1 = new THREE.Mesh(knobGeo, plasticMat); k1.position.set(0.25, -0.4, 0.08);
+    const k2 = new THREE.Mesh(knobGeo, plasticMat); k2.position.set(0.35, -0.5, 0.08);
+    const k3 = new THREE.Mesh(knobGeo, plasticMat); k3.position.set(0.2, -0.6, 0.08);
+    const k4 = new THREE.Mesh(knobGeo, plasticMat); k4.position.set(0.3, -0.7, 0.08);
+    guitarGroup.add(k1, k2, k3, k4);
+
+    // --- Sélecteur de micro ---
+    const switchBase = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.02, 16), hardwareMat);
+    switchBase.rotation.x = Math.PI/2;
+    switchBase.position.set(-0.25, 0.2, 0.08);
+    const switchTip = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.06), hardwareMat);
+    switchTip.rotation.x = -0.5;
+    switchTip.position.set(-0.25, 0.22, 0.1);
+    guitarGroup.add(switchBase, switchTip);
+
+    // --- Frettes ---
+    const fretGeo = new THREE.BoxGeometry(0.14, 0.005, 0.005);
+    let fretY = 1.95;
+    for(let i=0; i<22; i++) {
+        fretY -= 0.12 * Math.pow(0.96, i); // Espacement décroissant réaliste
+        const fret = new THREE.Mesh(fretGeo, hardwareMat);
+        fret.position.set(0, fretY, 0.036);
+        guitarGroup.add(fret);
+    }
+
+    // --- Cordes ---
+    const stringGeo = new THREE.CylinderGeometry(0.0015, 0.0015, 2.5, 4);
+    for(let i=0; i<6; i++) {
+        const string = new THREE.Mesh(stringGeo, hardwareMat);
+        const px = -0.09 + (i * 0.036);
+        string.position.set(px, 0.85, 0.045);
+        guitarGroup.add(string);
+    }
+
+    // --- Mécaniques (Tuning Pegs) ---
+    const pegBoxGeo = new THREE.BoxGeometry(0.04, 0.06, 0.04);
+    const pegCylGeo = new THREE.CylinderGeometry(0.01, 0.01, 0.08);
+    pegCylGeo.rotateZ(Math.PI/2);
+    const pegHeadGeo = new THREE.BoxGeometry(0.06, 0.04, 0.02);
+    for(let i=0; i<3; i++) {
+        // Gauche
+        const pegL = new THREE.Group();
+        const bL = new THREE.Mesh(pegBoxGeo, hardwareMat);
+        const cL = new THREE.Mesh(pegCylGeo, hardwareMat); cL.position.x = -0.04;
+        const hL = new THREE.Mesh(pegHeadGeo, hardwareMat); hL.position.x = -0.08;
+        pegL.add(bL, cL, hL);
+        pegL.position.set(-0.06, 0.1 + (i*0.08), 0);
+        headGroup.add(pegL);
+
+        // Droite
+        const pegR = new THREE.Group();
+        const bR = new THREE.Mesh(pegBoxGeo, hardwareMat);
+        const cR = new THREE.Mesh(pegCylGeo, hardwareMat); cR.position.x = 0.04;
+        const hR = new THREE.Mesh(pegHeadGeo, hardwareMat); hR.position.x = 0.08;
+        pegR.add(bR, cR, hR);
+        pegR.position.set(0.06, 0.1 + (i*0.08), 0);
+        headGroup.add(pegR);
+    }
+
+    // --- Support mural horizontal ---
+    const wallMountMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.8 });
+    const mountArmGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.2, 8);
+    mountArmGeo.rotateX(Math.PI/2);
+    const mountPadGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.1, 8);
+    mountPadGeo.rotateX(Math.PI/2);
+
+    // Support Manche
+    const mountNeck = new THREE.Group();
+    const arm1 = new THREE.Mesh(mountArmGeo, hardwareMat); arm1.position.z = -0.1;
+    const pad1 = new THREE.Mesh(mountPadGeo, wallMountMat); pad1.position.z = 0;
+    mountNeck.add(arm1, pad1);
+    mountNeck.position.set(0, 1.4, -0.08);
+    guitarGroup.add(mountNeck);
+
+    // Support Corps
+    const mountBody = new THREE.Group();
+    const arm2 = new THREE.Mesh(mountArmGeo, hardwareMat); arm2.position.z = -0.1;
+    const pad2 = new THREE.Mesh(mountPadGeo, wallMountMat); pad2.position.z = 0;
+    mountBody.add(arm2, pad2);
+    mountBody.position.set(0, -0.3, -0.15);
+    guitarGroup.add(mountBody);
+
+    // --- Contours (Edges) pour le style du jeu ---
+    guitarGroup.traverse((child) => {
+        if(child.isMesh && child.geometry && child.material !== hardwareMat && child.material !== pickguardMat) {
+            const edges = new THREE.EdgesGeometry(child.geometry);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3 }));
+            child.add(line);
         }
     });
 
