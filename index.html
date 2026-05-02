@@ -449,27 +449,6 @@
             #global-tooltip { left: 50% !important; transform: translateX(-50%) !important; top: 105px !important; }
             #toast-zone { top: 110px !important; width: calc(100vw - 32px) !important; }
             #btn-quit-pc { top: auto; bottom: calc(85px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 90%; }
-            /* --- FIX BOUTON RENDER MIXDOWN (MOBILE) --- */
-#app-daw .window-content {
-    /* Force un espace vide en bas pour pouvoir scroller jusqu'au bout */
-    padding-bottom: 140px !important; 
-}
-
-#app-daw .daw-panel-neon {
-    /* Casse la contrainte Flexbox qui bloquait le scroll */
-    flex: none !important; 
-    height: auto !important;
-    overflow: visible !important;
-}
-
-#btn-export {
-    /* Rend le bouton plus massif et cliquable sur écran tactile */
-    min-height: 56px !important; 
-    font-size: 14px !important;
-    margin-top: 15px !important;
-    box-shadow: 0 0 20px rgba(129, 140, 248, 0.4) !important;
-}
-
         }
     </style>
 </head>
@@ -1908,7 +1887,7 @@
         day: 1,
         multiplier: 1.0, plugins: 0,
         stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0 },
-        cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, nextRandomEvent: 0, sponsors: {} },
+        cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, sponsors: {} },
         inventory: [],
         history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
         isExporting: false, isSleeping: false, isEventActive: false
@@ -2202,6 +2181,7 @@
         const username = document.getElementById('login-username').value.trim();
         if (!username) { document.getElementById('login-error').classList.remove('hidden'); playError(); return; }
 
+        state.isEventActive = false
 
 
         const savedData = SafeStorage.get('smt_save_' + username);
@@ -2227,7 +2207,6 @@
                 if (isNaN(state.energy)) state.energy = 100;
 
                 state.cooldowns = state.cooldowns || {};
-                state.cooldowns.nextRandomEvent = parseInt(state.cooldowns.nextRandomEvent, 10) || 0;
                 state.cooldowns.dawTimeReady   = parseInt(state.cooldowns.dawTimeReady, 10)   || 0;
                 state.cooldowns.crackzTimeReady= parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
                 state.cooldowns.storyTimeReady = parseInt(state.cooldowns.storyTimeReady, 10)  || 0;
@@ -2247,7 +2226,6 @@
                 state.history                = state.history || { money: [], followers: [] };
                 state.isExporting            = false;
                 state.isSleeping             = false;
-                state.isEventActive = false;
                 state.activeCharacter        = parseInt(state.activeCharacter ?? state.avatar, 10) || 0;
                 if (state.activeCharacter < 0 || state.activeCharacter >= avatars.length) state.activeCharacter = 0;
 
@@ -2285,73 +2263,31 @@
         window.gameInterval = setInterval(gameTick, 1000);
     }
 
-            // ==========================================
+        // ==========================================
     // SYSTÈME D'ÉVÉNEMENTS ALÉATOIRES (EDR)
     // ==========================================
     const knownRappers = ["Yannvs", "Zandame", "Kali", "Disiznot", "Khabat & Jean-Jacque", "Lescram", "JeuneTortue", "Luthier", "Joule", "SCHash", "Adèle Tatillon", "Jolared44"];
     const unknownRappers = ["Fto", "Tom B", "Romsmii", "36Morphé", "44ASKIP", "9Rookie", "Nus", "GrandeSœur", "JaimeRose"];
-    
-    const thiefRappersKnown = ["Mhoudi", "Niño", "Maïreau", "Bushit", "Letard"];
-    const thiefRappersUnknown = ["909Dia", "Anybody", "Asinone", "m4n4phy", "36murpho", "sam01"];
-    
-    const cancelledRappers = ["Keycade", "Abdel32", "SummerZuko", "Femtogros", "Rouhni", "Snap", "Lomepoule", "Firenek", "Kenny East"];
 
-        function checkRandomEvents() {
-        const currentMins = getTotalMins();
-
-        // 1. Initialisation au tout début d'une partie
-        if (!state.cooldowns.nextRandomEvent || state.cooldowns.nextRandomEvent === 0) {
-            scheduleNextEvent(currentMins);
-            return;
-        }
-
-        // 2. Vérification : Est-ce que le temps défini est écoulé ?
-        if (currentMins >= state.cooldowns.nextRandomEvent) {
-            
-            // Le jet de dés pour choisir LA RARETÉ de l'événement
-            const evRoll = Math.random();
-            
-            if (evRoll < 0.50) {
-                // 50% de chance - EDR 2
-                triggerEventEDR2_Rapper();
-            } else if (evRoll < 0.85) {
-                // 35% de chance - EDR 3
-                triggerEventEDR3_Theft();
-            } else {
-                // 15% de chance - EDR 4
-                triggerEventEDR4_Cancel();
-            }
-
-            // 3. Une fois l'événement déclenché, on programme le suivant !
-            scheduleNextEvent(currentMins);
+    function checkRandomEvents() {
+        // Environ 1.5% de chance de pop à chaque Tick (soit toutes les 5 mins in-game)
+        // Ça laisse le temps au joueur de souffler entre deux events.
+        if (Math.random() < 0.015) {
+            triggerEventEDR2_Rapper();
         }
     }
 
-    function scheduleNextEvent(currentMins) {
-        // Sachant que 1 Jour in-game = 1440 minutes :
-        // 0.5 jour = 720 minutes
-        // 3 jours = 4320 minutes
-        const minMins = 720;
-        const maxMins = 4320;
-        
-        // Choisi un délai aléatoire entre minMins et maxMins
-        const randomDelay = Math.floor(Math.random() * (maxMins - minMins + 1)) + minMins;
-        
-        // Enregistre l'heure in-game exacte à laquelle le prochain événement devra pop
-        state.cooldowns.nextRandomEvent = currentMins + randomDelay;
-    }
-
-
-    // --- ÉVÉNEMENT EDR 2 : PLACEMENT DE PROD ---
     function triggerEventEDR2_Rapper() {
-        state.isEventActive = true; 
+        state.isEventActive = true; // Met le jeu entier en pause
         
+        // Plus on a de REP, plus on a de chance de taper un "connu" (max 35% de chance)
         const repFactor = Math.min(0.35, state.rep / 5000); 
         const isKnown = Math.random() < repFactor;
         
         const rapperList = isKnown ? knownRappers : unknownRappers;
         const rapper = rapperList[Math.floor(Math.random() * rapperList.length)];
         
+        // Les connus paient 10x plus cher
         const basePrice = isKnown ? 500 : 50;
         
         const title = "NOUVEAU DM INSTA";
@@ -2381,114 +2317,24 @@
 
     function resolveRapperDeal(rapper, price, chance, type) {
         hideEventModal();
+        
         if (Math.random() < chance) {
+            // Succès !
             logMoney(price, `Placement ${type} - ${rapper}`);
             const repGain = Math.floor(price / 50);
             state.rep += repGain;
             showToast(`🔥 BANGER ! @${rapper} a acheté le ${type} pour $${price}. (+${repGain} REP)`, "success");
             playSuccess();
         } else {
+            // Échec...
             showToast(`❌ "C'est reuch mon reuf..." - @${rapper} t'a mis un gros Vu.`, "error");
             playError();
         }
+        
+        // Enlève la pause après un court instant pour adoucir la transition
         setTimeout(() => { state.isEventActive = false; }, 500);
-        updateHUD();
     }
 
-    // --- ÉVÉNEMENT EDR 3 : VOL DE PROD ---
-    function triggerEventEDR3_Theft() {
-        state.isEventActive = true; 
-        
-        const repFactor = Math.min(0.35, state.rep / 5000); 
-        const isKnown = Math.random() < repFactor;
-        const rapperList = isKnown ? thiefRappersKnown : thiefRappersUnknown;
-        const rapper = rapperList[Math.floor(Math.random() * rapperList.length)];
-        
-        const title = "LITIGE COPYRIGHT 🚨";
-        const subtitle = "EDR 3 - Vol de Prod";
-        const desc = `Belek à toi, <span class="text-[var(--retro-red)] font-bold">@${rapper}</span> t'a volé une prod, que souhaites-tu faire ?`;
-
-        const choices = [
-            {
-                text: `Porter plainte`,
-                desc: "Pénalité : Grosse perte de réputation (le milieu déteste les balances).",
-                action: () => {
-                    hideEventModal();
-                    const repLoss = Math.floor(state.rep * 0.25) + 15;
-                    state.rep = Math.max(0, state.rep - repLoss);
-                    showToast(`⚖️ T'as porté plainte. L'industrie t'a tourné le dos (-${repLoss} REP).`, "error");
-                    playError();
-                    setTimeout(() => { state.isEventActive = false; }, 500);
-                    updateHUD();
-                }
-            },
-            {
-                text: `Arrangement à l'amiable`,
-                desc: "Pénalité : Pertes d'argent minimes (frais juridiques).",
-                action: () => {
-                    hideEventModal();
-                    const moneyLoss = Math.floor(state.money * 0.1) + 80;
-                    logMoney(-moneyLoss, `Frais arrange. vs ${rapper}`);
-                    showToast(`🤝 Arrangement trouvé. Les frais d'avocat piquent (-$${moneyLoss}).`, "info");
-                    playBleep();
-                    setTimeout(() => { state.isEventActive = false; }, 500);
-                    updateHUD();
-                }
-            },
-            {
-                text: `Ne rien faire`,
-                desc: "Pénalité : Perte d'argent aléatoire énorme et grosse perte de followers.",
-                action: () => {
-                    hideEventModal();
-                    const moneyLoss = Math.floor(state.money * (0.2 + Math.random() * 0.3)) + 150;
-                    const folLoss = Math.floor(state.followers * 0.15) + 800;
-                    
-                    logMoney(-moneyLoss, `Manque à gagner - Vol de prod`);
-                    state.followers = Math.max(0, state.followers - folLoss);
-                    
-                    showToast(`🤦‍♂️ T'as laissé passer. T'as perdu au moins $${moneyLoss} et -${folLoss} Fans.`, "error");
-                    playError();
-                    setTimeout(() => { state.isEventActive = false; }, 500);
-                    updateHUD();
-                }
-            }
-        ];
-
-        showEventModal(title, subtitle, desc, choices);
-    }
-
-    // --- ÉVÉNEMENT EDR 4 : BAD BUZZ CANCEL ---
-    function triggerEventEDR4_Cancel() {
-        state.isEventActive = true; 
-        const rapper = cancelledRappers[Math.floor(Math.random() * cancelledRappers.length)];
-        
-        const title = "BAD BUZZ CRITIQUE 📉";
-        const subtitle = "EDR 4 - Rappeur Cancel";
-        const desc = `Vous avez failli collaborer avec <span class="text-[var(--retro-red)] font-bold">@${rapper}</span> juste avant qu'il ne se fasse cancel sur les réseaux. Les rumeurs ont fuité, vous perdez de la crédibilité et des followers.`;
-
-        const repLoss = Math.floor(state.rep * 0.3) + 25;
-        const folLoss = Math.floor(state.followers * 0.2) + 1500;
-
-        const choices = [
-            {
-                text: "Subir la vague sur Twitter...",
-                desc: `Pénalité inévitable : -${repLoss} REP | -${folLoss} Fans`,
-                action: () => {
-                    hideEventModal();
-                    state.rep = Math.max(0, state.rep - repLoss);
-                    state.followers = Math.max(0, state.followers - folLoss);
-                    showToast(`💥 La sauce t'a éclaboussé. -${repLoss} REP, -${folLoss} Fans.`, "error");
-                    playError();
-                    setTimeout(() => { state.isEventActive = false; }, 500);
-                    updateHUD();
-                }
-            }
-        ];
-
-        showEventModal(title, subtitle, desc, choices);
-    }
-
-    // --- LOGIQUE D'AFFICHAGE DU MODAL ---
     function showEventModal(title, subtitle, desc, choices) {
         const modal = document.getElementById('event-modal');
         const box = document.getElementById('event-box');
@@ -2511,6 +2357,7 @@
         modal.classList.remove('hidden');
         modal.classList.add('flex');
         
+        // Pop effect
         setTimeout(() => {
             box.classList.remove('scale-95', 'opacity-0');
             box.classList.add('scale-100', 'opacity-100');
