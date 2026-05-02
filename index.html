@@ -449,6 +449,27 @@
             #global-tooltip { left: 50% !important; transform: translateX(-50%) !important; top: 105px !important; }
             #toast-zone { top: 110px !important; width: calc(100vw - 32px) !important; }
             #btn-quit-pc { top: auto; bottom: calc(85px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 90%; }
+            /* --- FIX BOUTON RENDER MIXDOWN (MOBILE) --- */
+#app-daw .window-content {
+    /* Force un espace vide en bas pour pouvoir scroller jusqu'au bout */
+    padding-bottom: 140px !important; 
+}
+
+#app-daw .daw-panel-neon {
+    /* Casse la contrainte Flexbox qui bloquait le scroll */
+    flex: none !important; 
+    height: auto !important;
+    overflow: visible !important;
+}
+
+#btn-export {
+    /* Rend le bouton plus massif et cliquable sur écran tactile */
+    min-height: 56px !important; 
+    font-size: 14px !important;
+    margin-top: 15px !important;
+    box-shadow: 0 0 20px rgba(129, 140, 248, 0.4) !important;
+}
+
         }
     </style>
 </head>
