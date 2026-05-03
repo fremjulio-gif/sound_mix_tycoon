@@ -1779,7 +1779,7 @@
                 }
             }
 
- // --- ANIMATION DE MARCHE FLUIDE ---
+// --- ANIMATION DE MARCHE FLUIDE ---
 if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
     const innerAvatar = currentRoomAvatar.children[0];
     const legL = innerAvatar.getObjectByName("leg_L");
@@ -1802,25 +1802,30 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
         }
         
     } else {
-        // --- ARRÊT MIXTE : Corps fluide, Jambes clouées au sol ---
-        walkTime = 0; 
+        // --- ARRÊT MIXTE : ABSORPTION DE L'ÉLAN ---
+        
+        // 1. Le corps se tasse en douceur (0.85 donne l'effet de poids/inertie)
+        innerAvatar.rotation.z *= 0.85; 
+        innerAvatar.position.y *= 0.85;
 
-        // 1. Amortissement progressif uniquement pour le corps (effet rebond fluide)
-        innerAvatar.rotation.z *= 0.7; 
-        innerAvatar.position.y *= 0.7;
+        // 2. Les jambes reviennent au sol extrêmement vite (évite le glitch visuel du 0 direct)
+        if (legL && legR) {
+            legL.rotation.x *= 0.3;
+            legR.rotation.x *= 0.3;
+        }
 
-        // Sécurité pour stopper les micro-calculs du corps
-        if (Math.abs(innerAvatar.rotation.z) < 0.01) {
+        // 3. Verrouillage total et silencieux une fois l'élan absorbé
+        if (Math.abs(innerAvatar.rotation.z) < 0.001) {
             innerAvatar.rotation.z = 0;
             innerAvatar.position.y = 0;
-        }
-
-        // 2. Arrêt brutal et instantané UNIQUEMENT pour les jambes
-        if (legL && legR) {
-            legL.rotation.x = 0;
-            legR.rotation.x = 0;
+            walkTime = 0; // On reset le cycle pour la prochaine marche
+            if (legL) {
+                legL.rotation.x = 0;
+                legR.rotation.x = 0;
+            }
         }
     }
+}
             // --- 2. SUIVI DE CAMÉRA ---
             const followIntensity = 0.2;
             const yPan = isMobile ? 0 : 1.5; 
