@@ -1982,11 +1982,30 @@
 
     
     const cracks = [
-        { id: 'c1', name: "Massive_Bass_CRACK",      risk: 0.15, reqRep: 0,   desc: "+20% Cash. Heavy bass." },
-        { id: 'c2', name: "AutoTune_Pro_Patcher",    risk: 0.25, reqRep: 10,  desc: "Fixes bad vocal choices." },
-        { id: 'c3', name: "Vintage_DrumMachine",     risk: 0.20, reqRep: 30,  desc: "Huge Bonus if using many pads." },
-        { id: 'c4', name: "Ozone_Mastering_Keygen",  risk: 0.40, reqRep: 80,  desc: "+50% Cash. Pro sound." },
-        { id: 'c5', name: "Ghost_Prod_AI_Engine",    risk: 0.60, reqRep: 150, desc: "Guaranteed Banger. High rep risk." }
+        // --- TIER 1 ---
+        { id: 'crk1', name: "Kickend_2.pkg",                  risk: 0.10, reqMoney: 0,    desc: "Kick sur-boosté (+15% Cash)." },
+        { id: 'crk2', name: "FabFilter_Expert_Q3.exe",        risk: 0.15, reqMoney: 500,  desc: "Mix propre garanti (+25% Cash)." },
+        { id: 'crk3', name: "VocalTune_Pro.exe",              risk: 0.20, reqMoney: 1500, desc: "Corrige les fausses notes (+35% Cash)." },
+        
+        // --- TIER 2 ---
+        { id: 'crk4', name: "LennarAnalog_Silence1.exe",      risk: 0.25, reqMoney: 3000, desc: "Synthés rétro recherchés (+50% Cash)." },
+        { id: 'crk5', name: "VintageTone_RC_80.exe",          risk: 0.30, reqMoney: 5000, desc: "Texture Lo-Fi à la mode (+60% Cash)." },
+        { id: 'crk6', name: "iZotono_O2.pkg",                 risk: 0.35, reqMoney: 8000, desc: "Mastering pro instantané (+80% Cash)." },
+        
+        // --- TIER 3 ---
+        { id: 'crk7', name: "Harmodyne.pkg",                  risk: 0.40, reqMoney: 12000, desc: "Saturation destructrice (+100% Cash)." },
+        { id: 'crk8', name: "Arthur_PGM.pkg",                 risk: 0.45, reqMoney: 20000, desc: "Émulation de légende (+120% Cash)." },
+        { id: 'crk9', name: "Musictoys_Eliminator.dmg",       risk: 0.50, reqMoney: 35000, desc: "Isole les acapellas (+150% Cash)." },
+        
+        // --- TIER 4 ---
+        { id: 'crk10', name: "Plexus_4.exe",                  risk: 0.55, reqMoney: 50000,  desc: "Arpégiateur massif (+180% Cash)." },
+        { id: 'crk11', name: "Lethal.dmg",                    risk: 0.60, reqMoney: 75000,  desc: "Basses de film (+200% Cash)." },
+        { id: 'crk12', name: "Local_Instruments_Connect.pkg", risk: 0.70, reqMoney: 100000, desc: "Banques de sons pro (+300% Cash)." },
+        
+        // --- ULTIME ---
+        { id: 'crk13', name: "Asgard_RetroVerb.pkg",          risk: 0.75, reqMoney: 250000, desc: "Reverb mythique (+400% Cash)." },
+        { id: 'crk14', name: "SpectralSounds_Stratosphere_2.pkg", risk: 0.85, reqMoney: 500000, desc: "Moteur spectral (+500% Cash)." },
+        { id: 'crk15', name: "Xray_Antidote.pkg",             risk: 0.95, reqMoney: 1000000, desc: "Bypass les algos (+1000% Cash)." }
     ];
 
     const DEFAULT_STATE = {
@@ -2686,10 +2705,24 @@
         }
 
         moneyGain = Math.floor(moneyGain * state.multiplier);
-        if (pads > 8 && pluginId === 'c3') { moneyGain += 300; critique += "\nVintage DrumMachine : Kick surpuissant (+300$)"; }
-        else if (pads > 8) { moneyGain += 20; }
-        if (pluginId === 'c1') { moneyGain = Math.floor(moneyGain * 1.3); critique += "\nMassive Bass : Le sub détruit les vitres (+30% Cash)."; }
-        if (pluginId === 'c4') { moneyGain = Math.floor(moneyGain * 1.5); critique += "\nOzone Mastering : Un son cristallin (+50% Cash)."; }
+        
+        // Bonus par défaut si on a mis des drums
+        if (pads > 8) { moneyGain += 20; }
+
+        // Application automatique des effets des nouveaux cracks
+        if (pluginId) {
+            const usedCrack = cracks.find(c => c.id === pluginId);
+            if (usedCrack) {
+                // On extrait le pourcentage depuis la description (ex: "+25% Cash" -> 25)
+                const match = usedCrack.desc.match(/\+(\d+)%/);
+                if (match) {
+                    const bonusPercent = parseInt(match[1], 10);
+                    const multiplier = 1 + (bonusPercent / 100);
+                    moneyGain = Math.floor(moneyGain * multiplier);
+                    critique += `\nPlugin [${usedCrack.name}] détecté : Bonus +${bonusPercent}% sur les revenus !`;
+                }
+            }
+        }
 
         logMoney(moneyGain, 'Track Royalties');
         state.rep = Math.max(0, state.rep + repGain);
@@ -2747,7 +2780,14 @@
                              <div class="space-y-4">`;
             let foundAny = false;
             cracks.forEach(c => {
-                if (state.rep < c.reqRep) return;
+              // Si la réputation est insuffisante, on affiche un lien "verrouillé"
+                if (state.rep < c.reqRep) {
+                    crackHTML += `<div class="border border-gray-800 p-4 flex justify-between items-center bg-black/60 rounded-lg opacity-50 select-none">
+                        <div class="flex-1"><p class="font-bold text-sm text-gray-500 font-retro">???_ENCRYPTED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: ${formatNum(c.reqRep)} REP</p></div>
+                        <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] border-gray-700 text-gray-600 rounded cursor-not-allowed" disabled>LOCKED</button>
+                    </div>`;
+                    return;
+                }
                 foundAny = true;
                 crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex justify-between items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group">
                     <div class="flex-1 pr-4"><p class="font-bold text-sm text-gray-200">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc} | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p></div>
