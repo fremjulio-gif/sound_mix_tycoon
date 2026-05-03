@@ -1787,19 +1787,19 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
 
     if (isMoving) {
         // Vitesse d'incrémentation (0.15 - 0.25 est idéal pour du 60fps)
-        walkTime += 0.2; 
+        walkTime += 0.15; 
 
         // 1. Dandinement latéral (Axe Z)
         innerAvatar.rotation.z = Math.sin(walkTime) * 0.15; 
         
         // 2. Rebond vertical (Axe Y) - On utilise abs pour que l'avatar monte à chaque pas
-        innerAvatar.position.y = Math.abs(Math.sin(walkTime)) * 0.08;
+        innerAvatar.position.y = Math.abs(Math.sin(walkTime)) * 0.03;
 
         // 3. Animation des jambes
         if (legL && legR) {
             // On utilise sin et -sin (ou cos) pour l'opposition de phase (une jambe devant, l'autre derrière)
-            legL.rotation.x = Math.sin(walkTime) * 0.4; 
-            legR.rotation.x = -Math.sin(walkTime) * 0.4; 
+            legL.rotation.x = Math.sin(walkTime) * 0.15; 
+            legR.rotation.x = -Math.sin(walkTime) * 0.15; 
         }
     } else {
         // --- PHASE D'ARRÊT (Amortissement) ---
