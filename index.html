@@ -1514,6 +1514,7 @@
         // --- JAMBES & CHAUSSURES (Base Y = 0) ---
         const createLeg = (xSign) => {
             const legGroup = new THREE.Group();
+            legGroup.name = xSign < 0 ? "leg_L" : "leg_R";
             
             // Chaussure
             const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.24), shoesMat);
@@ -1778,28 +1779,47 @@
                 }
             }
 
-            // --- ANIMATION DE MARCHE FLUIDE ---
+  // --- ANIMATION DE MARCHE FLUIDE ---
 if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
     const innerAvatar = currentRoomAvatar.children[0];
-    
+    const legL = innerAvatar.getObjectByName("leg_L");
+    const legR = innerAvatar.getObjectByName("leg_R");
+
     if (isMoving) {
-        walkTime += 0.04; // Vitesse des pas
-        // Dandinement
-        innerAvatar.rotation.z = Math.sin(walkTime) * 0.01;
-        // Rebond
-        innerAvatar.position.y = Math.abs(Math.sin(walkTime)) * 0.01;
+        // Vitesse d'incrémentation (0.15 - 0.25 est idéal pour du 60fps)
+        walkTime += 0.2; 
+
+        // 1. Dandinement latéral (Axe Z)
+        innerAvatar.rotation.z = Math.sin(walkTime) * 0.15; 
+        
+        // 2. Rebond vertical (Axe Y) - On utilise abs pour que l'avatar monte à chaque pas
+        innerAvatar.position.y = Math.abs(Math.sin(walkTime)) * 0.08;
+
+        // 3. Animation des jambes
+        if (legL && legR) {
+            // On utilise sin et -sin (ou cos) pour l'opposition de phase (une jambe devant, l'autre derrière)
+            legL.rotation.x = Math.sin(walkTime) * 0.4; 
+            legR.rotation.x = -Math.sin(walkTime) * 0.4; 
+        }
     } else {
-        // FIX : On réinitialise walkTime pour que la prochaine marche reparte du début
+        // --- PHASE D'ARRÊT (Amortissement) ---
         walkTime = 0; 
 
-        // FIX : On augmente la force du retour (0.4 au lieu de 0.2) pour un arrêt net
-        innerAvatar.rotation.z *= 0.2; 
-        innerAvatar.position.y *= 0.2;
+        // Réduction progressive des forces (Lerp manuel)
+        innerAvatar.rotation.z *= 0.6;
+        innerAvatar.position.y *= 0.6;
 
-        // "Hard reset" si les valeurs sont minuscules pour stopper le calcul inutile
+        if (legL && legR) {
+            legL.rotation.x *= 0.6;
+            legR.rotation.x *= 0.6;
+        }
+
+        // Hard reset pour stopper les calculs quand les valeurs sont infimes
         if (Math.abs(innerAvatar.rotation.z) < 0.001) {
             innerAvatar.rotation.z = 0;
             innerAvatar.position.y = 0;
+            if (legL) legL.rotation.x = 0;
+            if (legR) legR.rotation.x = 0;
         }
     }
 }
