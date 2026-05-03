@@ -1802,32 +1802,25 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
         }
         
     } else {
-        // --- PHASE D'ARRÊT ET STABILISATION ---
+        // --- ARRÊT MIXTE : Corps fluide, Jambes clouées au sol ---
         walkTime = 0; 
 
-        // Amortissement progressif (Lerp plus rapide)
-        innerAvatar.rotation.z *= 0.5; 
-        innerAvatar.position.y *= 0.5;
+        // 1. Amortissement progressif uniquement pour le corps (effet rebond fluide)
+        innerAvatar.rotation.z *= 0.7; 
+        innerAvatar.position.y *= 0.7;
 
-        if (legL && legR) {
-            legL.rotation.x *= 0.5;
-            legR.rotation.x *= 0.5;
-        }
-
-        // FORCE le retour à zéro INDÉPENDANT dès que le mouvement est infime (< 0.01)
+        // Sécurité pour stopper les micro-calculs du corps
         if (Math.abs(innerAvatar.rotation.z) < 0.01) {
             innerAvatar.rotation.z = 0;
-        }
-        if (Math.abs(innerAvatar.position.y) < 0.01) {
             innerAvatar.position.y = 0;
         }
-        if (legL && Math.abs(legL.rotation.x) < 0.01) {
+
+        // 2. Arrêt brutal et instantané UNIQUEMENT pour les jambes
+        if (legL && legR) {
             legL.rotation.x = 0;
             legR.rotation.x = 0;
         }
     }
-}
-
             // --- 2. SUIVI DE CAMÉRA ---
             const followIntensity = 0.2;
             const yPan = isMobile ? 0 : 1.5; 
