@@ -1795,17 +1795,17 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
         // 2. Rebond vertical (Axe Y)
         innerAvatar.position.y = Math.abs(Math.sin(walkTime)) * 0.02;
 
-        // 3. Animation des jambes
+        // 3. Animation des jambes (Axe X)
         if (legL && legR) {
-            legL.rotation.x = Math.sin(walkTime) * 0.2; 
-            legR.rotation.x = -Math.sin(walkTime) * 0.2; 
+            legL.rotation.x = Math.sin(walkTime * 2) * 0.2;
+            legR.rotation.x = -Math.sin(walkTime * 2) * 0.2; 
         }
         
     } else {
-        // --- ARRÊT NET ET STABILISATION ---
+        // --- PHASE D'ARRÊT ET STABILISATION ---
         walkTime = 0; 
 
-        // Amortissement progressif
+        // Amortissement progressif (Lerp)
         innerAvatar.rotation.z *= 0.7; 
         innerAvatar.position.y *= 0.7;
 
@@ -1814,10 +1814,12 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
             legR.rotation.x *= 0.7;
         }
 
-        // FORCE le retour à zéro si les valeurs sont très faibles
-        // Note : J'ai ajusté le seuil à 0.001 au lieu de 0.5, 
-        // car avec 0.5 le personnage se bloquerait net en plein milieu de son inclinaison.
-        if (Math.abs(innerAvatar.rotation.z) < 0.001) {
+        // FORCE le retour à zéro total si le balancement des jambes ou du corps est infime
+        // On vérifie la rotation des jambes (legL.rotation.x) car c'est souvent elle qui "traîne"
+        const isLegLStable = legL ? Math.abs(legL.rotation.x) < 0.001 : true;
+        const isBodyStable = Math.abs(innerAvatar.rotation.z) < 0.001;
+
+        if (isBodyStable && isLegLStable) {
             innerAvatar.rotation.z = 0;
             innerAvatar.position.y = 0;
             if (legL) legL.rotation.x = 0;
