@@ -2652,7 +2652,6 @@
                 if (avatarChanged) {
                     state.activeCharacter = selectedAvatarIndex;
                 }
-
                 if (state.activeCharacter < 0 || state.activeCharacter >= avatars.length) state.activeCharacter = 0;
 
                 showToast("Session Restored.", "success");
@@ -2676,8 +2675,8 @@
         document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="w-full h-full pixelated object-cover" />`;
         document.getElementById('hud-name').innerText = state.username;
 
-        selectDawGenre('drill');
-        selectDawVoice('m');
+        selectDawGenre();
+        selectDawVoice();
         updateDawPlugins();
         playSuccess();
         updateHUD();
