@@ -1984,28 +1984,28 @@
     const cracks = [
         // --- TIER 1 ---
         { id: 'crk1', name: "Kickend_2.pkg",                  risk: 0.10, reqMoney: 0,    desc: "Kick sur-boosté (+15% Cash)." },
-        { id: 'crk2', name: "FabFilter_Expert_Q3.exe",        risk: 0.15, reqMoney: 500,  desc: "Mix propre garanti (+25% Cash)." },
-        { id: 'crk3', name: "VocalTune_Pro.exe",              risk: 0.20, reqMoney: 1500, desc: "Corrige les fausses notes (+35% Cash)." },
+        { id: 'crk2', name: "FabFilter_Expert_Q3.exe",        risk: 0.15, reqMoney: 250,  desc: "Mix propre garanti (+25% Cash)." },
+        { id: 'crk3', name: "VocalTune_Pro.exe",              risk: 0.20, reqMoney: 500, desc: "Corrige les fausses notes (+35% Cash)." },
         
         // --- TIER 2 ---
-        { id: 'crk4', name: "LennarAnalog_Silence1.exe",      risk: 0.25, reqMoney: 3000, desc: "Synthés rétro recherchés (+50% Cash)." },
-        { id: 'crk5', name: "VintageTone_RC_80.exe",          risk: 0.30, reqMoney: 5000, desc: "Texture Lo-Fi à la mode (+60% Cash)." },
-        { id: 'crk6', name: "iZotono_O2.pkg",                 risk: 0.35, reqMoney: 8000, desc: "Mastering pro instantané (+80% Cash)." },
+        { id: 'crk4', name: "LennarAnalog_Silence1.exe",      risk: 0.25, reqMoney: 1000, desc: "Synthés rétro recherchés (+50% Cash)." },
+        { id: 'crk5', name: "VintageTone_RC_80.exe",          risk: 0.30, reqMoney: 2500, desc: "Texture Lo-Fi à la mode (+60% Cash)." },
+        { id: 'crk6', name: "iZotono_O2.pkg",                 risk: 0.35, reqMoney: 5000, desc: "Mastering pro instantané (+80% Cash)." },
         
         // --- TIER 3 ---
-        { id: 'crk7', name: "Harmodyne.pkg",                  risk: 0.40, reqMoney: 12000, desc: "Saturation destructrice (+100% Cash)." },
-        { id: 'crk8', name: "Arthur_PGM.pkg",                 risk: 0.45, reqMoney: 20000, desc: "Émulation de légende (+120% Cash)." },
-        { id: 'crk9', name: "Musictoys_Eliminator.dmg",       risk: 0.50, reqMoney: 35000, desc: "Isole les acapellas (+150% Cash)." },
+        { id: 'crk7', name: "Harmodyne.pkg",                  risk: 0.40, reqMoney: 10000, desc: "Saturation destructrice (+100% Cash)." },
+        { id: 'crk8', name: "Arthur_PGM.pkg",                 risk: 0.45, reqMoney: 15000, desc: "Émulation de légende (+120% Cash)." },
+        { id: 'crk9', name: "Musictoys_Eliminator.dmg",       risk: 0.50, reqMoney: 20000, desc: "Isole les acapellas (+150% Cash)." },
         
         // --- TIER 4 ---
-        { id: 'crk10', name: "Plexus_4.exe",                  risk: 0.55, reqMoney: 50000,  desc: "Arpégiateur massif (+180% Cash)." },
-        { id: 'crk11', name: "Lethal.dmg",                    risk: 0.60, reqMoney: 75000,  desc: "Basses de film (+200% Cash)." },
-        { id: 'crk12', name: "Local_Instruments_Connect.pkg", risk: 0.70, reqMoney: 100000, desc: "Banques de sons pro (+300% Cash)." },
+        { id: 'crk10', name: "Plexus_4.exe",                  risk: 0.55, reqMoney: 30000,  desc: "Arpégiateur massif, à couper le souffle (+180% Cash)." },
+        { id: 'crk11', name: "Lethal.dmg",                    risk: 0.60, reqMoney: 50000,  desc: "Basses de film (+200% Cash)." },
+        { id: 'crk12', name: "Local_Instruments_Connect.pkg", risk: 0.70, reqMoney: 60000, desc: "Banques de sons pro (+300% Cash)." },
         
         // --- ULTIME ---
-        { id: 'crk13', name: "Asgard_RetroVerb.pkg",          risk: 0.75, reqMoney: 250000, desc: "Reverb mythique (+400% Cash)." },
-        { id: 'crk14', name: "SpectralSounds_Stratosphere_2.pkg", risk: 0.85, reqMoney: 500000, desc: "Moteur spectral (+500% Cash)." },
-        { id: 'crk15', name: "Xray_Antidote.pkg",             risk: 0.95, reqMoney: 1000000, desc: "Bypass les algos (+1000% Cash)." }
+        { id: 'crk13', name: "Asgard_RetroVerb.pkg",          risk: 0.75, reqMoney: 70000, desc: "Reverb mythique (+400% Cash)." },
+        { id: 'crk14', name: "SpectralSounds_Stratosphere_2.pkg", risk: 0.85, reqMoney: 85000, desc: "Moteur spectral (+500% Cash)." },
+        { id: 'crk15', name: "Xray_Antidote.pkg",             risk: 0.95, reqMoney: 100000, desc: "Bypass les algos (+1000% Cash)." }
     ];
 
     const DEFAULT_STATE = {
@@ -2680,11 +2680,12 @@
         const result = calculateSuccess(genre, bpm, voice);
         let moneyGain = 0, repGain = 0, follGain = 0, resultTxt = "", critique = "";
 
-        if (pluginId === 'c2' && result.score === 0 && result.wrongVoice) { result.score = 1; critique = "\nAutoTune activé: Voix robotique, mais ça passe pour TikTok."; }
-        if (pluginId === 'c5') {
+        // NOUVEAUX IDS: crk3 = VocalTune (AutoTune), crk15 = Xray Antidote (AI/Bypass)
+        if (pluginId === 'crk3' && result.score === 0 && result.wrongVoice) { result.score = 1; critique = "\nVocalTune activé : Voix robotique, mais ça passe pour TikTok."; }
+        if (pluginId === 'crk15') {
             result.score = 3;
-            if (Math.random() > 0.5) { critique = "\nIA Détectée ! Hit absolu, mais Bad Buzz (-20 REP)."; repGain -= 20; }
-            else critique = "\nGénéré par l'IA. Personne n'a remarqué. Hit assuré.";
+            if (Math.random() > 0.5) { critique = "\nXray Antidote : Hit absolu, mais Bad Buzz de tricheur (-20 REP)."; repGain -= 20; }
+            else critique = "\nXray Antidote : Algos bypassés. Personne n'a remarqué. Hit assuré.";
         }
 
         if (result.score === 3) {
@@ -2706,23 +2707,42 @@
 
         moneyGain = Math.floor(moneyGain * state.multiplier);
         
-        // Bonus par défaut si on a mis des drums
+        // Bonus de base si on a fait des drums complets
         if (pads > 8) { moneyGain += 20; }
 
-        // Application automatique des effets des nouveaux cracks
+        // Application AUTOMATIQUE du bonus multiplicateur selon le texte du crack
         if (pluginId) {
             const usedCrack = cracks.find(c => c.id === pluginId);
             if (usedCrack) {
-                // On extrait le pourcentage depuis la description (ex: "+25% Cash" -> 25)
+                // Va chercher le nombre dans "+XX% Cash" de la description
                 const match = usedCrack.desc.match(/\+(\d+)%/);
                 if (match) {
                     const bonusPercent = parseInt(match[1], 10);
                     const multiplier = 1 + (bonusPercent / 100);
                     moneyGain = Math.floor(moneyGain * multiplier);
-                    critique += `\nPlugin [${usedCrack.name}] détecté : Bonus +${bonusPercent}% sur les revenus !`;
+                    critique += `\n[${usedCrack.name}] : Bonus +${bonusPercent}% sur les royalties !`;
                 }
             }
         }
+
+        logMoney(moneyGain, 'Track Royalties');
+        state.rep = Math.max(0, state.rep + repGain);
+        logFollower(follGain);
+        state.stats.tracks++;
+
+        let toastMsg = `${resultTxt}${critique}\n+$${moneyGain}`;
+        if (follGain > 0) toastMsg += ` | +${follGain} Fans`;
+        if (repGain !== 0) toastMsg += ` | ${repGain > 0 ? '+' : ''}${repGain} Rep`;
+
+        const trackScore = result.score === 3 ? Math.floor(7 + Math.random() * 3) :
+                   result.score === 1 ? Math.floor(4 + Math.random() * 3) :
+                                        Math.floor(1 + Math.random() * 3);
+        
+        showTrackReview(trackScore, trackTitle);
+        
+        showToast(toastMsg, result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error'));
+        saveGame(); updateHUD(); updateCooldownUIs();
+    }
 
         logMoney(moneyGain, 'Track Royalties');
         state.rep = Math.max(0, state.rep + repGain);
