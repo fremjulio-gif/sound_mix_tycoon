@@ -1787,7 +1787,7 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
 
     if (isMoving) {
         // Vitesse d'incrémentation (0.15 - 0.25 est idéal pour du 60fps)
-        walkTime += 0.1; 
+        walkTime += 0.2; 
 
         // 1. Dandinement latéral (Axe Z)
         innerAvatar.rotation.z = Math.sin(walkTime) * 0.1; 
@@ -1806,12 +1806,12 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
         walkTime = 0; 
 
         // Réduction progressive des forces (Lerp manuel)
-        innerAvatar.rotation.z *= 0.6;
-        innerAvatar.position.y *= 0.6;
+        innerAvatar.rotation.z *= 0.2;
+        innerAvatar.position.y *= 0.2;
 
         if (legL && legR) {
-            legL.rotation.x *= 0.6;
-            legR.rotation.x *= 0.6;
+            legL.rotation.x *= 0.1;
+            legR.rotation.x *= 0.1;
         }
 
         // Hard reset pour stopper les calculs quand les valeurs sont infimes
