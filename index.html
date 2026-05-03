@@ -1798,33 +1798,24 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
         // 3. Animation des jambes
         if (legL && legR) {
             // On utilise sin et -sin (ou cos) pour l'opposition de phase (une jambe devant, l'autre derrière)
-            legL.rotation.x = Math.sin(walkTime) * 0.1; 
-            legR.rotation.x = -Math.sin(walkTime) * 0.1; 
+            legL.rotation.x = Math.sin(walkTime) * 0.2; 
+            legR.rotation.x = -Math.sin(walkTime) * 0.2; 
         }
     } else {
         // --- ARRÊT NET ET STABILISATION ---
         walkTime = 0; 
 
         // On utilise un facteur de réduction agressif (0.5)
-        innerAvatar.rotation.z *= 0.02; 
-        innerAvatar.position.y *= 0.01;
+        innerAvatar.rotation.z *= 0.7; 
+        innerAvatar.position.y *= 0.7;
 
         if (legL && legR) {
-            legL.rotation.x *= 0.01;
-            legR.rotation.x *= 0.01;
+            legL.rotation.x *= 0.7;
+            legR.rotation.x *= 0.7;
         }
 
         // FORCE le retour à zéro si les valeurs sont proches de la fin de l'oscillation
-        if (Math.abs(innerAvatar.rotation.z) < 0.05) {
-            innerAvatar.rotation.z = 0;
-            innerAvatar.position.y = 0;
-            if (legL) legL.rotation.x = 0;
-            if (legR) legR.rotation.x = 0;
-        }
-    }
-
-        // Hard reset pour stopper les calculs quand les valeurs sont infimes
-        if (Math.abs(innerAvatar.rotation.z) < 0.001) {
+        if (Math.abs(innerAvatar.rotation.z) < 0.5) {
             innerAvatar.rotation.z = 0;
             innerAvatar.position.y = 0;
             if (legL) legL.rotation.x = 0;
