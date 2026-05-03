@@ -1788,8 +1788,6 @@ if (!state.isSleeping && currentRoomAvatar && currentRoomAvatar.children.length 
         walkTime += 0.02;
         // 1. Dandinement latéral
         currentRoomAvatar.rotation.z = Math.sin(walkTime) * 0.02;
-        // 2. Rebond vertical
-        currentRoomAvatar.position.y = -0.74 + Math.abs(Math.sin(walkTime)) * 0.02;
         // 3. Animation des jambes
         if (legL && legR) {
             legL.rotation.x = Math.sin(walkTime * 4) * 0.2;
@@ -1798,7 +1796,6 @@ if (!state.isSleeping && currentRoomAvatar && currentRoomAvatar.children.length 
     } else {
         // Absorption de l'élan
         currentRoomAvatar.rotation.z *= 0.85;
-        currentRoomAvatar.position.y += (-0.74 - currentRoomAvatar.position.y) * 0.15;
         if (legL && legR) {
             legL.rotation.x *= 0.3;
             legR.rotation.x *= 0.3;
@@ -1806,7 +1803,6 @@ if (!state.isSleeping && currentRoomAvatar && currentRoomAvatar.children.length 
         // Verrouillage total
         if (Math.abs(currentRoomAvatar.rotation.z) < 0.001) {
             currentRoomAvatar.rotation.z = 0;
-            currentRoomAvatar.position.y = -0.74;
             walkTime = 0;
             if (legL && legR) {
                 legL.rotation.x = 0;
