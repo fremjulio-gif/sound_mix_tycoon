@@ -39,6 +39,9 @@
             user-select: none;
             -webkit-user-select: none;
             background-color: #050505;
+            /* FIX: Empêche le défilement élastique / pull-to-refresh sur mobile */
+            overscroll-behavior: none;
+            touch-action: none;
         }
         .font-retro { font-family: 'Share Tech Mono', monospace; letter-spacing: 0.05em; }
         .font-handwriting { font-family: 'Caveat', cursive; letter-spacing: 0.05em; }
@@ -57,7 +60,6 @@
             height: 100dvh;
             display: flex;
             flex-direction: column;
-            /* FIX: Suppression de la balise HTML <div id="toast-zone"> qui était coincée ici et cassait tout le CSS en dessous */
         }
         #three-canvas-container {
             position: absolute;
@@ -295,51 +297,28 @@
             min-height: max-content !important;
             display: flex !important;
             flex-direction: column !important;
-            padding-bottom: 120px !important;
+            padding-bottom: 12px !important;
             gap: 12px;
             padding: 12px;
             background: rgba(0,0,0,0.4);
             box-sizing: border-box;
         }
-        @media (min-width: 768px) {
+        @media (min-width: 951px) {
             .daw-grid-container {
                 flex-direction: row !important; 
                 height: 100% !important; 
                 padding-bottom: 12px !important; 
                 overflow: visible !important;
             }
-            /* DAW Layout fixes */
-            #app-daw { 
-                min-width: 0 !important; 
-                overflow: hidden !important; /* Seul le contenu doit scroller, pas la fenêtre entière */
-            }
-            
-            #app-daw .window-content {
-                overflow-y: auto !important;
-                -webkit-overflow-scrolling: touch !important;
-                height: auto !important;
-            }
+            #app-daw { width: 950px; min-width: 700px; }
+        }
 
-            .daw-panel-neon { 
-                min-width: 0 !important; 
-                width: 100% !important; 
-                flex: none !important; /* FIX : Annule le flex-1 de Tailwind sur mobile */
-                flex-shrink: 0 !important; /* FIX : Empêche le panneau de se faire écraser */
-            }
-            
-            .tl-track { min-width: 600px; }
-            
-            .daw-grid-container { 
-                height: auto !important; 
-                min-height: max-content !important; 
-                display: flex !important; 
-                flex-direction: column !important; 
-                padding-bottom: 120px !important; 
-                overflow: visible !important; 
-            }
-            
-            .vu-led { width: 4px; height: 100%; margin-bottom: 0; margin-right: 2px; }
-            #vu-meter-container { flex-direction: row !important; height: 16px !important; width: 100% !important; padding: 2px !important; }
+        .daw-panel-neon {
+            background: rgba(10, 10, 15, 0.8);
+            border: 1px solid var(--accent); border-radius: 8px;
+            box-shadow: inset 0 0 15px rgba(129, 140, 248, 0.1), 0 0 10px rgba(129, 140, 248, 0.2);
+            display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box;
+        }
         
         .seq-pad { width: 100%; aspect-ratio: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-radius: 3px; cursor: pointer; transition: all 0.1s; }
         .seq-pad:active { transform: scale(0.9); }
@@ -383,7 +362,7 @@
         .toast { animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; pointer-events: auto; cursor: grab; }
         .toast:active { cursor: grabbing; }
 
-        .avatar-sel { border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.4); transition: all 0.2s; }
+        .avatar-sel { border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.4); transition: all 0.2s; touch-action: manipulation; }
         .avatar-sel.selected { border-color: var(--accent); background: rgba(129, 140, 248, 0.2); box-shadow: 0 0 25px rgba(129, 140, 248, 0.4), inset 0 1px 1px rgba(255,255,255,0.3); }
 
         #mobile-nav { display: none; }
@@ -412,48 +391,77 @@
             pointer-events: all;
         }
 
+        /* FIX: Overlay forçant le mode paysage sur mobile */
+        #landscape-overlay {
+            display: none;
+        }
+        @media (orientation: portrait) and (max-width: 950px) {
+            #landscape-overlay {
+                display: flex !important;
+            }
+        }
+
         /* =========================================
-           9. MOBILE RESPONSIVE RULES (Max 767px)
+           9. MOBILE RESPONSIVE RULES (Max 950px)
            ========================================= */
-        @media (max-width: 767px) {
+        /* FIX: Breakpoint ajusté à 950px pour couvrir tous les smartphones en mode paysage */
+        @media (max-width: 950px) {
             #taskbar-bottom { display: none !important; }
-           #mobile-nav { 
+            
+            /* FIX: Transformation du HUD en barre d'application native accrochée en haut */
+            #hud {
+                min-height: 50px !important;
+                top: 0 !important;
+                border-radius: 0 0 16px 16px !important;
+                width: 100% !important;
+                border-top: none !important;
+                border-left: none !important;
+                border-right: none !important;
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+            }
+            #hud-avatar { width: 32px !important; height: 32px !important; }
+            #hud-name { display: none !important; }
+
+            /* FIX: Barre de navigation fixée en bas, ne chevauche pas l'OS */
+            #mobile-nav { 
                 display: flex !important; 
-                flex-direction: row !important; /* Force l'alignement horizontal */
-                justify-content: space-around !important; /* Espace uniformément les icônes */
+                flex-direction: row !important; 
+                justify-content: space-around !important; 
                 align-items: center !important;
                 width: 100% !important;
                 left: 0 !important;
+                height: calc(50px + env(safe-area-inset-bottom)) !important;
+                padding-bottom: env(safe-area-inset-bottom) !important;
+                padding-top: 0 !important;
             }
-            
-            /* S'assurer que chaque bouton dans la nav reste bien proportionné */
-            #mobile-nav > div {
-                flex: 1 !important;
-            }
+            #mobile-nav > div { flex: 1 !important; }
             
             #desktop-content { 
-                padding-top: 100px !important; 
-                flex-direction: column !important; 
-                align-items: center !important; 
-                gap: 20px !important; 
+                padding-top: 60px !important; 
+                flex-direction: row !important; 
+                flex-wrap: wrap !important;
+                align-items: flex-start !important; 
+                gap: 15px !important; 
                 overflow-y: auto; 
-                padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important; 
+                padding-bottom: calc(60px + env(safe-area-inset-bottom)) !important; 
             }
-            .widgets-container { width: 100% !important; max-height: none !important; padding-right: 0 !important; }
-            #desktop-icons-container { display: none !important; }
+            .widgets-container { width: 100% !important; max-height: none !important; padding-right: 0 !important; flex-direction: row !important; flex-wrap: wrap !important; justify-content: center !important; }
+            #desktop-icons-container { display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; width: 100% !important; justify-content: center !important; gap: 15px !important; }
+            .desktop-icon { margin-bottom: 0 !important; }
             
-            /* FIX: Correction du "..os-window" en ".os-window" pour restaurer l'affichage mobile */
+            /* FIX: La fenêtre s'ouvre exactement entre la barre du haut (HUD) et celle du bas (Nav) */
             .os-window {
                 width: 100vw !important;
-                height: 100dvh !important;
+                height: calc(100dvh - 50px) !important;
                 max-width: 100vw !important;
-                max-height: 100dvh !important;
-                top: 0 !important;
+                max-height: calc(100dvh - 50px) !important;
+                top: 50px !important;
                 left: 0 !important;
                 border-radius: 0 !important;
                 resize: none !important;
                 border: none !important;
-                padding-top: 85px;
+                padding-top: 0 !important; 
                 background: rgba(10, 10, 15, 0.98) !important;
                 box-shadow: none !important;
                 display: flex !important;
@@ -464,14 +472,13 @@
             .os-window[style*="none"] { display: none !important; }
             .os-window[style*="flex"] { display: flex !important; }
             
-            /* Window header & close button fixes */
-            .window-header { border-top: 1px solid rgba(255,255,255,0.1); border-radius: 0; }
+            .window-header { border-top: 1px solid rgba(255,255,255,0.1); border-radius: 0; padding: 8px 12px !important; }
             
-            /* FIX: Consolidation des règles .window-content pour un scrolling parfait sur mobile */
+            /* FIX: Zone de défilement protégée contre le chevauchement de la nav OS */
             .window-content {
-                padding-bottom: calc(85px + env(safe-area-inset-bottom)) !important;
+                padding-bottom: calc(55px + env(safe-area-inset-bottom)) !important;
                 overflow-x: hidden !important;
-                overflow-y: auto !important; /* Changé de scroll à auto */
+                overflow-y: auto !important; 
                 -webkit-overflow-scrolling: touch !important;
                 flex: 1 !important;
                 min-height: 0 !important;
@@ -489,28 +496,45 @@
             .seq-pad { min-width: 44px; }
             #bpm-val { font-size: 18px !important; }
 
+            #app-daw { min-width: 0 !important; overflow: hidden !important; }
             
-            /* FIX: Réduction du padding bottom de 250px à une valeur standard pour éviter l'espace vide énorme */
+            /* FIX: Refonte du DAW sur mobile paysage, alignement parfait horizontalement */
             .daw-grid-container { 
-                height: auto !important; 
-                min-height: max-content !important; 
+                height: 100% !important; 
+                min-height: 0 !important; 
                 display: flex !important; 
-                flex-direction: column !important; 
-                padding-bottom: 120px !important;
-                overflow: visible !important;
+                flex-direction: row !important; 
+                flex-wrap: nowrap !important;
+                overflow-x: auto !important; 
+                overflow-y: hidden !important;
+                padding-bottom: 12px !important;
+                gap: 10px !important;
+            }
+            .daw-panel-neon { 
+                min-width: 320px !important; 
+                width: auto !important; 
+                flex: none !important; 
+                flex-shrink: 0 !important; 
             }
             
+            .tl-track { min-width: 500px; }
             .vu-led { width: 4px; height: 100%; margin-bottom: 0; margin-right: 2px; }
             #vu-meter-container { flex-direction: row !important; height: 16px !important; width: 100% !important; padding: 2px !important; }
             
-            /* Tooltips & UI Overlays */
-            #global-tooltip { left: 50% !important; transform: translateX(-50%) !important; top: 105px !important; }
-            #btn-quit-pc { top: auto; bottom: calc(85px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 90%; }
+            #global-tooltip { left: 50% !important; transform: translateX(-50%) !important; top: 60px !important; }
+            #btn-quit-pc { top: auto; bottom: calc(60px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 90%; }
         }
     </style>
 </head>
 <body data-theme="neon">
 <div id="game-container">
+
+    <!-- FIX: Overlay forçant le mode paysage sur mobile -->
+    <div id="landscape-overlay" class="fixed inset-0 bg-black z-[9999999] flex-col items-center justify-center text-center p-6 hidden">
+        <svg class="w-16 h-16 mb-4 animate-pulse text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18h.01"></path></svg>
+        <h2 class="text-2xl font-retro font-bold tracking-widest mb-2 uppercase text-white">Mode Paysage Requis</h2>
+        <p class="text-sm font-sans text-gray-400">Veuillez tourner votre appareil horizontalement pour jouer.</p>
+    </div>
 
     <!-- SLEEP OVERLAY -->
     <div id="sleep-overlay">
@@ -522,7 +546,6 @@
 
     <!-- RANDOM EVENTS OVERLAY --> 
     <div id="event-overlay" class="fixed inset-0 bg-black/90 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden"> 
-        <!-- FIX: Ajout de max-h-[90dvh] et overflow-y-auto pour s'assurer que la fenêtre loge sur les petits téléphones -->
         <div class="liquid-glass-heavy p-6 md:p-10 rounded-2xl w-[90%] max-w-lg border border-[var(--accent)] text-center shadow-[0_0_60px_rgba(0,0,0,0.8)] max-h-[90dvh] overflow-y-auto flex flex-col"> 
             <h2 id="event-title" class="text-3xl font-retro mb-4 tracking-widest uppercase drop-shadow-lg shrink-0">ÉVÈNEMENT !</h2> 
             <p id="event-desc" class="text-sm text-gray-200 mb-6 font-sans leading-relaxed shrink-0">Description de l'évènement ici...</p> 
@@ -551,12 +574,12 @@
 
             <!-- PHASE 2 : RÉSULTATS -->
             <div id="review-phase-results" class="hidden flex-col" style="max-height: 90dvh; overflow-y: auto;">
-                <div class="p-6 border-b border-white/10 shrink-0">
+                <div class="p-4 md:p-6 border-b border-white/10 shrink-0">
                     <p id="review-track-name" class="text-xs font-retro text-[var(--text-muted)] mb-1 tracking-widest uppercase"></p>
                     <h2 class="text-xl font-retro text-white tracking-widest">📊 REVIEWS ARE IN</h2>
                 </div>
-                <div id="review-list" class="space-y-3 p-6 overflow-y-auto"></div>
-                <div class="border-t border-white/10 px-6 py-4 flex items-center justify-between flex-shrink-0 bg-black/40">
+                <div id="review-list" class="space-y-3 p-4 md:p-6 overflow-y-auto"></div>
+                <div class="border-t border-white/10 px-4 md:px-6 py-4 flex items-center justify-between flex-shrink-0 bg-black/40">
                     <div>
                         <p class="text-xs text-[var(--text-muted)] font-retro mb-1">AVERAGE SCORE</p>
                         <p id="review-average" class="text-5xl font-bold font-retro text-white">/10</p>
@@ -625,18 +648,20 @@
 
     <!-- LOGIN SCREEN -->
     <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
-        <div class="liquid-glass-heavy p-8 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20">
-            <h1 class="text-4xl font-retro font-bold mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it.bat</h1>
-            <p class="text-[var(--text-muted)] font-retro text-xs mb-8 tracking-widest uppercase text-center">3D AllRoom Objects  // v13</p>
-            <div class="w-full mb-6">
+        <!-- FIX: Adaptation de la popup de login pour le mode paysage mobile -->
+        <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[90dvh] overflow-y-auto">
+            <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it.bat</h1>
+            <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">3D AllRoom Objects  // v13</p>
+            <div class="w-full mb-4 md:mb-6">
                 <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
-                <input type="text" id="login-username" class="w-full bg-black/60 border border-gray-600 rounded-lg px-4 py-3 text-white font-retro text-sm focus:outline-none focus:border-[var(--accent)] transition-all shadow-inner" placeholder="Enter Alias...">
+                <input type="text" id="login-username" class="w-full bg-black/60 border border-gray-600 rounded-lg px-4 py-2 md:py-3 text-white font-retro text-sm focus:outline-none focus:border-[var(--accent)] transition-all shadow-inner" placeholder="Enter Alias...">
             </div>
-            <div class="w-full mb-8">
-                <label class="block text-[10px] font-retro text-gray-300 mb-4 uppercase tracking-widest">Select_Avatar</label>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6" id="avatar-container"></div>
+            <div class="w-full mb-6 md:mb-8">
+                <label class="block text-[10px] font-retro text-gray-300 mb-2 md:mb-4 uppercase tracking-widest">Select_Avatar</label>
+                <!-- FIX: Grille à 4 colonnes même sur mobile pour rentrer en paysage sans déborder -->
+                <div class="grid grid-cols-4 gap-2 md:gap-6" id="avatar-container"></div>
             </div>
-            <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-2">Boot Studio Environment</button>
+            <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-2 shrink-0">Boot Studio Environment</button>
             <p id="login-error" class="text-[var(--retro-red)] font-retro text-xs mt-4 hidden text-center">Error: Missing ID</p>
         </div>
     </div>
@@ -713,33 +738,31 @@
             </div>
         </div>
 
-
-
-    
-        
         <!-- MOBILE NAV -->
-        <div id="mobile-nav" class="fixed bottom-0 left-0 w-full liquid-glass-heavy justify-around items-center px-2 pt-2 z-[60] border-t border-white/10" style="padding-bottom: env(safe-area-inset-bottom);">
-            <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="openApp('app-daw')">
-                <svg class="w-7 h-7 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
-                <span class="text-[9px] font-retro text-gray-300">STUDIO</span>
+        <div id="mobile-nav" class="fixed bottom-0 left-0 w-full liquid-glass-heavy justify-around items-center z-[60] border-t border-white/10 hidden">
+            <div class="flex flex-col items-center justify-center cursor-pointer h-full w-full group" onclick="openApp('app-daw')">
+                <svg class="w-5 h-5 text-orange-400 group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                <span class="text-[8px] mt-1 font-retro text-gray-300">STUDIO</span>
             </div>
-            <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="openApp('app-browser')">
-                <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-                <span class="text-[9px] font-retro text-gray-300">WEB</span>
+            <div class="flex flex-col items-center justify-center cursor-pointer h-full w-full group" onclick="openApp('app-browser')">
+                <svg class="w-5 h-5 text-blue-400 group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                <span class="text-[8px] mt-1 font-retro text-gray-300">WEB</span>
             </div>
-            <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="openApp('app-social')">
-                <svg class="w-7 h-7 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                <span class="text-[9px] font-retro text-gray-300">SOCIAL</span>
+            <div class="flex flex-col items-center justify-center cursor-pointer h-full w-full group" onclick="openApp('app-social')">
+                <svg class="w-5 h-5 text-pink-400 group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                <span class="text-[8px] mt-1 font-retro text-gray-300">SOCIAL</span>
             </div>
-            <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="openApp('app-stats')">
-                <svg class="w-7 h-7 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                <span class="text-[9px] font-retro text-gray-300">STATS</span>
+            <div class="flex flex-col items-center justify-center cursor-pointer h-full w-full group" onclick="openApp('app-stats')">
+                <svg class="w-5 h-5 text-green-400 group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                <span class="text-[8px] mt-1 font-retro text-gray-300">STATS</span>
             </div>
-            <div class="flex flex-col items-center gap-1 cursor-pointer p-2 w-full" onclick="cycleTheme()">
-                <svg class="w-7 h-7 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                <span class="text-[9px] font-retro text-[var(--accent)]">THEME</span>
+            <div class="flex flex-col items-center justify-center cursor-pointer h-full w-full group" onclick="cycleTheme()">
+                <svg class="w-5 h-5 text-[var(--accent)] group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                <span class="text-[8px] mt-1 font-retro text-[var(--accent)]">THEME</span>
             </div>
         </div>
+
+        <!-- APP WINDOWS -->
 
         <!-- DAW PRO -->
         <div id="app-daw" class="os-window liquid-glass flex-col font-sans" style="display:none;">
@@ -749,13 +772,13 @@
                 </span>
                 <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-daw')">✕</button>
             </div>
-            <div class="window-content daw-grid-container text-xs" style="overflow-y: scroll !important; -webkit-overflow-scrolling: touch !important;">
-                <div class="daw-panel-neon md:w-[160px] w-full p-4 flex flex-col flex-shrink-0 justify-start items-center relative">
+            <div class="window-content daw-grid-container text-xs">
+                <div class="daw-panel-neon md:w-[160px] w-full p-4 flex flex-col justify-start items-center relative">
                     <label class="block text-[10px] text-gray-300 mb-6 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2 w-full text-center">Drum Rack</label>
                     <div class="grid grid-cols-4 gap-2 mb-4 w-full max-w-[200px] md:max-w-[120px]" id="sequencer-grid"></div>
                     <p class="text-[8px] text-gray-500 font-retro tracking-widest mt-auto text-center border border-white/10 p-2 rounded w-full">Live Input</p>
                 </div>
-                <div class="daw-panel-neon flex-1 p-4 flex flex-col relative md:min-w-[450px] min-w-full">
+                <div class="daw-panel-neon flex-1 p-4 flex flex-col relative md:min-w-[450px]">
                     <label class="block text-[10px] text-gray-300 mb-3 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2">Timeline Arrangement</label>
                     <div class="h-32 border border-white/10 rounded-lg flex flex-col overflow-x-auto overflow-y-hidden relative bg-black/60 cursor-crosshair shadow-inner mb-4" id="timeline-container">
                         <div class="h-5 bg-black/80 border-b border-white/10 flex items-center font-retro text-[8px] text-gray-500 px-3 tracking-widest min-w-[700px] select-none">1...|...5...|...9...|...13...|...17...|...21...|...25...|...29...|...33</div>
@@ -877,7 +900,8 @@
     // ==========================================
     // 1. RESPONSIVE & GLOBALS
     // ==========================================
-    let isMobile = window.innerWidth <= 767;
+    // FIX: Maj du breakpoint isMobile pour s'aligner avec le CSS (Paysage/Tablette inclus)
+    let isMobile = window.innerWidth <= 950;
     window.isMobile = isMobile;
 
     const themesList = [
@@ -911,7 +935,7 @@
     scene.background = new THREE.Color('#7f889c');
 
     const aspect = window.innerWidth / window.innerHeight;
-    let frustumSize = window.innerWidth <= 767 ? 22 : 11.5;
+    let frustumSize = window.innerWidth <= 950 ? 22 : 11.5;
     const camera = new THREE.OrthographicCamera(
         frustumSize * aspect / -2, frustumSize * aspect / 2,
         frustumSize / 2, frustumSize / -2, 1, 1000
@@ -932,7 +956,7 @@
     // EVENEMENT RESIZE GLOBAL
     window.addEventListener('resize', () => {
         setTimeout(() => {
-            isMobile = window.innerWidth <= 767;
+            isMobile = window.innerWidth <= 950;
             window.isMobile = isMobile;
 
             const aspect = window.innerWidth / window.innerHeight;
@@ -1535,58 +1559,192 @@
     // ==========================================
     // GÉNÉRATION DE L'AVATAR DANS LA ROOM (3D Mesh)
     // ==========================================
-    function spawnRoomAvatar(styleIndex) {
-        if (currentRoomAvatar) {
-            scene.remove(currentRoomAvatar);
-            targetPosition = null; 
-        }
-
-        const group = new THREE.Group();
-
-        const skinColors = ['#ffdbac', '#8d5524', '#f1c27d', '#e0ac69'];
-        const skin = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.8 });
-        
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), skin);
-        head.position.y = 1.1;
-        head.castShadow = true;
-        group.add(head);
-
-        const clothesColors = ['#818cf8', '#00e5ff', '#34d399', '#111111'];
-        const clothes = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.7 });
-        const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.5), clothes);
-        body.position.y = 0.25;
-        body.castShadow = true;
-        group.add(body);
-
-        if (styleIndex === 0) {
-            const hpMat = new THREE.MeshStandardMaterial({ color: '#111' });
-            const hpL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.4), hpMat); hpL.position.set(-0.45, 1.1, 0); hpL.castShadow = true;
-            const hpR = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.4), hpMat); hpR.position.set(0.45, 1.1, 0); hpR.castShadow = true;
-            const band = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.1, 0.2), hpMat); band.position.set(0, 1.55, 0); band.castShadow = true;
-            group.add(hpL, hpR, band);
-        } else if (styleIndex === 1) {
-            const visorMat = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 0.8 });
-            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.25, 0.2), visorMat);
-            visor.position.set(0, 1.15, 0.35);
-            group.add(visor);
-        } else if (styleIndex === 2) {
-            const capMat = new THREE.MeshStandardMaterial({ color: '#fb7185' });
-            const cap = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.2, 0.82), capMat); cap.position.set(0, 1.55, 0); cap.castShadow = true;
-            const peak = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.1, 0.4), capMat); peak.position.set(0, 1.5, -0.6); peak.castShadow = true;
-            group.add(cap, peak);
-        } else if (styleIndex === 3) {
-            const shadesMat = new THREE.MeshStandardMaterial({ color: '#050505', roughness: 0.1 });
-            const shades = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.2, 0.1), shadesMat);
-            shades.position.set(0, 1.15, 0.41);
-            group.add(shades);
-        }
-
-        group.scale.set(1.3, 1.3, 1.3);
-        group.position.set(0, -0.74, 3);
-
-        scene.add(group);
-        currentRoomAvatar = group;
+   function spawnRoomAvatar(styleIndex) {
+    if (currentRoomAvatar) {
+        scene.remove(currentRoomAvatar);
+        targetPosition = null;
     }
+
+    const group = new THREE.Group();
+
+    const skinTones = ['#FFCBA4', '#8D4E28', '#F0C080', '#C68642'];
+    const skinColor = skinTones[styleIndex];
+    const skinMat = new THREE.MeshStandardMaterial({ color: skinColor, roughness: 0.7 });
+
+    // --- JAMBES ---
+    const pantsColors = ['#1e1b4b', '#111827', '#14532d', '#0a0a0a'];
+    const pantsMat = new THREE.MeshStandardMaterial({ color: pantsColors[styleIndex], roughness: 0.9 });
+    const shoeMat  = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.5, metalness: 0.2 });
+
+    const legL = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.60, 0.28), pantsMat);
+    legL.position.set(-0.18, -0.56, 0);
+    legL.castShadow = true;
+    group.add(legL);
+    const legR = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.60, 0.28), pantsMat);
+    legR.position.set(0.18, -0.56, 0);
+    legR.castShadow = true;
+    group.add(legR);
+
+    // Chaussures
+    const shoeL = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.12, 0.38), shoeMat);
+    shoeL.position.set(-0.18, -0.90, 0.05);
+    shoeL.castShadow = true;
+    group.add(shoeL);
+    const shoeR = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.12, 0.38), shoeMat);
+    shoeR.position.set(0.18, -0.90, 0.05);
+    shoeR.castShadow = true;
+    group.add(shoeR);
+
+    // --- TORSO ---
+    const torsoColors = ['#3730a3', '#0e7490', '#065f46', '#111111'];
+    const torsoMat = new THREE.MeshStandardMaterial({ color: torsoColors[styleIndex], roughness: 0.8 });
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.72, 0.40), torsoMat);
+    torso.position.set(0, 0.10, 0);
+    torso.castShadow = true;
+    group.add(torso);
+
+    // --- BRAS ---
+    const upperArmL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.36, 0.24), torsoMat);
+    upperArmL.position.set(-0.50, 0.10, 0);
+    upperArmL.castShadow = true;
+    group.add(upperArmL);
+    const foreArmL = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.32, 0.20), skinMat);
+    foreArmL.position.set(-0.50, -0.24, 0);
+    foreArmL.castShadow = true;
+    group.add(foreArmL);
+    const handL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.14), skinMat);
+    handL.position.set(-0.50, -0.44, 0);
+    group.add(handL);
+
+    const upperArmR = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.36, 0.24), torsoMat);
+    upperArmR.position.set(0.50, 0.10, 0);
+    upperArmR.castShadow = true;
+    group.add(upperArmR);
+    const foreArmR = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.32, 0.20), skinMat);
+    foreArmR.position.set(0.50, -0.24, 0);
+    foreArmR.castShadow = true;
+    group.add(foreArmR);
+    const handR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.14), skinMat);
+    handR.position.set(0.50, -0.44, 0);
+    group.add(handR);
+
+    // --- COU ---
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.12, 0.16, 8), skinMat);
+    neck.position.set(0, 0.54, 0);
+    neck.castShadow = true;
+    group.add(neck);
+
+    // --- TÊTE ---
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.60, 0.64, 0.58), skinMat);
+    head.position.set(0, 0.94, 0);
+    head.castShadow = true;
+    group.add(head);
+
+    // Mâchoire
+    const jaw = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.16, 0.52), skinMat);
+    jaw.position.set(0, 0.66, 0.02);
+    group.add(jaw);
+
+    // Yeux
+    const eyeWhiteMat = new THREE.MeshStandardMaterial({ color: '#ffffff' });
+    const eyeDarkMat  = new THREE.MeshStandardMaterial({ color: '#111111' });
+    const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, 0.04), eyeWhiteMat);
+    eyeL.position.set(-0.14, 0.97, 0.30);
+    group.add(eyeL);
+    const pupilL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.04), eyeDarkMat);
+    pupilL.position.set(-0.14, 0.97, 0.32);
+    group.add(pupilL);
+    const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, 0.04), eyeWhiteMat);
+    eyeR.position.set(0.14, 0.97, 0.30);
+    group.add(eyeR);
+    const pupilR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.04), eyeDarkMat);
+    pupilR.position.set(0.14, 0.97, 0.32);
+    group.add(pupilR);
+
+    // Nez
+    const nose = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.09, 0.07), skinMat);
+    nose.position.set(0, 0.88, 0.31);
+    group.add(nose);
+
+    // Bouche
+    const mouthMat = new THREE.MeshStandardMaterial({ color: '#8B3A3A' });
+    const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.05, 0.03), mouthMat);
+    mouth.position.set(0, 0.78, 0.30);
+    group.add(mouth);
+
+    // Oreilles
+    const earL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.12, 0.06), skinMat);
+    earL.position.set(-0.32, 0.94, 0);
+    group.add(earL);
+    const earR = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.12, 0.06), skinMat);
+    earR.position.set(0.32, 0.94, 0);
+    group.add(earR);
+
+    // --- ACCESSOIRES PAR AVATAR ---
+    if (styleIndex === 0) {
+        // Beatmaker — Casque pro
+        const hpMat     = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.3, metalness: 0.6 });
+        const cushionMat = new THREE.MeshStandardMaterial({ color: '#1a1a2e', roughness: 1.0 });
+        const bandGeo   = new THREE.TorusGeometry(0.34, 0.034, 8, 20, Math.PI);
+        const band      = new THREE.Mesh(bandGeo, hpMat);
+        band.position.set(0, 1.16, 0);
+        band.rotation.x = Math.PI;
+        band.rotation.z = Math.PI / 2;
+        group.add(band);
+        const cupGeo = new THREE.CylinderGeometry(0.13, 0.13, 0.09, 16);
+        const cupL   = new THREE.Mesh(cupGeo, hpMat); cupL.rotation.z = Math.PI/2; cupL.position.set(-0.36, 0.94, 0); group.add(cupL);
+        const cushL  = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, 0.04, 16), cushionMat); cushL.rotation.z = Math.PI/2; cushL.position.set(-0.40, 0.94, 0); group.add(cushL);
+        const cupR   = new THREE.Mesh(cupGeo, hpMat); cupR.rotation.z = Math.PI/2; cupR.position.set(0.36, 0.94, 0); group.add(cupR);
+        const cushR  = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, 0.04, 16), cushionMat); cushR.rotation.z = Math.PI/2; cushR.position.set(0.40, 0.94, 0); group.add(cushR);
+
+    } else if (styleIndex === 1) {
+        // Cyber-DJ — Visière LED
+        const visorMat   = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 1.2, transparent: true, opacity: 0.75 });
+        const frameMat   = new THREE.MeshStandardMaterial({ color: '#222', metalness: 0.9 });
+        const visorFrame = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.06, 0.08), frameMat);
+        visorFrame.position.set(0, 1.10, 0.18);
+        group.add(visorFrame);
+        const visor = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.15, 0.04), visorMat);
+        visor.position.set(0, 0.98, 0.32);
+        group.add(visor);
+        // Stripe veste
+        const stripeMat = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 0.3 });
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.72, 0.41), stripeMat);
+        stripe.position.set(-0.34, 0.10, 0);
+        group.add(stripe);
+
+    } else if (styleIndex === 2) {
+        // Street MC — Snapback + chaîne
+        const capMat  = new THREE.MeshStandardMaterial({ color: '#dc2626', roughness: 0.8 });
+        const capBase = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.20, 0.62), capMat); capBase.position.set(0, 1.26, -0.02); group.add(capBase);
+        const capTop  = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.09, 0.58), capMat); capTop.position.set(0, 1.38, -0.02); group.add(capTop);
+        const brim    = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.05, 0.28), capMat); brim.position.set(0, 1.20, 0.40); group.add(brim);
+        const snap    = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.07, 0.05), new THREE.MeshStandardMaterial({ color: '#111' })); snap.position.set(0, 1.22, -0.33); group.add(snap);
+        // Chaîne
+        const chainMat = new THREE.MeshStandardMaterial({ color: '#fbbf24', roughness: 0.2, metalness: 0.9 });
+        const chain    = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.016, 8, 20), chainMat); chain.position.set(0, 0.30, 0.20); chain.rotation.x = Math.PI/2.2; group.add(chain);
+        const pendant  = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.03), chainMat); pendant.position.set(0, 0.17, 0.22); group.add(pendant);
+
+    } else if (styleIndex === 3) {
+        // Exec Producer — Lunettes + veste executive
+        const framesMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.2, metalness: 0.8 });
+        const lensMat   = new THREE.MeshStandardMaterial({ color: '#0a0a0a', transparent: true, opacity: 0.85, metalness: 0.9 });
+        const lensL  = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.11, 0.03), lensMat); lensL.position.set(-0.14, 0.96, 0.31); group.add(lensL);
+        const lensR  = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.11, 0.03), lensMat); lensR.position.set(0.14, 0.96, 0.31); group.add(lensR);
+        const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.03, 0.03), framesMat); bridge.position.set(0, 0.96, 0.31); group.add(bridge);
+        // Revers veste
+        const lapelMat = new THREE.MeshStandardMaterial({ color: '#1c1c1c', roughness: 0.6 });
+        const lapelL   = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.40, 0.41), lapelMat); lapelL.position.set(-0.20, 0.10, 0.01); group.add(lapelL);
+        const lapelR   = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.40, 0.41), lapelMat); lapelR.position.set(0.20, 0.10, 0.01); group.add(lapelR);
+        // Chemise
+        const shirt = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.38, 0.41), new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.9 })); shirt.position.set(0, 0.10, 0.01); group.add(shirt);
+    }
+
+    group.scale.set(1.3, 1.3, 1.3);
+    group.position.set(0, -0.74, 3);
+    scene.add(group);
+    currentRoomAvatar = group;
+}
 
     function checkCollision(x, z) {
         const r = 0.6; 
@@ -1887,69 +2045,271 @@
     // ==========================================
     // 8. CONSTANTS & DEFAULT STATE
     // ==========================================
-    function generateAvatarImage(styleIndex) {
-        const cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-        cam.position.set(0, 1.4, 3.5);
-        cam.lookAt(0, 0.6, 0);
+  function generateAvatarImage(styleIndex) {
+    const cam = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+    cam.position.set(0, 1.6, 2.8);
+    cam.lookAt(0, 1.0, 0);
 
-        const scn = new THREE.Scene();
-        scn.background = new THREE.Color(['#1e1b4b', '#0f172a', '#064e3b', '#4c0519'][styleIndex]);
+    const scn = new THREE.Scene();
+    scn.background = new THREE.Color(['#1e1b4b', '#0f172a', '#064e3b', '#4c0519'][styleIndex]);
 
-        const rnd = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
-        rnd.setSize(128, 128); 
+    const rnd = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    rnd.setSize(128, 128);
+    rnd.shadowMap.enabled = true;
 
-        const light = new THREE.DirectionalLight(0xffffff, 1.2);
-        light.position.set(2, 3, 2);
-        scn.add(light);
-        scn.add(new THREE.AmbientLight(0x666666));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+    keyLight.position.set(2, 4, 3);
+    scn.add(keyLight);
+    const fillLight = new THREE.DirectionalLight(0x8888ff, 0.4);
+    fillLight.position.set(-2, 2, 1);
+    scn.add(fillLight);
+    scn.add(new THREE.AmbientLight(0x444466, 0.8));
 
-        const group = new THREE.Group();
+    const group = new THREE.Group();
+    group.rotation.y = -Math.PI / 10;
 
-        const skinColors = ['#ffdbac', '#8d5524', '#f1c27d', '#e0ac69'];
-        const skin = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.8 });
-        
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), skin);
-        head.position.y = 1.1;
-        group.add(head);
+    const skinTones = ['#FFCBA4', '#8D4E28', '#F0C080', '#C68642'];
+    const skinColor = skinTones[styleIndex];
+    const skinMat = new THREE.MeshStandardMaterial({ color: skinColor, roughness: 0.7, metalness: 0.0 });
 
-        const clothesColors = ['#818cf8', '#00e5ff', '#34d399', '#111111'];
-        const clothes = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.7 });
-        const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.5), clothes);
-        body.position.y = 0.25;
-        group.add(body);
+    // --- TORSO ---
+    const torsoColors = ['#3730a3', '#0e7490', '#065f46', '#111111'];
+    const torsoMat = new THREE.MeshStandardMaterial({ color: torsoColors[styleIndex], roughness: 0.8 });
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.78, 0.38), torsoMat);
+    torso.position.set(0, 0.82, 0);
+    group.add(torso);
 
-        if (styleIndex === 0) {
-            const hpMat = new THREE.MeshStandardMaterial({ color: '#111' });
-            const hpL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.4), hpMat); hpL.position.set(-0.45, 1.1, 0);
-            const hpR = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.4), hpMat); hpR.position.set(0.45, 1.1, 0);
-            const band = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.1, 0.2), hpMat); band.position.set(0, 1.55, 0);
-            group.add(hpL, hpR, band);
-        } else if (styleIndex === 1) {
-            const visorMat = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 0.8 });
-            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.25, 0.2), visorMat);
-            visor.position.set(0, 1.15, 0.35);
-            group.add(visor);
-        } else if (styleIndex === 2) {
-            const capMat = new THREE.MeshStandardMaterial({ color: '#fb7185' });
-            const cap = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.2, 0.82), capMat); cap.position.set(0, 1.55, 0);
-            const peak = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.1, 0.4), capMat); peak.position.set(0, 1.5, -0.6);
-            group.add(cap, peak);
-        } else if (styleIndex === 3) {
-            const shadesMat = new THREE.MeshStandardMaterial({ color: '#050505', roughness: 0.1 });
-            const shades = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.2, 0.1), shadesMat);
-            shades.position.set(0, 1.15, 0.41);
-            group.add(shades);
-        }
+    // Col du t-shirt
+    const collarMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.9 });
+    const collar = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.08, 0.39), collarMat);
+    collar.position.set(0, 1.19, 0);
+    group.add(collar);
 
-        group.rotation.y = -Math.PI / 6;
-        scn.add(group);
+    // --- BRAS ---
+    const sleeveColors = ['#3730a3', '#0e7490', '#065f46', '#111111'];
+    const sleeveMat = new THREE.MeshStandardMaterial({ color: sleeveColors[styleIndex], roughness: 0.8 });
 
-        rnd.render(scn, cam);
-        const dataUrl = rnd.domElement.toDataURL('image/png'); 
-        
-        rnd.dispose(); 
-        return dataUrl;
+    // Bras gauche
+    const upperArmL = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.38, 0.22), sleeveMat);
+    upperArmL.position.set(-0.49, 0.9, 0);
+    upperArmL.rotation.z = 0.15;
+    group.add(upperArmL);
+    const foreArmL = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.34, 0.19), skinMat);
+    foreArmL.position.set(-0.55, 0.55, 0);
+    foreArmL.rotation.z = 0.1;
+    group.add(foreArmL);
+
+    // Bras droit
+    const upperArmR = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.38, 0.22), sleeveMat);
+    upperArmR.position.set(0.49, 0.9, 0);
+    upperArmR.rotation.z = -0.15;
+    group.add(upperArmR);
+    const foreArmR = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.34, 0.19), skinMat);
+    foreArmR.position.set(0.55, 0.55, 0);
+    foreArmR.rotation.z = -0.1;
+    group.add(foreArmR);
+
+    // Mains
+    const handL = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.16, 0.12), skinMat);
+    handL.position.set(-0.58, 0.38, 0);
+    group.add(handL);
+    const handR = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.16, 0.12), skinMat);
+    handR.position.set(0.58, 0.38, 0);
+    group.add(handR);
+
+    // --- COU ---
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.18, 8), skinMat);
+    neck.position.set(0, 1.26, 0);
+    group.add(neck);
+
+    // --- TÊTE ---
+    const headGeo = new THREE.BoxGeometry(0.62, 0.68, 0.60);
+    const head = new THREE.Mesh(headGeo, skinMat);
+    head.position.set(0, 1.68, 0);
+    group.add(head);
+
+    // Mâchoire arrondie
+    const jaw = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.18, 0.54), skinMat);
+    jaw.position.set(0, 1.37, 0.02);
+    group.add(jaw);
+
+    // Yeux
+    const eyeWhiteMat = new THREE.MeshStandardMaterial({ color: '#ffffff' });
+    const eyeDarkMat  = new THREE.MeshStandardMaterial({ color: '#111111' });
+    const eyeGeo = new THREE.BoxGeometry(0.13, 0.09, 0.04);
+    const pupilGeo = new THREE.BoxGeometry(0.06, 0.06, 0.04);
+
+    const eyeL = new THREE.Mesh(eyeGeo, eyeWhiteMat);
+    eyeL.position.set(-0.16, 1.72, 0.30);
+    group.add(eyeL);
+    const pupilL = new THREE.Mesh(pupilGeo, eyeDarkMat);
+    pupilL.position.set(-0.16, 1.72, 0.32);
+    group.add(pupilL);
+
+    const eyeR = new THREE.Mesh(eyeGeo, eyeWhiteMat);
+    eyeR.position.set(0.16, 1.72, 0.30);
+    group.add(eyeR);
+    const pupilR = new THREE.Mesh(pupilGeo, eyeDarkMat);
+    pupilR.position.set(0.16, 1.72, 0.32);
+    group.add(pupilR);
+
+    // Sourcils
+    const browMat = new THREE.MeshStandardMaterial({ color: '#2d1a0e' });
+    const browGeo = new THREE.BoxGeometry(0.15, 0.04, 0.03);
+    const browL = new THREE.Mesh(browGeo, browMat);
+    browL.position.set(-0.16, 1.80, 0.30);
+    group.add(browL);
+    const browR = new THREE.Mesh(browGeo, browMat);
+    browR.position.set(0.16, 1.80, 0.30);
+    group.add(browR);
+
+    // Nez
+    const noseMat = new THREE.MeshStandardMaterial({ color: skinColor, roughness: 0.9 });
+    const nose = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.10, 0.08), noseMat);
+    nose.position.set(0, 1.63, 0.32);
+    group.add(nose);
+
+    // Bouche
+    const mouthMat = new THREE.MeshStandardMaterial({ color: '#8B3A3A' });
+    const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.05, 0.03), mouthMat);
+    mouth.position.set(0, 1.52, 0.31);
+    group.add(mouth);
+
+    // Oreilles
+    const earGeo = new THREE.BoxGeometry(0.07, 0.13, 0.07);
+    const earL = new THREE.Mesh(earGeo, skinMat);
+    earL.position.set(-0.33, 1.66, 0);
+    group.add(earL);
+    const earR = new THREE.Mesh(earGeo, skinMat);
+    earR.position.set(0.33, 1.66, 0);
+    group.add(earR);
+
+    // --- ACCESSOIRES PAR AVATAR ---
+    if (styleIndex === 0) {
+        // Beatmaker — Casque pro noir
+        const hpMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.3, metalness: 0.6 });
+        const hpPadMat = new THREE.MeshStandardMaterial({ color: '#222222', roughness: 0.9 });
+        const cushionMat = new THREE.MeshStandardMaterial({ color: '#1a1a2e', roughness: 1.0 });
+
+        const bandGeo = new THREE.TorusGeometry(0.35, 0.035, 8, 20, Math.PI);
+        const band = new THREE.Mesh(bandGeo, hpMat);
+        band.position.set(0, 1.90, 0);
+        band.rotation.x = Math.PI;
+        band.rotation.z = Math.PI / 2;
+        group.add(band);
+
+        const cupGeo = new THREE.CylinderGeometry(0.14, 0.14, 0.10, 16);
+        const cupL = new THREE.Mesh(cupGeo, hpPadMat);
+        cupL.rotation.z = Math.PI / 2;
+        cupL.position.set(-0.38, 1.68, 0);
+        group.add(cupL);
+        const cushionL = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.04, 16), cushionMat);
+        cushionL.rotation.z = Math.PI / 2;
+        cushionL.position.set(-0.42, 1.68, 0);
+        group.add(cushionL);
+
+        const cupR = new THREE.Mesh(cupGeo, hpPadMat);
+        cupR.rotation.z = Math.PI / 2;
+        cupR.position.set(0.38, 1.68, 0);
+        group.add(cupR);
+        const cushionR = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.04, 16), cushionMat);
+        cushionR.rotation.z = Math.PI / 2;
+        cushionR.position.set(0.42, 1.68, 0);
+        group.add(cushionR);
+
+    } else if (styleIndex === 1) {
+        // Cyber-DJ — Visière LED + veste technique
+        const visorMat = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 1.2, transparent: true, opacity: 0.75 });
+        const visorFrame = new THREE.Mesh(new THREE.BoxGeometry(0.70, 0.06, 0.08), new THREE.MeshStandardMaterial({ color: '#222', metalness: 0.9 }));
+        visorFrame.position.set(0, 1.86, 0.18);
+        group.add(visorFrame);
+        const visor = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.16, 0.04), visorMat);
+        visor.position.set(0, 1.74, 0.33);
+        group.add(visor);
+
+        // Veste technique
+        const jacketMat = new THREE.MeshStandardMaterial({ color: '#0e7490', roughness: 0.5, metalness: 0.2 });
+        const jacketStripe = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.78, 0.40), new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 0.3 }));
+        jacketStripe.position.set(-0.36, 0.82, 0);
+        group.add(jacketStripe);
+
+    } else if (styleIndex === 2) {
+        // Street MC — Casquette snapback + chaîne
+        const capMat  = new THREE.MeshStandardMaterial({ color: '#dc2626', roughness: 0.8 });
+        const capBase = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.22, 0.64), capMat);
+        capBase.position.set(0, 2.02, -0.02);
+        group.add(capBase);
+        const capTop = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.10, 0.60), capMat);
+        capTop.position.set(0, 2.16, -0.02);
+        group.add(capTop);
+        const brim = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.06, 0.30), capMat);
+        brim.position.set(0, 1.96, 0.42);
+        group.add(brim);
+        const snapback = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.08, 0.06), new THREE.MeshStandardMaterial({ color: '#111' }));
+        snapback.position.set(0, 1.98, -0.34);
+        group.add(snapback);
+
+        // Logo cap
+        const logoMat = new THREE.MeshStandardMaterial({ color: '#ffffff' });
+        const logo = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.10, 0.02), logoMat);
+        logo.position.set(0, 2.04, 0.33);
+        group.add(logo);
+
+        // Chaîne or
+        const chainMat = new THREE.MeshStandardMaterial({ color: '#fbbf24', roughness: 0.2, metalness: 0.9 });
+        const chain = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.018, 8, 20), chainMat);
+        chain.position.set(0, 1.08, 0.20);
+        chain.rotation.x = Math.PI / 2.2;
+        group.add(chain);
+        const pendant = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 0.03), chainMat);
+        pendant.position.set(0, 0.94, 0.22);
+        group.add(pendant);
+
+    } else if (styleIndex === 3) {
+        // Exec Producer — Lunettes de soleil + veste sombre
+        const framesMat  = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.2, metalness: 0.8 });
+        const lensMat    = new THREE.MeshStandardMaterial({ color: '#0a0a0a', roughness: 0.0, metalness: 0.9, transparent: true, opacity: 0.85 });
+
+        const lensL = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.12, 0.03), lensMat);
+        lensL.position.set(-0.16, 1.70, 0.32);
+        group.add(lensL);
+        const lensR = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.12, 0.03), lensMat);
+        lensR.position.set(0.16, 1.70, 0.32);
+        group.add(lensR);
+        const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.03, 0.03), framesMat);
+        bridge.position.set(0, 1.70, 0.32);
+        group.add(bridge);
+        const templeL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.03, 0.03), framesMat);
+        templeL.position.set(-0.33, 1.70, 0.20);
+        templeL.rotation.y = 0.6;
+        group.add(templeL);
+        const templeR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.03, 0.03), framesMat);
+        templeR.position.set(0.33, 1.70, 0.20);
+        templeR.rotation.y = -0.6;
+        group.add(templeR);
+
+        // Veste executive noire avec revers
+        const lapelMat = new THREE.MeshStandardMaterial({ color: '#1c1c1c', roughness: 0.6 });
+        const lapelL = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.42, 0.40), lapelMat);
+        lapelL.position.set(-0.22, 0.98, 0.01);
+        group.add(lapelL);
+        const lapelR = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.42, 0.40), lapelMat);
+        lapelR.position.set(0.22, 0.98, 0.01);
+        group.add(lapelR);
+
+        // Chemise blanche visible
+        const shirtMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.9 });
+        const shirt = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.40, 0.40), shirtMat);
+        shirt.position.set(0, 0.98, 0.01);
+        group.add(shirt);
     }
+
+    scn.add(group);
+    rnd.render(scn, cam);
+    const dataUrl = rnd.domElement.toDataURL('image/png');
+    rnd.dispose();
+    return dataUrl;
+}
 
     const avatars = [
         { id: 'Beatmaker', img: generateAvatarImage(0) },
@@ -2066,10 +2426,11 @@
     // ==========================================
     function initUI() {
         const cont = document.getElementById('avatar-container');
+        // FIX: Ajout de pointer-events-none sur les enfants de l'avatar-sel pour garantir la bonne exécution du clique sur mobile
         cont.innerHTML = avatars.map((a, i) => `
-            <div class="avatar-sel flex flex-col items-center justify-center p-3 md:p-4 ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
-                <img src="${a.img}" alt="${a.id}" class="w-24 h-24 md:w-32 md:h-32 pixelated object-contain mb-3" onerror="this.style.border='1px solid red'" />
-                <span class="text-[10px] md:text-xs font-retro text-[var(--text-muted)] uppercase font-bold tracking-widest">${a.id}</span>
+            <div class="avatar-sel flex flex-col items-center justify-center p-2 md:p-4 ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
+                <img src="${a.img}" alt="${a.id}" class="w-16 h-16 md:w-32 md:h-32 pixelated object-contain mb-2 pointer-events-none" onerror="this.style.border='1px solid red'" />
+                <span class="text-[10px] md:text-xs font-retro text-[var(--text-muted)] uppercase font-bold tracking-widest pointer-events-none">${a.id}</span>
             </div>`).join('');
 
         const seq = document.getElementById('sequencer-grid');
@@ -2978,7 +3339,7 @@
             const rapper = isKnown ? rappersConnus[Math.floor(Math.random() * rappersConnus.length)] : rappersPasConnus[Math.floor(Math.random() * rappersPasConnus.length)];
 
             title.innerText = "🤝 COLLABORATION";
-            title.className = "text-3xl font-retro text-[var(--retro-green)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-green)]";
+            title.className = "text-3xl font-retro text-[var(--retro-green)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-green)] shrink-0";
             desc.innerHTML = `<span class="text-white font-bold text-base">"${rapper}"</span> te contacte pour collaborer sur un son, mais il essaie de t'arnaquer et marchande. Tu fixes les tarots. Que proposes-tu ?`;
 
             const btn1 = document.createElement('button');
@@ -3005,7 +3366,7 @@
             const voleur = isKnown ? voleursConnus[Math.floor(Math.random() * voleursConnus.length)] : voleursPasConnus[Math.floor(Math.random() * voleursPasConnus.length)];
 
             title.innerText = "🚨 VOL DE PROD";
-            title.className = "text-3xl font-retro text-[var(--retro-orange)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-orange)]";
+            title.className = "text-3xl font-retro text-[var(--retro-orange)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-orange)] shrink-0";
             desc.innerHTML = `Belek à toi, <span class="text-white font-bold text-base">"${voleur}"</span> t'a volé une prod pour son nouvel album. Que souhaites-tu faire ?`;
 
             const btn1 = document.createElement('button');
@@ -3031,7 +3392,7 @@
             const cancelled = rappersCancel[Math.floor(Math.random() * rappersCancel.length)];
 
             title.innerText = "❌ BAD BUZZ";
-            title.className = "text-3xl font-retro text-[var(--retro-red)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-red)]";
+            title.className = "text-3xl font-retro text-[var(--retro-red)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-red)] shrink-0";
             desc.innerHTML = `Catastrophe. Vous avez failli collaborer avec <span class="text-white font-bold text-base">"${cancelled}"</span>. La rumeur a fuité sur Twitter. Vous perdez en crédibilité.`;
 
             const btn1 = document.createElement('button');
