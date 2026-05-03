@@ -1797,37 +1797,36 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
 
         // 3. Animation des jambes (Axe X)
         if (legL && legR) {
-            legL.rotation.x = Math.sin(walkTime * 2) * 0.2;
-            legR.rotation.x = -Math.sin(walkTime * 2) * 0.2; 
+            legL.rotation.x = Math.sin(walkTime * 4) * 0.2;
+            legR.rotation.x = -Math.sin(walkTime * 4) * 0.2; 
         }
         
     } else {
         // --- PHASE D'ARRÊT ET STABILISATION ---
         walkTime = 0; 
 
-        // Amortissement progressif (Lerp)
-        innerAvatar.rotation.z *= 0.7; 
-        innerAvatar.position.y *= 0.7;
+        // Amortissement progressif (Lerp plus rapide)
+        innerAvatar.rotation.z *= 0.5; 
+        innerAvatar.position.y *= 0.5;
 
         if (legL && legR) {
-            legL.rotation.x *= 0.7;
-            legR.rotation.x *= 0.7;
+            legL.rotation.x *= 0.5;
+            legR.rotation.x *= 0.5;
         }
 
-        // FORCE le retour à zéro total si le balancement des jambes ou du corps est infime
-        // On vérifie la rotation des jambes (legL.rotation.x) car c'est souvent elle qui "traîne"
-        const isLegLStable = legL ? Math.abs(legL.rotation.x) < 0.001 : true;
-        const isBodyStable = Math.abs(innerAvatar.rotation.z) < 0.001;
-
-        if (isBodyStable && isLegLStable) {
+        // FORCE le retour à zéro INDÉPENDANT dès que le mouvement est infime (< 0.01)
+        if (Math.abs(innerAvatar.rotation.z) < 0.01) {
             innerAvatar.rotation.z = 0;
+        }
+        if (Math.abs(innerAvatar.position.y) < 0.01) {
             innerAvatar.position.y = 0;
-            if (legL) legL.rotation.x = 0;
-            if (legR) legR.rotation.x = 0;
+        }
+        if (legL && Math.abs(legL.rotation.x) < 0.01) {
+            legL.rotation.x = 0;
+            legR.rotation.x = 0;
         }
     }
 }
-
 
             // --- 2. SUIVI DE CAMÉRA ---
             const followIntensity = 0.2;
