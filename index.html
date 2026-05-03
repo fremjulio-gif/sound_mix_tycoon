@@ -2780,10 +2780,10 @@
                              <div class="space-y-4">`;
             let foundAny = false;
             cracks.forEach(c => {
-              // Si la réputation est insuffisante, on affiche un lien "verrouillé"
-                if (state.rep < c.reqRep) {
+                // Si l'argent est insuffisant, on affiche un lien "verrouillé"
+                if (state.money < c.reqMoney) {
                     crackHTML += `<div class="border border-gray-800 p-4 flex justify-between items-center bg-black/60 rounded-lg opacity-50 select-none">
-                        <div class="flex-1"><p class="font-bold text-sm text-gray-500 font-retro">???_ENCRYPTED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: ${formatNum(c.reqRep)} REP</p></div>
+                        <div class="flex-1"><p class="font-bold text-sm text-gray-500 font-retro">???_LOCKED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: $${formatNum(c.reqMoney)} in Bank</p></div>
                         <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] border-gray-700 text-gray-600 rounded cursor-not-allowed" disabled>LOCKED</button>
                     </div>`;
                     return;
@@ -2794,7 +2794,7 @@
                     <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
                 </div>`;
             });
-            if (!foundAny) crackHTML += `<p class="text-sm text-gray-500 text-center py-10 font-retro">Raise your REP to access deep web links.</p>`;
+            if (!foundAny) crackHTML += `<p class="text-sm text-gray-500 text-center py-10 font-retro">Make some money to access deep web links.</p>`;
             crackHTML += '</div>';
             content.innerHTML = `<div class="p-8 bg-[#050505] font-sans h-full min-h-[300px] overflow-y-auto shadow-inner">${crackHTML}</div>`;
         } else {
@@ -2871,7 +2871,6 @@
             }
         }, 150);
     }
-
     // ==========================================
     // 19. SOCIAL
     // ==========================================
