@@ -1806,12 +1806,12 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
         walkTime = 0; 
 
         // On utilise un facteur de réduction agressif (0.5)
-        innerAvatar.rotation.z *= 0.5; 
-        innerAvatar.position.y *= 0.5;
+        innerAvatar.rotation.z *= 0.02; 
+        innerAvatar.position.y *= 0.01;
 
         if (legL && legR) {
-            legL.rotation.x *= 0.5;
-            legR.rotation.x *= 0.5;
+            legL.rotation.x *= 0.01;
+            legR.rotation.x *= 0.01;
         }
 
         // FORCE le retour à zéro si les valeurs sont proches de la fin de l'oscillation
@@ -1831,7 +1831,7 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
             if (legR) legR.rotation.x = 0;
         }
     }
-}
+
 
             // --- 2. SUIVI DE CAMÉRA ---
             const followIntensity = 0.2;
