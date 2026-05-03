@@ -1592,7 +1592,13 @@
                 if (distance > 0.05) {
                     const dummy = new THREE.Object3D();
                     dummy.position.copy(currentRoomAvatar.position);
-                    dummy.lookAt(targetPosition);
+                    
+                    // FIX : On clone la cible et on force sa hauteur (Y) à être exactement la même 
+                    // que celle de l'avatar. Comme ça, il tourne mais ne se penche plus jamais !
+                    const flatTarget = targetPosition.clone();
+                    flatTarget.y = currentRoomAvatar.position.y;
+                    
+                    dummy.lookAt(flatTarget);
                     currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.12);
 
                     const speed = 0.04; 
