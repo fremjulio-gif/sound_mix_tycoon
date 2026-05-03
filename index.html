@@ -2062,31 +2062,191 @@
     // ==========================================
     // 8. CONSTANTS & DEFAULT STATE
     // ==========================================
-    function generateAvatarImage(styleIndex) {
-        const cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-        cam.position.set(0, 1.4, 3.5);
-        cam.lookAt(0, 0.6, 0);
+    // ==========================================
+    // CRÉATION DES AVATARS (Style Funko Pop Blocky / Flat 3D)
+    // ==========================================
+    function createAvatarGroup(styleIndex) {
+        const group = new THREE.Group();
 
-        const scn = new THREE.Scene();
-        scn.background = new THREE.Color(['#1e1b4b', '#0f172a', '#064e3b', '#4c0519'][styleIndex]);
-
-        const rnd = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
-        rnd.setSize(128, 128); 
-
-        const light = new THREE.DirectionalLight(0xffffff, 1.2);
-        light.position.set(2, 3, 2);
-        scn.add(light);
-        scn.add(new THREE.AmbientLight(0x666666));
-
-        const group = createAvatarGroup(styleIndex);
-        group.rotation.y = -Math.PI / 6; // Rotation 3/4 pour la photo de profil
-        scn.add(group);
-
-        rnd.render(scn, cam);
-        const dataUrl = rnd.domElement.toDataURL('image/png'); 
+        // 1. Couleurs définies selon le personnage
+        const skinColors = ['#FFCBA4', '#8D4E28', '#F0C080', '#C68642'];
+        const clothesColors = ['#3730a3', '#0e7490', '#065f46', '#27272a']; // Exec prod a un noir légèrement plus clair pour voir les contours
         
-        rnd.dispose(); 
-        return dataUrl;
+        const skinMat = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.6 });
+        const clothesMat = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.9 });
+        const shoesMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.5 });
+        const blackMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.9 });
+
+        // Helper : Ajoute des contours noirs flat-design aux volumes
+        function addEdges(mesh) {
+            const edges = new THREE.EdgesGeometry(mesh.geometry);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
+            mesh.add(line);
+        }
+
+        // --- JAMBES & CHAUSSURES (Base Y = 0) ---
+        const createLeg = (xSign) => {
+            const legGroup = new THREE.Group();
+            
+            // Chaussure (Y center = 0.06 pour une hauteur de 0.12 -> le bas touche Y=0)
+            const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.24), shoesMat);
+            shoe.position.set(xSign * 0.12, 0.06, 0.02);
+            shoe.castShadow = true;
+            addEdges(shoe);
+            
+            // Jambe (Y center = 0.245 pour une hauteur de 0.25 au-dessus de la chaussure)
+            const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.25, 0.16), clothesMat);
+            leg.position.set(xSign * 0.12, 0.245, 0);
+            leg.castShadow = true;
+            addEdges(leg);
+            
+            legGroup.add(shoe, leg);
+            return legGroup;
+        };
+        group.add(createLeg(-1), createLeg(1));
+
+        // --- CORPS (Torse compact) ---
+        // Torse (Y center = 0.57 pour une hauteur de 0.4 au-dessus des jambes)
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.4, 0.25), clothesMat);
+        torso.position.set(0, 0.57, 0);
+        torso.castShadow = true;
+        addEdges(torso);
+        group.add(torso);
+
+        // --- BRAS & MAINS (Petits et carrés) ---
+        const createArm = (xSign) => {
+            const armGroup = new THREE.Group();
+            
+            const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), clothesMat);
+            arm.position.set(xSign * 0.29, 0.55, 0);
+            arm.rotation.z = xSign * 0.15; // Légèrement écartés
+            arm.castShadow = true;
+            addEdges(arm);
+            
+            const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), skinMat);
+            hand.position.set(xSign * 0.34, 0.32, 0);
+            hand.castShadow = true;
+            addEdges(hand);
+            
+            armGroup.add(arm, hand);
+            return armGroup;
+        };
+        group.add(createArm(-1), createArm(1));
+
+        // --- TÊTE FUNKO POP (Grosse tête carrée) ---
+        const headGroup = new THREE.Group();
+        // Positionnée juste au-dessus du torse
+        headGroup.position.set(0, 1.07, 0);
+        
+        // Base Crâne (Carré avec contours propres)
+        const headGeo = new THREE.BoxGeometry(0.7, 0.6, 0.6);
+        const head = new THREE.Mesh(headGeo, skinMat);
+        head.castShadow = true;
+        addEdges(head);
+        headGroup.add(head);
+
+        // Yeux : Grands, noirs, très écartés (Cylindres retournés pour faire un bouton plat)
+        const createEye = (xPos) => {
+            const eyeGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.04, 16);
+            const eye = new THREE.Mesh(eyeGeo, blackMat);
+            eye.rotation.x = Math.PI / 2;
+            eye.position.set(xPos, -0.05, 0.31);
+            return eye;
+        };
+        headGroup.add(createEye(-0.18), createEye(0.18));
+
+        // Petit nez blocky (zéro bouche pour éviter l'effet creepy)
+        const nose = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.04, 0.04), skinMat);
+        nose.position.set(0, -0.12, 0.31);
+        addEdges(nose);
+        headGroup.add(nose);
+
+        group.add(headGroup);
+
+        // ==========================================
+        // ACCESSOIRES SIGNATURES
+        // ==========================================
+        
+        if (styleIndex === 0) {
+            // AVATAR 0 : Beatmaker (Casque Audio Massif)
+            const hpGroup = new THREE.Group();
+            const headband = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.04, 16, 32, Math.PI), blackMat);
+            headband.position.set(0, 0, 0);
+            
+            const cupGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.1, 16);
+            const cupL = new THREE.Mesh(cupGeo, blackMat); cupL.rotation.z = Math.PI / 2; cupL.position.set(-0.38, -0.05, 0);
+            const cupR = new THREE.Mesh(cupGeo, blackMat); cupR.rotation.z = Math.PI / 2; cupR.position.set(0.38, -0.05, 0);
+            
+            addEdges(cupL); addEdges(cupR);
+            hpGroup.add(headband, cupL, cupR);
+            headGroup.add(hpGroup);
+        } 
+        else if (styleIndex === 1) {
+            // AVATAR 1 : Cyber-DJ (Veste LED + Visière lumineuse)
+            const cyanEmissive = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 1 });
+            
+            // Ligne LED sur le torse
+            const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.41, 0.26), cyanEmissive);
+            stripe.position.set(-0.12, 0.57, 0);
+            group.add(stripe);
+
+            // Visière LED Cyberpunk
+            const glasses = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.15, 0.08), cyanEmissive);
+            glasses.position.set(0, -0.05, 0.32);
+            headGroup.add(glasses);
+        } 
+        else if (styleIndex === 2) {
+            // AVATAR 2 : Street MC (Casquette Rouge blocky + Chaîne en Or)
+            const capMat = new THREE.MeshStandardMaterial({ color: '#dc2626', roughness: 0.9 });
+            
+            // Base Casquette
+            const capBase = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.15, 0.62), capMat);
+            capBase.position.set(0, 0.35, 0);
+            addEdges(capBase);
+            
+            // Visière droite
+            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.3), capMat);
+            visor.position.set(0, 0.28, 0.35);
+            addEdges(visor);
+            
+            headGroup.add(capBase, visor);
+            
+            // Chaîne en or (Torus)
+            const goldMat = new THREE.MeshStandardMaterial({ color: '#fbbf24', metalness: 0.8, roughness: 0.3 });
+            const chain = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.02, 8, 16), goldMat);
+            chain.position.set(0, 0.68, 0.1);
+            chain.rotation.x = Math.PI / 2.5;
+            
+            // Pendentif
+            const pendant = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.04), goldMat);
+            pendant.position.set(0, 0.54, 0.16);
+            addEdges(pendant);
+            
+            group.add(chain, pendant);
+        } 
+        else if (styleIndex === 3) {
+            // AVATAR 3 : Exec Producer (Costume noir/blanc + Lunettes opaques blocky)
+            // Chemise blanche qui ressort de la veste
+            const shirt = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.41, 0.26), new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.9 }));
+            shirt.position.set(0, 0.57, 0);
+            group.add(shirt);
+            
+            // Lunettes noires rectangulaires
+            const shadeGeo = new THREE.BoxGeometry(0.22, 0.14, 0.04);
+            const shadeL = new THREE.Mesh(shadeGeo, blackMat); shadeL.position.set(-0.16, -0.05, 0.32);
+            const shadeR = new THREE.Mesh(shadeGeo, blackMat); shadeR.position.set(0.16, -0.05, 0.32);
+            
+            const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.04, 0.04), blackMat); 
+            bridge.position.set(0, -0.05, 0.32);
+            
+            const armGeo = new THREE.BoxGeometry(0.04, 0.04, 0.3);
+            const armL = new THREE.Mesh(armGeo, blackMat); armL.position.set(-0.28, -0.05, 0.15);
+            const armR = new THREE.Mesh(armGeo, blackMat); armR.position.set(0.28, -0.05, 0.15);
+            
+            headGroup.add(shadeL, shadeR, bridge, armL, armR);
+        }
+
+        return group;
     }
 
     const avatars = [
@@ -2280,8 +2440,11 @@
         updateTaskbar();
     }
 
+    let avatarChanged = false; // FIX: On crée un traqueur
+
     function selectAvatar(idx) {
         selectedAvatarIndex = idx;
+        avatarChanged = true; // FIX: On signale que le joueur a fait un choix manuel
         document.querySelectorAll('.avatar-sel').forEach(el => el.classList.remove('selected'));
         document.querySelector(`.avatar-sel[data-idx="${idx}"]`).classList.add('selected');
         playBleep();
@@ -2483,7 +2646,13 @@
                 state.history                = state.history || { money: [], followers: [] };
                 state.isExporting            = false;
                 state.isSleeping             = false;
-                state.activeCharacter        = parseInt(state.activeCharacter ?? state.avatar, 10) || 0;
+                state.activeCharacter = parseInt(state.activeCharacter ?? state.avatar, 10) || 0;
+                
+                // FIX: Si le joueur a cliqué sur un skin, on met à jour son ancienne sauvegarde !
+                if (avatarChanged) {
+                    state.activeCharacter = selectedAvatarIndex;
+                }
+
                 if (state.activeCharacter < 0 || state.activeCharacter >= avatars.length) state.activeCharacter = 0;
 
                 showToast("Session Restored.", "success");
