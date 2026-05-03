@@ -1760,8 +1760,8 @@
                     const dummy = new THREE.Object3D();
                     dummy.position.copy(currentRoomAvatar.position);
                     
-                    // const flatTarget = targetPosition.clone();
-                    // flatTarget.y = currentRoomAvatar.position.y;
+                    const flatTarget = targetPosition.clone();
+                    flatTarget.y = currentRoomAvatar.position.y;
                     
                     dummy.lookAt(flatTarget);
                     currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.12);
@@ -1776,14 +1776,14 @@
                     const nextX = currentRoomAvatar.position.x + dir.x * speed;
                     const nextZ = currentRoomAvatar.position.z + dir.z * speed;
                     
-                    //let moved = false;
-                   // if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
-                        //currentRoomAvatar.position.x = nextX;
-                        //moved = true;
-                   // }
-                    //if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
-                        //currentRoomAvatar.position.z = nextZ;
-                        //moved = true;
+                    let moved = false;
+                    if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
+                        currentRoomAvatar.position.x = nextX;
+                        moved = true;
+                    }
+                    if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
+                        currentRoomAvatar.position.z = nextZ;
+                        moved = true;
                     }
                     
                     if (!moved) {
@@ -1834,7 +1834,7 @@
                     }
 
                     // Verrouillage final pour stopper les calculs infimes
-                    if (Math.abs(innerModel.rotation.z) < 0.001) {
+                    if (Math.abs(innerModel.rotation.z) < 0.5) {
                         innerModel.rotation.z = 0;
                         innerModel.position.y = 0;
                     }
