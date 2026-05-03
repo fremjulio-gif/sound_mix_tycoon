@@ -1684,25 +1684,31 @@
     ];
 
     // ==========================================
-    // SPAWN DANS LA ROOM 3D
-    // ==========================================
-    function spawnRoomAvatar(styleIndex) {
-        if (currentRoomAvatar) {
-            scene.remove(currentRoomAvatar);
-            targetPosition = null; 
-        }
-
-        // Création du Wrapper Group pour séparer l'animation de mouvement (lookAt) de l'animation de marche (Waddle)
-        const innerGroup = createAvatarGroup(styleIndex);
-        const outerGroup = new THREE.Group();
-        outerGroup.add(innerGroup);
-
-        outerGroup.scale.set(1.6, 1.6, 1.6);
-        outerGroup.position.set(0, -0.95, 3);
-
-        scene.add(outerGroup);
-        currentRoomAvatar = outerGroup;
+// SPAWN DANS LA ROOM 3D
+// ==========================================
+function spawnRoomAvatar(styleIndex) {
+    if (currentRoomAvatar) {
+        scene.remove(currentRoomAvatar);
+        targetPosition = null; 
     }
+
+    // Le OUTER gère la POSITION et la DIRECTION (Axe Y)
+    const outerGroup = new THREE.Group();
+    
+    // Le INNER gère uniquement le pivot de l'ANIMATION (Waddle/Bounce)
+    const innerModel = createAvatarGroup(styleIndex);
+    
+    // REGLAGE DU PIVOT : On s'assure que le bas du modèle est à y=0
+    // pour que les rotations locales ne le fassent pas passer sous le sol.
+    outerGroup.add(innerModel);
+
+    outerGroup.scale.set(1.6, 1.6, 1.6);
+    // Position de base sur le sol
+    outerGroup.position.set(0, -0.95, 3);
+
+    scene.add(outerGroup);
+    currentRoomAvatar = outerGroup;
+}
 
     function checkCollision(x, z) {
         const r = 0.6; 
@@ -1716,7 +1722,7 @@
     }
     
     let time = 0;
-    let walkTime = 0; // GLOBAL : Temps pour l'animation de marche
+    
     const cameraLookTarget = new THREE.Vector3(0, 0, 0);
 
     function animate3D() {
@@ -1738,90 +1744,112 @@
         if (currentRoomAvatar) {
             let isMoving = false; // NOUVEAU : Traqueur de mouvement actif
 
-            // --- 1. DÉPLACEMENT & ROTATION SÉCURISÉS ---
-            if (targetPosition) {
-                const distance = currentRoomAvatar.position.distanceTo(targetPosition);
+            // ==========================================
+// ANIMATION & LOGIQUE DE MOUVEMENT
+// ==========================================
+function animate3D() {
+    requestAnimationFrame(animate3D);
+    time += 0.02;
+    
+    // ... (Gestion PC Screen et LEDs)
 
-                if (distance > 0.05) {
-                    const dummy = new THREE.Object3D();
-                    dummy.position.copy(currentRoomAvatar.position);
-                    
-                    const flatTarget = targetPosition.clone();
-                    flatTarget.y = currentRoomAvatar.position.y;
-                    
-                    dummy.lookAt(flatTarget);
-                    currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.12);
+    if (currentRoomAvatar) {
+        let isMoving = false; 
 
-                    const speed = 0.04; 
-                    const dir = new THREE.Vector3().subVectors(targetPosition, currentRoomAvatar.position).normalize();
-                    const nextX = currentRoomAvatar.position.x + dir.x * speed;
-                    const nextZ = currentRoomAvatar.position.z + dir.z * speed;
-                    
-                    let moved = false;
-                    
-                    if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
-                        currentRoomAvatar.position.x = nextX;
-                        moved = true;
-                    }
-                    
-                    if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
-                        currentRoomAvatar.position.z = nextZ;
-                        moved = true;
-                    }
-                    
-                    if (!moved) {
-                        targetPosition = null;
-                    } else {
-                        isMoving = true; // L'avatar bouge effectivement sur la frame
-                    }
-                } else {
-                    targetPosition = null; 
+        // 1. DÉPLACEMENT & DIRECTION (Calculé sur le OUTER GROUP)
+        if (targetPosition) {
+            const distance = currentRoomAvatar.position.distanceTo(targetPosition);
+
+            if (distance > 0.05) {
+                const dummy = new THREE.Object3D();
+                dummy.position.copy(currentRoomAvatar.position);
+                
+                // FIX ROTATION : On force la cible au même niveau Y pour éviter
+                // que l'avatar ne penche en avant ou ne se retourne à 180°
+                const flatTarget = targetPosition.clone();
+                flatTarget.y = currentRoomAvatar.position.y;
+                
+                dummy.lookAt(flatTarget);
+                currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.12);
+
+                const speed = 0.04; 
+                const dir = new THREE.Vector3().subVectors(targetPosition, currentRoomAvatar.position).normalize();
+                
+                const nextX = currentRoomAvatar.position.x + dir.x * speed;
+                const nextZ = currentRoomAvatar.position.z + dir.z * speed;
+                
+                let moved = false;
+                if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
+                    currentRoomAvatar.position.x = nextX;
+                    moved = true;
                 }
+                if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
+                    currentRoomAvatar.position.z = nextZ;
+                    moved = true;
+                }
+                
+                if (!moved) {
+                    targetPosition = null;
+                } else {
+                    isMoving = true; 
+                }
+            } else {
+                targetPosition = null; 
+            }
+        }
+
+        // 2. ANIMATION INTERNE (Calculée sur le INNER MODEL)
+        if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
+            const innerModel = currentRoomAvatar.children[0];
+            
+            // Correction de la recherche des membres (Case sensitive)
+            let legL = innerModel.getObjectByName("leg_L") || innerModel.getObjectByName("Leg_L");
+            let legR = innerModel.getObjectByName("leg_R") || innerModel.getObjectByName("Leg_R");
+
+            // Fallback aux index si les noms sont absents
+            if (!legL || !legR) {
+                legL = innerModel.children[0]; 
+                legR = innerModel.children[1];
             }
 
-// =============================================================
-// FIX LOGIC : ANIMATION DE MARCHE & CORRECTION DE PIVOT
-// =============================================================
+            if (isMoving) {
+                walkTime += 0.15; // Cadence de marche
 
-if (!state.isSleeping && currentRoomAvatar && currentRoomAvatar.children.length > 0) {
-    const innerModel = currentRoomAvatar.children[0];
-    
-    // TENTATIVE 1 : Par nom
-    let LegL = innerModel.getObjectByName("Leg_L");
-    let LegR = innerModel.getObjectByName("Leg_R");
+                // DANDINEMENT (Axe Z local) : L'avatar balance de gauche à droite
+                innerModel.rotation.z = Math.sin(walkTime) * 0.05;
 
-    // TENTATIVE 2 : Si undefined, on prend les deux premiers enfants (souvent les jambes)
-    if (!legL || !legR) {
-        legL = innerModel.children[0]; // Première jambe créée
-        legR = innerModel.children[1]; // Deuxième jambe créée
-    }
+                // REBOND (Axe Y local) : L'avatar sautille
+                innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.05;
 
-    if (isMoving) {
-        walkTime += 0.15;
-        innerModel.rotation.z = Math.sin(walkTime) * 0.05;
-        innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.05;
+                // JAMBES (Axe X local) : Rotation alternée
+                if (legL && legR) {
+                    const legSwing = Math.sin(walkTime * 1.2) * 0.4;
+                    legL.rotation.x = legSwing;
+                    legR.rotation.x = -legSwing;
+                }
+            } else {
+                // --- ARRÊT STRICT ET RESET ---
+                walkTime = 0;
 
-        if (legL && legR) {
-            const legSwing = Math.sin(walkTime * 1.2) * 0.4;
-            legL.rotation.x = legSwing;
-            legR.rotation.x = -legSwing;
-        }
-    } else {
-        // --- ARRÊT STRICT ---
-        walkTime = 0;
-        innerModel.rotation.z *= 0.5;
-        innerModel.position.y *= 0.5;
+                // Amortissement fluide du corps vers la pose neutre
+                innerModel.rotation.z *= 0.6;
+                innerModel.position.y *= 0.6;
 
-        // On force l'arrêt sur les objets trouvés
-        if (legL) legL.rotation.x = 0;
-        if (legR) legR.rotation.x = 0;
+                // ARRET INSTANTANÉ DES JAMBES (Pose neutre)
+                if (legL && legR) {
+                    legL.rotation.x = 0;
+                    legR.rotation.x = 0;
+                }
 
-        if (Math.abs(innerModel.rotation.z) < 0.001) {
-            innerModel.rotation.z = 0;
-            innerModel.position.y = 0;
+                // Verrouillage final pour stopper les calculs infimes
+                if (Math.abs(innerModel.rotation.z) < 0.001) {
+                    innerModel.rotation.z = 0;
+                    innerModel.position.y = 0;
+                }
+            }
         }
     }
-}
+
             // --- 2. SUIVI DE CAMÉRA ---
             const followIntensity = 0.2;
             const yPan = isMobile ? 0 : 1.5; 
