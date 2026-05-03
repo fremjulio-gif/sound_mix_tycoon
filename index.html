@@ -1780,48 +1780,35 @@
             }
 
 // --- ANIMATION DE MARCHE FLUIDE ---
-if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
-    const innerAvatar = currentRoomAvatar.children[0];
-    const legL = innerAvatar.getObjectByName("leg_L");
-    const legR = innerAvatar.getObjectByName("leg_R");
-    legL.name = "leg_L"
-    legR.name = "leg_R"
+if (!state.isSleeping && currentRoomAvatar && currentRoomAvatar.children.length > 0) {
+    const legL = currentRoomAvatar.getObjectByName("leg_L");
+    const legR = currentRoomAvatar.getObjectByName("leg_R");
 
     if (isMoving) {
-        // Vitesse d'incrémentation
-        walkTime += 0.02; 
-
-        // 1. Dandinement latéral (Axe Z)
-        innerAvatar.rotation.z = Math.sin(walkTime) * 0.02; 
-        
-        // 2. Rebond vertical (Axe Y)
-        innerAvatar.position.y = Math.abs(Math.sin(walkTime)) * 0.02;
-
-        // 3. Animation des jambes (Axe X)
+        walkTime += 0.02;
+        // 1. Dandinement latéral
+        currentRoomAvatar.rotation.z = Math.sin(walkTime) * 0.02;
+        // 2. Rebond vertical
+        currentRoomAvatar.position.y = -0.74 + Math.abs(Math.sin(walkTime)) * 0.02;
+        // 3. Animation des jambes
         if (legL && legR) {
             legL.rotation.x = Math.sin(walkTime * 4) * 0.2;
-            legR.rotation.x = -Math.sin(walkTime * 4) * 0.2; 
+            legR.rotation.x = -Math.sin(walkTime * 4) * 0.2;
         }
-        
     } else {
-        // --- ARRÊT MIXTE : ABSORPTION DE L'ÉLAN ---
-        
-        // 1. Le corps se tasse en douceur (0.85 donne l'effet de poids/inertie)
-        innerAvatar.rotation.z *= 0.85; 
-        innerAvatar.position.y *= 0.85;
-
-        // 2. Les jambes reviennent au sol extrêmement vite (évite le glitch visuel du 0 direct)
+        // Absorption de l'élan
+        currentRoomAvatar.rotation.z *= 0.85;
+        currentRoomAvatar.position.y += (-0.74 - currentRoomAvatar.position.y) * 0.15;
         if (legL && legR) {
             legL.rotation.x *= 0.3;
             legR.rotation.x *= 0.3;
         }
-
-        // 3. Verrouillage total et silencieux une fois l'élan absorbé
-        if (Math.abs(innerAvatar.rotation.z) < 0.001) {
-            innerAvatar.rotation.z = 0;
-            innerAvatar.position.y = 0;
-            walkTime = 0; // On reset le cycle pour la prochaine marche
-            if (legL) {
+        // Verrouillage total
+        if (Math.abs(currentRoomAvatar.rotation.z) < 0.001) {
+            currentRoomAvatar.rotation.z = 0;
+            currentRoomAvatar.position.y = -0.74;
+            walkTime = 0;
+            if (legL && legR) {
                 legL.rotation.x = 0;
                 legR.rotation.x = 0;
             }
