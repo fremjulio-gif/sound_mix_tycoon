@@ -1779,21 +1779,30 @@
             }
 
             // --- ANIMATION DE MARCHE FLUIDE ---
-            if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
-                const innerAvatar = currentRoomAvatar.children[0];
-                if (isMoving) {
-                    walkTime += 0.06; // Vitesse de l'animation de marche
-                    // Oscillation en "waddle" (roulis sur l'axe Z local)
-                    innerAvatar.rotation.z = Math.sin(walkTime) * 0.04;
-                    // Léger rebond (axe Y local)
-                    innerAvatar.position.y = Math.abs(Math.sin(walkTime)) * 0.03;
-                } else {
-                    // Retour fluide à la position de repos
-                    walkTime = 0;
-                    innerAvatar.rotation.z += (0 - innerAvatar.rotation.z) * 0;
-                    innerAvatar.position.y += (0 - innerAvatar.position.y) * 0;
-                }
-            }
+if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
+    const innerAvatar = currentRoomAvatar.children[0];
+    
+    if (isMoving) {
+        walkTime += 0.04; // Vitesse des pas
+        // Dandinement
+        innerAvatar.rotation.z = Math.sin(walkTime) * 0.01;
+        // Rebond
+        innerAvatar.position.y = Math.abs(Math.sin(walkTime)) * 0.01;
+    } else {
+        // FIX : On réinitialise walkTime pour que la prochaine marche reparte du début
+        walkTime = 0; 
+
+        // FIX : On augmente la force du retour (0.4 au lieu de 0.2) pour un arrêt net
+        innerAvatar.rotation.z *= 0.2; 
+        innerAvatar.position.y *= 0.2;
+
+        // "Hard reset" si les valeurs sont minuscules pour stopper le calcul inutile
+        if (Math.abs(innerAvatar.rotation.z) < 0.001) {
+            innerAvatar.rotation.z = 0;
+            innerAvatar.position.y = 0;
+        }
+    }
+}
 
             // --- 2. SUIVI DE CAMÉRA ---
             const followIntensity = 0.2;
