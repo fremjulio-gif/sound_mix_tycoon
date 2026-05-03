@@ -1752,8 +1752,8 @@
             // 1. DÉPLACEMENT & DIRECTION (Calculé sur le OUTER GROUP)
             if (targetPosition) {
                 // Utilisation des positions plates (sans le Y) pour éviter les micro-tremblements
-                const currentFlatPos = new THREE.Vector2(currentRoomAvatar.position.x, currentRoomAvatar.position.z);
-                const targetFlatPos = new THREE.Vector2(targetPosition.x, targetPosition.z);
+                const currentFlatPos = new THREE.Vector3(currentRoomAvatar.position.x, currentRoomAvatar.position.y currentRoomAvatar.position.z);
+                const targetFlatPos = new THREE.Vector3(targetPosition.x,targetPosition.y, targetPosition.z);
                 const distance = currentFlatPos.distanceTo(targetFlatPos);
 
                 if (distance > 0.05) {
@@ -1768,7 +1768,7 @@
 
                     // FIX CRITIQUE 180° : Verrouillage strict des axes X et Z pour empêcher l'avatar de se retourner ou de pencher
                     currentRoomAvatar.rotation.x = 0;
-                    // currentRoomAvatar.rotation.z = 0;
+                    currentRoomAvatar.rotation.z = 0;
 
                     const speed = 0.04; 
                     const dir = new THREE.Vector3(targetPosition.x - currentRoomAvatar.position.x, 0, targetPosition.z - currentRoomAvatar.position.z).normalize();
