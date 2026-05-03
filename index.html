@@ -1779,35 +1779,59 @@
                 }
             }
 
-// --- ANIMATION DE MARCHE FLUIDE ---
+// =============================================================
+// FIX LOGIC : ANIMATION DE MARCHE & CORRECTION DE PIVOT
+// =============================================================
+
 if (!state.isSleeping && currentRoomAvatar && currentRoomAvatar.children.length > 0) {
-    const legL = currentRoomAvatar.getObjectByName("leg_L");
-    const legR = currentRoomAvatar.getObjectByName("leg_R");
+    // RÈGLE D'OR : On anime l'ENFANT (le mesh) et non le PARENT (le conteneur de position)
+    // Cela évite que les rotations d'animation n'écrasent le lookAt() de direction.
+    const innerModel = currentRoomAvatar.children[0]; 
+    const legL = innerModel.getObjectByName("leg_L");
+    const legR = innerModel.getObjectByName("leg_R");
 
     if (isMoving) {
-        walkTime += 0.02;
-        // 1. Dandinement latéral
-        currentRoomAvatar.rotation.z = Math.sin(walkTime) * 0.02;
+        // Fréquence d'incrémentation (ajustée pour la fluidité)
+        walkTime += 0.15; 
+
+        // 1. Dandinement latéral (Axe Z de l'enfant uniquement)
+        // On utilise un sinus léger pour l'inclinaison gauche/droite
+        innerModel.rotation.z = Math.sin(walkTime) * 0.05;
+
+        // 2. Rebond vertical (Axe Y de l'enfant)
+        // On ne touche PAS à currentRoomAvatar.position.y (qui reste à -0.74 sur le sol)
+        // On ajoute un offset local à l'enfant pour simuler le pas.
+        innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.05;
+
         // 3. Animation des jambes
         if (legL && legR) {
-            legL.rotation.x = Math.sin(walkTime * 4) * 0.2;
-            legR.rotation.x = -Math.sin(walkTime * 4) * 0.2;
+            // Opposition de phase (une jambe devant, l'autre derrière)
+            // On multiplie walkTime pour une cadence de pas plus rapide que le balancement
+            const legSwing = Math.sin(walkTime * 1.2) * 0.4;
+            legL.rotation.x = legSwing;
+            legR.rotation.x = -legSwing;
         }
     } else {
-        // Absorption de l'élan
-        currentRoomAvatar.rotation.z *= 0.85;
+        // --- LOGIQUE D'ARRÊT STRICTE ---
+        
+        // 1. Reset immédiat du cycle de temps
+        walkTime = 0;
+
+        // 2. Amortissement ultra-rapide du corps (Lerp vers 0)
+        innerModel.rotation.z *= 0.5;
+        innerModel.position.y *= 0.5;
+
+        // 3. Immobilisation INSTANTANÉE des jambes
+        // On force le retour à la pose neutre sans attendre l'élan
         if (legL && legR) {
-            legL.rotation.x *= 0.3;
-            legR.rotation.x *= 0.3;
+            legL.rotation.x = 0;
+            legR.rotation.x = 0;
         }
-        // Verrouillage total
-        if (Math.abs(currentRoomAvatar.rotation.z) < 0.001) {
-            currentRoomAvatar.rotation.z = 0;
-            walkTime = 0;
-            if (legL && legR) {
-                legL.rotation.x = 0;
-                legR.rotation.x = 0;
-            }
+
+        // 4. Verrouillage final de sécurité
+        if (Math.abs(innerModel.rotation.z) < 0.001) {
+            innerModel.rotation.z = 0;
+            innerModel.position.y = 0;
         }
     }
 }
