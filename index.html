@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -1561,7 +1561,7 @@
     let time = 0;
     // Cible globale pour le lookAt de la caméra (optimisation mémoire)
     const cameraLookTarget = new THREE.Vector3(0, 0, 0);
-
+    const GRID_SIZE = 1.0; // 1.0 correspond aux carreaux de ta chambre
     
     
     function animate3D() {
@@ -1591,43 +1591,55 @@
                 const distance = currentRoomAvatar.position.distanceTo(targetPosition);
 
                 // On vérifie la distance AVANT de faire un lookAt pour éviter le bug d'invisibilité
-                if (distance > 0.05) {
-                    const dummy = new THREE.Object3D();
-                    dummy.position.copy(currentRoomAvatar.position);
-                    
-                    // FIX : On clone la cible et on force sa hauteur (Y) à être exactement la même 
-                    // que celle de l'avatar. Comme ça, il tourne mais ne se penche plus jamais !
-                    const flatTarget = targetPosition.clone();
-                    flatTarget.y = currentRoomAvatar.position.y;
-                    
-                    dummy.lookAt(flatTarget);
-                    currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.12);
+                // --- DANS animate3D (Section Déplacement) ---
+        if (distance > 0.02) { // Seuil réduit pour plus de précision
+            const dummy = new THREE.Object3D();
+            dummy.position.copy(currentRoomAvatar.position);
+    
+            const flatTarget = targetPosition.clone();
+            flatTarget.y = currentRoomAvatar.position.y;
+    
+            dummy.lookAt(flatTarget);
 
-                    const speed = 0.04; 
-                    const dir = new THREE.Vector3().subVectors(targetPosition, currentRoomAvatar.position).normalize();
-                    const nextX = currentRoomAvatar.position.x + dir.x * speed;
-                    const nextZ = currentRoomAvatar.position.z + dir.z * speed;
-                    
-                    let moved = false;
-                    
-                    if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
-                        currentRoomAvatar.position.x = nextX;
-                        moved = true;
-                    }
-                    
-                    if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
-                        currentRoomAvatar.position.z = nextZ;
-                        moved = true;
-                    }
-                    
-                    // Si bloqué par un mur/meuble
-                    if (!moved) {
-                        targetPosition = null;
-                    }
-                } else {
-                    // Arrivé à destination
-                    targetPosition = null; 
-                }
+    // ROTATION HYPER SMOOTH : On réduit le facteur (0.08) pour plus de souplesse
+            currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.08);
+
+    // Verrouillage des axes parasites
+            currentRoomAvatar.rotation.x = 0;
+            currentRoomAvatar.rotation.z = 0;
+
+    // VITESSE DYNAMIQUE (Effet magnétique smooth)
+    // Plus on est loin, plus on va vite. Plus on approche de la grille, plus on ralentit.
+            const baseSpeed = 0.04;
+            const easing = Math.min(1, distance * 2); // Ralentissement progressif à l'arrivée
+            const currentSpeed = baseSpeed * easing;
+
+            const dir = new THREE.Vector3().subVectors(targetPosition, currentRoomAvatar.position).normalize();
+    
+            const nextX = currentRoomAvatar.position.x + dir.x * currentSpeed;
+            const nextZ = currentRoomAvatar.position.z + dir.z * currentSpeed;
+    
+            let moved = false;
+            // Vérification collision simplifiée pour la fluidité
+            if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
+        currentRoomAvatar.position.x = nextX;
+        moved = true;
+    }
+    if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
+        currentRoomAvatar.position.z = nextZ;
+        moved = true;
+    }
+    
+    if (!moved) {
+        targetPosition = null;
+    } else {
+        isMoving = true; 
+    }
+} else {
+    // AUTO-ALIGNE : Une fois arrivé très près, on "lock" sur la grille
+            currentRoomAvatar.position.x = targetPosition.x;
+            currentRoomAvatar.position.z = targetPosition.z;
+            targetPosition = null;
             }
 
             // --- 2. SUIVI DE CAMÉRA ---
@@ -1689,8 +1701,17 @@
                 }
                 break;
             }
+            
             if (intersects[i].object.name === 'floor_mesh') {
-                targetPosition = new THREE.Vector3(intersects[i].point.x, -0.74, intersects[i].point.z);
+                // On calcule la position brute du clic
+                const rawX = intersects[i].point.x;
+                const rawZ = intersects[i].point.z;
+
+    // EFFET MAGNÉTIQUE : On arrondit à la grille la plus proche
+                const snappedX = Math.round(rawX / GRID_SIZE) * GRID_SIZE;
+                const snappedZ = Math.round(rawZ / GRID_SIZE) * GRID_SIZE;
+
+                targetPosition = new THREE.Vector3(snappedX, -0.74, snappedZ);
                 break;
             }
         }
