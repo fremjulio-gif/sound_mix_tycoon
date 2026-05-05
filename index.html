@@ -130,8 +130,8 @@
         
         #btn-quit-pc {
             position: absolute;
-            top: 100px;
-            right: 30px;
+            bottom: 20px;
+            left: 20px;
             z-index: 90;
             padding: 8px 16px;
             background: rgba(10, 10, 15, 0.8);
@@ -306,7 +306,7 @@
             background: rgba(0,0,0,0.4);
             box-sizing: border-box;
         }
-        @media (min-width: 951px) {
+        @media (min-width: 768px) {
             .daw-grid-container {
                 flex-direction: row !important; 
                 height: 100% !important; 
@@ -528,6 +528,7 @@
         <div id="sleep-progress-text" class="mt-4 text-sm text-gray-400">Réveil dans 15s...</div>
     </div>
 
+
     <!-- RANDOM EVENTS OVERLAY --> 
     <div id="event-overlay" class="fixed inset-0 bg-black/90 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden"> 
         <div class="liquid-glass-heavy p-6 md:p-10 rounded-2xl w-[90%] max-w-lg border border-[var(--accent)] text-center shadow-[0_0_60px_rgba(0,0,0,0.8)] max-h-[90dvh] overflow-y-auto flex flex-col"> 
@@ -538,6 +539,7 @@
             </div> 
         </div> 
     </div>
+
 
     <!-- TRACK REVIEW OVERLAY -->
     <div id="review-overlay" class="fixed inset-0 bg-black/90 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 hidden px-4">
@@ -631,9 +633,10 @@
 
     <!-- LOGIN SCREEN -->
     <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
+        <!-- Conteneur Login : Centré, safe area et défilement interne sans déborder de 100dvh -->
         <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
             <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it.bat</h1>
-            <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">ANIMATE - AVATAR - CRACKMAJ V15</p>
+            <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">3D AllRoom Objects  // v13</p>
             <div class="w-full mb-4 md:mb-6">
                 <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
                 <input type="text" id="login-username" class="w-full bg-black/60 border border-gray-600 rounded-lg px-4 py-2 md:py-3 text-white font-retro text-sm focus:outline-none focus:border-[var(--accent)] transition-all shadow-inner" placeholder="Enter Alias...">
@@ -882,6 +885,7 @@
     // ==========================================
     // 1. RESPONSIVE & GLOBALS
     // ==========================================
+    // FIX: Breakpoint isMobile ajusté à 767px (Smartphones Portrait)
     let isMobile = window.innerWidth <= 767;
     window.isMobile = isMobile;
 
@@ -1076,6 +1080,7 @@
     scene.add(deskGroup);
 
     
+    
     // BEDROOM PRODUCER
     const bedGroup = new THREE.Group();
     bedGroup.position.set(3.8, -0.8, -2.9);
@@ -1085,7 +1090,7 @@
     const frame = new THREE.Mesh(frameGeo, frameMat);
     frame.castShadow = true;
     frame.receiveShadow = true;
-    frame.name = 'bed_mesh'; 
+    frame.name = 'bed_mesh'; // Assignation pour le Raycaster
     
     const bedFrameEdges = new THREE.EdgesGeometry(frameGeo);
     const bedFrameLines = new THREE.LineSegments(bedFrameEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
@@ -1098,7 +1103,7 @@
     mattress.position.set(0, 0.35, 0);
     mattress.castShadow = true;
     mattress.receiveShadow = true;
-    mattress.name = 'bed_mesh'; 
+    mattress.name = 'bed_mesh'; // Assignation pour le Raycaster
     bedGroup.add(mattress);
 
     const blanketGeo = new THREE.BoxGeometry(2.4, 0.38, 2.5);
@@ -1107,7 +1112,7 @@
     blanket.position.set(0, 0.36, 0.81);
     blanket.castShadow = true;
     blanket.receiveShadow = true;
-    blanket.name = 'bed_mesh'; 
+    blanket.name = 'bed_mesh'; // Assignation pour le Raycaster
     bedGroup.add(blanket);
 
     const pillowGeo = new THREE.BoxGeometry(0.8, 0.15, 0.5);
@@ -1117,32 +1122,36 @@
     pillow1.position.set(-0.55, 0.55, -1.5);
     pillow1.rotation.x = Math.PI / 12;
     pillow1.castShadow = true;
-    pillow1.name = 'bed_mesh'; 
+    pillow1.name = 'bed_mesh'; // Assignation pour le Raycaster
     
     const pillow2 = new THREE.Mesh(pillowGeo, pillowMat);
     pillow2.position.set(0.55, 0.55, -1.5);
     pillow2.rotation.x = Math.PI / 12;
     pillow2.castShadow = true;
-    pillow2.name = 'bed_mesh'; 
+    pillow2.name = 'bed_mesh'; // Assignation pour le Raycaster
     
     bedGroup.add(pillow1, pillow2);
     scene.add(bedGroup);
 
+
    // ==========================================
-    // TAPIS CENTRAL
+    // TAPIS CENTRAL (Agrandit et devant le canapé)
     // ==========================================
     const rugGroup = new THREE.Group();
+    // Décalé vers la gauche et aligné avec le canapé
     rugGroup.position.set(-0.5, -0.99, 1.5);
 
+    // Tapis plus grand (5.5 de large sur 4.0 de profondeur)
     const rugGeo = new THREE.BoxGeometry(5, 0.02, 4.0);
     const rugMat = new THREE.MeshStandardMaterial({ color: '#1e1b4b', roughness: 1.0 });
     const rug = new THREE.Mesh(rugGeo, rugMat);
     rug.receiveShadow = true;
     
+    // Bande décorative ajustée à la nouvelle largeur
     const stripeGeo = new THREE.BoxGeometry(5, 0.021, 0.3);
     const stripeMat = new THREE.MeshStandardMaterial({ color: '#818cf8', roughness: 1.0 });
     const stripe = new THREE.Mesh(stripeGeo, stripeMat);
-    stripe.position.set(0, 0, 1.4); 
+    stripe.position.set(0, 0, 1.4); // Légèrement décalée vers le bord
     
     rugGroup.add(rug, stripe);
     scene.add(rugGroup);
@@ -1171,11 +1180,14 @@
     const ledMatRed = new THREE.MeshStandardMaterial({ color: '#fb7185', emissive: '#fb7185' });
     const ledMatGreen = new THREE.MeshStandardMaterial({ color: '#34d399', emissive: '#34d399' });
 
+    // Génération de 4 machines dans le rack
     for(let i = 0; i < 4; i++) {
         const gear = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.3, 0.7), gearMat);
         gear.position.set(0, 0.35 + (i * 0.4), 0);
         
+        // Boutons et LEDs
         for(let l = 0; l < 3; l++) {
+            // On choisit la couleur et on CLONE le matériau pour qu'il soit indépendant
             const isRed = Math.random() > 0.5;
             const mat = isRed ? ledMatRed.clone() : ledMatGreen.clone();
             
@@ -1183,7 +1195,7 @@
             led.position.set(-0.3 + (l * 0.1), 0.35 + (i * 0.4), 0.36);
             
             rackGroup.add(led);
-            rackLeds.push(led); 
+            rackLeds.push(led); // On stocke la LED pour l'animer plus tard
         }
         const bigKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 16), woodMat);
         bigKnob.rotation.x = Math.PI / 2;
@@ -1199,34 +1211,40 @@
     // ==========================================
     const acousticGroup = new THREE.Group();
 
+    // Matériaux : Noir ultra-mat pour absorber la lumière (et le son)
     const foamMat = new THREE.MeshStandardMaterial({ color: '#242424', roughness: 1.0 });
     const edgeMat = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.5 });
 
+    // 1. Création d'un Master Template pour 1 Panneau
     const singlePanelGroup = new THREE.Group();
     
+    // Base plate du panneau
     const baseGeo = new THREE.BoxGeometry(0.7, 0.7, 0.04);
     const baseMesh = new THREE.Mesh(baseGeo, foamMat);
     baseMesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(baseGeo), edgeMat));
     singlePanelGroup.add(baseMesh);
 
+    // Ajout des 4 crêtes en relief (effet "Egg Crate" typique)
     const ridgeGeo = new THREE.BoxGeometry(0.7, 0.08, 0.04);
     for (let r = 0; r < 4; r++) {
         const ridge = new THREE.Mesh(ridgeGeo, foamMat);
-        ridge.position.set(0, -0.24 + (r * 0.16), 0.04);
+        ridge.position.set(0, -0.24 + (r * 0.16), 0.04); // Décalé vers l'avant
         ridge.add(new THREE.LineSegments(new THREE.EdgesGeometry(ridgeGeo), edgeMat));
         singlePanelGroup.add(ridge);
     }
 
+    // 2. Fonction pour plaquer une grille de panneaux sur n'importe quel mur
     function createAcousticWall(startX, startY, startZ, isLeftWall) {
         for (let col = 0; col < 3; col++) {
             for (let row = 0; row < 2; row++) {
                 const panel = singlePanelGroup.clone();
                 
+                // On tourne 1 panneau sur 2 à 90° pour le vrai style studio
                 if ((col + row) % 2 === 0) panel.rotation.z = Math.PI / 2;
 
                 if (isLeftWall) {
                     panel.position.set(startX, startY + (row * 0.75), startZ + (col * 0.75));
-                    panel.rotation.y = Math.PI / 2;
+                    panel.rotation.y = Math.PI / 2; // Orienté vers la pièce
                 } else {
                     panel.position.set(startX + (col * 0.75), startY + (row * 0.75), startZ);
                 }
@@ -1236,7 +1254,10 @@
         }
     }
 
+    // Mur du fond (Derrière l'écran / bureau)
     createAcousticWall(-1.5, 2.2, -4.95, false);
+
+    // Mur de gauche (Au-dessus du canapé)
     createAcousticWall(-4.95, 2.2, 0.5, true);
 
     scene.add(acousticGroup);
@@ -1246,17 +1267,21 @@
     // CANAPÉ STUDIO (Contre le mur de gauche)
     // ==========================================
     const sofaGroup = new THREE.Group();
+    // Placé contre le mur de gauche (x = -4.2), vers le bas de la pièce (z = 1.5)
     sofaGroup.position.set(-4.2, -1, 1.5);
-    sofaGroup.rotation.y = Math.PI / 2;
+    sofaGroup.rotation.y = Math.PI / 2; // Orienté vers le centre de la pièce
 
     const fabricMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.9 });
     
+    // Assise élargie
     const seat = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.4, 1.2), fabricMat); 
     seat.position.set(0, 0.2, 0);
     
+    // Dossier élargi
     const back = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.8, 0.3), fabricMat); 
     back.position.set(0, 0.8, -0.45);
     
+    // Accoudoirs repoussés sur les côtés
     const armL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.6, 1.2), fabricMat); 
     armL.position.set(-1.55, 0.5, 0);
     const armR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.6, 1.2), fabricMat); 
@@ -1277,7 +1302,9 @@
     // PLANTE D'INTÉRIEUR (Posée sur le Rack)
     // ==========================================
     const plantGroup = new THREE.Group();
+    // On la place aux mêmes X/Z que le rack, mais on la monte à Y = 0.85
     plantGroup.position.set(1.3, 0.85, -4.5); 
+    // On réduit sa taille à 55%
     plantGroup.scale.set(0.55, 0.55, 0.55);
 
     const potGeo = new THREE.CylinderGeometry(0.25, 0.2, 0.5, 12);
@@ -1290,6 +1317,7 @@
     const potLines = new THREE.LineSegments(potEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3 }));
     pot.add(potLines);
 
+    // Feuilles simplifiées
     const leafGeo = new THREE.SphereGeometry(0.3, 8, 8);
     const leafMat = new THREE.MeshStandardMaterial({ color: '#34d399', roughness: 0.8 });
     
@@ -1305,14 +1333,16 @@
 
 
     // ==========================================
-    // GUITARE ÉLECTRIQUE RÉALISTE AU MUR 
+    // GUITARE ÉLECTRIQUE RÉALISTE AU MUR (Proportions corrigées, Sans ombres)
     // ==========================================
     const guitarGroup = new THREE.Group();
 
+    // Positionnement : mur de gauche
     guitarGroup.position.set(-4.9, 2.0, -3.5); 
-    guitarGroup.rotation.y = Math.PI / 2; 
-    guitarGroup.rotation.z = -Math.PI / 2; 
+    guitarGroup.rotation.y = Math.PI / 2; // Face à la pièce
+    guitarGroup.rotation.z = -Math.PI / 2; // Horizontale
 
+    // --- Matériaux ---
     const bodyMat = new THREE.MeshStandardMaterial({ color: '#991b1b', roughness: 0.3, metalness: 0.2 }); 
     const neckMat = new THREE.MeshStandardMaterial({ color: '#e6c280', roughness: 0.7 }); 
     const fretboardMat = new THREE.MeshStandardMaterial({ color: '#292524', roughness: 0.9 }); 
@@ -1320,9 +1350,11 @@
     const plasticMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.6 }); 
     const pickguardMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.5 }); 
     
+    // Facteur d'échelle pour le corps (réduit pour équilibrer avec le manche)
     const bs = 0.8;
-    const bodyYOffset = 0.1; 
+    const bodyYOffset = 0.1; // Pour recoller le corps au manche après réduction
 
+    // --- Corps (Extrusion détaillée avec Cutaway) ---
     const bodyShape = new THREE.Shape();
     bodyShape.moveTo(0, -1.0 * bs);
     bodyShape.bezierCurveTo(-0.35 * bs, -1.0 * bs, -0.55 * bs, -0.8 * bs, -0.45 * bs, -0.4 * bs);
@@ -1335,10 +1367,11 @@
 
     const extrudeSettings = { depth: 0.12, bevelEnabled: true, bevelSegments: 4, steps: 1, bevelSize: 0.03, bevelThickness: 0.03 };
     const bodyGeo = new THREE.ExtrudeGeometry(bodyShape, extrudeSettings);
-    bodyGeo.translate(0, bodyYOffset, -0.06); 
+    bodyGeo.translate(0, bodyYOffset, -0.06); // Centré sur Z, ajusté sur Y
     const body = new THREE.Mesh(bodyGeo, bodyMat);
     guitarGroup.add(body);
 
+    // Pickguard
     const pgShape = new THREE.Shape();
     pgShape.moveTo(0, -0.6 * bs);
     pgShape.lineTo(-0.25 * bs, -0.6 * bs);
@@ -1350,6 +1383,7 @@
     pickguard.position.set(0, bodyYOffset, 0.06);
     guitarGroup.add(pickguard);
 
+    // --- Manche et Touche ---
     const neck = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.5, 0.07), neckMat);
     neck.position.set(0, 1.25, -0.02);
     guitarGroup.add(neck);
@@ -1358,6 +1392,7 @@
     fretboard.position.set(0, 1.25, 0.025);
     guitarGroup.add(fretboard);
 
+    // --- Tête (Headstock inclinée) ---
     const headGroup = new THREE.Group();
     headGroup.position.set(0, 2.0, -0.02);
     headGroup.rotation.x = -0.15; 
@@ -1374,6 +1409,7 @@
     headGroup.add(head);
     guitarGroup.add(headGroup);
 
+    // --- Micros (Pickups) ---
     const pickupGeo = new THREE.BoxGeometry(0.24 * bs, 0.08, 0.04);
     const p1 = new THREE.Mesh(pickupGeo, plasticMat);
     p1.position.set(0, 0.18, 0.07);
@@ -1381,6 +1417,7 @@
     p2.position.set(0, -0.02, 0.07);
     guitarGroup.add(p1, p2);
 
+    // Plots magnétiques sur les micros
     const poleGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.05, 8);
     poleGeo.rotateX(Math.PI/2);
     for(let i=0; i<6; i++) {
@@ -1392,10 +1429,12 @@
         guitarGroup.add(pole1, pole2);
     }
 
+    // --- Chevalet (Bridge) ---
     const bridgeBase = new THREE.Mesh(new THREE.BoxGeometry(0.28 * bs, 0.12, 0.04), hardwareMat);
     bridgeBase.position.set(0, -0.22, 0.07);
     guitarGroup.add(bridgeBase);
     
+    // Pontets
     const saddleGeo = new THREE.BoxGeometry(0.03 * bs, 0.04, 0.05);
     for(let i=0; i<6; i++) {
         const saddle = new THREE.Mesh(saddleGeo, hardwareMat);
@@ -1403,6 +1442,7 @@
         guitarGroup.add(saddle);
     }
 
+    // --- Boutons (Knobs) ---
     const knobGeo = new THREE.CylinderGeometry(0.035, 0.04, 0.06, 16);
     knobGeo.rotateX(Math.PI/2);
     const k1 = new THREE.Mesh(knobGeo, plasticMat); k1.position.set(0.2, -0.22, 0.08);
@@ -1411,6 +1451,7 @@
     const k4 = new THREE.Mesh(knobGeo, plasticMat); k4.position.set(0.24, -0.46, 0.08);
     guitarGroup.add(k1, k2, k3, k4);
 
+    // --- Sélecteur de micro ---
     const switchBase = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.02, 16), hardwareMat);
     switchBase.rotation.x = Math.PI/2;
     switchBase.position.set(-0.2, 0.26, 0.08);
@@ -1419,6 +1460,7 @@
     switchTip.position.set(-0.2, 0.28, 0.1);
     guitarGroup.add(switchBase, switchTip);
 
+    // --- Frettes ---
     const fretGeo = new THREE.BoxGeometry(0.14, 0.005, 0.005);
     let fretY = 1.95;
     for(let i=0; i<22; i++) {
@@ -1428,6 +1470,7 @@
         guitarGroup.add(fret);
     }
 
+    // --- Cordes ---
     const stringGeo = new THREE.CylinderGeometry(0.0015, 0.0015, 2.02, 4);
     for(let i=0; i<6; i++) {
         const string = new THREE.Mesh(stringGeo, hardwareMat);
@@ -1436,11 +1479,13 @@
         guitarGroup.add(string);
     }
 
+    // --- Mécaniques (Tuning Pegs) ---
     const pegBoxGeo = new THREE.BoxGeometry(0.04, 0.06, 0.04);
     const pegCylGeo = new THREE.CylinderGeometry(0.01, 0.01, 0.08);
     pegCylGeo.rotateZ(Math.PI/2);
     const pegHeadGeo = new THREE.BoxGeometry(0.06, 0.04, 0.02);
     for(let i=0; i<3; i++) {
+        // Gauche
         const pegL = new THREE.Group();
         const bL = new THREE.Mesh(pegBoxGeo, hardwareMat);
         const cL = new THREE.Mesh(pegCylGeo, hardwareMat); cL.position.x = -0.04;
@@ -1449,6 +1494,7 @@
         pegL.position.set(-0.06, 0.1 + (i*0.08), 0);
         headGroup.add(pegL);
 
+        // Droite
         const pegR = new THREE.Group();
         const bR = new THREE.Mesh(pegBoxGeo, hardwareMat);
         const cR = new THREE.Mesh(pegCylGeo, hardwareMat); cR.position.x = 0.04;
@@ -1458,12 +1504,14 @@
         headGroup.add(pegR);
     }
 
+    // --- Support mural horizontal ---
     const wallMountMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.8 });
     const mountArmGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.2, 8);
     mountArmGeo.rotateX(Math.PI/2);
     const mountPadGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.1, 8);
     mountPadGeo.rotateX(Math.PI/2);
 
+    // Support Manche
     const mountNeck = new THREE.Group();
     const arm1 = new THREE.Mesh(mountArmGeo, hardwareMat); arm1.position.z = -0.1;
     const pad1 = new THREE.Mesh(mountPadGeo, wallMountMat); pad1.position.z = 0;
@@ -1471,6 +1519,7 @@
     mountNeck.position.set(0, 1.4, -0.08);
     guitarGroup.add(mountNeck);
 
+    // Support Corps
     const mountBody = new THREE.Group();
     const arm2 = new THREE.Mesh(mountArmGeo, hardwareMat); arm2.position.z = -0.1;
     const pad2 = new THREE.Mesh(mountPadGeo, wallMountMat); pad2.position.z = 0;
@@ -1478,6 +1527,7 @@
     mountBody.position.set(0, -0.3, -0.15);
     guitarGroup.add(mountBody);
 
+    // --- Contours (Edges) pour le style du jeu ---
     guitarGroup.traverse((child) => {
         if(child.isMesh && child.geometry && child.material !== hardwareMat && child.material !== pickguardMat) {
             const edges = new THREE.EdgesGeometry(child.geometry);
@@ -1487,362 +1537,100 @@
     });
 
     scene.add(guitarGroup);
+    
+    
 
-
-    // ==========================================
-    // CRÉATION DES AVATARS (Style Funko Pop Blocky / Flat 3D)
-    // ==========================================
-    function createAvatarGroup(styleIndex) {
-        const group = new THREE.Group();
-
-        // 1. Couleurs définies selon le personnage
-        const skinColors = ['#FFCBA4', '#8D4E28', '#F0C080', '#C68642'];
-        const clothesColors = ['#3730a3', '#0e7490', '#065f46', '#27272a']; 
-        
-        const skinMat = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.6 });
-        const clothesMat = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.9 });
-        const shoesMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.5 });
-        const blackMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.9 });
-
-        // Helper : Ajoute des contours noirs flat-design aux volumes
-        function addEdges(mesh) {
-            const edges = new THREE.EdgesGeometry(mesh.geometry);
-            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
-            mesh.add(line);
-        }
-
-        // --- JAMBES & CHAUSSURES (Base Y = 0) ---
-        const createLeg = (xSign) => {
-            const legGroup = new THREE.Group();
-            legGroup.name = xSign < 0 ? "Leg_L" : "Leg_R";
-            
-            // Chaussure
-            const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.24), shoesMat);
-            shoe.position.set(xSign * 0.12, 0.06, 0.02);
-            shoe.castShadow = true;
-            addEdges(shoe);
-            
-            // Jambe
-            const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.25, 0.16), clothesMat);
-            leg.position.set(xSign * 0.12, 0.245, 0);
-            leg.castShadow = true;
-            addEdges(leg);
-            
-            legGroup.add(shoe, leg);
-            return legGroup;
-        };
-        group.add(createLeg(-1), createLeg(1));
-
-        // --- CORPS (Torse compact) ---
-        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.4, 0.25), clothesMat);
-        torso.position.set(0, 0.57, 0);
-        torso.castShadow = true;
-        addEdges(torso);
-        group.add(torso);
-
-        // --- BRAS & MAINS (Petits et carrés) ---
-        const createArm = (xSign) => {
-            const armGroup = new THREE.Group();
-            
-            const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), clothesMat);
-            arm.position.set(xSign * 0.29, 0.55, 0);
-            arm.rotation.z = xSign * 0.15; // Légèrement écartés
-            arm.castShadow = true;
-            addEdges(arm);
-            
-            const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), skinMat);
-            hand.position.set(xSign * 0.34, 0.32, 0);
-            hand.castShadow = true;
-            addEdges(hand);
-            
-            armGroup.add(arm, hand);
-            return armGroup;
-        };
-        group.add(createArm(-1), createArm(1));
-
-        // --- TÊTE FUNKO POP (Grosse tête carrée) ---
-        const headGroup = new THREE.Group();
-        headGroup.position.set(0, 1.07, 0);
-        
-        // Base Crâne
-        const headGeo = new THREE.BoxGeometry(0.7, 0.6, 0.6);
-        const head = new THREE.Mesh(headGeo, skinMat);
-        head.castShadow = true;
-        addEdges(head);
-        headGroup.add(head);
-
-        // Yeux (Boutons plats)
-        const createEye = (xPos) => {
-            const eyeGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.04, 16);
-            const eye = new THREE.Mesh(eyeGeo, blackMat);
-            eye.rotation.x = Math.PI / 2;
-            eye.position.set(xPos, -0.05, 0.31);
-            return eye;
-        };
-        headGroup.add(createEye(-0.18), createEye(0.18));
-
-        // Petit nez blocky
-        const nose = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.04, 0.04), skinMat);
-        nose.position.set(0, -0.12, 0.31);
-        addEdges(nose);
-        headGroup.add(nose);
-
-        group.add(headGroup);
-
-        // ==========================================
-        // ACCESSOIRES SIGNATURES
-        // ==========================================
-        if (styleIndex === 0) {
-            const hpGroup = new THREE.Group();
-            const headband = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.04, 16, 32, Math.PI), blackMat);
-            headband.position.set(0, 0, 0);
-            const cupGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.1, 16);
-            const cupL = new THREE.Mesh(cupGeo, blackMat); cupL.rotation.z = Math.PI / 2; cupL.position.set(-0.38, -0.05, 0);
-            const cupR = new THREE.Mesh(cupGeo, blackMat); cupR.rotation.z = Math.PI / 2; cupR.position.set(0.38, -0.05, 0);
-            addEdges(cupL); addEdges(cupR);
-            hpGroup.add(headband, cupL, cupR);
-            headGroup.add(hpGroup);
-        } else if (styleIndex === 1) {
-            const cyanEmissive = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 1 });
-            const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.41, 0.26), cyanEmissive);
-            stripe.position.set(-0.12, 0.57, 0);
-            group.add(stripe);
-            const glasses = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.15, 0.08), cyanEmissive);
-            glasses.position.set(0, -0.05, 0.32);
-            headGroup.add(glasses);
-        } else if (styleIndex === 2) {
-            const capMat = new THREE.MeshStandardMaterial({ color: '#dc2626', roughness: 0.9 });
-            const capBase = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.15, 0.62), capMat);
-            capBase.position.set(0, 0.35, 0);
-            addEdges(capBase);
-            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.3), capMat);
-            visor.position.set(0, 0.28, 0.35);
-            addEdges(visor);
-            headGroup.add(capBase, visor);
-            
-            const goldMat = new THREE.MeshStandardMaterial({ color: '#fbbf24', metalness: 0.8, roughness: 0.3 });
-            const chain = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.02, 8, 16), goldMat);
-            chain.position.set(0, 0.68, 0.1);
-            chain.rotation.x = Math.PI / 2.5;
-            const pendant = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.04), goldMat);
-            pendant.position.set(0, 0.54, 0.16);
-            addEdges(pendant);
-            group.add(chain, pendant);
-        } else if (styleIndex === 3) {
-            const shirt = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.41, 0.26), new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.9 }));
-            shirt.position.set(0, 0.57, 0);
-            group.add(shirt);
-            const shadeGeo = new THREE.BoxGeometry(0.22, 0.14, 0.04);
-            const shadeL = new THREE.Mesh(shadeGeo, blackMat); shadeL.position.set(-0.16, -0.05, 0.32);
-            const shadeR = new THREE.Mesh(shadeGeo, blackMat); shadeR.position.set(0.16, -0.05, 0.32);
-            const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.04, 0.04), blackMat); 
-            bridge.position.set(0, -0.05, 0.32);
-            const armGeo = new THREE.BoxGeometry(0.04, 0.04, 0.3);
-            const armL = new THREE.Mesh(armGeo, blackMat); armL.position.set(-0.28, -0.05, 0.15);
-            const armR = new THREE.Mesh(armGeo, blackMat); armR.position.set(0.28, -0.05, 0.15);
-            headGroup.add(shadeL, shadeR, bridge, armL, armR);
-        }
-
-        return group;
-    }
-
-    // ==========================================
-    // GÉNÉRATION DE L'IMAGE POUR LE MENU
-    // ==========================================
-    function generateAvatarImage(styleIndex) {
-        const cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-        cam.position.set(0, 0.8, 3.5); 
-        cam.lookAt(0, 0.6, 0);
-
-        const scn = new THREE.Scene();
-        scn.background = new THREE.Color(['#1e1b4b', '#0f172a', '#064e3b', '#4c0519'][styleIndex]);
-
-        const rnd = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
-        rnd.setSize(256, 256); 
-
-        const light = new THREE.DirectionalLight(0xffffff, 1.2);
-        light.position.set(2, 3, 2);
-        scn.add(light);
-        scn.add(new THREE.AmbientLight(0x888888));
-
-        const group = createAvatarGroup(styleIndex);
-        group.rotation.y = -Math.PI / 6;
-        scn.add(group);
-
-        rnd.render(scn, cam);
-        const dataUrl = rnd.domElement.toDataURL('image/png'); 
-        
-        rnd.dispose(); 
-        return dataUrl;
-    }
-
-    const avatars = [
-        { id: 'Beatmaker', img: generateAvatarImage(0) },
-        { id: 'Cyber-DJ', img: generateAvatarImage(1) },
-        { id: 'Street_MC', img: generateAvatarImage(2) },
-        { id: 'Exec_Prod', img: generateAvatarImage(3) }
-    ];
-
-    // ==========================================
-    // SPAWN DANS LA ROOM 3D
-    // ==========================================
-    function spawnRoomAvatar(styleIndex) {
-        if (currentRoomAvatar) {
-            scene.remove(currentRoomAvatar);
-            targetPosition = null; 
-        }
-
-        // Le OUTER gère la POSITION et la DIRECTION (Axe Y)
-        const outerGroup = new THREE.Group();
-        
-        // Le INNER gère uniquement le pivot de l'ANIMATION (Waddle/Bounce)
-        const innerModel = createAvatarGroup(styleIndex);
-        
-        // REGLAGE DU PIVOT : On s'assure que le bas du modèle est à y=0
-        // pour que les rotations locales ne le fassent pas passer sous le sol.
-        outerGroup.add(innerModel);
-
-        outerGroup.scale.set(1.6, 1.6, 1.6);
-        // Position de base sur le sol
-        outerGroup.position.set(0, -0.95, 3);
-
-        scene.add(outerGroup);
-        currentRoomAvatar = outerGroup;
-    }
+    
+   
 
     function checkCollision(x, z) {
         const r = 0.6; 
         if (x > -4.45 - r && x < 0.05 + r && z > -4.6 - r && z < -2.4 + r) return true; // Bureau
         if (x > 2.6 - r && x < 5.0 + r && z > -5.0 - r && z < -0.8 + r) return true;    // Lit
         if (x < -5 + r || x > 5 - r || z < -5 + r || z > 5 - r) return true;            // Murs
-        if (x > -5.0 - r && x < -3.6 + r && z > -0.2 - r && z < 3.2 + r) return true;   // Canapé
-        if (x > 0.75 - r && x < 1.85 + r && z > -4.9 - r && z < -4.1 + r) return true;  // Rack
-        if (x > -4.4 - r && x < -3.6 + r && z > -1.2 - r && z < -0.4 + r) return true;  // Plante
+        // 3. NOUVEAU : CANAPé Lounge (x: 1.8 à 4.2, z: 1.3 à 3.7)
+        if (x > -5.0 - r && x < -3.6 + r && z > -0.2 - r && z < 3.2 + r) return true;
+        // 4. NOUVEAU : Rack Hardware Analogique (x: -4.8 à -3.6, z: 1.1 à 1.9)
+        if (x > 0.75 - r && x < 1.85 + r && z > -4.9 - r && z < -4.1 + r) return true;
+
+        // 5. NOUVEAU : Plante Verte (x: -4.4 à -3.6, z: -1.2 à -0.4)
+        if (x > -4.4 - r && x < -3.6 + r && z > -1.2 - r && z < -0.4 + r) return true;
         return false; 
     }
     
-    let walkTime = 0; // FIX CRITIQUE : Definition globale pour l'animation de marche
     let time = 0;
-    
+    // Cible globale pour le lookAt de la caméra (optimisation mémoire)
     const cameraLookTarget = new THREE.Vector3(0, 0, 0);
 
-    // ==========================================
-    // ANIMATION & LOGIQUE DE MOUVEMENT
-    // ==========================================
-    // FIX CRITIQUE : Suppression de la duplication de la fonction animate3D() !
     function animate3D() {
         requestAnimationFrame(animate3D);
         time += 0.02;
         
+        // Sécurité pour l'écran du PC
         if (typeof pcScreenMat !== 'undefined') {
             pcScreenMat.emissiveIntensity = 0.5 + Math.sin(time) * 0.3;
         }
 
+
+        // --- ANIMATION DES LEDS DU RACK ---
         rackLeds.forEach(led => {
+            // 2% de chance par frame qu'une LED "saute" (baisse d'intensité)
             if (Math.random() < 0.02) {
-                led.material.emissiveIntensity = 0.1; 
+                led.material.emissiveIntensity = 0.1; // Presque éteint
             } else {
+                // Revient doucement à son intensité max (1.0)
                 led.material.emissiveIntensity += (1.0 - led.material.emissiveIntensity) * 0.1;
             }
         });
         
         if (currentRoomAvatar) {
-            let isMoving = false; 
-
-            // 1. DÉPLACEMENT & DIRECTION (Calculé sur le OUTER GROUP)
+            // --- 1. DÉPLACEMENT & ROTATION SÉCURISÉS ---
             if (targetPosition) {
-                // Utilisation des positions plates (sans le Y) pour éviter les micro-tremblements
-                const currentFlatPos = new THREE.Vector2(currentRoomAvatar.position.x, currentRoomAvatar.position.y, currentRoomAvatar.position.z);
-                const targetFlatPos = new THREE.Vector2(targetPosition.x,targetPosition.y, targetPosition.z);
-                const distance = currentFlatPos.distanceTo(targetFlatPos);
+                const distance = currentRoomAvatar.position.distanceTo(targetPosition);
 
+                // On vérifie la distance AVANT de faire un lookAt pour éviter le bug d'invisibilité
                 if (distance > 0.05) {
                     const dummy = new THREE.Object3D();
                     dummy.position.copy(currentRoomAvatar.position);
                     
+                    // FIX : On clone la cible et on force sa hauteur (Y) à être exactement la même 
+                    // que celle de l'avatar. Comme ça, il tourne mais ne se penche plus jamais !
                     const flatTarget = targetPosition.clone();
                     flatTarget.y = currentRoomAvatar.position.y;
                     
                     dummy.lookAt(flatTarget);
                     currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.12);
 
-                    // FIX CRITIQUE 180° : Verrouillage strict des axes X et Z pour empêcher l'avatar de se retourner ou de pencher
-                    currentRoomAvatar.rotation.x = 0;
-                    currentRoomAvatar.rotation.z = 0;
-
                     const speed = 0.04; 
-                    const dir = new THREE.Vector3(targetPosition.x - currentRoomAvatar.position.x, 0, targetPosition.z - currentRoomAvatar.position.z).normalize();
-                    
+                    const dir = new THREE.Vector3().subVectors(targetPosition, currentRoomAvatar.position).normalize();
                     const nextX = currentRoomAvatar.position.x + dir.x * speed;
                     const nextZ = currentRoomAvatar.position.z + dir.z * speed;
                     
                     let moved = false;
+                    
                     if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
                         currentRoomAvatar.position.x = nextX;
                         moved = true;
                     }
+                    
                     if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
                         currentRoomAvatar.position.z = nextZ;
                         moved = true;
                     }
                     
+                    // Si bloqué par un mur/meuble
                     if (!moved) {
                         targetPosition = null;
-                    } else {
-                        isMoving = true; 
                     }
                 } else {
+                    // Arrivé à destination
                     targetPosition = null; 
                 }
             }
 
-            // 2. ANIMATION INTERNE (Calculée sur le INNER MODEL)
-            if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
-                const innerModel = currentRoomAvatar.children[0];
-                
-                // Correction de la recherche des membres (Tolère les deux casses ou prend par index)
-                let legL = innerModel.getObjectByName("Leg_L") || innerModel.getObjectByName("leg_L") || innerModel.children[0];
-                let legR = innerModel.getObjectByName("Leg_R") || innerModel.getObjectByName("leg_R") || innerModel.children[1];
-
-                if (isMoving) {
-                    walkTime += 0.15; // Cadence de marche
-
-                    // DANDINEMENT (Axe Z local) : L'avatar balance de gauche à droite
-                    innerModel.rotation.z = Math.sin(walkTime) * 0.05;
-
-                    // REBOND (Axe Y local) : L'avatar sautille
-                    innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.05;
-
-                    // JAMBES (Axe X local) : Rotation alternée
-                    if (legL && legR) {
-                        const legSwing = Math.sin(walkTime * 1.2) * 0.4;
-                        legL.rotation.x = legSwing;
-                        legR.rotation.x = -legSwing;
-                    }
-                } else {
-                    // --- ARRÊT STRICT ET RESET ---
-                    walkTime = 0;
-
-                    // Amortissement fluide du corps vers la pose neutre
-                    innerModel.rotation.z *= 0.6;
-                    innerModel.position.y *= 0.6;
-
-                    // FIX CRITIQUE JAMBES : Arrêt immédiat et net à la position neutre
-                    if (legL && legR) {
-                        legL.rotation.x = 0;
-                        legR.rotation.x = 0;
-                    }
-
-                    // Verrouillage final pour stopper les calculs infimes
-                    if (Math.abs(innerModel.rotation.z) < 0.5) {
-                        innerModel.rotation.z = 0;
-                        innerModel.position.y = 0;
-                    }
-                }
-            }
-
-            // --- SUIVI DE CAMÉRA ---
+            // --- 2. SUIVI DE CAMÉRA ---
             const followIntensity = 0.2;
+            // On décale la caméra vers le haut de +3 sur PC pour "tasser" la pièce vers le bas
             const yPan = isMobile ? 0 : 1.5; 
             
             const targetCamX = 20 + (currentRoomAvatar.position.x * followIntensity);
@@ -2057,9 +1845,222 @@
     const playError   = () => { playTone(200, 'sawtooth', 0.2, 0.05); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); };
     const playKick    = () => { playTone(60, 'sine', 0.2, 0.2); playTone(120, 'square', 0.05, 0.1); };
 
+
+
+
+
+   // ==========================================
+    // CRÉATION DES AVATARS (Style Funko Pop Blocky / Flat 3D)
     // ==========================================
-    // 8. CONSTANTS & DEFAULT STATE
+    function createAvatarGroup(styleIndex) {
+        const group = new THREE.Group();
+
+        // 1. Couleurs définies selon le personnage
+        const skinColors = ['#FFCBA4', '#8D4E28', '#F0C080', '#C68642'];
+        const clothesColors = ['#3730a3', '#0e7490', '#065f46', '#27272a']; // Exec prod a un noir légèrement plus clair pour voir les contours
+        
+        const skinMat = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.6 });
+        const clothesMat = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.9 });
+        const shoesMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.5 });
+        const blackMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.9 });
+
+        // Helper : Ajoute des contours noirs flat-design aux volumes
+        function addEdges(mesh) {
+            const edges = new THREE.EdgesGeometry(mesh.geometry);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
+            mesh.add(line);
+        }
+
+        // --- JAMBES & CHAUSSURES (Base Y = 0) ---
+        const createLeg = (xSign) => {
+            const legGroup = new THREE.Group();
+            
+            // Chaussure
+            const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.24), shoesMat);
+            shoe.position.set(xSign * 0.12, 0.06, 0.02);
+            shoe.castShadow = true;
+            addEdges(shoe);
+            
+            // Jambe
+            const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.25, 0.16), clothesMat);
+            leg.position.set(xSign * 0.12, 0.245, 0);
+            leg.castShadow = true;
+            addEdges(leg);
+            
+            legGroup.add(shoe, leg);
+            return legGroup;
+        };
+        group.add(createLeg(-1), createLeg(1));
+
+        // --- CORPS (Torse compact) ---
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.4, 0.25), clothesMat);
+        torso.position.set(0, 0.57, 0);
+        torso.castShadow = true;
+        addEdges(torso);
+        group.add(torso);
+
+        // --- BRAS & MAINS (Petits et carrés) ---
+        const createArm = (xSign) => {
+            const armGroup = new THREE.Group();
+            
+            const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), clothesMat);
+            arm.position.set(xSign * 0.29, 0.55, 0);
+            arm.rotation.z = xSign * 0.15; // Légèrement écartés
+            arm.castShadow = true;
+            addEdges(arm);
+            
+            const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), skinMat);
+            hand.position.set(xSign * 0.34, 0.32, 0);
+            hand.castShadow = true;
+            addEdges(hand);
+            
+            armGroup.add(arm, hand);
+            return armGroup;
+        };
+        group.add(createArm(-1), createArm(1));
+
+        // --- TÊTE FUNKO POP (Grosse tête carrée) ---
+        const headGroup = new THREE.Group();
+        headGroup.position.set(0, 1.07, 0);
+        
+        // Base Crâne
+        const headGeo = new THREE.BoxGeometry(0.7, 0.6, 0.6);
+        const head = new THREE.Mesh(headGeo, skinMat);
+        head.castShadow = true;
+        addEdges(head);
+        headGroup.add(head);
+
+        // Yeux (Boutons plats)
+        const createEye = (xPos) => {
+            const eyeGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.04, 16);
+            const eye = new THREE.Mesh(eyeGeo, blackMat);
+            eye.rotation.x = Math.PI / 2;
+            eye.position.set(xPos, -0.05, 0.31);
+            return eye;
+        };
+        headGroup.add(createEye(-0.18), createEye(0.18));
+
+        // Petit nez blocky
+        const nose = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.04, 0.04), skinMat);
+        nose.position.set(0, -0.12, 0.31);
+        addEdges(nose);
+        headGroup.add(nose);
+
+        group.add(headGroup);
+
+        // ==========================================
+        // ACCESSOIRES SIGNATURES
+        // ==========================================
+        if (styleIndex === 0) {
+            const hpGroup = new THREE.Group();
+            const headband = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.04, 16, 32, Math.PI), blackMat);
+            headband.position.set(0, 0, 0);
+            const cupGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.1, 16);
+            const cupL = new THREE.Mesh(cupGeo, blackMat); cupL.rotation.z = Math.PI / 2; cupL.position.set(-0.38, -0.05, 0);
+            const cupR = new THREE.Mesh(cupGeo, blackMat); cupR.rotation.z = Math.PI / 2; cupR.position.set(0.38, -0.05, 0);
+            addEdges(cupL); addEdges(cupR);
+            hpGroup.add(headband, cupL, cupR);
+            headGroup.add(hpGroup);
+        } else if (styleIndex === 1) {
+            const cyanEmissive = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 1 });
+            const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.41, 0.26), cyanEmissive);
+            stripe.position.set(-0.12, 0.57, 0);
+            group.add(stripe);
+            const glasses = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.15, 0.08), cyanEmissive);
+            glasses.position.set(0, -0.05, 0.32);
+            headGroup.add(glasses);
+        } else if (styleIndex === 2) {
+            const capMat = new THREE.MeshStandardMaterial({ color: '#dc2626', roughness: 0.9 });
+            const capBase = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.15, 0.62), capMat);
+            capBase.position.set(0, 0.35, 0);
+            addEdges(capBase);
+            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.3), capMat);
+            visor.position.set(0, 0.28, 0.35);
+            addEdges(visor);
+            headGroup.add(capBase, visor);
+            
+            const goldMat = new THREE.MeshStandardMaterial({ color: '#fbbf24', metalness: 0.8, roughness: 0.3 });
+            const chain = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.02, 8, 16), goldMat);
+            chain.position.set(0, 0.68, 0.1);
+            chain.rotation.x = Math.PI / 2.5;
+            const pendant = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.04), goldMat);
+            pendant.position.set(0, 0.54, 0.16);
+            addEdges(pendant);
+            group.add(chain, pendant);
+        } else if (styleIndex === 3) {
+            const shirt = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.41, 0.26), new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.9 }));
+            shirt.position.set(0, 0.57, 0);
+            group.add(shirt);
+            const shadeGeo = new THREE.BoxGeometry(0.22, 0.14, 0.04);
+            const shadeL = new THREE.Mesh(shadeGeo, blackMat); shadeL.position.set(-0.16, -0.05, 0.32);
+            const shadeR = new THREE.Mesh(shadeGeo, blackMat); shadeR.position.set(0.16, -0.05, 0.32);
+            const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.04, 0.04), blackMat); 
+            bridge.position.set(0, -0.05, 0.32);
+            const armGeo = new THREE.BoxGeometry(0.04, 0.04, 0.3);
+            const armL = new THREE.Mesh(armGeo, blackMat); armL.position.set(-0.28, -0.05, 0.15);
+            const armR = new THREE.Mesh(armGeo, blackMat); armR.position.set(0.28, -0.05, 0.15);
+            headGroup.add(shadeL, shadeR, bridge, armL, armR);
+        }
+
+        return group;
+    }
+
     // ==========================================
+    // GÉNÉRATION DE L'IMAGE POUR LE MENU
+    // ==========================================
+    function generateAvatarImage(styleIndex) {
+        const cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+        cam.position.set(0, 0.8, 3.5); 
+        cam.lookAt(0, 0.6, 0);
+
+        const scn = new THREE.Scene();
+        scn.background = new THREE.Color(['#1e1b4b', '#0f172a', '#064e3b', '#4c0519'][styleIndex]);
+
+        const rnd = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
+        // FIX : On génère l'image en 256x256 pour qu'elle soit nette en grand
+        rnd.setSize(256, 256); 
+
+        const light = new THREE.DirectionalLight(0xffffff, 1.2);
+        light.position.set(2, 3, 2);
+        scn.add(light);
+        scn.add(new THREE.AmbientLight(0x888888));
+
+        const group = createAvatarGroup(styleIndex);
+        group.rotation.y = -Math.PI / 6;
+        scn.add(group);
+
+        rnd.render(scn, cam);
+        const dataUrl = rnd.domElement.toDataURL('image/png'); 
+        
+        rnd.dispose(); 
+        return dataUrl;
+    }
+
+    const avatars = [
+        { id: 'Beatmaker', img: generateAvatarImage(0) },
+        { id: 'Cyber-DJ', img: generateAvatarImage(1) },
+        { id: 'Street_MC', img: generateAvatarImage(2) },
+        { id: 'Exec_Prod', img: generateAvatarImage(3) }
+    ];
+
+    // ==========================================
+    // SPAWN DANS LA ROOM 3D
+    // ==========================================
+    function spawnRoomAvatar(styleIndex) {
+        if (currentRoomAvatar) {
+            scene.remove(currentRoomAvatar);
+            targetPosition = null; 
+        }
+
+        const group = createAvatarGroup(styleIndex);
+
+        // FIX : Ajustement pour que les pieds touchent parfaitement le sol
+        group.scale.set(1.6, 1.6, 1.6);
+        group.position.set(0, -0.95, 3);
+
+        scene.add(group);
+        currentRoomAvatar = group;
+    }
 
     const sponsors = [
         { id: 'sp1', name: "Enerji Drink",  reqFollowers: 1000,  reward: 500,  repCost: 15, cooldownDays: 1 },
@@ -2331,10 +2332,12 @@
         const progText = document.getElementById('sleep-progress-text');
         overlay.classList.add('active');
         
+        // Rend l'avatar transparent et l'allonge sur le lit
         if (currentRoomAvatar) {
             currentRoomAvatar.userData.preSleepPos = currentRoomAvatar.position.clone();
             currentRoomAvatar.userData.preSleepRot = currentRoomAvatar.rotation.clone();
 
+            // Position au centre du lit et rotation face vers le haut
             currentRoomAvatar.position.set(3.3, -0.1, -3.2);
             currentRoomAvatar.rotation.set(-Math.PI / 2, 0, 0);
 
@@ -2349,7 +2352,7 @@
         playTone(200, 'sine', 1, 0.05);
 
         let ticks = 0;
-        const maxTicks = 150; 
+        const maxTicks = 150; // 15s (tick toutes les 100ms)
         const playerLevel = Math.floor(state.rep / 50) + 1; 
         const rechargePerTick = 0.2 + (playerLevel * 0.1); 
 
@@ -2477,8 +2480,8 @@
         document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="w-full h-full pixelated object-cover" />`;
         document.getElementById('hud-name').innerText = state.username;
 
-        selectDawGenre('drill');
-        selectDawVoice('m');
+        selectDawGenre();
+        selectDawVoice();
         updateDawPlugins();
         playSuccess();
         updateHUD();
@@ -2494,7 +2497,7 @@
     // 13. GAME TICK
     // ==========================================
     function gameTick() {
-        if (state.isSleeping || state.isEventActive) return;
+        if (state.isSleeping || state.isEventActive) return; // Le temps s'arrête presque quand on dort
 
         state.timeMins = (parseInt(state.timeMins, 10) || 0) + 5;
         state.day      =  parseInt(state.day, 10) || 1;
@@ -2510,8 +2513,7 @@
         updateHUD();
         updateCooldownUIs();
 
-        // FIX : Probabilité réduite pour éviter le spam intempestif
-        if (!state.isEventActive && Math.random() < 0.002) triggerRandomEvent();
+        if (!state.isEventActive && Math.random() < 0.009) triggerRandomEvent();
     }
 
     // ==========================================
@@ -2523,6 +2525,7 @@
         document.getElementById('hud-foll').innerText  = formatNum(state.followers);
         document.getElementById('hud-day').innerText   = `DAY ${state.day}`;
 
+        // MISE À JOUR STRUGGLE (Énergie)
         const energyVal = Math.floor(state.energy);
         document.getElementById('hud-energy-val').innerText = `${energyVal}%`;
         document.getElementById('hud-energy-bar').style.width = `${energyVal}%`;
@@ -2696,6 +2699,7 @@
     function exportTrack() {
         if (getTotalMins() < (parseInt(state.cooldowns.dawTimeReady, 10) || 0) || state.isExporting) return;
 
+        // VÉRIFICATION STRUGGLE
         if (state.energy <= 0) {
             showToast("T'es KO, impossible de mixer. Clique sur le lit pour dormir.", "error");
             playError();
@@ -2712,13 +2716,14 @@
 
         const trackTitle = document.getElementById('track-title-input').value.trim() || `UNTITLED_${state.stats.tracks + 1}`;
 
+        // CALCUL DU TWIST (ÉNERGIE)
         const initialEnergy = state.energy;
-        state.energy = Math.max(0, state.energy - 20); 
+        state.energy = Math.max(0, state.energy - 20); // Consomme 20 points
         updateHUD();
 
         const energyRatio = initialEnergy / 100;
-        const speedMult = 1 + ((1 - energyRatio) * 2.5); 
-        const jitterMult = 1 + ((1 - energyRatio) * 6); 
+        const speedMult = 1 + ((1 - energyRatio) * 2.5); // Jusqu'à 3.5x plus rapide si exténué
+        const jitterMult = 1 + ((1 - energyRatio) * 6); // Gros tremblements des curseurs
         const isFatigued = initialEnergy < 20;
 
         let consumedPluginId = null;
@@ -2763,7 +2768,7 @@
             if (p >= 100) {
                 clearInterval(interval);
                 clearInterval(vuInterval);
-                dawWindow.style.transform = 'none'; 
+                dawWindow.style.transform = 'none'; // reset shake
                 playhead.style.left = '110px';
                 state.isExporting = false;
                 state.cooldowns.dawTimeReady = getTotalMins() + getDawCooldown();
@@ -2777,6 +2782,7 @@
         const result = calculateSuccess(genre, bpm, voice);
         let moneyGain = 0, repGain = 0, follGain = 0, resultTxt = "", critique = "";
 
+        // NOUVEAUX IDS: crk3 = VocalTune (AutoTune), crk15 = Xray Antidote (AI/Bypass)
         if (pluginId === 'crk3' && result.score === 0 && result.wrongVoice) { result.score = 1; critique = "\nVocalTune activé : Voix robotique, mais ça passe pour TikTok."; }
         if (pluginId === 'crk15') {
             result.score = 3;
@@ -2803,11 +2809,14 @@
 
         moneyGain = Math.floor(moneyGain * state.multiplier);
         
+        // Bonus de base si on a fait des drums complets
         if (pads > 8) { moneyGain += 20; }
 
+        // Application AUTOMATIQUE du bonus multiplicateur selon le texte du crack
         if (pluginId) {
             const usedCrack = cracks.find(c => c.id === pluginId);
             if (usedCrack) {
+                // Va chercher le nombre dans "+XX% Cash" de la description
                 const match = usedCrack.desc.match(/\+(\d+)%/);
                 if (match) {
                     const bonusPercent = parseInt(match[1], 10);
@@ -2874,6 +2883,7 @@
                              <div class="space-y-4">`;
             let foundAny = false;
             cracks.forEach(c => {
+                // Si l'argent est insuffisant, on affiche un lien "verrouillé"
                 if (state.money < c.reqMoney) {
                     crackHTML += `<div class="border border-gray-800 p-4 flex justify-between items-center bg-black/60 rounded-lg opacity-50 select-none">
                         <div class="flex-1"><p class="font-bold text-sm text-gray-500 font-retro">???_LOCKED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: $${formatNum(c.reqMoney)} in Bank</p></div>
@@ -2964,7 +2974,6 @@
             }
         }, 150);
     }
-
     // ==========================================
     // 19. SOCIAL
     // ==========================================
@@ -3079,6 +3088,7 @@
         setTimeout(() => { if (t.parentElement) { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => { if (t.parentElement) t.remove(); }, 400); } }, 4000);
     }
 
+    // FIX: Ajout de la fonction manquante pour fermer la modale des reviews
     function closeReview() {
         const overlay = document.getElementById('review-overlay');
         if (overlay) {
@@ -3091,29 +3101,32 @@
         }
     }
 
+
     // ==========================================
     // SYSTÈME D'ÉVÈNEMENTS ALÉATOIRES
     // ==========================================
     function triggerRandomEvent() {
-        state.isEventActive = true; 
+        state.isEventActive = true; // Met le jeu en pause
         const overlay = document.getElementById('event-overlay');
         const title = document.getElementById('event-title');
         const desc = document.getElementById('event-desc');
         const choicesDiv = document.getElementById('event-choices');
 
+        // Affichage fluide
         overlay.classList.remove('hidden');
         setTimeout(() => {
             overlay.style.opacity = '1';
             overlay.style.pointerEvents = 'all';
         }, 10);
 
-        playTone(500, 'square', 0.2, 0.1); 
-        choicesDiv.innerHTML = ''; 
+        playTone(500, 'square', 0.2, 0.1); // Son d'alerte
+        choicesDiv.innerHTML = ''; // Reset des anciens boutons
 
         const rand = Math.random();
         
+        // Rareté 2/5 (Collaboration) : ~45% d'apparition
         if (rand < 0.45) {
-            const isKnown = Math.random() < 0.2; 
+            const isKnown = Math.random() < 0.2; // 20% de chance que ce soit un grand rappeur
             const rapper = isKnown ? rappersConnus[Math.floor(Math.random() * rappersConnus.length)] : rappersPasConnus[Math.floor(Math.random() * rappersPasConnus.length)];
 
             title.innerText = "🤝 COLLABORATION";
@@ -3138,6 +3151,7 @@
             choicesDiv.append(btn1, btn2, btn3);
 
         } 
+        // Rareté 3/5 (Vole de Prod) : ~35% d'apparition
         else if (rand < 0.80) {
             const isKnown = Math.random() < 0.2;
             const voleur = isKnown ? voleursConnus[Math.floor(Math.random() * voleursConnus.length)] : voleursPasConnus[Math.floor(Math.random() * voleursPasConnus.length)];
@@ -3164,6 +3178,7 @@
             choicesDiv.append(btn1, btn2, btn3);
 
         } 
+        // Rareté 4/5 (Rappeur Cancel) : ~20% d'apparition
         else {
             const cancelled = rappersCancel[Math.floor(Math.random() * rappersCancel.length)];
 
@@ -3188,6 +3203,7 @@
         }
     }
 
+    // Gestion conséquences Collab
     function resolveCollabEvent(rapper, chance, rawPrice) {
         if (Math.random() * 100 <= chance) {
             const finalPrice = Math.floor(rawPrice * state.multiplier);
@@ -3202,6 +3218,7 @@
         closeRandomEvent();
     }
 
+    // Gestion conséquences Vol
     function resolveTheftEvent(action, voleur) {
         if (action === 'plainte') {
             state.rep = Math.max(0, state.rep - 20);
@@ -3235,6 +3252,7 @@
         closeRandomEvent();
     }
 
+    // Fonction pour fermer la fenêtre et reprendre le temps
     function closeRandomEvent() {
         const overlay = document.getElementById('event-overlay');
         overlay.style.opacity = '0';
@@ -3243,11 +3261,14 @@
         saveGame();
         setTimeout(() => {
             overlay.classList.add('hidden');
-            state.isEventActive = false; 
+            state.isEventActive = false; // Reprise du jeu
         }, 300);
     }
 
+
+    // ==========================================
 // TRACK REVIEW SYSTEM
+// ==========================================
 const reviewers = [
     { type: 'critique', names: ['PitchFork_FR', 'RapActu', 'LeSonDuMois', 'NoFuture_Mag'] },
     { type: 'internaute', names: ['@user4829', '@drillfreak99', '@anonyme_musik', '@rateyourprod'] },
@@ -3284,6 +3305,7 @@ function showTrackReview(trackScore, trackTitle) {
     const suspenseGenre = document.getElementById('suspense-genre');
     const suspenseText = document.getElementById('suspense-text');
 
+    // Reset
     phaseSuspense.classList.remove('hidden');
     phaseSuspense.style.display = 'flex';
     phaseResults.classList.add('hidden');
@@ -3293,6 +3315,7 @@ function showTrackReview(trackScore, trackTitle) {
     suspenseTitle.innerText = `"${trackTitle}"`;
     suspenseGenre.innerText = `${currentDawGenre.toUpperCase()} · ${currentDawVoice.toUpperCase()} · DAY ${state.day}`;
 
+    // Génère les reviews
     const reviews = [];
     const usedTypes = [];
     while (reviews.length < 3) {
@@ -3307,6 +3330,7 @@ function showTrackReview(trackScore, trackTitle) {
     }
     const avg = (reviews.reduce((s, r) => s + r.score, 0) / reviews.length).toFixed(1);
 
+    // Textes de suspense progressifs
     const suspenseSteps = [
         "Les critiques écoutent...",
         "Ils prennent des notes...",
@@ -3314,6 +3338,7 @@ function showTrackReview(trackScore, trackTitle) {
         "⚡ Résultats imminents..."
     ];
 
+    // Affichage de l'overlay
     overlay.classList.remove('hidden');
     setTimeout(() => {
         overlay.style.opacity = '1';
@@ -3321,6 +3346,7 @@ function showTrackReview(trackScore, trackTitle) {
     }, 50);
     playTone(300, 'sine', 0.4, 0.05);
 
+    // Animation du suspense
     let step = 0;
     const suspenseInterval = setInterval(() => {
         step++;
@@ -3330,15 +3356,18 @@ function showTrackReview(trackScore, trackTitle) {
         }
     }, 1200);
 
+    // Révélation des résultats après 5s
     setTimeout(() => {
         clearInterval(suspenseInterval);
 
+        // Transition entre les deux phases
         phaseSuspense.style.display = 'none';
         phaseSuspense.classList.add('hidden');
 
         const typeColors = { critique: 'text-[var(--retro-blue)]', internaute: 'text-[var(--retro-green)]', rappeur: 'text-[var(--retro-orange)]' };
         const typeLabels = { critique: '📰 CRITIQUE', internaute: '💬 INTERNAUTE', rappeur: '🎤 RAPPEUR' };
 
+        // Affiche les reviews une par une
         reviewList.innerHTML = '';
         reviews.forEach((r, i) => {
             setTimeout(() => {
@@ -3359,6 +3388,7 @@ function showTrackReview(trackScore, trackTitle) {
             }, i * 800);
         });
 
+        // Score final après toutes les reviews
         setTimeout(() => {
             const avgColor = avg >= 7 ? 'text-[var(--retro-green)]' : avg >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]';
             avgEl.className = `text-5xl font-bold font-retro ${avgColor}`;
@@ -3372,6 +3402,11 @@ function showTrackReview(trackScore, trackTitle) {
     }, 5000);
 }
 
+
+    
+    // ==========================================
+    // 22. GLOBAL EXPORTS
+    // ==========================================
     window.cycleTheme       = cycleTheme;
     window.toggleTooltip    = toggleTooltip;
     window.showTooltip      = showTooltip;
@@ -3390,8 +3425,8 @@ function showTrackReview(trackScore, trackTitle) {
     window.quitPC           = quitPC;
     window.selectAvatar     = selectAvatar;
     window.attemptLogin     = attemptLogin;
-    window.goSleep          = goSleep; 
-    window.closeReview      = closeReview; 
+    window.goSleep          = goSleep; // Export du sommeil
+    window.closeReview      = closeReview; // Export de la fermeture review
     
     // Boot
     initUI();
