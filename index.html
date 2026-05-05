@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -636,7 +636,7 @@
         <!-- Conteneur Login : Centré, safe area et défilement interne sans déborder de 100dvh -->
         <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
             <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it.bat</h1>
-            <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">3D AllRoom Objects  // v13</p>
+            <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">3D AllRoom Objects  // v15</p>
             <div class="w-full mb-4 md:mb-6">
                 <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
                 <input type="text" id="login-username" class="w-full bg-black/60 border border-gray-600 rounded-lg px-4 py-2 md:py-3 text-white font-retro text-sm focus:outline-none focus:border-[var(--accent)] transition-all shadow-inner" placeholder="Enter Alias...">
@@ -914,6 +914,11 @@
     let rackLeds = [];
     let currentRoomAvatar = null;
     let targetPosition = null;
+    
+    // VARIABLES GLOBALES POUR L'ANIMATION
+    let time = 0;
+    let walkTime = 0;
+    const GRID_SIZE = 1.0; 
 
     const container = document.getElementById('three-canvas-container');
     const scene = new THREE.Scene();
@@ -1558,11 +1563,8 @@
         return false; 
     }
     
-    let time = 0;
     // Cible globale pour le lookAt de la caméra (optimisation mémoire)
     const cameraLookTarget = new THREE.Vector3(0, 0, 0);
-    const GRID_SIZE = 1.0; // 1.0 correspond aux carreaux de ta chambre
-    
     
     function animate3D() {
         requestAnimationFrame(animate3D);
@@ -1572,7 +1574,6 @@
         if (typeof pcScreenMat !== 'undefined') {
             pcScreenMat.emissiveIntensity = 0.5 + Math.sin(time) * 0.3;
         }
-
 
         // --- ANIMATION DES LEDS DU RACK ---
         rackLeds.forEach(led => {
@@ -1586,66 +1587,111 @@
         });
         
         if (currentRoomAvatar) {
+            let isMoving = false;
             // --- 1. DÉPLACEMENT & ROTATION SÉCURISÉS ---
             if (targetPosition) {
-                const distance = currentRoomAvatar.position.distanceTo(targetPosition);
+                const currentFlatPos = new THREE.Vector2(currentRoomAvatar.position.x, currentRoomAvatar.position.z);
+                const targetFlatPos = new THREE.Vector2(targetPosition.x, targetPosition.z);
+                const distance = currentFlatPos.distanceTo(targetFlatPos);
 
                 // On vérifie la distance AVANT de faire un lookAt pour éviter le bug d'invisibilité
-                // --- DANS animate3D (Section Déplacement) ---
-        if (distance > 0.02) { // Seuil réduit pour plus de précision
-            const dummy = new THREE.Object3D();
-            dummy.position.copy(currentRoomAvatar.position);
+                if (distance > 0.02) { // Seuil réduit pour plus de précision
+                    const dummy = new THREE.Object3D();
+                    dummy.position.copy(currentRoomAvatar.position);
     
-            const flatTarget = targetPosition.clone();
-            flatTarget.y = currentRoomAvatar.position.y;
+                    const flatTarget = targetPosition.clone();
+                    flatTarget.y = currentRoomAvatar.position.y;
     
-            dummy.lookAt(flatTarget);
+                    dummy.lookAt(flatTarget);
 
-    // ROTATION HYPER SMOOTH : On réduit le facteur (0.08) pour plus de souplesse
-            currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.08);
+                    // ROTATION HYPER SMOOTH : On réduit le facteur (0.08) pour plus de souplesse
+                    currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.08);
 
-    // Verrouillage des axes parasites
-            currentRoomAvatar.rotation.x = 0;
-            currentRoomAvatar.rotation.z = 0;
+                    // Verrouillage des axes parasites
+                    currentRoomAvatar.rotation.x = 0;
+                    currentRoomAvatar.rotation.z = 0;
 
-    // VITESSE DYNAMIQUE (Effet magnétique smooth)
-    // Plus on est loin, plus on va vite. Plus on approche de la grille, plus on ralentit.
-            const baseSpeed = 0.04;
-            const easing = Math.min(1, distance * 2); // Ralentissement progressif à l'arrivée
-            const currentSpeed = baseSpeed * easing;
+                    // VITESSE DYNAMIQUE (Effet magnétique smooth)
+                    // Plus on est loin, plus on va vite. Plus on approche de la grille, plus on ralentit.
+                    const baseSpeed = 0.04;
+                    const easing = Math.min(1, distance * 2); // Ralentissement progressif à l'arrivée
+                    const currentSpeed = baseSpeed * easing;
 
-            const dir = new THREE.Vector3().subVectors(targetPosition, currentRoomAvatar.position).normalize();
+                    const dir = new THREE.Vector3().subVectors(targetPosition, currentRoomAvatar.position).normalize();
     
-            const nextX = currentRoomAvatar.position.x + dir.x * currentSpeed;
-            const nextZ = currentRoomAvatar.position.z + dir.z * currentSpeed;
+                    const nextX = currentRoomAvatar.position.x + dir.x * currentSpeed;
+                    const nextZ = currentRoomAvatar.position.z + dir.z * currentSpeed;
     
-            let moved = false;
-            // Vérification collision simplifiée pour la fluidité
-            if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
-        currentRoomAvatar.position.x = nextX;
-        moved = true;
-    }
-    if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
-        currentRoomAvatar.position.z = nextZ;
-        moved = true;
-    }
+                    let moved = false;
+                    // Vérification collision simplifiée pour la fluidité
+                    if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
+                        currentRoomAvatar.position.x = nextX;
+                        moved = true;
+                    }
+                    if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
+                        currentRoomAvatar.position.z = nextZ;
+                        moved = true;
+                    }
     
-    if (!moved) {
-        targetPosition = null;
-    } else {
-        isMoving = true; 
-    }
-} else {
-
-}
-
-    // AUTO-ALIGNE : Une fois arrivé très près, on "lock" sur la grille
-            currentRoomAvatar.position.x = targetPosition.x;
-            currentRoomAvatar.position.z = targetPosition.z;
-            targetPosition = null;
+                    if (!moved) {
+                        targetPosition = null;
+                    } else {
+                        isMoving = true; 
+                    }
+                } else {
+                    // AUTO-ALIGNE : Une fois arrivé très près, on "lock" sur la grille
+                    currentRoomAvatar.position.x = targetPosition.x;
+                    currentRoomAvatar.position.z = targetPosition.z;
+                    targetPosition = null;
+                }
             }
 
-            // --- 2. SUIVI DE CAMÉRA ---
+            // --- 2. ANIMATION INTERNE (Calculée sur le INNER MODEL) ---
+            if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
+                const innerModel = currentRoomAvatar.children[0];
+                
+                // Correction de la recherche des membres (Tolère les deux casses ou prend par index)
+                let legL = innerModel.getObjectByName("Leg_L") || innerModel.getObjectByName("leg_L") || innerModel.children[0];
+                let legR = innerModel.getObjectByName("Leg_R") || innerModel.getObjectByName("leg_R") || innerModel.children[1];
+
+                if (isMoving) {
+                    walkTime += 0.15; // Cadence de marche
+
+                    // DANDINEMENT (Axe Z local) : L'avatar balance de gauche à droite
+                    innerModel.rotation.z = Math.sin(walkTime) * 0.05;
+
+                    // REBOND (Axe Y local) : L'avatar sautille
+                    innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.05;
+
+                    // JAMBES (Axe X local) : Rotation alternée
+                    if (legL && legR) {
+                        const legSwing = Math.sin(walkTime * 1.2) * 0.4;
+                        legL.rotation.x = legSwing;
+                        legR.rotation.x = -legSwing;
+                    }
+                } else {
+                    // --- ARRÊT STRICT ET RESET ---
+                    walkTime = 0;
+
+                    // Amortissement fluide du corps vers la pose neutre
+                    innerModel.rotation.z *= 0.6;
+                    innerModel.position.y *= 0.6;
+
+                    // FIX CRITIQUE JAMBES : Arrêt immédiat et net à la position neutre
+                    if (legL && legR) {
+                        legL.rotation.x = 0;
+                        legR.rotation.x = 0;
+                    }
+
+                    // Verrouillage final pour stopper les calculs infimes
+                    if (Math.abs(innerModel.rotation.z) < 0.001) {
+                        innerModel.rotation.z = 0;
+                        innerModel.position.y = 0;
+                    }
+                }
+            }
+
+            // --- 3. SUIVI DE CAMÉRA ---
             const followIntensity = 0.2;
             // On décale la caméra vers le haut de +3 sur PC pour "tasser" la pièce vers le bas
             const yPan = isMobile ? 0 : 1.5; 
@@ -1710,7 +1756,7 @@
                 const rawX = intersects[i].point.x;
                 const rawZ = intersects[i].point.z;
 
-    // EFFET MAGNÉTIQUE : On arrondit à la grille la plus proche
+                // EFFET MAGNÉTIQUE : On arrondit à la grille la plus proche
                 const snappedX = Math.round(rawX / GRID_SIZE) * GRID_SIZE;
                 const snappedZ = Math.round(rawZ / GRID_SIZE) * GRID_SIZE;
 
@@ -1871,11 +1917,7 @@
     const playError   = () => { playTone(200, 'sawtooth', 0.2, 0.05); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); };
     const playKick    = () => { playTone(60, 'sine', 0.2, 0.2); playTone(120, 'square', 0.05, 0.1); };
 
-
-
-
-
-   // ==========================================
+    // ==========================================
     // CRÉATION DES AVATARS (Style Funko Pop Blocky / Flat 3D)
     // ==========================================
     function createAvatarGroup(styleIndex) {
@@ -1883,31 +1925,27 @@
 
         // 1. Couleurs définies selon le personnage
         const skinColors = ['#FFCBA4', '#8D4E28', '#F0C080', '#C68642'];
-        const clothesColors = ['#3730a3', '#0e7490', '#065f46', '#27272a']; // Exec prod a un noir légèrement plus clair pour voir les contours
+        const clothesColors = ['#3730a3', '#0e7490', '#065f46', '#27272a']; 
         
         const skinMat = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.6 });
         const clothesMat = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.9 });
         const shoesMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.5 });
         const blackMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.9 });
 
-        // Helper : Ajoute des contours noirs flat-design aux volumes
         function addEdges(mesh) {
             const edges = new THREE.EdgesGeometry(mesh.geometry);
             const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
             mesh.add(line);
         }
 
-        // --- JAMBES & CHAUSSURES (Base Y = 0) ---
         const createLeg = (xSign) => {
             const legGroup = new THREE.Group();
             
-            // Chaussure
             const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.24), shoesMat);
             shoe.position.set(xSign * 0.12, 0.06, 0.02);
             shoe.castShadow = true;
             addEdges(shoe);
             
-            // Jambe
             const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.25, 0.16), clothesMat);
             leg.position.set(xSign * 0.12, 0.245, 0);
             leg.castShadow = true;
@@ -1918,20 +1956,18 @@
         };
         group.add(createLeg(-1), createLeg(1));
 
-        // --- CORPS (Torse compact) ---
         const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.4, 0.25), clothesMat);
         torso.position.set(0, 0.57, 0);
         torso.castShadow = true;
         addEdges(torso);
         group.add(torso);
 
-        // --- BRAS & MAINS (Petits et carrés) ---
         const createArm = (xSign) => {
             const armGroup = new THREE.Group();
             
             const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), clothesMat);
             arm.position.set(xSign * 0.29, 0.55, 0);
-            arm.rotation.z = xSign * 0.15; // Légèrement écartés
+            arm.rotation.z = xSign * 0.15;
             arm.castShadow = true;
             addEdges(arm);
             
@@ -1945,18 +1981,15 @@
         };
         group.add(createArm(-1), createArm(1));
 
-        // --- TÊTE FUNKO POP (Grosse tête carrée) ---
         const headGroup = new THREE.Group();
         headGroup.position.set(0, 1.07, 0);
         
-        // Base Crâne
         const headGeo = new THREE.BoxGeometry(0.7, 0.6, 0.6);
         const head = new THREE.Mesh(headGeo, skinMat);
         head.castShadow = true;
         addEdges(head);
         headGroup.add(head);
 
-        // Yeux (Boutons plats)
         const createEye = (xPos) => {
             const eyeGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.04, 16);
             const eye = new THREE.Mesh(eyeGeo, blackMat);
@@ -1966,7 +1999,6 @@
         };
         headGroup.add(createEye(-0.18), createEye(0.18));
 
-        // Petit nez blocky
         const nose = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.04, 0.04), skinMat);
         nose.position.set(0, -0.12, 0.31);
         addEdges(nose);
@@ -1974,29 +2006,19 @@
 
         group.add(headGroup);
 
-        // ==========================================
-        // ACCESSOIRES SIGNATURES
-        // ==========================================
         if (styleIndex === 0) {
             const hpGroup = new THREE.Group();
             
-            // 1. L'ARCEAU (Headband)
-            // Rayon passé à 0.50 pour contourner les coins du cube sans toucher
-            // Épaisseur (tube) à 0.045 pour un look plus "studio"
             const headband = new THREE.Mesh(
                 new THREE.TorusGeometry(0.50, 0.045, 16, 32, Math.PI), 
                 blackMat
             );
-            // On monte l'arceau de 0.08 pour qu'il repose "sur" le sommet du crâne
             headband.position.set(0, 0.08, 0);
             
-            // 2. LES OREILLETTES (Earcups)
-            // On augmente légèrement la taille (0.18) et l'épaisseur (0.12)
             const cupGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.12, 16);
             
             const cupL = new THREE.Mesh(cupGeo, blackMat); 
             cupL.rotation.z = Math.PI / 2; 
-            // Positionnée à 0.46 pour être bien plaquée contre la face (0.35 + épaisseur)
             cupL.position.set(-0.46, 0.05, 0); 
 
             const cupR = new THREE.Mesh(cupGeo, blackMat); 
@@ -2063,7 +2085,6 @@
         scn.background = new THREE.Color(['#1e1b4b', '#0f172a', '#064e3b', '#4c0519'][styleIndex]);
 
         const rnd = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
-        // FIX : On génère l'image en 256x256 pour qu'elle soit nette en grand
         rnd.setSize(256, 256); 
 
         const light = new THREE.DirectionalLight(0xffffff, 1.2);
@@ -2100,7 +2121,6 @@
 
         const group = createAvatarGroup(styleIndex);
 
-        // FIX : Ajustement pour que les pieds touchent parfaitement le sol
         group.scale.set(1.6, 1.6, 1.6);
         group.position.set(0, -0.95, 3);
 
@@ -2123,27 +2143,18 @@
 
     
     const cracks = [
-        // --- TIER 1 ---
         { id: 'crk1', name: "Kickend_2.pkg",                  risk: 0.10, reqMoney: 0,    desc: "Kick sur-boosté (+15% Cash)." },
         { id: 'crk2', name: "FabFilter_Expert_Q3.exe",        risk: 0.15, reqMoney: 500,  desc: "EQ propre garanti (+25% Cash)." },
         { id: 'crk3', name: "VocalTune_Pro.exe",              risk: 0.20, reqMoney: 1500, desc: "Corrige les fausses notes (+35% Cash)." },
-        
-        // --- TIER 2 ---
         { id: 'crk4', name: "LennarAnalog_Silence1.exe",      risk: 0.25, reqMoney: 2000, desc: "Synthés rétro recherchés (+50% Cash)." },
         { id: 'crk5', name: "VintageTone_RC_80.exe",          risk: 0.30, reqMoney: 4000, desc: "Texture Lo-Fi gourmand (+60% Cash)." },
         { id: 'crk6', name: "iZotono_O2.pkg",                 risk: 0.35, reqMoney: 5000, desc: "Mastering pro instantané (+80% Cash)." },
-        
-        // --- TIER 3 ---
         { id: 'crk7', name: "Harmodyne.pkg",                  risk: 0.40, reqMoney: 10000, desc: "Saturation destructrice (+100% Cash)." },
         { id: 'crk8', name: "Arthur_PGM.pkg",                 risk: 0.45, reqMoney: 15000, desc: "Émulation de légende (+120% Cash)." },
         { id: 'crk9', name: "Musictoys_Eliminator.dmg",       risk: 0.50, reqMoney: 20000, desc: "Isole les acapellas (+150% Cash)." },
-        
-        // --- TIER 4 ---
         { id: 'crk10', name: "Plexus_4.exe",                  risk: 0.55, reqMoney: 30000,  desc: "Arpégiateur massif (+180% Cash)." },
         { id: 'crk11', name: "Lethal.dmg",                    risk: 0.60, reqMoney: 40000,  desc: "Basses de film (+200% Cash)." },
         { id: 'crk12', name: "Local_Instruments_Connect.pkg", risk: 0.70, reqMoney: 50000, desc: "Banques de sons pro (+300% Cash)." },
-        
-        // --- ULTIME ---
         { id: 'crk13', name: "Asgard_RetroVerb.pkg",          risk: 0.75, reqMoney: 60000, desc: "Reverb mythique (+400% Cash)." },
         { id: 'crk14', name: "SpectralSounds_Stratosphere_2.pkg", risk: 0.85, reqMoney: 80000, desc: "Recherche spectral (+500% Cash)." },
         { id: 'crk15', name: "Xray_Antidote.pkg",             risk: 0.95, reqMoney: 100000, desc: "Bypass les algos (+1000% Cash)." }
@@ -2291,11 +2302,11 @@
         updateTaskbar();
     }
 
-    let avatarChanged = false; // FIX: On crée un traqueur
+    let avatarChanged = false; 
 
     function selectAvatar(idx) {
         selectedAvatarIndex = idx;
-        avatarChanged = true; // FIX: On signale que le joueur a fait un choix manuel
+        avatarChanged = true; 
         document.querySelectorAll('.avatar-sel').forEach(el => el.classList.remove('selected'));
         document.querySelector(`.avatar-sel[data-idx="${idx}"]`).classList.add('selected');
         playBleep();
@@ -2335,17 +2346,17 @@
     }
 
     function selectDawGenre(val) {
-        currentDawGenre = val;
+        currentDawGenre = val || 'drill';
         document.querySelectorAll('.btn-genre').forEach(b => {
-            if (b.dataset.val === val) { b.classList.remove('btn-minimal'); b.classList.add('btn-action','text-white'); }
+            if (b.dataset.val === currentDawGenre) { b.classList.remove('btn-minimal'); b.classList.add('btn-action','text-white'); }
             else { b.classList.add('btn-minimal'); b.classList.remove('btn-action','text-white'); }
         });
         playBleep();
     }
     function selectDawVoice(val) {
-        currentDawVoice = val;
+        currentDawVoice = val || 'm';
         document.querySelectorAll('.btn-voice').forEach(b => {
-            if (b.dataset.val === val) { b.classList.remove('btn-minimal'); b.classList.add('btn-action','text-white'); }
+            if (b.dataset.val === currentDawVoice) { b.classList.remove('btn-minimal'); b.classList.add('btn-action','text-white'); }
             else { b.classList.add('btn-minimal'); b.classList.remove('btn-action','text-white'); }
         });
         playBleep();
@@ -2378,12 +2389,10 @@
         const progText = document.getElementById('sleep-progress-text');
         overlay.classList.add('active');
         
-        // Rend l'avatar transparent et l'allonge sur le lit
         if (currentRoomAvatar) {
             currentRoomAvatar.userData.preSleepPos = currentRoomAvatar.position.clone();
             currentRoomAvatar.userData.preSleepRot = currentRoomAvatar.rotation.clone();
 
-            // Position au centre du lit et rotation face vers le haut
             currentRoomAvatar.position.set(3.3, -0.1, -3.2);
             currentRoomAvatar.rotation.set(-Math.PI / 2, 0, 0);
 
@@ -2398,7 +2407,7 @@
         playTone(200, 'sine', 1, 0.05);
 
         let ticks = 0;
-        const maxTicks = 150; // 15s (tick toutes les 100ms)
+        const maxTicks = 150; 
         const playerLevel = Math.floor(state.rep / 50) + 1; 
         const rechargePerTick = 0.2 + (playerLevel * 0.1); 
 
@@ -2499,7 +2508,6 @@
                 state.isSleeping             = false;
                 state.activeCharacter = parseInt(state.activeCharacter ?? state.avatar, 10) || 0;
                 
-                // FIX: Si le joueur a cliqué sur un skin, on met à jour son ancienne sauvegarde !
                 if (avatarChanged) {
                     state.activeCharacter = selectedAvatarIndex;
                 }
@@ -2543,7 +2551,7 @@
     // 13. GAME TICK
     // ==========================================
     function gameTick() {
-        if (state.isSleeping || state.isEventActive) return; // Le temps s'arrête presque quand on dort
+        if (state.isSleeping || state.isEventActive) return; 
 
         state.timeMins = (parseInt(state.timeMins, 10) || 0) + 5;
         state.day      =  parseInt(state.day, 10) || 1;
@@ -2560,11 +2568,11 @@
         updateCooldownUIs();
 
         if (!state.isEventActive) {
-        const r = Math.random();
-        if (r < 0.001) triggerRandomEvent('collab');        // Collab : très rare
-        else if (r < 0.002) triggerRandomEvent('vol');      // Vol : rare
-        else if (r < 0.0025) triggerRandomEvent('badbuzz'); // Bad buzz : très rare
-}
+            const r = Math.random();
+            if (r < 0.001) triggerRandomEvent('collab');        
+            else if (r < 0.002) triggerRandomEvent('vol');      
+            else if (r < 0.0025) triggerRandomEvent('badbuzz'); 
+        }
     }
 
     // ==========================================
@@ -2576,7 +2584,6 @@
         document.getElementById('hud-foll').innerText  = formatNum(state.followers);
         document.getElementById('hud-day').innerText   = `DAY ${state.day}`;
 
-        // MISE À JOUR STRUGGLE (Énergie)
         const energyVal = Math.floor(state.energy);
         document.getElementById('hud-energy-val').innerText = `${energyVal}%`;
         document.getElementById('hud-energy-bar').style.width = `${energyVal}%`;
@@ -2750,7 +2757,6 @@
     function exportTrack() {
         if (getTotalMins() < (parseInt(state.cooldowns.dawTimeReady, 10) || 0) || state.isExporting) return;
 
-        // VÉRIFICATION STRUGGLE
         if (state.energy <= 0) {
             showToast("T'es KO, impossible de mixer. Clique sur le lit pour dormir.", "error");
             playError();
@@ -2767,14 +2773,13 @@
 
         const trackTitle = document.getElementById('track-title-input').value.trim() || `UNTITLED_${state.stats.tracks + 1}`;
 
-        // CALCUL DU TWIST (ÉNERGIE)
         const initialEnergy = state.energy;
-        state.energy = Math.max(0, state.energy - 20); // Consomme 20 points
+        state.energy = Math.max(0, state.energy - 20); 
         updateHUD();
 
         const energyRatio = initialEnergy / 100;
-        const speedMult = 1 + ((1 - energyRatio) * 2.5); // Jusqu'à 3.5x plus rapide si exténué
-        const jitterMult = 1 + ((1 - energyRatio) * 6); // Gros tremblements des curseurs
+        const speedMult = 1 + ((1 - energyRatio) * 2.5); 
+        const jitterMult = 1 + ((1 - energyRatio) * 6); 
         const isFatigued = initialEnergy < 20;
 
         let consumedPluginId = null;
@@ -2819,7 +2824,7 @@
             if (p >= 100) {
                 clearInterval(interval);
                 clearInterval(vuInterval);
-                dawWindow.style.transform = 'none'; // reset shake
+                dawWindow.style.transform = 'none'; 
                 playhead.style.left = '110px';
                 state.isExporting = false;
                 state.cooldowns.dawTimeReady = getTotalMins() + getDawCooldown();
@@ -2833,7 +2838,6 @@
         const result = calculateSuccess(genre, bpm, voice);
         let moneyGain = 0, repGain = 0, follGain = 0, resultTxt = "", critique = "";
 
-        // NOUVEAUX IDS: crk3 = VocalTune (AutoTune), crk15 = Xray Antidote (AI/Bypass)
         if (pluginId === 'crk3' && result.score === 0 && result.wrongVoice) { result.score = 1; critique = "\nVocalTune activé : Voix robotique, mais ça passe pour TikTok."; }
         if (pluginId === 'crk15') {
             result.score = 3;
@@ -2860,14 +2864,11 @@
 
         moneyGain = Math.floor(moneyGain * state.multiplier);
         
-        // Bonus de base si on a fait des drums complets
         if (pads > 8) { moneyGain += 20; }
 
-        // Application AUTOMATIQUE du bonus multiplicateur selon le texte du crack
         if (pluginId) {
             const usedCrack = cracks.find(c => c.id === pluginId);
             if (usedCrack) {
-                // Va chercher le nombre dans "+XX% Cash" de la description
                 const match = usedCrack.desc.match(/\+(\d+)%/);
                 if (match) {
                     const bonusPercent = parseInt(match[1], 10);
@@ -2891,9 +2892,13 @@
                    result.score === 1 ? Math.floor(4 + Math.random() * 3) :
                                         Math.floor(1 + Math.random() * 3);
         
-        showTrackReview(trackScore, trackTitle);
-        
-        showToast(toastMsg, result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error'));
+        const toastData = {
+            msg: toastMsg,
+            type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error')
+        };
+
+        // On appelle showTrackReview avec les données du toast pour l'afficher plus tard
+        showTrackReview(trackScore, trackTitle, toastData);
         saveGame(); updateHUD(); updateCooldownUIs();
     }
 
@@ -2934,7 +2939,6 @@
                              <div class="space-y-4">`;
             let foundAny = false;
             cracks.forEach(c => {
-                // Si l'argent est insuffisant, on affiche un lien "verrouillé"
                 if (state.money < c.reqMoney) {
                     crackHTML += `<div class="border border-gray-800 p-4 flex justify-between items-center bg-black/60 rounded-lg opacity-50 select-none">
                         <div class="flex-1"><p class="font-bold text-sm text-gray-500 font-retro">???_LOCKED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: $${formatNum(c.reqMoney)} in Bank</p></div>
@@ -3025,6 +3029,7 @@
             }
         }, 150);
     }
+
     // ==========================================
     // 19. SOCIAL
     // ==========================================
@@ -3139,7 +3144,6 @@
         setTimeout(() => { if (t.parentElement) { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => { if (t.parentElement) t.remove(); }, 400); } }, 4000);
     }
 
-    // FIX: Ajout de la fonction manquante pour fermer la modale des reviews
     function closeReview() {
         const overlay = document.getElementById('review-overlay');
         if (overlay) {
@@ -3159,38 +3163,27 @@
     let rappersConnusPool = [...rappersConnus];
     let rappersPasConnusPool = [...rappersPasConnus];
     
-    function triggerRandomEvent() {
-        state.isEventActive = true; // Met le jeu en pause
+    function triggerRandomEvent(forcedType) {
+        state.isEventActive = true; 
         const overlay = document.getElementById('event-overlay');
         const title = document.getElementById('event-title');
         const desc = document.getElementById('event-desc');
         const choicesDiv = document.getElementById('event-choices');
 
-        // Affichage fluide
         overlay.classList.remove('hidden');
         setTimeout(() => {
             overlay.style.opacity = '1';
             overlay.style.pointerEvents = 'all';
         }, 10);
 
-        playTone(500, 'square', 0.2, 0.1); // Son d'alerte
-        choicesDiv.innerHTML = ''; // Reset des anciens boutons
+        playTone(500, 'square', 0.2, 0.1); 
+        choicesDiv.innerHTML = ''; 
 
         const rand = Math.random();
-        const eventType = type || (rand < 0.45 ? 'collab' : rand < 0.80 ? 'vol' : 'badbuzz');
-
-        if (eventType === 'collab') {
-        // bloc collaboration
-        } else if (eventType === 'vol') {
-        // bloc vol de prod
-        } else {
-        // bloc bad buzz
-        }
-        
+        const eventType = forcedType || (rand < 0.45 ? 'collab' : rand < 0.80 ? 'vol' : 'badbuzz');
             
-        // Rareté 2/5 (Collaboration) : ~45% d'apparition
-        if (rand < 0.45) {
-            const isKnown = Math.random() < 0.2; // 20% de chance que ce soit un grand rappeur
+        if (eventType === 'collab') {
+            const isKnown = Math.random() < 0.2; 
             const rapper = pickRapper(isKnown);
 
             title.innerText = "🤝 COLLABORATION";
@@ -3215,8 +3208,7 @@
             choicesDiv.append(btn1, btn2, btn3);
 
         } 
-        // Rareté 3/5 (Vole de Prod) : ~35% d'apparition
-        else if (rand < 0.80) {
+        else if (eventType === 'vol') {
             const isKnown = Math.random() < 0.2;
             const voleur = isKnown ? voleursConnus[Math.floor(Math.random() * voleursConnus.length)] : voleursPasConnus[Math.floor(Math.random() * voleursPasConnus.length)];
 
@@ -3242,8 +3234,7 @@
             choicesDiv.append(btn1, btn2, btn3);
 
         } 
-        // Rareté 4/5 (Rappeur Cancel) : ~20% d'apparition
-        else {
+        else if (eventType === 'badbuzz') {
             const cancelled = rappersCancel[Math.floor(Math.random() * rappersCancel.length)];
 
             title.innerText = "❌ BAD BUZZ";
@@ -3267,7 +3258,6 @@
         }
     }
 
-    // Gestion conséquences Collab
     function resolveCollabEvent(rapper, chance, rawPrice) {
         if (Math.random() * 100 <= chance) {
             const finalPrice = Math.floor(rawPrice * state.multiplier);
@@ -3282,7 +3272,6 @@
         closeRandomEvent();
     }
 
-    // Gestion conséquences Vol
     function resolveTheftEvent(action, voleur) {
         if (action === 'plainte') {
             state.rep = Math.max(0, state.rep - 20);
@@ -3316,7 +3305,6 @@
         closeRandomEvent();
     }
 
-    // Fonction pour fermer la fenêtre et reprendre le temps
     function closeRandomEvent() {
         const overlay = document.getElementById('event-overlay');
         overlay.style.opacity = '0';
@@ -3325,161 +3313,162 @@
         saveGame();
         setTimeout(() => {
             overlay.classList.add('hidden');
-            state.isEventActive = false; // Reprise du jeu
+            state.isEventActive = false; 
         }, 300);
     }
-function pickRapper(isKnown) {
-    let pool = isKnown ? rappersConnusPool : rappersPasConnusPool;
-    const source = isKnown ? rappersConnus : rappersPasConnus;
 
-    // Si le pool est vide, on le reremplit et on le mélange
-    if (pool.length === 0) {
-        pool = [...source].sort(() => Math.random() - 0.5);
+    function pickRapper(isKnown) {
+        let pool = isKnown ? rappersConnusPool : rappersPasConnusPool;
+        const source = isKnown ? rappersConnus : rappersPasConnus;
+
+        if (pool.length === 0) {
+            pool = [...source].sort(() => Math.random() - 0.5);
+            if (isKnown) rappersConnusPool = pool;
+            else rappersPasConnusPool = pool;
+        }
+
+        const picked = pool.shift();
         if (isKnown) rappersConnusPool = pool;
         else rappersPasConnusPool = pool;
+
+        return picked;
     }
-
-    // On prend le premier et on le retire du pool
-    const picked = pool.shift();
-    if (isKnown) rappersConnusPool = pool;
-    else rappersPasConnusPool = pool;
-
-    return picked;
-}
 
     // ==========================================
-// TRACK REVIEW SYSTEM
-// ==========================================
-const reviewers = [
-    { type: 'critique', names: ['PitchFork_FR', 'RapActu', 'LeSonDuMois', 'NoFuture_Mag'] },
-    { type: 'internaute', names: ['@user4829', '@drillfreak99', '@anonyme_musik', '@rateyourprod'] },
-    { type: 'rappeur', names: rappersConnus }
-];
-
-function getReviewerComment(type, score) {
-    if (type === 'critique') {
-        if (score >= 8) return ["Un chef d'œuvre sonique.", "Production irréprochable.", "Incontournable de 2026."];
-        if (score >= 5) return ["Correct sans être mémorable.", "Quelques bonnes idées mal exploitées.", "Ça se laisse écouter."];
-        return ["Un désastre commercial.", "On a entendu ça 1000 fois.", "Skip immédiat."];
-    }
-    if (type === 'internaute') {
-        if (score >= 8) return ["bro ce son 🔥🔥🔥", "j'ai mis ça en boucle depuis 3h", "validé par les rues"];
-        if (score >= 5) return ["mouais c'est pas mal", "ça passe en soirée", "y'a des trucs bien"];
-        return ["c'est quoi ce bruit 💀", "delete this", "mon chat fait mieux"];
-    }
-    if (type === 'rappeur') {
-        if (score >= 8) return ["Respect au prod, c'est solide.", "Je veux un feat.", "Top niveau."];
-        if (score >= 5) return ["C'est correct, continue.", "Travaille encore.", "Pas mal pour un débutant."];
-        return ["Arrête de polluer les ondes.", "C'est moi qui suis la référence.", "Retourne à l'école."];
-    }
-    return ["..."];
-}
-
-function showTrackReview(trackScore, trackTitle) {
-    const overlay = document.getElementById('review-overlay');
-    const phaseSuspense = document.getElementById('review-phase-suspense');
-    const phaseResults = document.getElementById('review-phase-results');
-    const reviewList = document.getElementById('review-list');
-    const avgEl = document.getElementById('review-average');
-    const trackNameEl = document.getElementById('review-track-name');
-    const suspenseTitle = document.getElementById('suspense-title');
-    const suspenseGenre = document.getElementById('suspense-genre');
-    const suspenseText = document.getElementById('suspense-text');
-
-    // Reset
-    phaseSuspense.classList.remove('hidden');
-    phaseSuspense.style.display = 'flex';
-    phaseResults.classList.add('hidden');
-    phaseResults.style.display = 'none';
-
-    trackNameEl.innerText = `"${trackTitle}" — ${currentDawGenre.toUpperCase()} / ${currentDawVoice.toUpperCase()}`;
-    suspenseTitle.innerText = `"${trackTitle}"`;
-    suspenseGenre.innerText = `${currentDawGenre.toUpperCase()} · ${currentDawVoice.toUpperCase()} · DAY ${state.day}`;
-
-    // Génère les reviews
-    const reviews = [];
-    const usedTypes = [];
-    while (reviews.length < 3) {
-        const pool = reviewers[Math.floor(Math.random() * reviewers.length)];
-        if (usedTypes.includes(pool.type)) continue;
-        usedTypes.push(pool.type);
-        const individualScore = Math.min(10, Math.max(1, trackScore + Math.floor(Math.random() * 5) - 2));
-        const name = pool.names[Math.floor(Math.random() * pool.names.length)];
-        const comments = getReviewerComment(pool.type, individualScore);
-        const comment = comments[Math.floor(Math.random() * comments.length)];
-        reviews.push({ type: pool.type, name, score: individualScore, comment });
-    }
-    const avg = (reviews.reduce((s, r) => s + r.score, 0) / reviews.length).toFixed(1);
-
-    // Textes de suspense progressifs
-    const suspenseSteps = [
-        "Les critiques écoutent...",
-        "Ils prennent des notes...",
-        "Le verdict approche...",
-        "⚡ Résultats imminents..."
+    // TRACK REVIEW SYSTEM
+    // ==========================================
+    const reviewers = [
+        { type: 'critique', names: ['PitchFork_FR', 'RapActu', 'LeSonDuMois', 'NoFuture_Mag'] },
+        { type: 'internaute', names: ['@user4829', '@drillfreak99', '@anonyme_musik', '@rateyourprod'] },
+        { type: 'rappeur', names: rappersConnus }
     ];
 
-    // Affichage de l'overlay
-    overlay.classList.remove('hidden');
-    setTimeout(() => {
-        overlay.style.opacity = '1';
-        overlay.style.pointerEvents = 'all';
-    }, 50);
-    playTone(300, 'sine', 0.4, 0.05);
-
-    // Animation du suspense
-    let step = 0;
-    const suspenseInterval = setInterval(() => {
-        step++;
-        if (step < suspenseSteps.length) {
-            suspenseText.innerText = suspenseSteps[step];
-            playTone(200 + step * 80, 'sine', 0.15, 0.04);
+    function getReviewerComment(type, score) {
+        if (type === 'critique') {
+            if (score >= 8) return ["Un chef d'œuvre sonique.", "Production irréprochable.", "Incontournable de 2026."];
+            if (score >= 5) return ["Correct sans être mémorable.", "Quelques bonnes idées mal exploitées.", "Ça se laisse écouter."];
+            return ["Un désastre commercial.", "On a entendu ça 1000 fois.", "Skip immédiat."];
         }
-    }, 1200);
+        if (type === 'internaute') {
+            if (score >= 8) return ["bro ce son 🔥🔥🔥", "j'ai mis ça en boucle depuis 3h", "validé par les rues"];
+            if (score >= 5) return ["mouais c'est pas mal", "ça passe en soirée", "y'a des trucs bien"];
+            return ["c'est quoi ce bruit 💀", "delete this", "mon chat fait mieux"];
+        }
+        if (type === 'rappeur') {
+            if (score >= 8) return ["Respect au prod, c'est solide.", "Je veux un feat.", "Top niveau."];
+            if (score >= 5) return ["C'est correct, continue.", "Travaille encore.", "Pas mal pour un débutant."];
+            return ["Arrête de polluer les ondes.", "C'est moi qui suis la référence.", "Retourne à l'école."];
+        }
+        return ["..."];
+    }
 
-    // Révélation des résultats après 5s
-    setTimeout(() => {
-        clearInterval(suspenseInterval);
+    // FIX : La fonction reçoit désormais toastData pour l'afficher à la fin du suspense
+    function showTrackReview(trackScore, trackTitle, toastData) {
+        const overlay = document.getElementById('review-overlay');
+        const phaseSuspense = document.getElementById('review-phase-suspense');
+        const phaseResults = document.getElementById('review-phase-results');
+        const reviewList = document.getElementById('review-list');
+        const avgEl = document.getElementById('review-average');
+        const trackNameEl = document.getElementById('review-track-name');
+        const suspenseTitle = document.getElementById('suspense-title');
+        const suspenseGenre = document.getElementById('suspense-genre');
+        const suspenseText = document.getElementById('suspense-text');
 
-        // Transition entre les deux phases
-        phaseSuspense.style.display = 'none';
-        phaseSuspense.classList.add('hidden');
+        // Reset
+        phaseSuspense.classList.remove('hidden');
+        phaseSuspense.style.display = 'flex';
+        phaseResults.classList.add('hidden');
+        phaseResults.style.display = 'none';
 
-        const typeColors = { critique: 'text-[var(--retro-blue)]', internaute: 'text-[var(--retro-green)]', rappeur: 'text-[var(--retro-orange)]' };
-        const typeLabels = { critique: '📰 CRITIQUE', internaute: '💬 INTERNAUTE', rappeur: '🎤 RAPPEUR' };
+        trackNameEl.innerText = `"${trackTitle}" — ${currentDawGenre.toUpperCase()} / ${currentDawVoice.toUpperCase()}`;
+        suspenseTitle.innerText = `"${trackTitle}"`;
+        suspenseGenre.innerText = `${currentDawGenre.toUpperCase()} · ${currentDawVoice.toUpperCase()} · DAY ${state.day}`;
 
-        // Affiche les reviews une par une
-        reviewList.innerHTML = '';
-        reviews.forEach((r, i) => {
-            setTimeout(() => {
-                const div = document.createElement('div');
-                div.className = 'bg-black/40 border border-white/10 rounded-lg p-4 opacity-0 transition-opacity duration-500';
-                div.innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] font-retro ${typeColors[r.type]}">${typeLabels[r.type]}</span>
-                        <span class="text-[10px] font-retro text-white">${r.name}</span>
-                    </div>
-                    <div class="flex justify-between items-center gap-3">
-                        <p class="text-sm text-gray-300 italic flex-1">"${r.comment}"</p>
-                        <span class="text-2xl font-bold font-retro flex-shrink-0 ${r.score >= 7 ? 'text-[var(--retro-green)]' : r.score >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]'}">${r.score}/10</span>
-                    </div>`;
-                reviewList.appendChild(div);
-                setTimeout(() => div.style.opacity = '1', 50);
-                playTone(300 + (r.score * 40), 'sine', 0.15, 0.06);
-            }, i * 800);
-        });
+        // Génère les reviews
+        const reviews = [];
+        const usedTypes = [];
+        while (reviews.length < 3) {
+            const pool = reviewers[Math.floor(Math.random() * reviewers.length)];
+            if (usedTypes.includes(pool.type)) continue;
+            usedTypes.push(pool.type);
+            const individualScore = Math.min(10, Math.max(1, trackScore + Math.floor(Math.random() * 5) - 2));
+            const name = pool.names[Math.floor(Math.random() * pool.names.length)];
+            const comments = getReviewerComment(pool.type, individualScore);
+            const comment = comments[Math.floor(Math.random() * comments.length)];
+            reviews.push({ type: pool.type, name, score: individualScore, comment });
+        }
+        const avg = (reviews.reduce((s, r) => s + r.score, 0) / reviews.length).toFixed(1);
 
-        // Score final après toutes les reviews
+        // Textes de suspense progressifs
+        const suspenseSteps = [
+            "Les critiques écoutent...",
+            "Ils prennent des notes...",
+            "Le verdict approche...",
+            "⚡ Résultats imminents..."
+        ];
+
+        // Affichage de l'overlay
+        overlay.classList.remove('hidden');
         setTimeout(() => {
-            const avgColor = avg >= 7 ? 'text-[var(--retro-green)]' : avg >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]';
-            avgEl.className = `text-5xl font-bold font-retro ${avgColor}`;
-            avgEl.innerText = `${avg}/10`;
-            playSuccess();
-            
-            if (toastData) {
-            showToast(toastData.msg)
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'all';
+        }, 50);
+        playTone(300, 'sine', 0.4, 0.05);
+
+        // Animation du suspense
+        let step = 0;
+        const suspenseInterval = setInterval(() => {
+            step++;
+            if (step < suspenseSteps.length) {
+                suspenseText.innerText = suspenseSteps[step];
+                playTone(200 + step * 80, 'sine', 0.15, 0.04);
             }
-        }, reviews.length * 800 + 300);
+        }, 1200);
+
+        // Révélation des résultats après 5s
+        setTimeout(() => {
+            clearInterval(suspenseInterval);
+
+            // Transition entre les deux phases
+            phaseSuspense.style.display = 'none';
+            phaseSuspense.classList.add('hidden');
+
+            const typeColors = { critique: 'text-[var(--retro-blue)]', internaute: 'text-[var(--retro-green)]', rappeur: 'text-[var(--retro-orange)]' };
+            const typeLabels = { critique: '📰 CRITIQUE', internaute: '💬 INTERNAUTE', rappeur: '🎤 RAPPEUR' };
+
+            // Affiche les reviews une par une
+            reviewList.innerHTML = '';
+            reviews.forEach((r, i) => {
+                setTimeout(() => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-black/40 border border-white/10 rounded-lg p-4 opacity-0 transition-opacity duration-500';
+                    div.innerHTML = `
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] font-retro ${typeColors[r.type]}">${typeLabels[r.type]}</span>
+                            <span class="text-[10px] font-retro text-white">${r.name}</span>
+                        </div>
+                        <div class="flex justify-between items-center gap-3">
+                            <p class="text-sm text-gray-300 italic flex-1">"${r.comment}"</p>
+                            <span class="text-2xl font-bold font-retro flex-shrink-0 ${r.score >= 7 ? 'text-[var(--retro-green)]' : r.score >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]'}">${r.score}/10</span>
+                        </div>`;
+                    reviewList.appendChild(div);
+                    setTimeout(() => div.style.opacity = '1', 50);
+                    playTone(300 + (r.score * 40), 'sine', 0.15, 0.06);
+                }, i * 800);
+            });
+
+            // Score final après toutes les reviews et affichage du toast
+            setTimeout(() => {
+                const avgColor = avg >= 7 ? 'text-[var(--retro-green)]' : avg >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]';
+                avgEl.className = `text-5xl font-bold font-retro ${avgColor}`;
+                avgEl.innerText = `${avg}/10`;
+                playSuccess();
+                
+                // FIX : On affiche le toast d'argent/récompense SEULEMENT MAINTENANT pour ne pas spoiler !
+                if (toastData) {
+                    showToast(toastData.msg);
+                }
+            }, reviews.length * 800 + 300);
 
         phaseResults.style.display = 'flex';
         phaseResults.classList.remove('hidden');
