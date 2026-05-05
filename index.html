@@ -1953,14 +1953,17 @@
         // ==========================================
         if (styleIndex === 0) {
             const hpGroup = new THREE.Group();
-            const headband = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.04, 16, 32, Math.PI), blackMat);
+            // FIX : On élargit l'arceau (0.40 au lieu de 0.36)
+            const headband = new THREE.Mesh(new THREE.TorusGeometry(0.40, 0.04, 16, 32, Math.PI), blackMat);
             headband.position.set(0, 0, 0);
             const cupGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.1, 16);
-            const cupL = new THREE.Mesh(cupGeo, blackMat); cupL.rotation.z = Math.PI / 2; cupL.position.set(-0.38, -0.05, 0);
-            const cupR = new THREE.Mesh(cupGeo, blackMat); cupR.rotation.z = Math.PI / 2; cupR.position.set(0.38, -0.05, 0);
+            // FIX : On écarte les oreillettes sur l'axe X (-0.42 et 0.42 au lieu de 0.38)
+            const cupL = new THREE.Mesh(cupGeo, blackMat); cupL.rotation.z = Math.PI / 2; cupL.position.set(-0.42, -0.05, 0);
+            const cupR = new THREE.Mesh(cupGeo, blackMat); cupR.rotation.z = Math.PI / 2; cupR.position.set(0.42, -0.05, 0);
             addEdges(cupL); addEdges(cupR);
             hpGroup.add(headband, cupL, cupR);
             headGroup.add(hpGroup);
+        }
         } else if (styleIndex === 1) {
             const cyanEmissive = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 1 });
             const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.41, 0.26), cyanEmissive);
