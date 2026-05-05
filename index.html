@@ -3115,7 +3115,7 @@
     // 21. TOASTS
     // ==========================================
     function showToast(msg, type = 'info') {
-        const zone = document.getElementById('toast-zone');
+        const zone = document.getElementById('-zone');
         const t = document.createElement('div');
         let colorClass = "bg-black/90 border-gray-700 text-gray-100";
         if (type === 'success') colorClass = "bg-[#022c22] border-[var(--retro-green)] text-emerald-100 shadow-[0_0_15px_rgba(52,211,153,0.3)]";
@@ -3463,12 +3463,11 @@
                 avgEl.className = `text-5xl font-bold font-retro ${avgColor}`;
                 avgEl.innerText = `${avg}/10`;
                 playSuccess();
-                
-                // FIX : On affiche le toast d'argent/récompense SEULEMENT MAINTENANT pour ne pas spoiler !
                 if (toastData) {
-                    showToast(toastData.msg);
-                }
-            }, reviews.length * 800 + 300);
+                showToast(toastData.msg, toastData.type);
+            }
+            
+        }, reviews.length * 800 + 300);
 
         phaseResults.style.display = 'flex';
         phaseResults.classList.remove('hidden');
