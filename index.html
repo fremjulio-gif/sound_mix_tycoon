@@ -1562,6 +1562,8 @@
     // Cible globale pour le lookAt de la caméra (optimisation mémoire)
     const cameraLookTarget = new THREE.Vector3(0, 0, 0);
 
+    
+    
     function animate3D() {
         requestAnimationFrame(animate3D);
         time += 0.02;
@@ -2533,7 +2535,12 @@
         updateHUD();
         updateCooldownUIs();
 
-        if (!state.isEventActive && Math.random() < 0.009) triggerRandomEvent();
+        if (!state.isEventActive) {
+        const r = Math.random();
+        if (r < 0.001) triggerRandomEvent('collab');        // Collab : très rare
+        else if (r < 0.002) triggerRandomEvent('vol');      // Vol : rare
+        else if (r < 0.0025) triggerRandomEvent('badbuzz'); // Bad buzz : très rare
+}
     }
 
     // ==========================================
@@ -3125,6 +3132,9 @@
     // ==========================================
     // SYSTÈME D'ÉVÈNEMENTS ALÉATOIRES
     // ==========================================
+    let rappersConnusPool = [...rappersConnus];
+    let rappersPasConnusPool = [...rappersPasConnus];
+    
     function triggerRandomEvent() {
         state.isEventActive = true; // Met le jeu en pause
         const overlay = document.getElementById('event-overlay');
@@ -3143,11 +3153,21 @@
         choicesDiv.innerHTML = ''; // Reset des anciens boutons
 
         const rand = Math.random();
+        const eventType = type || (rand < 0.45 ? 'collab' : rand < 0.80 ? 'vol' : 'badbuzz');
+
+        if (eventType === 'collab') {
+        // bloc collaboration
+        } else if (eventType === 'vol') {
+        // bloc vol de prod
+        } else {
+        // bloc bad buzz
+        }
         
+            
         // Rareté 2/5 (Collaboration) : ~45% d'apparition
         if (rand < 0.45) {
             const isKnown = Math.random() < 0.2; // 20% de chance que ce soit un grand rappeur
-            const rapper = isKnown ? rappersConnus[Math.floor(Math.random() * rappersConnus.length)] : rappersPasConnus[Math.floor(Math.random() * rappersPasConnus.length)];
+            const rapper = pickRapper(isKnown);
 
             title.innerText = "🤝 COLLABORATION";
             title.className = "text-3xl font-retro text-[var(--retro-green)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-green)] shrink-0";
@@ -3284,7 +3304,24 @@
             state.isEventActive = false; // Reprise du jeu
         }, 300);
     }
+function pickRapper(isKnown) {
+    let pool = isKnown ? rappersConnusPool : rappersPasConnusPool;
+    const source = isKnown ? rappersConnus : rappersPasConnus;
 
+    // Si le pool est vide, on le reremplit et on le mélange
+    if (pool.length === 0) {
+        pool = [...source].sort(() => Math.random() - 0.5);
+        if (isKnown) rappersConnusPool = pool;
+        else rappersPasConnusPool = pool;
+    }
+
+    // On prend le premier et on le retire du pool
+    const picked = pool.shift();
+    if (isKnown) rappersConnusPool = pool;
+    else rappersPasConnusPool = pool;
+
+    return picked;
+}
 
     // ==========================================
 // TRACK REVIEW SYSTEM
