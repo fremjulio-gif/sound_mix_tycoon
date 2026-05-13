@@ -1650,10 +1650,11 @@
 
             // --- 2. ANIMATION INTERNE (Calculée sur le INNER MODEL) ---
 if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
-    const innerModel = currentRoomAvatar.children[0];
+    const innerModel = currentRoomAvatar;
 
-    const legL = innerModel.getObjectByName("Leg_L") || innerModel.getObjectByName("leg_L") || innerModel.children[0];
-    const legR = innerModel.getObjectByName("Leg_R") || innerModel.getObjectByName("leg_R") || innerModel.children[1];
+const legL = innerModel.getObjectByName("Leg_L");
+const legR = innerModel.getObjectByName("Leg_R");
+
 
     const now = performance.now();
 
@@ -1673,8 +1674,9 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
 
         walkTime += isMoving ? 0.15 : 0.08;
 
-        innerModel.rotation.z = Math.sin(walkTime) * 0.05 * fade;
-        innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.05 * fade;
+        innerModel.rotation.z = Math.sin(walkTime) * 0.03 * fade;
+        innerModel.position.y = -0.95 + Math.abs(Math.sin(walkTime)) * 0.04 * fade;
+
 
         if (legL && legR) {
             const legSwing = Math.sin(walkTime * 1.2) * 0.4 * fade;
@@ -1685,7 +1687,8 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
         walkTime = 0;
 
         innerModel.rotation.z *= 0.6;
-        innerModel.position.y *= 0.6;
+        innerModel.position.y += (-0.95 - innerModel.position.y) * 0.25;
+
 
         if (legL && legR) {
             legL.rotation.x *= 0.6;
@@ -1953,23 +1956,24 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
         }
 
         const createLeg = (xSign) => {
-        const legGroup = new THREE.Group();
-            legGroup.name = xSign < 0 ? "Leg_L" : "Leg_R";
-            legGroup.position.set(xSign * 0.12, 0.42, 0);
+    const legGroup = new THREE.Group();
+    legGroup.name = xSign < 0 ? "Leg_L" : "Leg_R";
+    legGroup.position.set(xSign * 0.12, 0.42, 0);
 
-        const upperLeg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.16), clothesMat);
-            upperLeg.position.set(0, -0.12, 0);
-            upperLeg.castShadow = true;
-            addEdges(upperLeg);
-    
-        const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.28), shoesMat);
-        shoe.position.set(0, -0.34, 0.04);
-        shoe.castShadow = true;
-        addEdges(shoe);
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.16), clothesMat);
+    leg.position.set(0, -0.12, 0);
+    leg.castShadow = true;
+    addEdges(leg);
 
-        legGroup.add(upperLeg, shoe);
-        return legGroup;
+    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.28), shoesMat);
+    shoe.position.set(0, -0.34, 0.04);
+    shoe.castShadow = true;
+    addEdges(shoe);
+
+    legGroup.add(leg, shoe);
+    return legGroup;
 };
+
 
 group.add(createLeg(-1), createLeg(1));
 
