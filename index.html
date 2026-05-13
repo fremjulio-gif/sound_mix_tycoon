@@ -1861,10 +1861,14 @@ if (!state.isSleeping && currentRoomAvatar) {
         }
     }
     function hideTooltip() {
-        globalTooltip.style.opacity = '0';
-        clearTimeout(tooltipTimeout);
-        tooltipTimeout =  globalTooltip.classList.add('hidden'); globalTooltip.dataset.type = ''; }, 300);
-    }
+    globalTooltip.style.opacity = '0';
+    clearTimeout(tooltipTimeout);
+    tooltipTimeout = setTimeout(() => {
+        globalTooltip.classList.add('hidden');
+        globalTooltip.dataset.type = '';
+    }, 300);
+}
+
     document.addEventListener('touchstart', (e) => {
         if (isMobile && !e.target.closest('#hud') && !e.target.closest('#global-tooltip')) hideTooltip();
     }, { passive: true });
@@ -2483,46 +2487,37 @@ group.add(createLeg(-1), createLeg(1));
     }
 
     function wakeUp() {
-        state.isSleeping = false;
-        document.getElementById('sleep-overlay').classList.remove('active');
-        
+    state.isSleeping = false;
+    document.getElementById('sleep-overlay').classList.remove('active');
+
+    if (currentRoomAvatar) {
         if (currentRoomAvatar.userData.preSleepPos) {
             currentRoomAvatar.position.copy(currentRoomAvatar.userData.preSleepPos);
             currentRoomAvatar.rotation.copy(currentRoomAvatar.userData.preSleepRot);
-    } else {
+        } else {
             currentRoomAvatar.position.set(2.5, -0.74, -2.9);
             currentRoomAvatar.rotation.set(0, 0, 0);
-    }
-
-currentRoomAvatar.traverse(child => {
-par :
-
-if (currentRoomAvatar.userData.preSleepPos) {
-    currentRoomAvatar.position.copy(currentRoomAvatar.userData.preSleepPos);
-    currentRoomAvatar.rotation.copy(currentRoomAvatar.userData.preSleepRot);
-} else {
-    currentRoomAvatar.position.set(2.5, -0.74, -2.9);
-    currentRoomAvatar.rotation.set(0, 0, 0);
-}
-
-const visual = currentRoomAvatar.getObjectByName("AvatarVisual") || currentRoomAvatar.children[0];
-if (visual) {
-    visual.position.set(0, 0, 0);
-    visual.rotation.set(0, 0, 0);
-}
-
-            currentRoomAvatar.traverse(child => {
-                if (child.isMesh && child.material) {
-                    child.material.transparent = false;
-                    child.material.opacity = 1;
-                }
-            });
         }
-        
-        showToast("Nuit terminée. T'es de nouveau frais !", "success");
-        playSuccess();
-        saveGame();
+
+        const visual = currentRoomAvatar.getObjectByName("AvatarVisual") || currentRoomAvatar.children[0];
+        if (visual) {
+            visual.position.set(0, 0, 0);
+            visual.rotation.set(0, 0, 0);
+        }
+
+        currentRoomAvatar.traverse(child => {
+            if (child.isMesh && child.material) {
+                child.material.transparent = false;
+                child.material.opacity = 1;
+            }
+        });
     }
+
+    showToast("Nuit terminée. T'es de nouveau frais !", "success");
+    playSuccess();
+    saveGame();
+}
+
 
 
     // ==========================================
