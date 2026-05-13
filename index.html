@@ -918,11 +918,8 @@
     // VARIABLES GLOBALES POUR L'ANIMATION
     let time = 0;
     let walkTime = 0;
-    let stoppedMovingAt = 0;
-    let wasMovingLastFrame = false;
-    let facingPosition = null;
     const GRID_SIZE = 1.0; 
-    
+
     const container = document.getElementById('three-canvas-container');
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#7f889c');
@@ -1591,30 +1588,6 @@
         
         if (currentRoomAvatar) {
             let isMoving = false;
-
-            const lookTarget = targetPosition || facingPosition;
-
-if (lookTarget) {
-    const dx = lookTarget.x - currentRoomAvatar.position.x;
-    const dz = lookTarget.z - currentRoomAvatar.position.z;
-
-    if (Math.hypot(dx, dz) > 0.05) {
-        const dummy = new THREE.Object3D();
-        dummy.position.copy(currentRoomAvatar.position);
-
-        const flatTarget = lookTarget.clone();
-        flatTarget.y = currentRoomAvatar.position.y;
-
-        dummy.lookAt(flatTarget);
-        currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.12);
-
-        currentRoomAvatar.rotation.x = 0;
-        currentRoomAvatar.rotation.z = 0;
-    }
-}
-
-
-            
             // --- 1. DÉPLACEMENT & ROTATION SÉCURISÉS ---
             if (targetPosition) {
                 const currentFlatPos = new THREE.Vector2(currentRoomAvatar.position.x, currentRoomAvatar.position.z);
@@ -1635,11 +1608,8 @@ if (lookTarget) {
                     currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.08);
 
                     // Verrouillage des axes parasites
-                    currentRoomAvatar.position.x = targetPosition.x;
-                    currentRoomAvatar.position.z = targetPosition.z;
-                    facingPosition = targetPosition.clone();
-                    targetPosition = null;
-
+                    currentRoomAvatar.rotation.x = 0;
+                    currentRoomAvatar.rotation.z = 0;
 
                     // VITESSE DYNAMIQUE (Effet magnétique smooth)
                     // Plus on est loin, plus on va vite. Plus on approche de la grille, plus on ralentit.
@@ -1676,60 +1646,48 @@ if (lookTarget) {
                 }
             }
 
-// --- 2. ANIMATION INTERNE ---
+            // --- 2. ANIMATION INTERNE (Calculée sur le INNER MODEL) ---
 if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
-    const innerModel = currentRoomAvatar.children[0];
+    const innerModel = currentRoomAvatar;
 
-    const legL = innerModel.getObjectByName("Leg_L") || innerModel.getObjectByName("leg_L") || innerModel.children[0];
-    const legR = innerModel.getObjectByName("Leg_R") || innerModel.getObjectByName("leg_R") || innerModel.children[1];
-
-    const now = performance.now();
+    const legL = innerModel.getObjectByName("Leg_L");
+    const legR = innerModel.getObjectByName("Leg_R");
+    const armL = innerModel.getObjectByName("Arm_L");
+    const armR = innerModel.getObjectByName("Arm_R");
 
     if (isMoving) {
-        stoppedMovingAt = now;
-        wasMovingLastFrame = true;
-    } else if (wasMovingLastFrame) {
-        stoppedMovingAt = now;
-        wasMovingLastFrame = false;
-    }
+        walkTime += 0.18;
 
-    const keepAnimatingAfterStop = !isMoving && (now - stoppedMovingAt < 2000);
-    const shouldWalkAnimate = isMoving || keepAnimatingAfterStop;
+        const stride = Math.sin(walkTime);
+        const counterStride = Math.sin(walkTime + Math.PI);
+        const bounce = Math.abs(Math.sin(walkTime * 2)) * 0.035;
 
-    if (shouldWalkAnimate) {
-        const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 2000));
+        innerModel.position.y = bounce;
+        innerModel.rotation.z = Math.sin(walkTime * 2) * 0.025;
+        innerModel.rotation.x = Math.sin(walkTime) * 0.015;
 
-        walkTime += isMoving ? 0.15 : 0.08;
+        if (legL) legL.rotation.x = stride * 0.55;
+        if (legR) legR.rotation.x = counterStride * 0.55;
 
-        innerModel.rotation.z = Math.sin(walkTime) * 0.05 * fade;
-        innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.05 * fade;
-
-        if (legL && legR) {
-            const legSwing = Math.sin(walkTime * 1.2) * 0.4 * fade;
-            legL.rotation.x = legSwing;
-            legR.rotation.x = -legSwing;
-        }
+        if (armL) armL.rotation.x = counterStride * 0.35;
+        if (armR) armR.rotation.x = stride * 0.35;
     } else {
         walkTime = 0;
 
-        innerModel.rotation.z *= 0.6;
-        innerModel.position.y *= 0.6;
+        innerModel.position.y += (0 - innerModel.position.y) * 0.25;
+        innerModel.rotation.z += (0 - innerModel.rotation.z) * 0.25;
+        innerModel.rotation.x += (0 - innerModel.rotation.x) * 0.25;
 
-        if (legL && legR) {
-            legL.rotation.x *= 0.6;
-            legR.rotation.x *= 0.6;
+        if (legL) legL.rotation.x += (0 - legL.rotation.x) * 0.35;
+        if (legR) legR.rotation.x += (0 - legR.rotation.x) * 0.35;
+        if (armL) armL.rotation.x += (0 - armL.rotation.x) * 0.35;
+        if (armR) armR.rotation.x += (0 - armR.rotation.x) * 0.35;
 
-            if (Math.abs(legL.rotation.x) < 0.001) legL.rotation.x = 0;
-            if (Math.abs(legR.rotation.x) < 0.001) legR.rotation.x = 0;
-        }
-
-        if (Math.abs(innerModel.rotation.z) < 0.001) {
-            innerModel.rotation.z = 0;
-            innerModel.position.y = 0;
+        if (Math.abs(innerModel.position.y) < 0.001) innerModel.position.y = 0;
+        if (Math.abs(innerModel.rotation.z) < 0.001) innerModel.rotation.z = 0;
+        if (Math.abs(innerModel.rotation.x) < 0.001) innerModel.rotation.x = 0;
         }
     }
-}
-
 
 
 
@@ -1768,25 +1726,30 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
     const raycaster = new THREE.Raycaster();
     const mousePos = new THREE.Vector2();
 
-    const clickedPosition = new THREE.Vector3(snappedX, -0.74, snappedZ);
-facingPosition = clickedPosition.clone();
-
-if (currentRoomAvatar) {
-    const dx = clickedPosition.x - currentRoomAvatar.position.x;
-    const dz = clickedPosition.z - currentRoomAvatar.position.z;
-    const distToClicked = Math.hypot(dx, dz);
-
-    if (distToClicked > 0.12 && !checkCollision(clickedPosition.x, clickedPosition.z)) {
-        targetPosition = clickedPosition;
-    } else {
-        targetPosition = null;
-    }
-} else {
-    targetPosition = clickedPosition;
-}
-
-break;
-
+    function onPointerDown(event) {
+        if (document.getElementById('room-ui').style.display !== 'flex') return;
+        let clientX, clientY;
+        if (event.changedTouches) { clientX = event.changedTouches[0].clientX; clientY = event.changedTouches[0].clientY; }
+        else { clientX = event.clientX; clientY = event.clientY; }
+        mousePos.x = (clientX / window.innerWidth) * 2 - 1;
+        mousePos.y = -(clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mousePos, camera);
+        
+        const intersects = raycaster.intersectObjects(scene.children, true);
+        for (let i = 0; i < intersects.length; i++) {
+            if (intersects[i].object.name === 'pc_mesh') { 
+                enterPC(); 
+                break; 
+            }
+            if (intersects[i].object.name === 'bed_mesh') {
+                if (state.energy < 50) {
+                    goSleep();
+                } else {
+                    showToast("Tu n'es pas assez fatigué pour dormir (< 50% NRJ).", "info");
+                    playBleep();
+                }
+                break;
+            }
             
             if (intersects[i].object.name === 'floor_mesh') {
                 // On calcule la position brute du clic
