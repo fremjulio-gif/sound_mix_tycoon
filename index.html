@@ -1108,10 +1108,10 @@
     mattress.name = 'bed_mesh'; // Assignation pour le Raycaster
     bedGroup.add(mattress);
 
-    const blanketGeo = new THREE.BoxGeometry(2.4, 0.38, 2.5);
+    const blanketGeo = new THREE.BoxGeometry(2.4, 0.38, 3.2);
     const blanketMat = new THREE.MeshStandardMaterial({ color: '#243c5a', roughness: 0.9 });
     const blanket = new THREE.Mesh(blanketGeo, blanketMat);
-    blanket.position.set(0, 0.36, 0.81);
+    blanket.position.set(0, 0.36, 0.45);
     blanket.castShadow = true;
     blanket.receiveShadow = true;
     blanket.name = 'bed_mesh'; // Assignation pour le Raycaster
@@ -3377,7 +3377,7 @@ desc.innerHTML = textesCollab[Math.floor(Math.random() * textesCollab.length)];
     
                 `Coup dur ! <span class="text-white font-bold text-base">"${voleur}"</span> a rippé ton dernier beat sur SoundNet sans te créditer. On gère ça comment ?`,
     
-                `Un de tes anciens stems s'est retrouvé miraculeusement sur le projet de <span class="text-white font-bold text-base">"${voleur}"</span>. Ça sent la douille...`
+                `Une de tes vieilles loop s'est retrouvée miraculeusement sur le projet de <span class="text-white font-bold text-base">"${voleur}"</span>. Ça sent la douille...`
 ];
 
             // 2. On en tire une au hasard
@@ -3386,17 +3386,17 @@ desc.innerHTML = textesCollab[Math.floor(Math.random() * textesCollab.length)];
 
             const btn1 = document.createElement('button');
             btn1.className = "btn-minimal py-3 px-4 rounded-lg text-xs tracking-widest";
-            btn1.innerText = "Porter plainte (-20 REP, 50% de gagner le procès)";
+            btn1.innerText = "Porter plainte";
             btn1.onclick = () => resolveTheftEvent('plainte', voleur);
 
             const btn2 = document.createElement('button');
             btn2.className = "btn-minimal py-3 px-4 rounded-lg text-xs tracking-widest";
-            btn2.innerText = "Ne rien faire (Perte d'argent + Perte Followers)";
+            btn2.innerText = "Ne rien faire";
             btn2.onclick = () => resolveTheftEvent('rien', voleur);
 
             const btn3 = document.createElement('button');
             btn3.className = "btn-minimal py-3 px-4 rounded-lg text-xs tracking-widest";
-            btn3.innerText = "Arrangement à l'amiable (Légère perte $, +10 REP)";
+            btn3.innerText = "Arrangement à l'amiable";
             btn3.onclick = () => resolveTheftEvent('amiable', voleur);
 
             choicesDiv.append(btn1, btn2, btn3);
