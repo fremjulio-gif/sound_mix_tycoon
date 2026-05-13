@@ -979,7 +979,7 @@
 
     // Room Floor
     const floorGeo = new THREE.PlaneGeometry(10, 10);
-    const floorMat = new THREE.MeshStandardMaterial({ color: '#cda87c', roughness: 0.9, metalness: 0.1 });
+    const floorMat = new THREE.MeshStandardMaterial({ color: '#8a6242', roughness: 0.9, metalness: 0.1 });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.name = 'floor_mesh'; 
     floor.rotation.x = -Math.PI / 2;
@@ -990,7 +990,7 @@
     floor.add(floorLines);
     scene.add(floor);
 
-    const wallMat = new THREE.MeshStandardMaterial({ color: '#dce1e3', roughness: 0.9 });
+    const wallMat = new THREE.MeshStandardMaterial({ color: '#b9bec8', roughness: 0.9 });
     
     // Mur Gauche
     const wallLeftGeo = new THREE.BoxGeometry(10, 5, 0.01);
@@ -1016,12 +1016,12 @@
     const deskGroup = new THREE.Group();
     deskGroup.position.set(-2.2, 0, -3.5);
 
-    const deskTopMat = new THREE.MeshStandardMaterial({ color: '#b5b8c2', roughness: 0.7, metalness: 0.1 });
+    const deskTopMat = new THREE.MeshStandardMaterial({ color: '#aeb4bf', roughness: 0.7, metalness: 0.1 });
     const deskTop = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.1, 2.2), deskTopMat);
     deskTop.position.set(0, 0.7, 0); deskTop.castShadow = true; deskTop.receiveShadow = true; deskTop.name = 'pc_mesh';
     deskGroup.add(deskTop);
 
-    const legMat = new THREE.MeshStandardMaterial({ color: '#8c92a1', roughness: 0.4, metalness: 0.8 });
+    const legMat = new THREE.MeshStandardMaterial({ color: '#5f6673', roughness: 0.4, metalness: 0.8 });
     const legGeo = new THREE.BoxGeometry(0.1, 1.7, 0.1);
     [[-2.1,-0.15,-0.9],[2.1,-0.15,-0.9],[-2.1,-0.15,0.9],[2.1,-0.15,0.9]].forEach(pos => {
         const leg = new THREE.Mesh(legGeo, legMat);
@@ -1088,7 +1088,7 @@
     bedGroup.position.set(3.8, -0.8, -2.9);
 
     const frameGeo = new THREE.BoxGeometry(2.4, 0.4, 4.2);
-    const frameMat = new THREE.MeshStandardMaterial({ color: '#3f3f46', roughness: 0.8 });
+    const frameMat = new THREE.MeshStandardMaterial({ color: '#262626', roughness: 0.8 });
     const frame = new THREE.Mesh(frameGeo, frameMat);
     frame.castShadow = true;
     frame.receiveShadow = true;
@@ -1100,7 +1100,7 @@
     bedGroup.add(frame);
 
     const mattressGeo = new THREE.BoxGeometry(2.2, 0.3, 4.0);
-    const mattressMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.9 });
+    const mattressMat = new THREE.MeshStandardMaterial({ color: '#e7e5e4', roughness: 0.9 });
     const mattress = new THREE.Mesh(mattressGeo, mattressMat);
     mattress.position.set(0, 0.35, 0);
     mattress.castShadow = true;
@@ -1109,7 +1109,7 @@
     bedGroup.add(mattress);
 
     const blanketGeo = new THREE.BoxGeometry(2.4, 0.38, 2.5);
-    const blanketMat = new THREE.MeshStandardMaterial({ color: '#312e81', roughness: 0.9 });
+    const blanketMat = new THREE.MeshStandardMaterial({ color: '#243c5a', roughness: 0.9 });
     const blanket = new THREE.Mesh(blanketGeo, blanketMat);
     blanket.position.set(0, 0.36, 0.81);
     blanket.castShadow = true;
@@ -1145,13 +1145,13 @@
 
     // Tapis plus grand (5.5 de large sur 4.0 de profondeur)
     const rugGeo = new THREE.BoxGeometry(5, 0.02, 4.0);
-    const rugMat = new THREE.MeshStandardMaterial({ color: '#1e1b4b', roughness: 1.0 });
+    const rugMat = new THREE.MeshStandardMaterial({ color: '#17123f', roughness: 1.0 });
     const rug = new THREE.Mesh(rugGeo, rugMat);
     rug.receiveShadow = true;
     
     // Bande décorative ajustée à la nouvelle largeur
     const stripeGeo = new THREE.BoxGeometry(5, 0.021, 0.3);
-    const stripeMat = new THREE.MeshStandardMaterial({ color: '#818cf8', roughness: 1.0 });
+    const stripeMat = new THREE.MeshStandardMaterial({ color: '#7dd3fc', roughness: 1.0 });
     const stripe = new THREE.Mesh(stripeGeo, stripeMat);
     stripe.position.set(0, 0, 1.4); // Légèrement décalée vers le bord
     
@@ -1166,7 +1166,7 @@
         rackGroup.rotation.x = -Math.PI / 36;
 
 
-   const rackSideMat = new THREE.MeshStandardMaterial({ color: '#2b2118', roughness: 0.75 });
+   const rackSideMat = new THREE.MeshStandardMaterial({ color: '#3a2a1f', roughness: 0.75 });
     const faceplateMats = [
         new THREE.MeshStandardMaterial({ color: '#d6d3cc', roughness: 0.42, metalness: 0.45 }),
         new THREE.MeshStandardMaterial({ color: '#1f2933', roughness: 0.55, metalness: 0.35 }),
@@ -1332,7 +1332,7 @@ for (let i = 0; i < 4; i++) {
     sofaGroup.position.set(-4.2, -1, 1.5);
     sofaGroup.rotation.y = Math.PI / 2; // Orienté vers le centre de la pièce
 
-    const fabricMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.9 });
+    const fabricMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.9 });
     
     // Assise élargie
     const seat = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.4, 1.2), fabricMat); 
@@ -1380,7 +1380,7 @@ for (let i = 0; i < 4; i++) {
 
     // Feuilles simplifiées
     const leafGeo = new THREE.SphereGeometry(0.3, 8, 8);
-    const leafMat = new THREE.MeshStandardMaterial({ color: '#34d399', roughness: 0.8 });
+    const leafMat = new THREE.MeshStandardMaterial({ color: '#22c55e', roughness: 0.8 });
     
     const leaf1 = new THREE.Mesh(leafGeo, leafMat); leaf1.position.set(0, 0.7, 0); leaf1.scale.set(1, 1.5, 1);
     const leaf2 = new THREE.Mesh(leafGeo, leafMat); leaf2.position.set(0.2, 0.6, 0.1); leaf2.scale.set(0.8, 1.2, 0.8);
