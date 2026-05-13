@@ -918,6 +918,8 @@
     // VARIABLES GLOBALES POUR L'ANIMATION
     let time = 0;
     let walkTime = 0;
+    let stoppedMovingAt = 0;
+    let wasMovingLastFrame = false;
     const GRID_SIZE = 1.0; 
 
     const container = document.getElementById('three-canvas-container');
@@ -1648,46 +1650,58 @@
 
             // --- 2. ANIMATION INTERNE (Calculée sur le INNER MODEL) ---
 if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
-    const innerModel = currentRoomAvatar;
+    const innerModel = currentRoomAvatar.children[0];
 
-    const legL = innerModel.getObjectByName("Leg_L");
-    const legR = innerModel.getObjectByName("Leg_R");
-    const armL = innerModel.getObjectByName("Arm_L");
-    const armR = innerModel.getObjectByName("Arm_R");
+    const legL = innerModel.getObjectByName("Leg_L") || innerModel.getObjectByName("leg_L") || innerModel.children[0];
+    const legR = innerModel.getObjectByName("Leg_R") || innerModel.getObjectByName("leg_R") || innerModel.children[1];
+
+    const now = performance.now();
 
     if (isMoving) {
-        walkTime += 0.18;
+        stoppedMovingAt = now;
+        wasMovingLastFrame = true;
+    } else if (wasMovingLastFrame) {
+        stoppedMovingAt = now;
+        wasMovingLastFrame = false;
+    }
 
-        const stride = Math.sin(walkTime);
-        const counterStride = Math.sin(walkTime + Math.PI);
-        const bounce = Math.abs(Math.sin(walkTime * 2)) * 0.035;
+    const keepAnimatingAfterStop = !isMoving && (now - stoppedMovingAt < 2000);
+    const shouldWalkAnimate = isMoving || keepAnimatingAfterStop;
 
-        innerModel.position.y = bounce;
-        innerModel.rotation.z = Math.sin(walkTime * 2) * 0.025;
-        innerModel.rotation.x = Math.sin(walkTime) * 0.015;
+    if (shouldWalkAnimate) {
+        const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 2000));
 
-        if (legL) legL.rotation.x = stride * 0.55;
-        if (legR) legR.rotation.x = counterStride * 0.55;
+        walkTime += isMoving ? 0.15 : 0.08;
 
-        if (armL) armL.rotation.x = counterStride * 0.35;
-        if (armR) armR.rotation.x = stride * 0.35;
+        innerModel.rotation.z = Math.sin(walkTime) * 0.05 * fade;
+        innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.05 * fade;
+
+        if (legL && legR) {
+            const legSwing = Math.sin(walkTime * 1.2) * 0.4 * fade;
+            legL.rotation.x = legSwing;
+            legR.rotation.x = -legSwing;
+        }
     } else {
         walkTime = 0;
 
-        innerModel.position.y += (0 - innerModel.position.y) * 0.25;
-        innerModel.rotation.z += (0 - innerModel.rotation.z) * 0.25;
-        innerModel.rotation.x += (0 - innerModel.rotation.x) * 0.25;
+        innerModel.rotation.z *= 0.6;
+        innerModel.position.y *= 0.6;
 
-        if (legL) legL.rotation.x += (0 - legL.rotation.x) * 0.35;
-        if (legR) legR.rotation.x += (0 - legR.rotation.x) * 0.35;
-        if (armL) armL.rotation.x += (0 - armL.rotation.x) * 0.35;
-        if (armR) armR.rotation.x += (0 - armR.rotation.x) * 0.35;
+        if (legL && legR) {
+            legL.rotation.x *= 0.6;
+            legR.rotation.x *= 0.6;
 
-        if (Math.abs(innerModel.position.y) < 0.001) innerModel.position.y = 0;
-        if (Math.abs(innerModel.rotation.z) < 0.001) innerModel.rotation.z = 0;
-        if (Math.abs(innerModel.rotation.x) < 0.001) innerModel.rotation.x = 0;
+            if (Math.abs(legL.rotation.x) < 0.001) legL.rotation.x = 0;
+            if (Math.abs(legR.rotation.x) < 0.001) legR.rotation.x = 0;
+        }
+
+        if (Math.abs(innerModel.rotation.z) < 0.001) {
+            innerModel.rotation.z = 0;
+            innerModel.position.y = 0;
         }
     }
+}
+
 
 
 
