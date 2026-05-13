@@ -2443,7 +2443,15 @@ group.add(createLeg(-1), createLeg(1));
             currentRoomAvatar.userData.preSleepRot = currentRoomAvatar.rotation.clone();
 
             currentRoomAvatar.position.set(3.8, -0.38, -2.9);
-            currentRoomAvatar.rotation.set(-Math.PI / 2, 0, 0);
+            currentRoomAvatar.rotation.set(0, 0, 0);
+
+            const visual = currentRoomAvatar.getObjectByName("AvatarVisual") || currentRoomAvatar.children[0];
+            if (visual) {
+                visual.position.set(0, 0.25, 0);
+                visual.rotation.set(-Math.PI / 2, 0, Math.PI / 2);
+}
+
+
 
 
             currentRoomAvatar.traverse(child => {
@@ -2480,14 +2488,30 @@ group.add(createLeg(-1), createLeg(1));
         state.isSleeping = false;
         document.getElementById('sleep-overlay').classList.remove('active');
         
-        if (currentRoomAvatar) {
-            if (currentRoomAvatar.userData.preSleepPos) {
-                currentRoomAvatar.position.copy(currentRoomAvatar.userData.preSleepPos);
-                currentRoomAvatar.rotation.copy(currentRoomAvatar.userData.preSleepRot);
-            } else {
-                currentRoomAvatar.position.set(2.5, -0.74, -2.9);
-                currentRoomAvatar.rotation.set(0, 0, 0);
-            }
+        if (currentRoomAvatar.userData.preSleepPos) {
+            currentRoomAvatar.position.copy(currentRoomAvatar.userData.preSleepPos);
+            currentRoomAvatar.rotation.copy(currentRoomAvatar.userData.preSleepRot);
+    } else {
+            currentRoomAvatar.position.set(2.5, -0.74, -2.9);
+            currentRoomAvatar.rotation.set(0, 0, 0);
+    }
+
+currentRoomAvatar.traverse(child => {
+par :
+
+if (currentRoomAvatar.userData.preSleepPos) {
+    currentRoomAvatar.position.copy(currentRoomAvatar.userData.preSleepPos);
+    currentRoomAvatar.rotation.copy(currentRoomAvatar.userData.preSleepRot);
+} else {
+    currentRoomAvatar.position.set(2.5, -0.74, -2.9);
+    currentRoomAvatar.rotation.set(0, 0, 0);
+}
+
+const visual = currentRoomAvatar.getObjectByName("AvatarVisual") || currentRoomAvatar.children[0];
+if (visual) {
+    visual.position.set(0, 0, 0);
+    visual.rotation.set(0, 0, 0);
+}
 
             currentRoomAvatar.traverse(child => {
                 if (child.isMesh && child.material) {
