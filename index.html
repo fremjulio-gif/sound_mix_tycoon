@@ -1647,9 +1647,8 @@
             }
 
             // --- 2. ANIMATION INTERNE (Calculée sur le INNER MODEL) ---
-            // --- 2. ANIMATION INTERNE (Calculée sur le INNER MODEL) ---
 if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
-    const innerModel = currentRoomAvatar.children[0];
+    const innerModel = currentRoomAvatar;
 
     const legL = innerModel.getObjectByName("Leg_L");
     const legR = innerModel.getObjectByName("Leg_R");
@@ -1942,25 +1941,26 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
         }
 
         const createLeg = (xSign) => {
-    const legGroup = new THREE.Group();
-    legGroup.name = xSign < 0 ? "Leg_L" : "Leg_R";
-    legGroup.position.set(xSign * 0.12, 0.42, 0);
+        const legGroup = new THREE.Group();
+            legGroup.name = xSign < 0 ? "Leg_L" : "Leg_R";
+            legGroup.position.set(xSign * 0.12, 0.42, 0);
 
-    const upperLeg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.16), clothesMat);
-    upperLeg.position.set(0, -0.12, 0);
-    upperLeg.castShadow = true;
-    addEdges(upperLeg);
+        const upperLeg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.16), clothesMat);
+            upperLeg.position.set(0, -0.12, 0);
+            upperLeg.castShadow = true;
+            addEdges(upperLeg);
+    
+        const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.28), shoesMat);
+        shoe.position.set(0, -0.34, 0.04);
+        shoe.castShadow = true;
+        addEdges(shoe);
 
-    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.28), shoesMat);
-    shoe.position.set(0, -0.34, 0.04);
-    shoe.castShadow = true;
-    addEdges(shoe);
+        legGroup.add(upperLeg, shoe);
+        return legGroup;
+}};
 
-    legGroup.add(upperLeg, shoe);
-    return legGroup;
-};
+group.add(createLeg(-1), createLeg(1));
 
-        group.add(createLeg(-1), createLeg(1));
 
         const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.4, 0.25), clothesMat);
         torso.position.set(0, 0.57, 0);
@@ -1969,23 +1969,23 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
         group.add(torso);
 
         const createArm = (xSign) => {
-    const armGroup = new THREE.Group();
-    armGroup.name = xSign < 0 ? "Arm_L" : "Arm_R";
-    armGroup.position.set(xSign * 0.29, 0.72, 0);
+        const armGroup = new THREE.Group();
+        armGroup.name = xSign < 0 ? "Arm_L" : "Arm_R";
+        armGroup.position.set(xSign * 0.29, 0.72, 0);
 
-    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), clothesMat);
-    arm.position.set(0, -0.16, 0);
-    arm.rotation.z = xSign * 0.12;
-    arm.castShadow = true;
-    addEdges(arm);
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), clothesMat);
+        arm.position.set(0, -0.16, 0);
+        arm.rotation.z = xSign * 0.12;
+        arm.castShadow = true;
+        addEdges(arm);
 
-    const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), skinMat);
-    hand.position.set(xSign * 0.04, -0.38, 0);
-    hand.castShadow = true;
-    addEdges(hand);
+        const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), skinMat);
+        hand.position.set(xSign * 0.04, -0.38, 0);
+        hand.castShadow = true;
+        addEdges(hand);
 
-    armGroup.add(arm, hand);
-    return armGroup;
+        armGroup.add(arm, hand);
+        return armGroup;
 };
 
         group.add(createArm(-1), createArm(1));
