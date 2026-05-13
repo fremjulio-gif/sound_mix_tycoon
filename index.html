@@ -3271,7 +3271,12 @@ group.add(createLeg(-1), createLeg(1));
 
             title.innerText = "🤝 COLLABORATION";
             title.className = "text-3xl font-retro text-[var(--retro-green)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-green)] shrink-0";
-            desc.innerHTML = `<span class="text-white font-bold text-base">"${rapper}"</span> te contacte pour collaborer sur un son, mais il essaie de t'arnaquer et marchande. Tu fixes les tarots. Que proposes-tu ?`;
+            const textesCollab = [
+            `<span class="text-white font-bold text-base">"${rapper}"</span> te contacte pour collaborer sur un son, mais il essaie de t'arnaquer et marchande. Tu fixes les tarots. Que proposes-tu ?`,
+    
+            `<span class="text-white font-bold text-base">"${rapper}"</span> a kiffé ta dernière boucle et veut poser dessus. Il demande un prix, comment on procède ?`
+];
+desc.innerHTML = textesCollab[Math.floor(Math.random() * textesCollab.length)];
 
             const btn1 = document.createElement('button');
             btn1.className = "btn-action py-3 px-4 rounded-lg font-retro text-xs text-[var(--retro-green)] border-[var(--retro-green)] hover:bg-[var(--retro-green)] hover:text-black transition-colors";
@@ -3297,7 +3302,17 @@ group.add(createLeg(-1), createLeg(1));
 
             title.innerText = "🚨 VOL DE PROD";
             title.className = "text-3xl font-retro text-[var(--retro-orange)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-orange)] shrink-0";
-            desc.innerHTML = `Belek à toi, <span class="text-white font-bold text-base">"${voleur}"</span> t'a volé une prod pour son nouvel album. Que souhaites-tu faire ?`;
+            const textesVol = [
+                `Belek à toi, <span class="text-white font-bold text-base">"${voleur}"</span> t'a volé une prod pour son nouvel album. Que souhaites-tu faire ?`,
+    
+                `Coup dur ! <span class="text-white font-bold text-base">"${voleur}"</span> a rippé ton dernier beat sur SoundNet sans te créditer. On gère ça comment ?`,
+    
+                `Un de tes anciens stems s'est retrouvé miraculeusement sur le projet de <span class="text-white font-bold text-base">"${voleur}"</span>. Ça sent la douille...`
+];
+
+            // 2. On en tire une au hasard
+            const indexAleatoire = Math.floor(Math.random() * textesVol.length);
+            desc.innerHTML = textesVol[indexAleatoire];
 
             const btn1 = document.createElement('button');
             btn1.className = "btn-minimal py-3 px-4 rounded-lg text-xs tracking-widest";
@@ -3322,7 +3337,12 @@ group.add(createLeg(-1), createLeg(1));
 
             title.innerText = "❌ BAD BUZZ";
             title.className = "text-3xl font-retro text-[var(--retro-red)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-red)] shrink-0";
-            desc.innerHTML = `Catastrophe. Vous avez failli collaborer avec <span class="text-white font-bold text-base">"${cancelled}"</span>. La rumeur a fuité sur Twitter. Vous perdez en crédibilité.`;
+            const textesBuzz = [
+            `Catastrophe. Vous avez failli collaborer avec <span class="text-white font-bold text-base">"${cancelled}"</span>. La rumeur a fuité sur Twitter. Vous perdez en crédibilité.`,
+    
+            `Aïe... Une vieille photo de toi en studio avec <span class="text-white font-bold text-base">"${cancelled}"</span> vient de refaire surface. La commu ne pardonne pas.`
+];
+            desc.innerHTML = textesBuzz[Math.floor(Math.random() * textesBuzz.length)];
 
             const btn1 = document.createElement('button');
             btn1.className = "btn-action py-3 px-4 rounded-lg font-retro text-xs text-white bg-[var(--retro-red)] border-[var(--retro-red)]";
@@ -3346,7 +3366,12 @@ group.add(createLeg(-1), createLeg(1));
             const finalPrice = Math.floor(rawPrice * state.multiplier);
             logMoney(finalPrice, `Collab: ${rapper}`);
             state.rep += 10;
-            showToast(`${rapper} a accepté ! +$${finalPrice} | +10 REP`, "success");
+            const succesCollab = [
+            `${rapper} a validé direct ! +$${finalPrice} | +10 REP`,
+            `Virement reçu de ${rapper}. Le mix part ce soir ! +$${finalPrice} | +10 REP`
+            ];
+            showToast(succesCollab[Math.floor(Math.random() * succesCollab.length)], "success");
+            
             playSuccess();
         } else {
             showToast(`${rapper} t'a lu et t'a ghosté. C'était trop cher pour lui.`, "info");
