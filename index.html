@@ -3235,9 +3235,11 @@ if (visual) {
 
     setTimeout(() => {
         overlay.classList.add('hidden');
-        overlay.style.display = '';
+        overlay.style.display = 'none';
     }, 500);
 }
+
+
 
 
 
@@ -3497,10 +3499,15 @@ if (visual) {
 
         // Affichage de l'overlay
         overlay.classList.remove('hidden');
+        overlay.style.display = 'flex';
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+        
         setTimeout(() => {
             overlay.style.opacity = '1';
             overlay.style.pointerEvents = 'all';
         }, 50);
+
         playTone(300, 'sine', 0.4, 0.05);
 
         // Animation du suspense
