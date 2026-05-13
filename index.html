@@ -1162,13 +1162,26 @@
     // RACK HARDWARE ANALOGIQUE
     // ==========================================
     const rackGroup = new THREE.Group();
-    rackGroup.position.set(1.3, -1, -4.5);
+        rackGroup.position.set(1.3, -1, -4.45);
+        rackGroup.rotation.x = -Math.PI / 36;
 
-    const woodMat = new THREE.MeshStandardMaterial({ color: '#3f3f46', roughness: 0.9 });
-    const sideL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.8, 0.8), woodMat); sideL.position.set(-0.5, 0.9, 0);
-    const sideR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.8, 0.8), woodMat); sideR.position.set(0.5, 0.9, 0);
-    const topRack = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.1, 0.8), woodMat); topRack.position.set(0, 1.85, 0);
-    const bottomRack = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.1, 0.8), woodMat); bottomRack.position.set(0, 0.05, 0);
+
+   const rackSideMat = new THREE.MeshStandardMaterial({ color: '#2b2118', roughness: 0.75 });
+    const faceplateMats = [
+        new THREE.MeshStandardMaterial({ color: '#d6d3cc', roughness: 0.42, metalness: 0.45 }),
+        new THREE.MeshStandardMaterial({ color: '#1f2933', roughness: 0.55, metalness: 0.35 }),
+        new THREE.MeshStandardMaterial({ color: '#9ca3af', roughness: 0.38, metalness: 0.65 }),
+        new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.6, metalness: 0.3 })
+    ];
+    const knobMat = new THREE.MeshStandardMaterial({ color: '#0b0b0d', roughness: 0.5, metalness: 0.25 });
+    const silverMat = new THREE.MeshStandardMaterial({ color: '#e5e7eb', roughness: 0.25, metalness: 0.85 });
+    const jackMat = new THREE.MeshStandardMaterial({ color: '#050505', roughness: 0.4, metalness: 0.7 });
+    const vuGlassMat = new THREE.MeshStandardMaterial({ color: '#fbbf24', emissive: '#f59e0b', emissiveIntensity: 0.35, roughness: 0.2 });
+
+    const sideL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.8, 0.8), rackSideMat); sideL.position.set(-0.5, 0.9, 0);
+    const sideR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.8, 0.8), rackSideMat); sideR.position.set(0.5, 0.9, 0);
+    const topRack = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.1, 0.8), rackSideMat); topRack.position.set(0, 1.85, 0);
+    const bottomRack = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.1, 0.8), rackSideMat); bottomRack.position.set(0, 0.05, 0);
 
     [sideL, sideR, topRack, bottomRack].forEach(mesh => {
         mesh.castShadow = true; mesh.receiveShadow = true;
@@ -1178,32 +1191,78 @@
         rackGroup.add(mesh);
     });
 
-    const gearMat = new THREE.MeshStandardMaterial({ color: '#18181b', metalness: 0.6, roughness: 0.4 });
-    const ledMatRed = new THREE.MeshStandardMaterial({ color: '#fb7185', emissive: '#fb7185' });
-    const ledMatGreen = new THREE.MeshStandardMaterial({ color: '#34d399', emissive: '#34d399' });
+    const ledMatRed = new THREE.MeshStandardMaterial({ color: '#fb7185', emissive: '#fb7185', emissiveIntensity: 1 });
+const ledMatGreen = new THREE.MeshStandardMaterial({ color: '#34d399', emissive: '#34d399', emissiveIntensity: 1 });
+const ledMatAmber = new THREE.MeshStandardMaterial({ color: '#fbbf24', emissive: '#fbbf24', emissiveIntensity: 0.9 });
 
-    // Génération de 4 machines dans le rack
-    for(let i = 0; i < 4; i++) {
-        const gear = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.3, 0.7), gearMat);
-        gear.position.set(0, 0.35 + (i * 0.4), 0);
-        
-        // Boutons et LEDs
-        for(let l = 0; l < 3; l++) {
-            // On choisit la couleur et on CLONE le matériau pour qu'il soit indépendant
-            const isRed = Math.random() > 0.5;
-            const mat = isRed ? ledMatRed.clone() : ledMatGreen.clone();
-            
-            const led = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.04), mat);
-            led.position.set(-0.3 + (l * 0.1), 0.35 + (i * 0.4), 0.36);
-            
-            rackGroup.add(led);
-            rackLeds.push(led); // On stocke la LED pour l'animer plus tard
-        }
-        const bigKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 16), woodMat);
-        bigKnob.rotation.x = Math.PI / 2;
-        bigKnob.position.set(0.25, 0.35 + (i * 0.4), 0.36);
-        rackGroup.add(gear, bigKnob);
+const screwGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.012, 12);
+screwGeo.rotateX(Math.PI / 2);
+
+const smallKnobGeo = new THREE.CylinderGeometry(0.055, 0.055, 0.045, 20);
+smallKnobGeo.rotateX(Math.PI / 2);
+
+const bigKnobGeo = new THREE.CylinderGeometry(0.085, 0.085, 0.055, 24);
+bigKnobGeo.rotateX(Math.PI / 2);
+
+const jackGeo = new THREE.CylinderGeometry(0.035, 0.035, 0.035, 16);
+jackGeo.rotateX(Math.PI / 2);
+
+const vuGeo = new THREE.BoxGeometry(0.24, 0.09, 0.018);
+const labelMat = new THREE.MeshStandardMaterial({ color: '#050505', roughness: 0.8 });
+
+for (let i = 0; i < 4; i++) {
+    const y = 0.35 + (i * 0.4);
+    const faceMat = faceplateMats[i % faceplateMats.length];
+
+    const faceplate = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.31, 0.06), faceMat);
+    faceplate.position.set(0, y, 0.38);
+    faceplate.castShadow = true;
+    faceplate.receiveShadow = true;
+    rackGroup.add(faceplate);
+
+    const label = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.035, 0.01), labelMat);
+    label.position.set(-0.23, y + 0.095, 0.416);
+    rackGroup.add(label);
+
+    const vu = new THREE.Mesh(vuGeo, vuGlassMat.clone());
+    vu.position.set(-0.25, y, 0.422);
+    rackGroup.add(vu);
+    rackLeds.push(vu);
+
+    for (let s = 0; s < 4; s++) {
+        const sx = s < 2 ? -0.41 : 0.41;
+        const sy = y + (s % 2 === 0 ? 0.12 : -0.12);
+        const screw = new THREE.Mesh(screwGeo, silverMat);
+        screw.position.set(sx, sy, 0.425);
+        rackGroup.add(screw);
     }
+
+    for (let k = 0; k < 3; k++) {
+        const knob = new THREE.Mesh(k === 1 ? bigKnobGeo : smallKnobGeo, knobMat);
+        knob.position.set(0.05 + (k * 0.14), y + 0.04, 0.425);
+        rackGroup.add(knob);
+
+        const capLine = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.055, 0.008), silverMat);
+        capLine.position.set(0.05 + (k * 0.14), y + 0.07, 0.46);
+        rackGroup.add(capLine);
+    }
+
+    for (let j = 0; j < 3; j++) {
+        const jack = new THREE.Mesh(jackGeo, jackMat);
+        jack.position.set(-0.02 + (j * 0.13), y - 0.105, 0.43);
+        rackGroup.add(jack);
+    }
+
+    for (let l = 0; l < 2; l++) {
+        const mat = l === 0 ? ledMatGreen.clone() : ledMatAmber.clone();
+        const led = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.035, 0.018), mat);
+        led.position.set(0.34, y + 0.07 - (l * 0.11), 0.43);
+        rackGroup.add(led);
+        rackLeds.push(led);
+    }
+}
+
+
 
     scene.add(rackGroup);
 
