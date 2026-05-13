@@ -1647,49 +1647,50 @@
             }
 
             // --- 2. ANIMATION INTERNE (Calculée sur le INNER MODEL) ---
-            if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
-                const innerModel = currentRoomAvatar.children[0];
-                
-                // Correction de la recherche des membres (Tolère les deux casses ou prend par index)
-                let legL = innerModel.getObjectByName("Leg_L") || innerModel.getObjectByName("leg_L") || innerModel.children[0];
-                let legR = innerModel.getObjectByName("Leg_R") || innerModel.getObjectByName("leg_R") || innerModel.children[1];
+            // --- 2. ANIMATION INTERNE (Calculée sur le INNER MODEL) ---
+if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
+    const innerModel = currentRoomAvatar.children[0];
 
-                if (isMoving) {
-                    walkTime += 0.15; // Cadence de marche
+    const legL = innerModel.getObjectByName("Leg_L");
+    const legR = innerModel.getObjectByName("Leg_R");
+    const armL = innerModel.getObjectByName("Arm_L");
+    const armR = innerModel.getObjectByName("Arm_R");
 
-                    // DANDINEMENT (Axe Z local) : L'avatar balance de gauche à droite
-                    innerModel.rotation.z = Math.sin(walkTime) * 0.05;
+    if (isMoving) {
+        walkTime += 0.18;
 
-                    // REBOND (Axe Y local) : L'avatar sautille
-                    innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.05;
+        const stride = Math.sin(walkTime);
+        const counterStride = Math.sin(walkTime + Math.PI);
+        const bounce = Math.abs(Math.sin(walkTime * 2)) * 0.035;
 
-                    // JAMBES (Axe X local) : Rotation alternée
-                    if (legL && legR) {
-                        const legSwing = Math.sin(walkTime * 1.2) * 0.4;
-                        legL.rotation.x = legSwing;
-                        legR.rotation.x = -legSwing;
-                    }
-                } else {
-                    // --- ARRÊT STRICT ET RESET ---
-                    walkTime = 0;
+        innerModel.position.y = bounce;
+        innerModel.rotation.z = Math.sin(walkTime * 2) * 0.025;
+        innerModel.rotation.x = Math.sin(walkTime) * 0.015;
 
-                    // Amortissement fluide du corps vers la pose neutre
-                    innerModel.rotation.z *= 0.6;
-                    innerModel.position.y *= 0.6;
+        if (legL) legL.rotation.x = stride * 0.55;
+        if (legR) legR.rotation.x = counterStride * 0.55;
 
-                    // FIX CRITIQUE JAMBES : Arrêt immédiat et net à la position neutre
-                    if (legL && legR) {
-                        legL.rotation.x = 0;
-                        legR.rotation.x = 0;
-                    }
+        if (armL) armL.rotation.x = counterStride * 0.35;
+        if (armR) armR.rotation.x = stride * 0.35;
+    } else {
+        walkTime = 0;
 
-                    // Verrouillage final pour stopper les calculs infimes
-                    if (Math.abs(innerModel.rotation.z) < 0.001) {
-                        innerModel.rotation.z = 0;
-                        innerModel.position.y = 0;
-                    }
-                }
-            }
+        innerModel.position.y += (0 - innerModel.position.y) * 0.25;
+        innerModel.rotation.z += (0 - innerModel.rotation.z) * 0.25;
+        innerModel.rotation.x += (0 - innerModel.rotation.x) * 0.25;
+
+        if (legL) legL.rotation.x += (0 - legL.rotation.x) * 0.35;
+        if (legR) legR.rotation.x += (0 - legR.rotation.x) * 0.35;
+        if (armL) armL.rotation.x += (0 - armL.rotation.x) * 0.35;
+        if (armR) armR.rotation.x += (0 - armR.rotation.x) * 0.35;
+
+        if (Math.abs(innerModel.position.y) < 0.001) innerModel.position.y = 0;
+        if (Math.abs(innerModel.rotation.z) < 0.001) innerModel.rotation.z = 0;
+        if (Math.abs(innerModel.rotation.x) < 0.001) innerModel.rotation.x = 0;
+    }
+}
+
+}
 
             // --- 3. SUIVI DE CAMÉRA ---
             const followIntensity = 0.2;
@@ -1939,21 +1940,24 @@
         }
 
         const createLeg = (xSign) => {
-            const legGroup = new THREE.Group();
-            
-            const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.24), shoesMat);
-            shoe.position.set(xSign * 0.12, 0.06, 0.02);
-            shoe.castShadow = true;
-            addEdges(shoe);
-            
-            const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.25, 0.16), clothesMat);
-            leg.position.set(xSign * 0.12, 0.245, 0);
-            leg.castShadow = true;
-            addEdges(leg);
-            
-            legGroup.add(shoe, leg);
-            return legGroup;
-        };
+    const legGroup = new THREE.Group();
+    legGroup.name = xSign < 0 ? "Leg_L" : "Leg_R";
+    legGroup.position.set(xSign * 0.12, 0.42, 0);
+
+    const upperLeg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.16), clothesMat);
+    upperLeg.position.set(0, -0.12, 0);
+    upperLeg.castShadow = true;
+    addEdges(upperLeg);
+
+    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.28), shoesMat);
+    shoe.position.set(0, -0.34, 0.04);
+    shoe.castShadow = true;
+    addEdges(shoe);
+
+    legGroup.add(upperLeg, shoe);
+    return legGroup;
+};
+
         group.add(createLeg(-1), createLeg(1));
 
         const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.4, 0.25), clothesMat);
@@ -1963,22 +1967,25 @@
         group.add(torso);
 
         const createArm = (xSign) => {
-            const armGroup = new THREE.Group();
-            
-            const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), clothesMat);
-            arm.position.set(xSign * 0.29, 0.55, 0);
-            arm.rotation.z = xSign * 0.15;
-            arm.castShadow = true;
-            addEdges(arm);
-            
-            const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), skinMat);
-            hand.position.set(xSign * 0.34, 0.32, 0);
-            hand.castShadow = true;
-            addEdges(hand);
-            
-            armGroup.add(arm, hand);
-            return armGroup;
-        };
+    const armGroup = new THREE.Group();
+    armGroup.name = xSign < 0 ? "Arm_L" : "Arm_R";
+    armGroup.position.set(xSign * 0.29, 0.72, 0);
+
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), clothesMat);
+    arm.position.set(0, -0.16, 0);
+    arm.rotation.z = xSign * 0.12;
+    arm.castShadow = true;
+    addEdges(arm);
+
+    const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), skinMat);
+    hand.position.set(xSign * 0.04, -0.38, 0);
+    hand.castShadow = true;
+    addEdges(hand);
+
+    armGroup.add(arm, hand);
+    return armGroup;
+};
+
         group.add(createArm(-1), createArm(1));
 
         const headGroup = new THREE.Group();
