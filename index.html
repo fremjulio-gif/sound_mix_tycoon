@@ -775,14 +775,14 @@
                     </div>
                     <div class="flex flex-col gap-3 mt-auto">
                         <div class="flex flex-wrap gap-2">
-                            <button class="btn-minimal btn-genre active flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="drill" onclick="selectDawGenre('drill')">UK Drill</button>
+                            <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="drill" onclick="selectDawGenre('drill')">UK Drill</button>
                             <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="afropop" onclick="selectDawGenre('afropop')">Afro-Pop</button>
                             <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="technohouse" onclick="selectDawGenre('technohouse')">Techno House</button>
                             <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="amapiano" onclick="selectDawGenre('amapiano')">Amapiano</button>
                         </div>
                         <div class="flex flex-col md:flex-row gap-3 items-stretch">
                             <div class="flex gap-2 flex-1">
-                                <button class="btn-minimal btn-voice active flex-1 py-3 md:py-2 text-[9px] md:text-[8px] rounded font-retro tracking-widest" data-val="m" onclick="selectDawVoice('m')">Male Voc</button>
+                                <button class="btn-minimal btn-voice flex-1 py-3 md:py-2 text-[9px] md:text-[8px] rounded font-retro tracking-widest" data-val="m" onclick="selectDawVoice('m')">Male Voc</button>
                                 <button class="btn-minimal btn-voice flex-1 py-3 md:py-2 text-[9px] md:text-[8px] rounded font-retro tracking-widest" data-val="f" onclick="selectDawVoice('f')">Fem Voc</button>
                                 <button class="btn-minimal btn-voice flex-1 py-3 md:py-2 text-[9px] md:text-[8px] rounded font-retro tracking-widest" data-val="instru" onclick="selectDawVoice('instru')">Instru</button>
                             </div>
@@ -2398,22 +2398,35 @@ group.add(createLeg(-1), createLeg(1));
         tlContainer.addEventListener('touchstart', (e) => onTlClick(e.touches[0].clientX), { passive: true });
     }
 
-    function selectDawGenre(val) {
-        currentDawGenre = val || 'drill';
-        document.querySelectorAll('.btn-genre').forEach(b => {
-            if (b.dataset.val === currentDawGenre) { b.classList.remove('btn-minimal'); b.classList.add('btn-action','text-white'); }
-            else { b.classList.add('btn-minimal'); b.classList.remove('btn-action','text-white'); }
-        });
-        playBleep();
-    }
-    function selectDawVoice(val) {
-        currentDawVoice = val || 'm';
-        document.querySelectorAll('.btn-voice').forEach(b => {
-            if (b.dataset.val === currentDawVoice) { b.classList.remove('btn-minimal'); b.classList.add('btn-action','text-white'); }
-            else { b.classList.add('btn-minimal'); b.classList.remove('btn-action','text-white'); }
-        });
-        playBleep();
-    }
+    function selectDawGenre(val = 'drill') {
+    currentDawGenre = val || 'drill';
+
+    document.querySelectorAll('.btn-genre').forEach(btn => {
+        const isSelected = btn.dataset.val === currentDawGenre;
+
+        btn.classList.toggle('active', isSelected);
+        btn.classList.toggle('btn-action', isSelected);
+        btn.classList.toggle('btn-minimal', !isSelected);
+        btn.classList.toggle('text-white', isSelected);
+    });
+
+    playBleep();
+}
+    function selectDawVoice(val = 'm') {
+    currentDawVoice = val || 'm';
+
+    document.querySelectorAll('.btn-voice').forEach(btn => {
+        const isSelected = btn.dataset.val === currentDawVoice;
+
+        btn.classList.toggle('active', isSelected);
+        btn.classList.toggle('btn-action', isSelected);
+        btn.classList.toggle('btn-minimal', !isSelected);
+        btn.classList.toggle('text-white', isSelected);
+    });
+
+    playBleep();
+}
+
     function updateDawPlugins() {
         const select = document.getElementById('daw-plugin');
         if (!select) return;
