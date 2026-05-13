@@ -1863,7 +1863,7 @@ if (!state.isSleeping && currentRoomAvatar) {
     function hideTooltip() {
         globalTooltip.style.opacity = '0';
         clearTimeout(tooltipTimeout);
-        tooltipTimeout = setTimeout(() => { globalTooltip.classList.add('hidden'); globalTooltip.dataset.type = ''; }, 300);
+        tooltipTimeout =  globalTooltip.classList.add('hidden'); globalTooltip.dataset.type = ''; }, 300);
     }
     document.addEventListener('touchstart', (e) => {
         if (isMobile && !e.target.closest('#hud') && !e.target.closest('#global-tooltip')) hideTooltip();
@@ -3507,9 +3507,10 @@ if (visual) {
         overlay.style.pointerEvents = 'none';
         
         setTimeout(() => {
-            overlay.style.opacity = '1';
-            overlay.style.pointerEvents = 'all';
-        }, 50);
+    overlay.style.opacity = '1';
+    overlay.style.pointerEvents = 'all';
+}, 50);
+
 
         playTone(300, 'sine', 0.4, 0.05);
 
@@ -3556,16 +3557,17 @@ if (visual) {
             });
 
             // Score final après toutes les reviews et affichage du toast
-            setTimeout(() => {
-                const avgColor = avg >= 7 ? 'text-[var(--retro-green)]' : avg >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]';
-                avgEl.className = `text-5xl font-bold font-retro ${avgColor}`;
-                avgEl.innerText = `${avg}/10`;
-                playSuccess();
-                if (toastData) {
-                showToast(toastData.msg, toastData.type);
-            }
-            
-        }, reviews.length * 800 + 300);
+setTimeout(() => {
+    const avgColor = avg >= 7 ? 'text-[var(--retro-green)]' : avg >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]';
+    avgEl.className = `text-5xl font-bold font-retro ${avgColor}`;
+    avgEl.innerText = `${avg}/10`;
+    playSuccess();
+
+    if (toastData) {
+        showToast(toastData.msg, toastData.type);
+    }
+}, reviews.length * 800 + 300);
+
 
         phaseResults.style.display = 'flex';
         phaseResults.classList.remove('hidden');
