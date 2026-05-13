@@ -1648,12 +1648,14 @@
                 }
             }
 
-            // --- 2. ANIMATION INTERNE (Calculée sur le INNER MODEL) ---
-if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
-    const innerModel = currentRoomAvatar;
+            // --- 2. ANIMATION INTERNE ---
+if (!state.isSleeping && currentRoomAvatar) {
+    const innerModel = currentRoomAvatar.getObjectByName("AvatarVisual");
+    if (!innerModel) return;
 
-const legL = innerModel.getObjectByName("Leg_L");
-const legR = innerModel.getObjectByName("Leg_R");
+    const legL = innerModel.getObjectByName("Leg_L");
+    const legR = innerModel.getObjectByName("Leg_R");
+
 
 
     const now = performance.now();
@@ -1675,7 +1677,8 @@ const legR = innerModel.getObjectByName("Leg_R");
         walkTime += isMoving ? 0.10 : 0.05;
 
         innerModel.rotation.z = Math.sin(walkTime) * 0.012 * fade;
-        innerModel.position.y = -0.95 + Math.abs(Math.sin(walkTime)) * 0.012 * fade;
+        innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012 * fade;
+
 
 
         if (legL && legR) {
@@ -1687,7 +1690,8 @@ const legR = innerModel.getObjectByName("Leg_R");
         walkTime = 0;
 
         innerModel.rotation.z *= 0.6;
-        innerModel.position.y += (-0.95 - innerModel.position.y) * 0.25;
+        innerModel.position.y += (0 - innerModel.position.y) * 0.25;
+
 
 
         if (legL && legR) {
@@ -2139,19 +2143,27 @@ group.add(createLeg(-1), createLeg(1));
     // SPAWN DANS LA ROOM 3D
     // ==========================================
     function spawnRoomAvatar(styleIndex) {
-        if (currentRoomAvatar) {
-            scene.remove(currentRoomAvatar);
-            targetPosition = null; 
-        }
-
-        const group = createAvatarGroup(styleIndex);
-
-        group.scale.set(1.6, 1.6, 1.6);
-        group.position.set(0, -0.95, 3);
-
-        scene.add(group);
-        currentRoomAvatar = group;
+    if (currentRoomAvatar) {
+        scene.remove(currentRoomAvatar);
+        targetPosition = null;
     }
+
+    const root = new THREE.Group();
+    root.name = "RoomAvatarRoot";
+    root.scale.set(1.6, 1.6, 1.6);
+    root.position.set(0, -0.95, 3);
+
+    const visual = createAvatarGroup(styleIndex);
+    visual.name = "AvatarVisual";
+    visual.position.set(0, 0, 0);
+    visual.rotation.set(0, 0, 0);
+
+    root.add(visual);
+
+    scene.add(root);
+    currentRoomAvatar = root;
+}
+
 
     const sponsors = [
         { id: 'sp1', name: "Enerji Drink",  reqFollowers: 1000,  reward: 500,  repCost: 15, cooldownDays: 1 },
