@@ -918,6 +918,9 @@
     // VARIABLES GLOBALES POUR L'ANIMATION
     let time = 0;
     let walkTime = 0;
+    let stoppedMovingAt = 0;
+    let wasMovingLastFrame = false;
+    let facingPosition = null;
     const GRID_SIZE = 1.0; 
 
     const container = document.getElementById('three-canvas-container');
@@ -1588,29 +1591,38 @@
         
         if (currentRoomAvatar) {
             let isMoving = false;
+
+            if (lookTarget) {
+    const dx = lookTarget.x - currentRoomAvatar.position.x;
+    const dz = lookTarget.z - currentRoomAvatar.position.z;
+
+    if (Math.hypot(dx, dz) > 0.05) {
+        const dummy = new THREE.Object3D();
+        dummy.position.copy(currentRoomAvatar.position);
+
+        const flatTarget = lookTarget.clone();
+        flatTarget.y = currentRoomAvatar.position.y;
+
+        dummy.lookAt(flatTarget);
+        currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.12);
+
+        currentRoomAvatar.rotation.x = 0;
+        currentRoomAvatar.rotation.z = 0;
+    }
+}
+
+
+    const lookTarget = targetPosition || facingPosition;
+
+            
             // --- 1. DÉPLACEMENT & ROTATION SÉCURISÉS ---
+            
             if (targetPosition) {
                 const currentFlatPos = new THREE.Vector2(currentRoomAvatar.position.x, currentRoomAvatar.position.z);
                 const targetFlatPos = new THREE.Vector2(targetPosition.x, targetPosition.z);
                 const distance = currentFlatPos.distanceTo(targetFlatPos);
 
-                // On vérifie la distance AVANT de faire un lookAt pour éviter le bug d'invisibilité
-                if (distance > 0.02) { // Seuil réduit pour plus de précision
-                    const dummy = new THREE.Object3D();
-                    dummy.position.copy(currentRoomAvatar.position);
-    
-                    const flatTarget = targetPosition.clone();
-                    flatTarget.y = currentRoomAvatar.position.y;
-    
-                    dummy.lookAt(flatTarget);
-
-                    // ROTATION HYPER SMOOTH : On réduit le facteur (0.08) pour plus de souplesse
-                    currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.08);
-
-                    // Verrouillage des axes parasites
-                    currentRoomAvatar.rotation.x = 0;
-                    currentRoomAvatar.rotation.z = 0;
-
+            
                     // VITESSE DYNAMIQUE (Effet magnétique smooth)
                     // Plus on est loin, plus on va vite. Plus on approche de la grille, plus on ralentit.
                     const baseSpeed = 0.04;
@@ -1642,12 +1654,14 @@
                     // AUTO-ALIGNE : Une fois arrivé très près, on "lock" sur la grille
                     currentRoomAvatar.position.x = targetPosition.x;
                     currentRoomAvatar.position.z = targetPosition.z;
+                    facingPosition = targetPosition.clone();
                     targetPosition = null;
+
                 }
             }
 
             // --- 2. ANIMATION INTERNE (Calculée sur le INNER MODEL) ---
-if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
+if (!state.isSleeping && currentRoomAvatar) {
     const innerModel = currentRoomAvatar;
 
     const legL = innerModel.getObjectByName("Leg_L");
@@ -1655,16 +1669,30 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
     const armL = innerModel.getObjectByName("Arm_L");
     const armR = innerModel.getObjectByName("Arm_R");
 
+    const now = performance.now();
+
     if (isMoving) {
-        walkTime += 0.18;
+        stoppedMovingAt = now;
+        wasMovingLastFrame = true;
+    } else if (wasMovingLastFrame) {
+        stoppedMovingAt = now;
+        wasMovingLastFrame = false;
+    }
 
-        const stride = Math.sin(walkTime);
-        const counterStride = Math.sin(walkTime + Math.PI);
-        const bounce = Math.abs(Math.sin(walkTime * 2)) * 0.035;
+    const keepAnimatingAfterStop = !isMoving && (now - stoppedMovingAt < 2000);
+    const shouldWalkAnimate = isMoving || keepAnimatingAfterStop;
 
-        innerModel.position.y = bounce;
-        innerModel.rotation.z = Math.sin(walkTime * 2) * 0.025;
-        innerModel.rotation.x = Math.sin(walkTime) * 0.015;
+    if (shouldWalkAnimate) {
+        const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 2000));
+
+        walkTime += isMoving ? 0.18 : 0.11;
+
+        const stride = Math.sin(walkTime) * fade;
+        const counterStride = Math.sin(walkTime + Math.PI) * fade;
+        const bounce = Math.abs(Math.sin(walkTime * 2)) * 0.035 * fade;
+
+        innerModel.position.y = -0.95 + bounce;
+        innerModel.rotation.z = Math.sin(walkTime * 2) * 0.025 * fade;
 
         if (legL) legL.rotation.x = stride * 0.55;
         if (legR) legR.rotation.x = counterStride * 0.55;
@@ -1674,7 +1702,7 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
     } else {
         walkTime = 0;
 
-        innerModel.position.y += (0 - innerModel.position.y) * 0.25;
+        innerModel.position.y += (-0.95 - innerModel.position.y) * 0.25;
         innerModel.rotation.z += (0 - innerModel.rotation.z) * 0.25;
         innerModel.rotation.x += (0 - innerModel.rotation.x) * 0.25;
 
@@ -1682,12 +1710,9 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
         if (legR) legR.rotation.x += (0 - legR.rotation.x) * 0.35;
         if (armL) armL.rotation.x += (0 - armL.rotation.x) * 0.35;
         if (armR) armR.rotation.x += (0 - armR.rotation.x) * 0.35;
-
-        if (Math.abs(innerModel.position.y) < 0.001) innerModel.position.y = 0;
-        if (Math.abs(innerModel.rotation.z) < 0.001) innerModel.rotation.z = 0;
-        if (Math.abs(innerModel.rotation.x) < 0.001) innerModel.rotation.x = 0;
-        }
     }
+}
+
 
 
 
@@ -1760,8 +1785,23 @@ if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
                 const snappedX = Math.round(rawX / GRID_SIZE) * GRID_SIZE;
                 const snappedZ = Math.round(rawZ / GRID_SIZE) * GRID_SIZE;
 
-                targetPosition = new THREE.Vector3(snappedX, -0.74, snappedZ);
-                break;
+                const clickedPosition = new THREE.Vector3(snappedX, -0.74, snappedZ);
+                facingPosition = clickedPosition.clone();
+
+                    if (currentRoomAvatar) {
+                    const distToClicked = currentRoomAvatar.position.distanceTo(clickedPosition);
+
+                    if (distToClicked > 0.12 && !checkCollision(clickedPosition.x, clickedPosition.z)) {
+                    targetPosition = clickedPosition;
+            } else {
+            targetPosition = null;
+        }
+    } else {
+    targetPosition = clickedPosition;
+}
+
+break;
+
             }
         }
     }
