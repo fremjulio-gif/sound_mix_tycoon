@@ -1459,32 +1459,83 @@ const synthScreen = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.035, 0.12), syn
 synthScreen.position.set(0.72, 1.22, -0.29);
 synthGroup.add(synthScreen);
 
-// X-Stand : deux barres croisées
-const standBarGeo = new THREE.BoxGeometry(0.08, 1.25, 0.08);
+// X-Stand propre : tubes entre deux points
+function addSynthTube(name, start, end, radius = 0.035) {
+    const direction = new THREE.Vector3().subVectors(end, start);
+    const length = direction.length();
 
-const standA = new THREE.Mesh(standBarGeo, synthStandMat);
-standA.position.set(-0.42, 0.45, 0);
-standA.rotation.z = Math.PI / 5;
-standA.castShadow = true;
-synthGroup.add(standA);
+    const geo = new THREE.CylinderGeometry(radius, radius, length, 16);
+    const mesh = new THREE.Mesh(geo, synthStandMat);
+    mesh.name = name;
 
-const standB = new THREE.Mesh(standBarGeo, synthStandMat);
-standB.position.set(0.42, 0.45, 0);
-standB.rotation.z = -Math.PI / 5;
-standB.castShadow = true;
-synthGroup.add(standB);
+    const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+    mesh.position.copy(midpoint);
 
-// Pieds au sol
-const footGeo = new THREE.BoxGeometry(0.72, 0.06, 0.12);
-const footFront = new THREE.Mesh(footGeo, synthStandMat);
-footFront.position.set(0, 0.03, 0.26);
-footFront.castShadow = true;
-synthGroup.add(footFront);
+    mesh.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        direction.clone().normalize()
+    );
 
-const footBack = new THREE.Mesh(footGeo, synthStandMat);
-footBack.position.set(0, 0.03, -0.26);
-footBack.castShadow = true;
-synthGroup.add(footBack);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    synthGroup.add(mesh);
+
+    return mesh;
+}
+
+// Barres croisées du X, vues de côté
+addSynthTube(
+    "synth_stand_cross_a",
+    new THREE.Vector3(-0.72, 0.08, 0),
+    new THREE.Vector3(0.72, 0.98, 0),
+    0.035
+);
+
+addSynthTube(
+    "synth_stand_cross_b",
+    new THREE.Vector3(0.72, 0.08, 0),
+    new THREE.Vector3(-0.72, 0.98, 0),
+    0.035
+);
+
+// Barre centrale de pivot
+addSynthTube(
+    "synth_stand_pivot",
+    new THREE.Vector3(-0.18, 0.52, 0.02),
+    new THREE.Vector3(0.18, 0.52, 0.02),
+    0.045
+);
+
+// Pieds au sol, parallèles au clavier
+addSynthTube(
+    "synth_stand_foot_left",
+    new THREE.Vector3(-0.9, 0.04, -0.32),
+    new THREE.Vector3(-0.9, 0.04, 0.32),
+    0.04
+);
+
+addSynthTube(
+    "synth_stand_foot_right",
+    new THREE.Vector3(0.9, 0.04, -0.32),
+    new THREE.Vector3(0.9, 0.04, 0.32),
+    0.04
+);
+
+// Supports sous le clavier
+addSynthTube(
+    "synth_stand_top_left",
+    new THREE.Vector3(-0.75, 0.98, -0.28),
+    new THREE.Vector3(-0.75, 0.98, 0.28),
+    0.035
+);
+
+addSynthTube(
+    "synth_stand_top_right",
+    new THREE.Vector3(0.75, 0.98, -0.28),
+    new THREE.Vector3(0.75, 0.98, 0.28),
+    0.035
+);
+
 
 // Contours style jeu
 synthGroup.traverse(child => {
