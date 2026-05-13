@@ -3463,7 +3463,12 @@ if (visual) {
         const suspenseTitle = document.getElementById('suspense-title');
         const suspenseGenre = document.getElementById('suspense-genre');
         const suspenseText = document.getElementById('suspense-text');
+        if (!overlay || !phaseSuspense || !phaseResults || !reviewList || !avgEl || !trackNameEl || !suspenseTitle || !suspenseGenre || !suspenseText) {
+        console.warn('Review overlay missing DOM nodes');
+        return;
+    }
 
+        
         // Reset
         phaseSuspense.classList.remove('hidden');
         phaseSuspense.style.display = 'flex';
