@@ -1711,7 +1711,7 @@ if (!state.isSleeping && currentRoomAvatar) {
         if (armL) armL.rotation.x += (0 - armL.rotation.x) * 0.35;
         if (armR) armR.rotation.x += (0 - armR.rotation.x) * 0.35;
     }
-}
+
 
 
 
@@ -1979,54 +1979,54 @@ break;
         }
 
         const createLeg = (xSign) => {
-        const legGroup = new THREE.Group();
-            legGroup.name = xSign < 0 ? "Leg_L" : "Leg_R";
-            legGroup.position.set(xSign * 0.12, 0.42, 0);
+    const legGroup = new THREE.Group();
+    legGroup.name = xSign < 0 ? "Leg_L" : "Leg_R";
+    legGroup.position.set(xSign * 0.12, 0.42, 0);
 
-        const upperLeg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.16), clothesMat);
-            upperLeg.position.set(0, -0.12, 0);
-            upperLeg.castShadow = true;
-            addEdges(upperLeg);
-    
-        const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.28), shoesMat);
-        shoe.position.set(0, -0.34, 0.04);
-        shoe.castShadow = true;
-        addEdges(shoe);
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.16), clothesMat);
+    leg.position.set(0, -0.12, 0);
+    leg.castShadow = true;
+    addEdges(leg);
 
-        legGroup.add(upperLeg, shoe);
-        return legGroup;
+    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.28), shoesMat);
+    shoe.position.set(0, -0.34, 0.04);
+    shoe.castShadow = true;
+    addEdges(shoe);
+
+    legGroup.add(leg, shoe);
+    return legGroup;
 };
 
 group.add(createLeg(-1), createLeg(1));
 
+const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.4, 0.25), clothesMat);
+torso.position.set(0, 0.57, 0);
+torso.castShadow = true;
+addEdges(torso);
+group.add(torso);
 
-        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.4, 0.25), clothesMat);
-        torso.position.set(0, 0.57, 0);
-        torso.castShadow = true;
-        addEdges(torso);
-        group.add(torso);
+const createArm = (xSign) => {
+    const armGroup = new THREE.Group();
+    armGroup.name = xSign < 0 ? "Arm_L" : "Arm_R";
+    armGroup.position.set(xSign * 0.29, 0.72, 0);
 
-        const createArm = (xSign) => {
-        const armGroup = new THREE.Group();
-        armGroup.name = xSign < 0 ? "Arm_L" : "Arm_R";
-        armGroup.position.set(xSign * 0.29, 0.72, 0);
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), clothesMat);
+    arm.position.set(0, -0.16, 0);
+    arm.rotation.z = xSign * 0.12;
+    arm.castShadow = true;
+    addEdges(arm);
 
-        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), clothesMat);
-        arm.position.set(0, -0.16, 0);
-        arm.rotation.z = xSign * 0.12;
-        arm.castShadow = true;
-        addEdges(arm);
+    const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), skinMat);
+    hand.position.set(xSign * 0.04, -0.38, 0);
+    hand.castShadow = true;
+    addEdges(hand);
 
-        const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), skinMat);
-        hand.position.set(xSign * 0.04, -0.38, 0);
-        hand.castShadow = true;
-        addEdges(hand);
-
-        armGroup.add(arm, hand);
-        return armGroup;
+    armGroup.add(arm, hand);
+    return armGroup;
 };
 
-        group.add(createArm(-1), createArm(1));
+group.add(createArm(-1), createArm(1));
+
 
         const headGroup = new THREE.Group();
         headGroup.position.set(0, 1.07, 0);
