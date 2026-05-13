@@ -2485,46 +2485,37 @@ group.add(createLeg(-1), createLeg(1));
     }
 
     function wakeUp() {
-        state.isSleeping = false;
-        document.getElementById('sleep-overlay').classList.remove('active');
-        
+    state.isSleeping = false;
+    document.getElementById('sleep-overlay').classList.remove('active');
+
+    if (currentRoomAvatar) {
         if (currentRoomAvatar.userData.preSleepPos) {
             currentRoomAvatar.position.copy(currentRoomAvatar.userData.preSleepPos);
             currentRoomAvatar.rotation.copy(currentRoomAvatar.userData.preSleepRot);
-    } else {
+        } else {
             currentRoomAvatar.position.set(2.5, -0.74, -2.9);
             currentRoomAvatar.rotation.set(0, 0, 0);
-    }
-
-currentRoomAvatar.traverse(child => {
-par :
-
-if (currentRoomAvatar.userData.preSleepPos) {
-    currentRoomAvatar.position.copy(currentRoomAvatar.userData.preSleepPos);
-    currentRoomAvatar.rotation.copy(currentRoomAvatar.userData.preSleepRot);
-} else {
-    currentRoomAvatar.position.set(2.5, -0.74, -2.9);
-    currentRoomAvatar.rotation.set(0, 0, 0);
-}
-
-const visual = currentRoomAvatar.getObjectByName("AvatarVisual") || currentRoomAvatar.children[0];
-if (visual) {
-    visual.position.set(0, 0, 0);
-    visual.rotation.set(0, 0, 0);
-}
-
-            currentRoomAvatar.traverse(child => {
-                if (child.isMesh && child.material) {
-                    child.material.transparent = false;
-                    child.material.opacity = 1;
-                }
-            });
         }
-        
-        showToast("Nuit terminée. T'es de nouveau frais !", "success");
-        playSuccess();
-        saveGame();
+
+        const visual = currentRoomAvatar.getObjectByName("AvatarVisual") || currentRoomAvatar.children[0];
+        if (visual) {
+            visual.position.set(0, 0, 0);
+            visual.rotation.set(0, 0, 0);
+        }
+
+        currentRoomAvatar.traverse(child => {
+            if (child.isMesh && child.material) {
+                child.material.transparent = false;
+                child.material.opacity = 1;
+            }
+        });
     }
+
+    showToast("Nuit terminée. T'es de nouveau frais !", "success");
+    playSuccess();
+    saveGame();
+}
+
 
 
     // ==========================================
@@ -3226,6 +3217,8 @@ if (visual) {
         setTimeout(() => { if (t.parentElement) { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => { if (t.parentElement) t.remove(); }, 400); } }, 4000);
     }
 
+    let pendingReviewToast = null;
+
     function closeReview() {
     const overlay = document.getElementById('review-overlay');
     if (!overlay) return;
@@ -3236,6 +3229,11 @@ if (visual) {
     setTimeout(() => {
         overlay.classList.add('hidden');
         overlay.style.display = 'none';
+
+        if (pendingReviewToast) {
+            showToast(pendingReviewToast.msg, pendingReviewToast.type);
+            pendingReviewToast = null;
+        }
     }, 500);
 }
 
@@ -3564,8 +3562,9 @@ if (visual) {
                 avgEl.innerText = `${avg}/10`;
                 playSuccess();
                 if (toastData) {
-                showToast(toastData.msg, toastData.type);
-            }
+                pendingReviewToast = toastData;
+}
+
             
         }, reviews.length * 800 + 300);
 
