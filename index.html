@@ -918,9 +918,6 @@
     // VARIABLES GLOBALES POUR L'ANIMATION
     let time = 0;
     let walkTime = 0;
-    let stoppedMovingAt = 0;
-    let wasMovingLastFrame = false;
-    let facingPosition = null;
     const GRID_SIZE = 1.0; 
 
     const container = document.getElementById('three-canvas-container');
@@ -1591,96 +1588,66 @@
         
         if (currentRoomAvatar) {
             let isMoving = false;
-
-            if (lookTarget) {
-    const dx = lookTarget.x - currentRoomAvatar.position.x;
-    const dz = lookTarget.z - currentRoomAvatar.position.z;
-
-    if (Math.hypot(dx, dz) > 0.05) {
-        const dummy = new THREE.Object3D();
-        dummy.position.copy(currentRoomAvatar.position);
-
-        const flatTarget = lookTarget.clone();
-        flatTarget.y = currentRoomAvatar.position.y;
-
-        dummy.lookAt(flatTarget);
-        currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.12);
-
-        currentRoomAvatar.rotation.x = 0;
-        currentRoomAvatar.rotation.z = 0;
-    }
-}
-
-
-    const lookTarget = targetPosition || facingPosition;
-
-            
             // --- 1. DÉPLACEMENT & ROTATION SÉCURISÉS ---
-const lookTarget = targetPosition || facingPosition;
+            if (targetPosition) {
+                const currentFlatPos = new THREE.Vector2(currentRoomAvatar.position.x, currentRoomAvatar.position.z);
+                const targetFlatPos = new THREE.Vector2(targetPosition.x, targetPosition.z);
+                const distance = currentFlatPos.distanceTo(targetFlatPos);
 
-if (lookTarget) {
-    const dx = lookTarget.x - currentRoomAvatar.position.x;
-    const dz = lookTarget.z - currentRoomAvatar.position.z;
+                // On vérifie la distance AVANT de faire un lookAt pour éviter le bug d'invisibilité
+                if (distance > 0.02) { // Seuil réduit pour plus de précision
+                    const dummy = new THREE.Object3D();
+                    dummy.position.copy(currentRoomAvatar.position);
+    
+                    const flatTarget = targetPosition.clone();
+                    flatTarget.y = currentRoomAvatar.position.y;
+    
+                    dummy.lookAt(flatTarget);
 
-    if (Math.hypot(dx, dz) > 0.05) {
-        const dummy = new THREE.Object3D();
-        dummy.position.copy(currentRoomAvatar.position);
+                    // ROTATION HYPER SMOOTH : On réduit le facteur (0.08) pour plus de souplesse
+                    currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.08);
 
-        const flatTarget = lookTarget.clone();
-        flatTarget.y = currentRoomAvatar.position.y;
+                    // Verrouillage des axes parasites
+                    currentRoomAvatar.rotation.x = 0;
+                    currentRoomAvatar.rotation.z = 0;
 
-        dummy.lookAt(flatTarget);
-        currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.12);
+                    // VITESSE DYNAMIQUE (Effet magnétique smooth)
+                    // Plus on est loin, plus on va vite. Plus on approche de la grille, plus on ralentit.
+                    const baseSpeed = 0.04;
+                    const easing = Math.min(1, distance * 4); // Ralentissement progressif à l'arrivée
+                    const currentSpeed = baseSpeed * easing;
 
-        currentRoomAvatar.rotation.x = 0;
-        currentRoomAvatar.rotation.z = 0;
-    }
-}
+                    const dir = new THREE.Vector3().subVectors(targetPosition, currentRoomAvatar.position).normalize();
+    
+                    const nextX = currentRoomAvatar.position.x + dir.x * currentSpeed;
+                    const nextZ = currentRoomAvatar.position.z + dir.z * currentSpeed;
+    
+                    let moved = false;
+                    // Vérification collision simplifiée pour la fluidité
+                    if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
+                        currentRoomAvatar.position.x = nextX;
+                        moved = true;
+                    }
+                    if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
+                        currentRoomAvatar.position.z = nextZ;
+                        moved = true;
+                    }
+    
+                    if (!moved) {
+                        targetPosition = null;
+                    } else {
+                        isMoving = true; 
+                    }
+                } else {
+                    // AUTO-ALIGNE : Une fois arrivé très près, on "lock" sur la grille
+                    currentRoomAvatar.position.x = targetPosition.x;
+                    currentRoomAvatar.position.z = targetPosition.z;
+                    targetPosition = null;
+                }
+            }
 
-if (targetPosition) {
-    const currentFlatPos = new THREE.Vector2(currentRoomAvatar.position.x, currentRoomAvatar.position.z);
-    const targetFlatPos = new THREE.Vector2(targetPosition.x, targetPosition.z);
-    const distance = currentFlatPos.distanceTo(targetFlatPos);
-
-    if (distance > 0.02) {
-        const baseSpeed = 0.04;
-        const easing = Math.min(1, distance * 4);
-        const currentSpeed = baseSpeed * easing;
-
-        const dir = new THREE.Vector3()
-            .subVectors(targetPosition, currentRoomAvatar.position)
-            .normalize();
-
-        const nextX = currentRoomAvatar.position.x + dir.x * currentSpeed;
-        const nextZ = currentRoomAvatar.position.z + dir.z * currentSpeed;
-
-        let moved = false;
-
-        if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
-            currentRoomAvatar.position.x = nextX;
-            moved = true;
-        }
-
-        if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
-            currentRoomAvatar.position.z = nextZ;
-            moved = true;
-        }
-
-        if (!moved) {
-            targetPosition = null;
-        } else {
-            isMoving = true;
-        }
-    } else {
-        currentRoomAvatar.position.x = targetPosition.x;
-        currentRoomAvatar.position.z = targetPosition.z;
-        facingPosition = targetPosition.clone();
-        targetPosition = null;
-    }
-}
-
-// --- 2. ANIMATION INTERNE ---
-if (!state.isSleeping && currentRoomAvatar) {
+            // --- 2. ANIMATION INTERNE (Calculée sur le INNER MODEL) ---
+if (!state.isSleeping && currentRoomAvatar.children.length > 0) {
     const innerModel = currentRoomAvatar;
 
     const legL = innerModel.getObjectByName("Leg_L");
@@ -1688,31 +1655,16 @@ if (!state.isSleeping && currentRoomAvatar) {
     const armL = innerModel.getObjectByName("Arm_L");
     const armR = innerModel.getObjectByName("Arm_R");
 
-    const now = performance.now();
-
     if (isMoving) {
-        stoppedMovingAt = now;
-        wasMovingLastFrame = true;
-    } else if (wasMovingLastFrame) {
-        stoppedMovingAt = now;
-        wasMovingLastFrame = false;
-    }
+        walkTime += 0.18;
 
-    const keepAnimatingAfterStop = !isMoving && (now - stoppedMovingAt < 2000);
-    const shouldWalkAnimate = isMoving || keepAnimatingAfterStop;
+        const stride = Math.sin(walkTime);
+        const counterStride = Math.sin(walkTime + Math.PI);
+        const bounce = Math.abs(Math.sin(walkTime * 2)) * 0.035;
 
-    if (shouldWalkAnimate) {
-        const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 2000));
-
-        walkTime += isMoving ? 0.18 : 0.11;
-
-        const stride = Math.sin(walkTime) * fade;
-        const counterStride = Math.sin(walkTime + Math.PI) * fade;
-        const bounce = Math.abs(Math.sin(walkTime * 2)) * 0.035 * fade;
-
-        innerModel.position.y = -0.95 + bounce;
-        innerModel.rotation.z = Math.sin(walkTime * 2) * 0.025 * fade;
-        innerModel.rotation.x = Math.sin(walkTime) * 0.01 * fade;
+        innerModel.position.y = bounce;
+        innerModel.rotation.z = Math.sin(walkTime * 2) * 0.025;
+        innerModel.rotation.x = Math.sin(walkTime) * 0.015;
 
         if (legL) legL.rotation.x = stride * 0.55;
         if (legR) legR.rotation.x = counterStride * 0.55;
@@ -1722,7 +1674,7 @@ if (!state.isSleeping && currentRoomAvatar) {
     } else {
         walkTime = 0;
 
-        innerModel.position.y += (-0.95 - innerModel.position.y) * 0.25;
+        innerModel.position.y += (0 - innerModel.position.y) * 0.25;
         innerModel.rotation.z += (0 - innerModel.rotation.z) * 0.25;
         innerModel.rotation.x += (0 - innerModel.rotation.x) * 0.25;
 
@@ -1730,10 +1682,12 @@ if (!state.isSleeping && currentRoomAvatar) {
         if (legR) legR.rotation.x += (0 - legR.rotation.x) * 0.35;
         if (armL) armL.rotation.x += (0 - armL.rotation.x) * 0.35;
         if (armR) armR.rotation.x += (0 - armR.rotation.x) * 0.35;
+
+        if (Math.abs(innerModel.position.y) < 0.001) innerModel.position.y = 0;
+        if (Math.abs(innerModel.rotation.z) < 0.001) innerModel.rotation.z = 0;
+        if (Math.abs(innerModel.rotation.x) < 0.001) innerModel.rotation.x = 0;
+        }
     }
-}
-
-
 
 
 
@@ -1806,23 +1760,8 @@ if (!state.isSleeping && currentRoomAvatar) {
                 const snappedX = Math.round(rawX / GRID_SIZE) * GRID_SIZE;
                 const snappedZ = Math.round(rawZ / GRID_SIZE) * GRID_SIZE;
 
-                const clickedPosition = new THREE.Vector3(snappedX, -0.74, snappedZ);
-                facingPosition = clickedPosition.clone();
-
-                    if (currentRoomAvatar) {
-                    const distToClicked = currentRoomAvatar.position.distanceTo(clickedPosition);
-
-                    if (distToClicked > 0.12 && !checkCollision(clickedPosition.x, clickedPosition.z)) {
-                    targetPosition = clickedPosition;
-            } else {
-            targetPosition = null;
-        }
-    } else {
-    targetPosition = clickedPosition;
-}
-
-break;
-
+                targetPosition = new THREE.Vector3(snappedX, -0.74, snappedZ);
+                break;
             }
         }
     }
@@ -2000,54 +1939,54 @@ break;
         }
 
         const createLeg = (xSign) => {
-    const legGroup = new THREE.Group();
-    legGroup.name = xSign < 0 ? "Leg_L" : "Leg_R";
-    legGroup.position.set(xSign * 0.12, 0.42, 0);
+        const legGroup = new THREE.Group();
+            legGroup.name = xSign < 0 ? "Leg_L" : "Leg_R";
+            legGroup.position.set(xSign * 0.12, 0.42, 0);
 
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.16), clothesMat);
-    leg.position.set(0, -0.12, 0);
-    leg.castShadow = true;
-    addEdges(leg);
+        const upperLeg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.16), clothesMat);
+            upperLeg.position.set(0, -0.12, 0);
+            upperLeg.castShadow = true;
+            addEdges(upperLeg);
+    
+        const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.28), shoesMat);
+        shoe.position.set(0, -0.34, 0.04);
+        shoe.castShadow = true;
+        addEdges(shoe);
 
-    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.28), shoesMat);
-    shoe.position.set(0, -0.34, 0.04);
-    shoe.castShadow = true;
-    addEdges(shoe);
-
-    legGroup.add(leg, shoe);
-    return legGroup;
+        legGroup.add(upperLeg, shoe);
+        return legGroup;
 };
 
 group.add(createLeg(-1), createLeg(1));
 
-const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.4, 0.25), clothesMat);
-torso.position.set(0, 0.57, 0);
-torso.castShadow = true;
-addEdges(torso);
-group.add(torso);
 
-const createArm = (xSign) => {
-    const armGroup = new THREE.Group();
-    armGroup.name = xSign < 0 ? "Arm_L" : "Arm_R";
-    armGroup.position.set(xSign * 0.29, 0.72, 0);
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.4, 0.25), clothesMat);
+        torso.position.set(0, 0.57, 0);
+        torso.castShadow = true;
+        addEdges(torso);
+        group.add(torso);
 
-    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), clothesMat);
-    arm.position.set(0, -0.16, 0);
-    arm.rotation.z = xSign * 0.12;
-    arm.castShadow = true;
-    addEdges(arm);
+        const createArm = (xSign) => {
+        const armGroup = new THREE.Group();
+        armGroup.name = xSign < 0 ? "Arm_L" : "Arm_R";
+        armGroup.position.set(xSign * 0.29, 0.72, 0);
 
-    const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), skinMat);
-    hand.position.set(xSign * 0.04, -0.38, 0);
-    hand.castShadow = true;
-    addEdges(hand);
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), clothesMat);
+        arm.position.set(0, -0.16, 0);
+        arm.rotation.z = xSign * 0.12;
+        arm.castShadow = true;
+        addEdges(arm);
 
-    armGroup.add(arm, hand);
-    return armGroup;
+        const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), skinMat);
+        hand.position.set(xSign * 0.04, -0.38, 0);
+        hand.castShadow = true;
+        addEdges(hand);
+
+        armGroup.add(arm, hand);
+        return armGroup;
 };
 
-group.add(createArm(-1), createArm(1));
-
+        group.add(createArm(-1), createArm(1));
 
         const headGroup = new THREE.Group();
         headGroup.position.set(0, 1.07, 0);
