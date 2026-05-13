@@ -2461,7 +2461,7 @@
         const username = document.getElementById('login-username').value.trim();
         if (!username) { document.getElementById('login-error').classList.remove('hidden'); playError(); return; }
 
-        const savedData = SafeStorage.get('smt_save_' + username);
+        const savedData = SafeStorage.get(getSaveKey(username)) || SafeStorage.get('smt_save_' + username);
         if (savedData) {
             try {
                 const parsed = JSON.parse(savedData);
@@ -2528,6 +2528,8 @@
         }
 
         spawnRoomAvatar(state.activeCharacter);
+
+        saveGame();
 
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('room-ui').style.display = 'flex';
@@ -2660,8 +2662,13 @@
         }
     }
 
-    function saveGame() {
-        SafeStorage.set('smt_save_' + state.username, JSON.stringify(state));
+        function getSaveKey(username) {
+        return 'smt_save_' + String(username || '').trim().toLowerCase();
+    }
+
+        function saveGame() {
+        if (!state || !state.username) return;
+        SafeStorage.set(getSaveKey(state.username), JSON.stringify(state));
     }
 
     function dailyReset() {
@@ -3115,7 +3122,8 @@
     // 21. TOASTS
     // ==========================================
     function showToast(msg, type = 'info') {
-        const zone = document.getElementById('-zone');
+        const zone = document.getElementById('toast-zone');
+        if (!zone) return;
         const t = document.createElement('div');
         let colorClass = "bg-black/90 border-gray-700 text-gray-100";
         if (type === 'success') colorClass = "bg-[#022c22] border-[var(--retro-green)] text-emerald-100 shadow-[0_0_15px_rgba(52,211,153,0.3)]";
@@ -3503,6 +3511,12 @@
     
     // Boot
     initUI();
+
+        window.addEventListener('beforeunload', saveGame);
+
+            document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'hidden') saveGame();
+});
 </script>
 </body>
 </html>
