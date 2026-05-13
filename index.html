@@ -313,7 +313,7 @@
                 padding-bottom: 12px !important; 
                 overflow: visible !important;
             }
-            #app-daw { width: 950px; min-width: 700px; }
+            #app-daw { width: 900px; min-width: 680px; }
         }
 
         .daw-panel-neon {
@@ -758,13 +758,8 @@
                 <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-daw')">✕</button>
             </div>
             <div class="window-content daw-grid-container text-xs">
-                <div class="daw-panel-neon md:w-[160px] w-full p-4 flex flex-col justify-start items-center relative">
-                    <label class="block text-[10px] text-gray-300 mb-6 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2 w-full text-center">Drum Rack</label>
-                    <div class="grid grid-cols-4 gap-2 mb-4 w-full max-w-[200px] md:max-w-[120px]" id="sequencer-grid"></div>
-                    <p class="text-[8px] text-gray-500 font-retro tracking-widest mt-auto text-center border border-white/10 p-2 rounded w-full">Live Input</p>
-                </div>
-                <div class="daw-panel-neon flex-1 p-4 flex flex-col relative md:min-w-[450px]">
-                    <label class="block text-[10px] text-gray-300 mb-3 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2">Timeline Arrangement</label>
+                <div class="daw-panel-neon flex-1 p-4 flex flex-col relative md:min-w-[620px]">
+                    <label class="block text-[10px] text-gray-300 mb-3 font-retro uppercase tracking-widest border-b border-[var(--accent)]/30 pb-2">Session Arrangement</label>
                     <div class="h-32 border border-white/10 rounded-lg flex flex-col overflow-x-auto overflow-y-hidden relative bg-black/60 cursor-crosshair shadow-inner mb-4" id="timeline-container">
                         <div class="h-5 bg-black/80 border-b border-white/10 flex items-center font-retro text-[8px] text-gray-500 px-3 tracking-widest min-w-[700px] select-none">1...|...5...|...9...|...13...|...17...|...21...|...25...|...29...|...33</div>
                         <div class="tl-track min-w-[700px]"><div class="tl-header">Kick/Bass</div><div class="tl-clip bg-[var(--retro-red)]" style="left: 110px; width: 140px;"></div><div class="tl-clip bg-[var(--retro-red)]" style="left: 300px; width: 80px;"></div></div>
@@ -2306,7 +2301,9 @@ group.add(createLeg(-1), createLeg(1));
             </div>`).join('');
 
         const seq = document.getElementById('sequencer-grid');
-        seq.innerHTML = Array(16).fill(0).map((_, i) => `<div class="seq-pad" id="pad-${i}" onclick="togglePad(${i})"></div>`).join('');
+        if (seq) {
+    s    eq.innerHTML = Array(16).fill(0).map((_, i) => `<div class="seq-pad" id="pad-${i}" onclick="togglePad(${i})"></div>`).join('');
+}
 
         const vuMeter = document.getElementById('vu-meter-container');
         let ledsHTML = '';
@@ -2853,10 +2850,8 @@ group.add(createLeg(-1), createLeg(1));
         const genre = currentDawGenre;
         const bpm   = parseInt(document.getElementById('daw-bpm').value, 10);
         const voice = currentDawVoice;
-        const activePads = document.querySelectorAll('.seq-pad.active').length;
+        const activePads = 8;
         const pluginIndex = document.getElementById('daw-plugin').value;
-
-        if (activePads === 0) { showToast("Sequencer is empty. Lay down some drums first.", "error"); playError(); return; }
 
         const trackTitle = document.getElementById('track-title-input').value.trim() || `UNTITLED_${state.stats.tracks + 1}`;
 
