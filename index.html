@@ -1567,6 +1567,30 @@
     
     // Cible globale pour le lookAt de la caméra (optimisation mémoire)
     const cameraLookTarget = new THREE.Vector3(0, 0, 0);
+
+    function normalizeAngle(angle) {
+    return Math.atan2(Math.sin(angle), Math.cos(angle));
+}
+
+function rotateAvatarToward(target, smooth = 0.12) {
+    if (!currentRoomAvatar || !target) return;
+
+    const dx = target.x - currentRoomAvatar.position.x;
+    const dz = target.z - currentRoomAvatar.position.z;
+
+    if (Math.hypot(dx, dz) < 0.02) return;
+
+    // L'avatar regarde visuellement vers son axe +Z.
+    const targetYaw = Math.atan2(dx, dz);
+
+    const currentYaw = currentRoomAvatar.rotation.y;
+    const deltaYaw = normalizeAngle(targetYaw - currentYaw);
+
+    currentRoomAvatar.rotation.y = currentYaw + deltaYaw * smooth;
+    currentRoomAvatar.rotation.x = 0;
+    currentRoomAvatar.rotation.z = 0;
+}
+
     
     function animate3D() {
         requestAnimationFrame(animate3D);
@@ -1598,24 +1622,12 @@
 
                 // On vérifie la distance AVANT de faire un lookAt pour éviter le bug d'invisibilité
                 if (distance > 0.02) { // Seuil réduit pour plus de précision
-                    const dummy = new THREE.Object3D();
-                    dummy.position.copy(currentRoomAvatar.position);
-    
-                    const flatTarget = targetPosition.clone();
-                    flatTarget.y = currentRoomAvatar.position.y;
-    
-                    dummy.lookAt(flatTarget);
+                    rotateAvatarToward(targetPosition, 0.12);
 
-                    // ROTATION HYPER SMOOTH : On réduit le facteur (0.08) pour plus de souplesse
-                    currentRoomAvatar.quaternion.slerp(dummy.quaternion, 0.08);
-
-                    // Verrouillage des axes parasites
-                    currentRoomAvatar.rotation.x = 0;
-                    currentRoomAvatar.rotation.z = 0;
 
                     // VITESSE DYNAMIQUE (Effet magnétique smooth)
                     // Plus on est loin, plus on va vite. Plus on approche de la grille, plus on ralentit.
-                    const baseSpeed = 0.04;
+                    const baseSpeed = 0.03;
                     const easing = Math.min(1, distance * 4); // Ralentissement progressif à l'arrivée
                     const currentSpeed = baseSpeed * easing;
 
