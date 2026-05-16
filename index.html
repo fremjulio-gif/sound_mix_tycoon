@@ -277,9 +277,11 @@
             overflow-y: auto;
             overflow-x: hidden;
             flex: 1;
+            /* min-height: 0 est critique — sans ça flex ignore overflow */
             min-height: 0;
             background: rgba(0,0,0,0.3);
-        }
+            -webkit-overflow-scrolling: touch;
+}
 
         /* =========================================
            5. DESKTOP & WIDGETS
@@ -393,25 +395,32 @@
            6. DAW UI COMPONENTS
            ========================================= */
         .daw-grid-container {
-            height: auto !important;
-            min-height: max-content !important;
             display: flex !important;
             flex-direction: column !important;
-            padding-bottom: 12px !important;
             gap: 12px;
             padding: 12px;
+            padding-bottom: 20px;
             background: rgba(0,0,0,0.4);
             box-sizing: border-box;
-        }
-        @media (min-width: 768px) {
-            .daw-grid-container {
-                flex-direction: row !important; 
-                height: 100% !important; 
-                padding-bottom: 12px !important; 
-                overflow: visible !important;
-            }
-            #app-daw { width: 900px; min-width: 680px; }
-        }
+            /* Laisse le scroll de window-content faire le travail */
+            height: auto;
+            min-height: 0;
+            overflow: visible;
+}
+       @media (min-width: 768px) {
+        .daw-grid-container {
+        flex-direction: row !important;
+        height: auto !important;
+        padding-bottom: 20px !important;
+        overflow: visible !important;
+    }
+        #app-daw { 
+            width: 900px; 
+            min-width: 680px;
+            /* Hauteur max pour forcer le scroll interne */
+            max-height: 80dvh;
+     }
+}
 
         .daw-panel-neon {
             background: rgba(10, 10, 15, 0.8);
