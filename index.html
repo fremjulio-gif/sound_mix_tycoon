@@ -123,6 +123,20 @@
             100% { transform: translate(-8%, -6%) scale(0.95); }
         }
 
+
+        @keyframes tapeSpin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+        .tape-reel-slow {
+            animation: tapeSpin 6s linear infinite;
+}
+
+.tape-reel-fast {
+    animation: tapeSpin 4.5s linear infinite;
+}
+
         /* =========================================
            4. OS LAYER & WINDOWS
            ========================================= */
@@ -291,10 +305,13 @@
 }
 
 .widgets-container .desktop-widget:nth-child(6) {
-    grid-column: 2 / 4;
+    grid-column: 3;
     grid-row: 3;
-    align-self: end;
+    align-self: start;
+    max-height: 230px;
+    overflow: hidden;
 }
+
 
     
         
@@ -853,19 +870,19 @@
         <span class="text-[10px] font-retro text-[var(--retro-red)] animate-pulse">REC</span>
     </div>
     <div class="flex justify-center gap-8">
-        <div class="w-14 h-14 rounded-full border-4 border-white/20 bg-black/50 relative animate-spin" style="animation-duration: 6s;">
+        <div class="w-14 h-14 rounded-full border-4 border-white/20 bg-black/50 relative tape-reel-slow" style="animation-duration: 6s;">
             <div class="absolute inset-4 rounded-full bg-white/10"></div>
         </div>
-        <div class="w-14 h-14 rounded-full border-4 border-white/20 bg-black/50 relative animate-spin" style="animation-duration: 4.5s;">
+        <div class="w-14 h-14 rounded-full border-4 border-white/20 bg-black/50 relative tape-reel-fast" style="animation-duration: 4.5s;">
             <div class="absolute inset-4 rounded-full bg-white/10"></div>
         </div>
     </div>
 </div>
 
                 
-                <div class="desktop-widget liquid-glass !bg-yellow-500/15 !border-yellow-400/30 rotate-2 p-6 w-[105%] max-h-[210px] overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-                    <h4 class="font-handwriting text-yellow-300/90 text-3xl mb-3 border-b border-yellow-500/40 pb-1">To-Do List :</h4>
-                    <ul class="font-handwriting text-yellow-100/90 text-xl space-y-1">
+                <div class="desktop-widget liquid-glass !bg-yellow-500/15 !border-yellow-400/30 rotate-2 p-5 w-full max-h-[210px] overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+                    <h4 class="font-handwriting text-yellow-300/90 text-2xl mb-2 border-b border-yellow-500/40 pb-1">To-Do List :</h4>
+                    <ul class="font-handwriting text-yellow-100/90 text-lg space-y-0.5">
                         <li class="line-through opacity-40">Setup OS</li>
                         <li>Check Trends</li>
                         <li>Sign Brand Deal</li>
@@ -2260,7 +2277,11 @@ if (!state.isSleeping && currentRoomAvatar) {
     const sysCanvasUI = document.getElementById('sys-canvas');
     const sysCtxUI = sysCanvasUI ? sysCanvasUI.getContext('2d') : null;
     let cpuDataUI = Array(50).fill(50);
+    let cpuGraphStarted = false;
+    let moodRingStarted = false;
 
+
+    
    function drawSysGraphUI() {
     const canvas = document.getElementById('sys-canvas');
     if (!canvas || !canvas.parentElement) {
@@ -2317,6 +2338,7 @@ if (!state.isSleeping && currentRoomAvatar) {
 
 
     function updateMoodRingWidget() {
+    moodRingStarted = true;
     const glow = document.getElementById('mood-ring-glow');
     const label = document.getElementById('mood-ring-label');
     if (!glow || !label) {
@@ -3068,7 +3090,7 @@ if (seq) {
         updateHUD();
         refreshStats();
         refreshSocial();
-        drawSysGraphUI();
+        if (!cpuGraphStarted) drawSysGraphUI();
         updateMoodRingWidget();
 
 
