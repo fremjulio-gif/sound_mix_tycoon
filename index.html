@@ -1306,19 +1306,82 @@
     deskGroup.add(pcFrame);
 
     const speakerMat = new THREE.MeshStandardMaterial({ color: '#a3a8b5', roughness: 0.8, metalness: 0.2 });
-    const wooferMat = new THREE.MeshStandardMaterial({ color: '#33353d', roughness: 0.9 });
-    const speakerGeo = new THREE.BoxGeometry(0.4, 0.6, 0.4);
-    const wooferGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.02, 16);
+const speakerFrontMat = new THREE.MeshStandardMaterial({ color: '#1a1a1f', roughness: 0.9 });
+const wooferMat = new THREE.MeshStandardMaterial({ color: '#2a2a2f', roughness: 0.9 });
+const wooferConeMat = new THREE.MeshStandardMaterial({ color: '#111114', roughness: 1.0 });
+const tweeterMat = new THREE.MeshStandardMaterial({ color: '#888899', roughness: 0.3, metalness: 0.6 });
+const portMat = new THREE.MeshStandardMaterial({ color: '#050505', roughness: 0.8 });
 
-    const speakerL = new THREE.Mesh(speakerGeo, speakerMat);
-    speakerL.position.set(-1.6, 1.05, -0.4); speakerL.rotation.y = Math.PI / 12; speakerL.castShadow = true; speakerL.name = 'pc_mesh';
-    const wooferL = new THREE.Mesh(wooferGeo, wooferMat); wooferL.rotation.x = Math.PI / 2; wooferL.position.set(0, 0, 0.2); speakerL.add(wooferL); 
-    deskGroup.add(speakerL);
+function buildSpeaker(xPos, rotY) {
+    const spkGroup = new THREE.Group();
+    spkGroup.position.set(xPos, 1.05, -0.4);
+    spkGroup.rotation.y = rotY;
+    spkGroup.name = 'pc_mesh';
 
-    const speakerR = new THREE.Mesh(speakerGeo, speakerMat);
-    speakerR.position.set(1.6, 1.05, -0.4); speakerR.rotation.y = -Math.PI / 12; speakerR.castShadow = true; speakerR.name = 'pc_mesh';
-    const wooferR = new THREE.Mesh(wooferGeo, wooferMat); wooferR.rotation.x = Math.PI / 2; wooferR.position.set(0, 0, 0.2); speakerR.add(wooferR); 
-    deskGroup.add(speakerR);
+    // Corps principal — plus grand
+    const bodyGeo = new THREE.BoxGeometry(0.55, 0.82, 0.52);
+    const body = new THREE.Mesh(bodyGeo, speakerMat);
+    body.castShadow = true;
+    body.name = 'pc_mesh';
+    const bodyEdges = new THREE.EdgesGeometry(bodyGeo);
+    body.add(new THREE.LineSegments(bodyEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3 })));
+    spkGroup.add(body);
+
+    // Face avant légèrement en relief
+    const faceGeo = new THREE.BoxGeometry(0.52, 0.79, 0.04);
+    const face = new THREE.Mesh(faceGeo, speakerFrontMat);
+    face.position.set(0, 0, 0.28);
+    face.name = 'pc_mesh';
+    spkGroup.add(face);
+
+    // Woofer (grand haut-parleur bas)
+    const wooferRingGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.03, 24);
+    wooferRingGeo.rotateX(Math.PI / 2);
+    const wooferRing = new THREE.Mesh(wooferRingGeo, wooferMat);
+    wooferRing.position.set(0, -0.12, 0.31);
+    spkGroup.add(wooferRing);
+
+    const wooferConeGeo = new THREE.CylinderGeometry(0.04, 0.15, 0.04, 24);
+    wooferConeGeo.rotateX(Math.PI / 2);
+    const wooferCone = new THREE.Mesh(wooferConeGeo, wooferConeMat);
+    wooferCone.position.set(0, -0.12, 0.32);
+    spkGroup.add(wooferCone);
+
+    // Tweeter (petit haut-parleur aigu)
+    const tweeterGeo = new THREE.CylinderGeometry(0.055, 0.055, 0.025, 16);
+    tweeterGeo.rotateX(Math.PI / 2);
+    const tweeter = new THREE.Mesh(tweeterGeo, wooferMat);
+    tweeter.position.set(0, 0.22, 0.31);
+    spkGroup.add(tweeter);
+
+    const tweeterDomeGeo = new THREE.SphereGeometry(0.035, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2);
+    tweeterDomeGeo.rotateX(Math.PI / 2);
+    const tweeterDome = new THREE.Mesh(tweeterDomeGeo, tweeterMat);
+    tweeterDome.position.set(0, 0.22, 0.325);
+    spkGroup.add(tweeterDome);
+
+    // Évent bass reflex (port rectangulaire en bas)
+    const portGeo = new THREE.BoxGeometry(0.22, 0.045, 0.03);
+    const port = new THREE.Mesh(portGeo, portMat);
+    port.position.set(0, -0.33, 0.30);
+    spkGroup.add(port);
+
+    // LED de power (petit point lumineux)
+    const ledMat = new THREE.MeshStandardMaterial({ color: '#34d399', emissive: '#34d399', emissiveIntensity: 1.2 });
+    const ledGeo = new THREE.CylinderGeometry(0.012, 0.012, 0.01, 8);
+    ledGeo.rotateX(Math.PI / 2);
+    const led = new THREE.Mesh(ledGeo, ledMat);
+    led.position.set(0.18, -0.35, 0.30);
+    spkGroup.add(led);
+
+    return spkGroup;
+}
+
+const speakerL = buildSpeaker(-1.7, Math.PI / 12);
+deskGroup.add(speakerL);
+
+const speakerR = buildSpeaker(1.7, -Math.PI / 12);
+deskGroup.add(speakerR);
 
     const kbdBaseMat = new THREE.MeshStandardMaterial({ color: '#e8eaf0', roughness: 0.3, metalness: 0.2 });
     const kbdBase = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.05, 0.6), kbdBaseMat);
