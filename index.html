@@ -202,22 +202,19 @@
         }
         
         #btn-quit-pc {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            z-index: 90;
-            padding: 8px 16px;
-            background: rgba(10, 10, 15, 0.8);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(10px);
-            color: var(--retro-red);
-            font-family: 'Share Tech Mono', monospace;
-            text-transform: uppercase;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            transition: all 0.2s;
-        }
+        position: fixed;
+        top: calc(64px + env(safe-area-inset-top)) !important;
+        bottom: auto !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: auto !important;
+        min-width: 200px !important;
+        border-radius: 999px !important;
+        padding: 10px 22px !important;
+        font-size: 11px !important;
+        z-index: 101 !important;
+        text-align: center;
+    }
         #btn-quit-pc:hover { background: rgba(251, 113, 133, 0.2); border-color: var(--retro-red); }
 
         /* --- LIQUID GLASS --- */
@@ -537,26 +534,71 @@
             }
 
             #desktop-content {
-                padding: 88px 22px calc(92px + env(safe-area-inset-bottom)) 22px !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: flex-start !important;
-                align-items: center !important;
-                overflow-y: auto !important;
-}
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        /* Espace : hud (64px) + btn-quit (~50px) + safe area top, et nav bas (60px) */
+        padding-top: calc(130px + env(safe-area-inset-top)) !important;
+        padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+        gap: 18px !important;
+    }
 
-            #desktop-icons-container {
-                display: grid !important;
-                grid-template-columns: repeat(2, minmax(96px, 1fr)) !important;
-                width: min(100%, 280px) !important;
-                gap: 24px 28px !important;
-                justify-items: center !important;
-                align-items: center !important;
-                margin-top: 12px !important;
+           #desktop-icons-container {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        width: 100% !important;
+        gap: 8px 4px !important;
+        justify-items: center !important;
+        align-items: start !important;
+        margin: 0 !important;
+        order: 0;
+    }
+
+    .desktop-icon {
+        width: 72px !important;
+        margin-bottom: 0 !important;
+        gap: 6px;
+    }
+    .desktop-icon .icon-box {
+        width: 56px !important;
+        height: 56px !important;
+        border-radius: 18px !important;
+    }
+    .desktop-icon span {
+        font-size: 9px !important;
+        text-align: center;
+        line-height: 1.2;
+    }
+
+
+
+            /* WIDGETS : colonne pleine largeur sous les icônes */
+    .widgets-container {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 14px !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        order: 1;
+    }
+
+    /* Chaque widget prend toute la largeur, hauteur auto */
+    .widgets-container .desktop-widget {
+        width: 100% !important;
+        grid-column: unset !important;
+        grid-row: unset !important;
+        align-self: unset !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
 }
-            .desktop-icon { width: 96px !important; margin-bottom: 0 !important; }
-            .desktop-icon .icon-box { width: 70px !important; height: 70px !important; border-radius: 22px !important; }
-            .desktop-icon span { font-size: 10px !important; }
             
             /* Les Fenêtres OS s'insèrent exactement entre la barre du haut et celle du bas */
             .os-window {
