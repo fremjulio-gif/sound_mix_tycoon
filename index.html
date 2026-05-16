@@ -763,6 +763,49 @@
                         <canvas id="sys-canvas" class="absolute inset-0 w-full h-full"></canvas>
                     </div>
                 </div>
+
+                <div class="desktop-widget liquid-glass p-5">
+    <div class="flex justify-between items-center mb-4">
+        <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">Signal Chain</span>
+        <span class="text-[10px] font-retro text-[var(--accent)]">ARMED</span>
+    </div>
+    <div class="flex items-center justify-between gap-2">
+        <div class="w-9 h-9 rounded-xl border border-white/15 bg-black/40 flex items-center justify-center font-retro text-[10px] text-[var(--retro-green)]">IN</div>
+        <div class="h-px flex-1 bg-white/20"></div>
+        <div class="w-9 h-9 rounded-xl border border-white/15 bg-black/40 flex items-center justify-center font-retro text-[10px] text-[var(--retro-orange)]">EQ</div>
+        <div class="h-px flex-1 bg-white/20"></div>
+        <div class="w-9 h-9 rounded-xl border border-white/15 bg-black/40 flex items-center justify-center font-retro text-[10px] text-[var(--accent)]">FX</div>
+        <div class="h-px flex-1 bg-white/20"></div>
+        <div class="w-9 h-9 rounded-xl border border-white/15 bg-black/40 flex items-center justify-center font-retro text-[10px] text-white">OUT</div>
+    </div>
+</div>
+
+<div class="desktop-widget liquid-glass p-5">
+    <div class="flex justify-between items-end mb-3">
+        <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">Mood Ring</span>
+        <span id="mood-ring-label" class="text-[10px] font-retro text-[var(--retro-green)]">LOCKED IN</span>
+    </div>
+    <div class="h-16 rounded-2xl border border-white/10 overflow-hidden relative bg-black/40">
+        <div id="mood-ring-glow" class="absolute inset-0 opacity-80"></div>
+    </div>
+</div>
+
+<div class="desktop-widget liquid-glass p-5" onclick="showToast('Hidden tape armed. Nobody was supposed to find this.', 'info')">
+    <div class="flex justify-between items-center mb-4">
+        <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">Secret Tape</span>
+        <span class="text-[10px] font-retro text-[var(--retro-red)] animate-pulse">REC</span>
+    </div>
+    <div class="flex justify-center gap-8">
+        <div class="w-14 h-14 rounded-full border-4 border-white/20 bg-black/50 relative animate-spin" style="animation-duration: 6s;">
+            <div class="absolute inset-4 rounded-full bg-white/10"></div>
+        </div>
+        <div class="w-14 h-14 rounded-full border-4 border-white/20 bg-black/50 relative animate-spin" style="animation-duration: 4.5s;">
+            <div class="absolute inset-4 rounded-full bg-white/10"></div>
+        </div>
+    </div>
+</div>
+
+                
                 <div class="desktop-widget liquid-glass !bg-yellow-500/15 !border-yellow-400/30 rotate-2 p-6 w-[105%] max-h-[210px] overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
                     <h4 class="font-handwriting text-yellow-300/90 text-3xl mb-3 border-b border-yellow-500/40 pb-1">To-Do List :</h4>
                     <ul class="font-handwriting text-yellow-100/90 text-xl space-y-1">
@@ -2161,27 +2204,84 @@ if (!state.isSleeping && currentRoomAvatar) {
     const sysCtxUI = sysCanvasUI ? sysCanvasUI.getContext('2d') : null;
     let cpuDataUI = Array(50).fill(50);
 
-    function drawSysGraphUI() {
-        if (!sysCtxUI || !sysCanvasUI) return;
-        sysCanvasUI.width = sysCanvasUI.parentElement.clientWidth;
-        sysCanvasUI.height = sysCanvasUI.parentElement.clientHeight;
-        let last = cpuDataUI[cpuDataUI.length - 1];
-        let next = last + (Math.random() * 30 - 15);
-        if (state.isExporting) next = 95 + Math.random() * 5;
-        if (next > 100) next = 100;
-        if (next < 5) next = 5;
-        cpuDataUI.shift(); cpuDataUI.push(next);
-        sysCtxUI.clearRect(0, 0, sysCanvasUI.width, sysCanvasUI.height);
-        sysCtxUI.beginPath();
-        sysCtxUI.moveTo(0, sysCanvasUI.height - (cpuDataUI[0]/100 * sysCanvasUI.height));
-        const step = sysCanvasUI.width / (cpuDataUI.length - 1);
-        for (let i = 1; i < cpuDataUI.length; i++) sysCtxUI.lineTo(i * step, sysCanvasUI.height - (cpuDataUI[i]/100 * sysCanvasUI.height));
-        sysCtxUI.strokeStyle = 'rgba(52, 211, 153, 0.9)'; sysCtxUI.lineWidth = 2; sysCtxUI.stroke();
-        sysCtxUI.lineTo(sysCanvasUI.width, sysCanvasUI.height); sysCtxUI.lineTo(0, sysCanvasUI.height);
-        sysCtxUI.fillStyle = 'rgba(52, 211, 153, 0.15)'; sysCtxUI.fill();
-        setTimeout(() => requestAnimationFrame(drawSysGraphUI), 150);
+   function drawSysGraphUI() {
+    const canvas = document.getElementById('sys-canvas');
+    if (!canvas || !canvas.parentElement) {
+        setTimeout(() => requestAnimationFrame(drawSysGraphUI), 500);
+        return;
     }
 
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.parentElement.getBoundingClientRect();
+
+    if (rect.width < 10 || rect.height < 10) {
+        setTimeout(() => requestAnimationFrame(drawSysGraphUI), 500);
+        return;
+    }
+
+    canvas.width = Math.floor(rect.width * window.devicePixelRatio);
+    canvas.height = Math.floor(rect.height * window.devicePixelRatio);
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+
+    ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+
+    let last = cpuDataUI[cpuDataUI.length - 1];
+    let next = last + (Math.random() * 30 - 15);
+
+    if (state.isExporting) next = 95 + Math.random() * 5;
+    next = Math.max(5, Math.min(100, next));
+
+    cpuDataUI.shift();
+    cpuDataUI.push(next);
+
+    ctx.clearRect(0, 0, rect.width, rect.height);
+
+    ctx.beginPath();
+    ctx.moveTo(0, rect.height - (cpuDataUI[0] / 100 * rect.height));
+
+    const step = rect.width / (cpuDataUI.length - 1);
+    for (let i = 1; i < cpuDataUI.length; i++) {
+        ctx.lineTo(i * step, rect.height - (cpuDataUI[i] / 100 * rect.height));
+    }
+
+    ctx.strokeStyle = 'rgba(52, 211, 153, 0.95)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.lineTo(rect.width, rect.height);
+    ctx.lineTo(0, rect.height);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(52, 211, 153, 0.16)';
+    ctx.fill();
+
+    setTimeout(() => requestAnimationFrame(drawSysGraphUI), 180);
+}
+
+
+    function updateMoodRingWidget() {
+    const glow = document.getElementById('mood-ring-glow');
+    const label = document.getElementById('mood-ring-label');
+    if (!glow || !label) {
+        setTimeout(updateMoodRingWidget, 1000);
+        return;
+    }
+
+    const moods = [
+        { txt: 'LOCKED IN', bg: 'radial-gradient(circle at 30% 40%, rgba(52,211,153,0.95), transparent 32%), radial-gradient(circle at 75% 60%, rgba(129,140,248,0.75), transparent 36%)', color: 'var(--retro-green)' },
+        { txt: 'OVERTHINKING', bg: 'radial-gradient(circle at 25% 55%, rgba(251,191,36,0.9), transparent 34%), radial-gradient(circle at 80% 35%, rgba(244,63,94,0.65), transparent 38%)', color: 'var(--retro-orange)' },
+        { txt: '3AM SAUCE', bg: 'radial-gradient(circle at 40% 50%, rgba(96,165,250,0.9), transparent 34%), radial-gradient(circle at 72% 45%, rgba(168,85,247,0.75), transparent 40%)', color: 'var(--accent)' }
+    ];
+
+    const mood = moods[Math.floor(Date.now() / 5000) % moods.length];
+    glow.style.background = mood.bg;
+    label.innerText = mood.txt;
+    label.style.color = mood.color;
+
+    setTimeout(updateMoodRingWidget, 1000);
+}
+
+    
     // ==========================================
     // 6. VU METER
     // ==========================================
@@ -2912,6 +3012,8 @@ if (seq) {
         refreshStats();
         refreshSocial();
         drawSysGraphUI();
+        updateMoodRingWidget();
+
 
         if (window.gameInterval) { clearInterval(window.gameInterval); window.gameInterval = null; }
         window.gameInterval = setInterval(gameTick, 1000);
