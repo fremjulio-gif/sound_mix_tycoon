@@ -1161,6 +1161,37 @@
     dirLight.shadow.camera.top = 15;   dirLight.shadow.camera.bottom = -15;
     scene.add(dirLight);
 
+
+    // ==========================================
+    // DOUCHE DE LUMIÈRE (SpotLight Plafond)
+    // ==========================================
+    // 1. Création du spot (Couleur chaude de type ampoule, Intensité forte mais locale)
+    const ceilingLight = new THREE.SpotLight('#fff0dd', 3.5); 
+    
+    // 2. Positionnement : En hauteur, au centre de la pièce
+    ceilingLight.position.set(0, 6, 0); 
+    
+    // 3. Réglages du cône de lumière
+    ceilingLight.angle = Math.PI / 4.5; // L'ouverture du cône (plus on divise par un grand chiffre, plus le faisceau est étroit)
+    ceilingLight.penumbra = 0.8;        // Bords ultra-flous pour un fondu subtil (0 = net, 1 = très flou)
+    ceilingLight.decay = 1.5;           // Comment la lumière s'atténue avec la distance
+    ceilingLight.distance = 12;         // Distance max avant que la lumière ne s'éteigne
+    
+    // 4. Orientation : On pointe la lumière vers le centre du sol
+    const lightTarget = new THREE.Object3D();
+    lightTarget.position.set(0, -1, 0); // Le centre du tapis/sol
+    scene.add(lightTarget);
+    ceilingLight.target = lightTarget;
+
+    // 5. Optionnel : Pour que le spot crée aussi de belles ombres douces
+    ceilingLight.castShadow = true;
+    ceilingLight.shadow.mapSize.width = 1024;
+    ceilingLight.shadow.mapSize.height = 1024;
+    ceilingLight.shadow.bias = -0.001;
+
+    scene.add(ceilingLight);
+
+    
     // Room Floor
     const floorGeo = new THREE.PlaneGeometry(10, 10);
     const floorMat = new THREE.MeshStandardMaterial({ color: '#8a6242', roughness: 0.9, metalness: 0.1 });
