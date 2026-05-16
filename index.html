@@ -204,15 +204,16 @@
 }
         
        #btn-quit-pc {
-    position: fixed;
-    top: calc(64px + env(safe-area-inset-top));
+    position: absolute;
+    top: calc(90px + env(safe-area-inset-top));
     left: 50%;
     transform: translateX(-50%);
-    z-index: 90;
+    z-index: 200;
     padding: 10px 22px;
     background: rgba(10, 10, 15, 0.8);
     border: 1px solid var(--glass-border);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     color: var(--retro-red);
     font-family: 'Share Tech Mono', monospace;
     text-transform: uppercase;
@@ -224,9 +225,10 @@
     white-space: nowrap;
     min-width: 200px;
     text-align: center;
+    pointer-events: auto;
 }
-#btn-quit-pc:hover { 
-    background: rgba(251, 113, 133, 0.2); 
+#btn-quit-pc:hover {
+    background: rgba(251, 113, 133, 0.2);
     border-color: var(--retro-red);
     box-shadow: 0 0 20px rgba(255, 0, 60, 0.3);
 }
@@ -533,6 +535,13 @@
             #hud-avatar { width: 32px !important; height: 32px !important; }
             #hud-name { display: none !important; }
 
+
+            #btn-quit-pc {
+            top: calc(78px + env(safe-area-inset-top)) !important;
+            min-width: 170px !important;
+        }
+            
+            
             /* Navigation OS devient une "Bottom Bar" fixe avec prise en compte Safe Area iOS */
             #mobile-nav { 
                 display: flex !important; 
