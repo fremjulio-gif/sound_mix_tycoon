@@ -208,12 +208,11 @@
     top: calc(90px + env(safe-area-inset-top));
     left: 24px;
     transform: none;
-    z-index: 200;
+    z-index: 90;
     padding: 10px 22px;
     background: rgba(10, 10, 15, 0.8);
     border: 1px solid var(--glass-border);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     color: var(--retro-red);
     font-family: 'Share Tech Mono', monospace;
     text-transform: uppercase;
@@ -225,10 +224,9 @@
     white-space: nowrap;
     min-width: 200px;
     text-align: center;
-    pointer-events: auto;
 }
-#btn-quit-pc:hover {
-    background: rgba(251, 113, 133, 0.2);
+#btn-quit-pc:hover { 
+    background: rgba(251, 113, 133, 0.2); 
     border-color: var(--retro-red);
     box-shadow: 0 0 20px rgba(255, 0, 60, 0.3);
 }
@@ -311,7 +309,7 @@
     grid-template-columns: 120px minmax(320px, 1fr) 320px;
     grid-template-rows: 1fr auto;
     gap: 22px;
-    padding: 116px 34px 92px 34px;
+    padding: 116px 34px 92px 180px;
     pointer-events: none;
     overflow: hidden;
 }
@@ -532,24 +530,9 @@
                 border-radius: 16px !important;
                 width: 96% !important;
             }
-           #hud-avatar { 
-                width: 42px !important; 
-                height: 42px !important;
-                min-width: 42px !important;
-                border-radius: 50% !important;
-                overflow: hidden !important;
-                flex-shrink: 0 !important;
-}
+            #hud-avatar { width: 32px !important; height: 32px !important; }
             #hud-name { display: none !important; }
 
-
-            top: calc(78px + env(safe-area-inset-top)) !important;
-            left: 14px !important;
-            transform: none !important;
-            min-width: 150px !important;
-    }
-            
-            
             /* Navigation OS devient une "Bottom Bar" fixe avec prise en compte Safe Area iOS */
             #mobile-nav { 
                 display: flex !important; 
@@ -639,16 +622,24 @@
     min-height: min-content !important;
 }
 
-.widgets-container .desktop-widget {
-    width: 100% !important;
-    grid-column: unset !important;
-    grid-row: unset !important;
-    align-self: unset !important;
-    max-height: none !important;
-    height: auto !important;
-    flex-shrink: 0 !important;
-    overflow: visible !important;
-    }
+            .widgets-container .desktop-widget {
+                width: 100% !important;
+                grid-column: unset !important;
+                grid-row: unset !important;
+                align-self: unset !important;
+                max-height: none !important;
+                height: auto !important;
+                flex-shrink: 0 !important;
+                overflow: visible !important;
+        }
+
+
+            #btn-quit-pc {
+                top: calc(78px + env(safe-area-inset-top)) !important;
+                left: 14px !important;
+                transform: none !important;
+                min-width: 150px !important;
+        }
 }
             
             /* Les Fenêtres OS s'insèrent exactement entre la barre du haut et celle du bas */
