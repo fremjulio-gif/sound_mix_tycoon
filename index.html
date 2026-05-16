@@ -137,6 +137,12 @@
     animation: tapeSpin 4.5s linear infinite;
 }
 
+
+
+        
+
+
+        
         /* =========================================
            4. OS LAYER & WINDOWS
            ========================================= */
@@ -388,6 +394,28 @@
             box-shadow: 0 0 20px rgba(255,255,255,0.1);
         }
 
+
+
+
+
+
+        @keyframes moodDrift {
+    0% { filter: hue-rotate(0deg) brightness(1); transform: scale(1); }
+    50% { filter: hue-rotate(30deg) brightness(1.2); transform: scale(1.05); }
+    100% { filter: hue-rotate(0deg) brightness(1); transform: scale(1); }
+}
+
+.mood-animated {
+    animation: moodDrift 8s infinite ease-in-out;
+    transition: background 1s ease-in-out, filter 0.5s ease;
+}
+
+.tape-paused {
+    animation-play-state: paused !important;
+}
+
+
+        
         /* =========================================
            6. DAW UI COMPONENTS
            ========================================= */
@@ -524,9 +552,16 @@
             }
             #mobile-nav > div { flex: 1 !important; height: 100% !important; }
 
-            .widgets-container {
-            display: none !important;
-}
+           /* --- A AJOUTER DANS @media (max-width: 767px) --- */
+        .widgets-container { 
+                display: flex !important; 
+                width: 100% !important; 
+                max-height: none !important; 
+                flex-direction: column !important; 
+                justify-content: flex-start !important;
+                gap: 16px !important;
+                padding-bottom: 30px !important;
+        }
 
             
             #desktop-content {
@@ -864,16 +899,16 @@
     </div>
 </div>
 
-<div class="desktop-widget liquid-glass p-5" onclick="showToast('Hidden tape armed. Nobody was supposed to find this.', 'info')">
+<div id="secret-tape-widget" class="desktop-widget liquid-glass p-5 cursor-pointer" onclick="toggleSecretTape()">
     <div class="flex justify-between items-center mb-4">
         <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">Secret Tape</span>
-        <span class="text-[10px] font-retro text-[var(--retro-red)] animate-pulse">REC</span>
+        <span id="tape-status" class="text-[10px] font-retro text-[var(--retro-red)] animate-pulse">REC</span>
     </div>
     <div class="flex justify-center gap-8">
-        <div class="w-14 h-14 rounded-full border-4 border-white/20 bg-black/50 relative tape-reel-slow" style="animation-duration: 6s;">
+        <div id="tape-reel-1" class="w-14 h-14 rounded-full border-4 border-white/20 bg-black/50 relative tape-reel-slow" style="animation-duration: 6s;">
             <div class="absolute inset-4 rounded-full bg-white/10"></div>
         </div>
-        <div class="w-14 h-14 rounded-full border-4 border-white/20 bg-black/50 relative tape-reel-fast" style="animation-duration: 4.5s;">
+        <div id="tape-reel-2" class="w-14 h-14 rounded-full border-4 border-white/20 bg-black/50 relative tape-reel-fast" style="animation-duration: 4.5s;">
             <div class="absolute inset-4 rounded-full bg-white/10"></div>
         </div>
     </div>
@@ -2240,6 +2275,43 @@ if (!state.isSleeping && currentRoomAvatar) {
         playTone(300, 'sawtooth', 0.1, 0.05);
     }
 
+
+    let moodRingStarted = false;
+let moodRingInterval = null;
+
+function updateMoodRingWidget() {
+    moodRingStarted = true;
+    const glow = document.getElementById('mood-ring-glow');
+    const label = document.getElementById('mood-ring-label');
+    
+    if (!glow || !label) {
+        setTimeout(updateMoodRingWidget, 1000);
+        return;
+    }
+
+    // Ajout de la classe gérant l'animation CSS fluide
+    if (!glow.classList.contains('mood-animated')) {
+        glow.classList.add('mood-animated');
+    }
+
+    const moods = [
+        { txt: 'LOCKED IN', bg: 'radial-gradient(circle at 30% 40%, rgba(52,211,153,0.95), transparent 32%), radial-gradient(circle at 75% 60%, rgba(129,140,248,0.75), transparent 36%)', color: 'var(--retro-green)' },
+        { txt: 'OVERTHINKING', bg: 'radial-gradient(circle at 25% 55%, rgba(251,191,36,0.9), transparent 34%), radial-gradient(circle at 80% 35%, rgba(244,63,94,0.65), transparent 38%)', color: 'var(--retro-orange)' },
+        { txt: '3AM SAUCE', bg: 'radial-gradient(circle at 40% 50%, rgba(96,165,250,0.9), transparent 34%), radial-gradient(circle at 72% 45%, rgba(168,85,247,0.75), transparent 40%)', color: 'var(--accent)' }
+    ];
+
+    const currentMood = moods[Math.floor(Date.now() / 5000) % moods.length];
+    
+    glow.style.background = currentMood.bg;
+    label.innerText = currentMood.txt;
+    label.style.color = currentMood.color;
+
+    // Évite l'accumulation de setTimeouts si la fonction est appelée plusieurs fois
+    if(moodRingInterval) clearTimeout(moodRingInterval);
+    moodRingInterval = setTimeout(updateMoodRingWidget, 5000);
+}
+
+    
     // ==========================================
     // 4. TOOLTIP
     // ==========================================
@@ -2302,50 +2374,57 @@ if (!state.isSleeping && currentRoomAvatar) {
         if (isMobile && !e.target.closest('#hud') && !e.target.closest('#global-tooltip')) hideTooltip();
     }, { passive: true });
 
-    // ==========================================
-    // 5. CPU GRAPH
-    // ==========================================
-    const sysCanvasUI = document.getElementById('sys-canvas');
-    const sysCtxUI = sysCanvasUI ? sysCanvasUI.getContext('2d') : null;
-    let cpuDataUI = Array(50).fill(50);
-    let cpuGraphStarted = false;
-    let moodRingStarted = false;
+   // ==========================================
+// 5. CPU GRAPH OPTIMISÉ (60 FPS)
+// ==========================================
+const sysCanvasUI = document.getElementById('sys-canvas');
+const sysCtxUI = sysCanvasUI ? sysCanvasUI.getContext('2d') : null;
+let cpuDataUI = Array(50).fill(50);
+let cpuGraphStarted = false;
+let lastCpuTick = 0;
 
+function drawSysGraphUI(timestamp) {
+    cpuGraphStarted = true;
+    requestAnimationFrame(drawSysGraphUI);
 
-    
-   function drawSysGraphUI() {
     const canvas = document.getElementById('sys-canvas');
-    if (!canvas || !canvas.parentElement) {
-        setTimeout(() => requestAnimationFrame(drawSysGraphUI), 500);
-        return;
+    if (!canvas || !canvas.parentElement) return;
+
+    const rect = canvas.parentElement.getBoundingClientRect();
+    // Sécurité si caché ou taille invalide (Mobile caché temporairement)
+    if (rect.width < 10 || rect.height < 10) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const targetWidth = Math.floor(rect.width * dpr);
+    const targetHeight = Math.floor(rect.height * dpr);
+
+    // Redimensionnement intelligent : uniquement si la taille change
+    if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+    }
+
+    // Limiter la mise à jour des données à ~15 FPS pour le style "monitoring",
+    // mais le rendu Canvas reste appelé pour garder l'interface fluide.
+    if (timestamp - lastCpuTick > 80) {
+        let last = cpuDataUI[cpuDataUI.length - 1];
+        let next = last + (Math.random() * 30 - 15);
+        if (state.isExporting) next = 95 + Math.random() * 5;
+        next = Math.max(5, Math.min(100, next));
+        
+        cpuDataUI.shift();
+        cpuDataUI.push(next);
+        lastCpuTick = timestamp;
     }
 
     const ctx = canvas.getContext('2d');
-    const rect = canvas.parentElement.getBoundingClientRect();
-
-    if (rect.width < 10 || rect.height < 10) {
-        setTimeout(() => requestAnimationFrame(drawSysGraphUI), 500);
-        return;
-    }
-
-    canvas.width = Math.floor(rect.width * window.devicePixelRatio);
-    canvas.height = Math.floor(rect.height * window.devicePixelRatio);
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
-
-    ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
-
-    let last = cpuDataUI[cpuDataUI.length - 1];
-    let next = last + (Math.random() * 30 - 15);
-
-    if (state.isExporting) next = 95 + Math.random() * 5;
-    next = Math.max(5, Math.min(100, next));
-
-    cpuDataUI.shift();
-    cpuDataUI.push(next);
-
+    ctx.resetTransform();
+    ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, rect.width, rect.height);
 
+    // Tracé du graphe
     ctx.beginPath();
     ctx.moveTo(0, rect.height - (cpuDataUI[0] / 100 * rect.height));
 
@@ -2363,34 +2442,7 @@ if (!state.isSleeping && currentRoomAvatar) {
     ctx.closePath();
     ctx.fillStyle = 'rgba(52, 211, 153, 0.16)';
     ctx.fill();
-
-    setTimeout(() => requestAnimationFrame(drawSysGraphUI), 180);
 }
-
-
-    function updateMoodRingWidget() {
-    moodRingStarted = true;
-    const glow = document.getElementById('mood-ring-glow');
-    const label = document.getElementById('mood-ring-label');
-    if (!glow || !label) {
-        setTimeout(updateMoodRingWidget, 1000);
-        return;
-    }
-
-    const moods = [
-        { txt: 'LOCKED IN', bg: 'radial-gradient(circle at 30% 40%, rgba(52,211,153,0.95), transparent 32%), radial-gradient(circle at 75% 60%, rgba(129,140,248,0.75), transparent 36%)', color: 'var(--retro-green)' },
-        { txt: 'OVERTHINKING', bg: 'radial-gradient(circle at 25% 55%, rgba(251,191,36,0.9), transparent 34%), radial-gradient(circle at 80% 35%, rgba(244,63,94,0.65), transparent 38%)', color: 'var(--retro-orange)' },
-        { txt: '3AM SAUCE', bg: 'radial-gradient(circle at 40% 50%, rgba(96,165,250,0.9), transparent 34%), radial-gradient(circle at 72% 45%, rgba(168,85,247,0.75), transparent 40%)', color: 'var(--accent)' }
-    ];
-
-    const mood = moods[Math.floor(Date.now() / 5000) % moods.length];
-    glow.style.background = mood.bg;
-    label.innerText = mood.txt;
-    label.style.color = mood.color;
-
-    setTimeout(updateMoodRingWidget, 1000);
-}
-
     
     // ==========================================
     // 6. VU METER
@@ -3486,6 +3538,37 @@ if (seq) {
         saveGame(); updateHUD(); updateCooldownUIs();
     }
 
+
+    let isTapeRecording = true;
+
+function toggleSecretTape() {
+    isTapeRecording = !isTapeRecording;
+    const reel1 = document.getElementById('tape-reel-1');
+    const reel2 = document.getElementById('tape-reel-2');
+    const status = document.getElementById('tape-status');
+
+    if (isTapeRecording) {
+        reel1.classList.remove('tape-paused');
+        reel2.classList.remove('tape-paused');
+        status.innerText = "REC";
+        status.className = "text-[10px] font-retro text-[var(--retro-red)] animate-pulse";
+        showToast('Secret tape en cours d\'enregistrement.', 'info');
+        playTone(500, 'sine', 0.1, 0.05); // Bruit d'enclenchement
+    } else {
+        reel1.classList.add('tape-paused');
+        reel2.classList.add('tape-paused');
+        status.innerText = "STOP";
+        status.className = "text-[10px] font-retro text-gray-500";
+        showToast('Secret tape mise en pause.', 'info');
+        playTone(300, 'sine', 0.1, 0.05); // Bruit d'arrêt
+    }
+}
+
+// Ne pas oublier d'ajouter à la liste des exports globaux :
+window.toggleSecretTape = toggleSecretTape;
+
+
+    
     // ==========================================
     // 18. BROWSER / STORE
     // ==========================================
@@ -4146,6 +4229,7 @@ setTimeout(() => {
     window.attemptLogin     = attemptLogin;
     window.goSleep          = goSleep; // Export du sommeil
     window.closeReview      = closeReview; // Export de la fermeture review
+    window.toggleSecretTape = toggleSecretTape;
     
     // Boot
     initUI();
