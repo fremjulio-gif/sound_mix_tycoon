@@ -2502,7 +2502,7 @@ group.add(createLeg(-1), createLeg(1));
         multiplier: 1.0, plugins: 0,
         stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0 },
         cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, sponsors: {} },
-        inventory: [],
+        inventory: [], ownedCracks: [], downloadedCracks: {},
         history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
         isExporting: false, isSleeping: false, isEventActive: false
     };
@@ -2566,13 +2566,11 @@ group.add(createLeg(-1), createLeg(1));
         }
     }
     function getVpnCooldown() {
-        const dl = parseInt(state.stats.crackDownloads, 10) || 0;
-        if (dl === 0) return 30;
-        if (dl === 1) return 60;
-        if (dl === 2) return 120;
-        if (dl === 3) return 180;
-        return 360;
-    }
+    const level = Math.floor((parseInt(state.rep, 10) || 0) / 50);
+    const cooldown = 30 - Math.min(15, level * 3);
+    return Math.max(15, cooldown);
+}
+
     function getDawCooldown() { return 15; }
 
     // ==========================================
@@ -2713,14 +2711,15 @@ if (seq) {
 
     function updateDawPlugins() {
         const select = document.getElementById('daw-plugin');
-        if (!select) return;
-        let html = '<option value="">- Clean Mix (No Plugin) -</option>';
-        if (state.inventory && state.inventory.length > 0) {
-            state.inventory.forEach((crackId, index) => {
-                const c = cracks.find(x => x.id === crackId);
-                if (c) html += `<option value="${index}">Use: ${c.name}</option>`;
-            });
-        }
+        const availableCracks = state.ownedCracks || state.inventory || [];
+
+        if (availableCracks.length > 0) {
+            availableCracks.forEach((crackId) => {
+           const c = cracks.find(x => x.id === crackId);
+        if (c) html += `<option value="${c.id}">Use: ${c.name}</option>`;
+    });
+}
+
         select.innerHTML = html;
     }
 
@@ -2863,6 +2862,9 @@ if (seq) {
                 });
 
                 state.inventory              = state.inventory || [];
+                state.ownedCracks = Array.isArray(state.ownedCracks) ? state.ownedCracks : [];
+                state.downloadedCracks = state.downloadedCracks && typeof state.downloadedCracks === 'object' ? state.downloadedCracks : {};
+
                 state.stats                  = state.stats || {};
                 state.stats.tracks           = parseInt(state.stats.tracks, 10)        || 0;
                 state.stats.bangers          = parseInt(state.stats.bangers, 10)       || 0;
@@ -3155,10 +3157,9 @@ if (seq) {
 
         let consumedPluginId = null;
         if (pluginIndex !== "") {
-            consumedPluginId = state.inventory[pluginIndex];
-            state.inventory.splice(pluginIndex, 1);
-            updateDawPlugins();
+                consumedPluginId = pluginIndex;
         }
+
 
         state.isExporting = true;
         const btn = document.getElementById('btn-export');
@@ -3310,10 +3311,16 @@ if (seq) {
                              <div class="space-y-4">`;
             let foundAny = false;
             cracks.forEach(c => {
+                const alreadyOwned = state.ownedCracks && state.ownedCracks.includes(c.id);
                 if (state.money < c.reqMoney) {
                     crackHTML += `<div class="border border-gray-800 p-4 flex justify-between items-center bg-black/60 rounded-lg opacity-50 select-none">
                         <div class="flex-1"><p class="font-bold text-sm text-gray-500 font-retro">???_LOCKED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: $${formatNum(c.reqMoney)} in Bank</p></div>
-                        <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] border-gray-700 text-gray-600 rounded cursor-not-allowed" disabled>LOCKED</button>
+                        ${
+                alreadyOwned
+                    ? `<button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] rounded opacity-50 cursor-not-allowed" disabled>OWNED</button>`
+                    : `<button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>`
+            }
+
                     </div>`;
                     return;
                 }
@@ -3363,9 +3370,19 @@ if (seq) {
                 triggerBSOD();
             }
         } else {
-            state.inventory.push(id);
-            showToast(`Download Complete! Added to inventory.`, "success");
-            playSuccess();
+            if (!state.ownedCracks.includes(id)) {
+    state.ownedCracks.push(id);
+    }
+
+    if (!state.inventory.includes(id)) {
+        state.inventory.push(id);
+    }
+
+        state.downloadedCracks[id] = getTotalMins();
+
+        showToast(`Download Complete! Plugin unlocked in AbleStudio.`, "success");
+        playSuccess();
+
         }
         saveGame();
         renderStore('crackz');
