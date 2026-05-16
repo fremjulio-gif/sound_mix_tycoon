@@ -1149,9 +1149,9 @@
         }, 100);
     });
 
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.5);
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.55);
     scene.add(hemiLight);
-    const dirLight = new THREE.DirectionalLight(0xe0e7ff, 0.75);
+    const dirLight = new THREE.DirectionalLight(0xe0e7ff, 0.8);
     dirLight.position.set(10, 20, 10);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
@@ -1166,13 +1166,13 @@
     // DOUCHE DE LUMIÈRE (SpotLight Plafond)
     // ==========================================
     // 1. Création du spot (Couleur chaude de type ampoule, Intensité forte mais locale)
-    const ceilingLight = new THREE.SpotLight('#fff0dd', 50); 
+    const ceilingLight = new THREE.SpotLight('#fff0dd', 35); 
     
     // 2. Positionnement : En hauteur, au centre de la pièce
     ceilingLight.position.set(0, 6, 0); 
     
     // 3. Réglages du cône de lumière
-    ceilingLight.angle = Math.PI / 3; // L'ouverture du cône (plus on divise par un grand chiffre, plus le faisceau est étroit)
+    ceilingLight.angle = Math.PI / 2.5; // L'ouverture du cône (plus on divise par un grand chiffre, plus le faisceau est étroit)
     ceilingLight.penumbra = 1;        // Bords ultra-flous pour un fondu subtil (0 = net, 1 = très flou)
     ceilingLight.decay = 1.5;           // Comment la lumière s'atténue avec la distance
     ceilingLight.distance = 15;         // Distance max avant que la lumière ne s'éteigne
