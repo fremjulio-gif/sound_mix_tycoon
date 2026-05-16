@@ -242,19 +242,22 @@
         }
 
         .os-window {
-            position: absolute;
-            width: 800px;
-            max-width: 95vw;
-            min-width: 320px;
-            max-height: 85dvh;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            z-index: 10;
-            transition: border-color 0.3s ease;
-            resize: both;
-            box-sizing: border-box;
-        }
+    position: absolute;
+    width: 800px;
+    max-width: 95vw;
+    min-width: 320px;
+    /* Borne dure liée à la vraie hauteur viewport */
+    height: auto;
+    max-height: calc(100dvh - 120px);
+    display: none;
+    flex-direction: column;
+    /* overflow: hidden est critique pour que flex+scroll fonctionne */
+    overflow: hidden;
+    z-index: 10;
+    transition: border-color 0.3s ease;
+    resize: both;
+    box-sizing: border-box;
+}
         .os-window.active-window {
             z-index: 40;
             border-color: rgba(129, 140, 248, 0.8);
@@ -276,12 +279,13 @@
             padding: 0;
             overflow-y: auto;
             overflow-x: hidden;
-            flex: 1;
-            /* min-height: 0 est critique — sans ça flex ignore overflow */
+            /* flex: 1 + min-height: 0 = la combinaison magique pour le scroll dans un flex */
+            flex: 1 1 0;
             min-height: 0;
+            max-height: 100%;
             background: rgba(0,0,0,0.3);
             -webkit-overflow-scrolling: touch;
-}
+    }
 
         /* =========================================
            5. DESKTOP & WIDGETS
@@ -408,18 +412,20 @@
             overflow: visible;
 }
        @media (min-width: 768px) {
-        .daw-grid-container {
+    .daw-grid-container {
         flex-direction: row !important;
+        /* height: auto laisse le contenu respirer */
         height: auto !important;
-        padding-bottom: 20px !important;
+        padding-bottom: 32px !important;
         overflow: visible !important;
+        align-items: stretch;
     }
-        #app-daw { 
-            width: 900px; 
-            min-width: 680px;
-            /* Hauteur max pour forcer le scroll interne */
-            max-height: 80dvh;
-     }
+    #app-daw { 
+        width: min(900px, 92vw);
+        min-width: 680px;
+        /* S'adapte exactement à la hauteur dispo */
+        max-height: calc(100dvh - 140px);
+    }
 }
 
         .daw-panel-neon {
@@ -666,17 +672,17 @@
             /* DAW Layout fixes Portrait */
             #app-daw { min-width: 0 !important; overflow: hidden !important; }
             
-            .daw-grid-container { 
-                height: auto !important; 
-                min-height: max-content !important; 
-                display: flex !important; 
-                flex-direction: column !important; 
-                flex-wrap: nowrap !important;
-                overflow-x: hidden !important; 
-                overflow-y: visible !important;
-                padding-bottom: 20px !important;
-                gap: 12px !important;
-            }
+            .daw-grid-container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px;
+    padding: 12px 12px 32px 12px;
+    background: rgba(0,0,0,0.4);
+    box-sizing: border-box;
+    /* Ne jamais forcer une hauteur ici — laisser window-content scroller */
+    width: 100%;
+    overflow: visible;
+}
             .daw-panel-neon { 
                 min-width: 0 !important; 
                 width: 100% !important; 
