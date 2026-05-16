@@ -125,17 +125,18 @@
 
 
         @keyframes tapeSpin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
     }
 
         .tape-reel-slow {
             animation: tapeSpin 6s linear infinite;
-}
+    }
 
-.tape-reel-fast {
-    animation: tapeSpin 4.5s linear infinite;
-}
+        .tape-reel-fast {
+            animation: tapeSpin 4.5s linear infinite;
+    }
+
 
         /* =========================================
            4. OS LAYER & WINDOWS
@@ -833,8 +834,8 @@
                         <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">CPU Monitor</span>
                         <span class="text-[10px] font-retro text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)]">LIVE</span>
                     </div>
-                    <div class="w-full h-20 bg-black/50 rounded border border-white/10 overflow-hidden relative shadow-inner">
-                        <canvas id="sys-canvas" class="absolute inset-0 w-full h-full"></canvas>
+                    <div class="w-full h-[120px] bg-black/50 rounded border border-white/10 overflow-hidden relative shadow-inner">
+                        <canvas id="sys-canvas" class="block w-full h-full"></canvas>
                     </div>
                 </div>
 
@@ -860,8 +861,8 @@
         <span id="mood-ring-label" class="text-[10px] font-retro text-[var(--retro-green)]">LOCKED IN</span>
     </div>
     <div class="h-16 rounded-2xl border border-white/10 overflow-hidden relative bg-black/40">
-        <div id="mood-ring-glow" class="absolute inset-0 opacity-80"></div>
-    </div>
+    <div id="mood-ring-glow" class="absolute inset-0 opacity-80"></div>
+</div>
 </div>
 
 <div class="desktop-widget liquid-glass p-5" onclick="showToast('Hidden tape armed. Nobody was supposed to find this.', 'info')">
@@ -2199,15 +2200,23 @@ if (!state.isSleeping && currentRoomAvatar) {
     document.getElementById('three-canvas-container').addEventListener('pointerdown', onPointerDown);
 
     function enterPC() {
-        document.getElementById('room-ui').style.display = 'none';
-        document.getElementById('pc-ui-layer').style.display = 'flex';
-        playTone(600, 'square', 0.1, 0.05);
-    }
-    function quitPC() {
-        document.getElementById('pc-ui-layer').style.display = 'none';
-        document.getElementById('room-ui').style.display = 'flex';
-        playTone(300, 'sawtooth', 0.1, 0.05);
-    }
+    document.getElementById('room-ui').style.display = 'none';
+    document.getElementById('pc-ui-layer').style.display = 'flex';
+
+    requestAnimationFrame(() => {
+        if (!cpuGraphStarted) {
+            cpuGraphStarted = true;
+            drawSysGraphUI();
+        }
+        if (!moodRingStarted) {
+            moodRingStarted = true;
+            updateMoodRingWidget();
+        }
+    });
+
+    playTone(600, 'square', 0.1, 0.05);
+}
+
 
     // ==========================================
     // 4. TOOLTIP
@@ -2271,49 +2280,55 @@ if (!state.isSleeping && currentRoomAvatar) {
         if (isMobile && !e.target.closest('#hud') && !e.target.closest('#global-tooltip')) hideTooltip();
     }, { passive: true });
 
+
+
+
+    let cpuGraphStarted = false;
+    let moodRingStarted = false;
+
+    
     // ==========================================
     // 5. CPU GRAPH
     // ==========================================
     const sysCanvasUI = document.getElementById('sys-canvas');
     const sysCtxUI = sysCanvasUI ? sysCanvasUI.getContext('2d') : null;
     let cpuDataUI = Array(50).fill(50);
-    let cpuGraphStarted = false;
-    let moodRingStarted = false;
-
-
     
-   function drawSysGraphUI() {
+
+function drawSysGraphUI() {
     const canvas = document.getElementById('sys-canvas');
-    if (!canvas || !canvas.parentElement) {
-        setTimeout(() => requestAnimationFrame(drawSysGraphUI), 500);
-        return;
-    }
+    if (!canvas || !canvas.parentElement) return;
 
     const ctx = canvas.getContext('2d');
     const rect = canvas.parentElement.getBoundingClientRect();
 
-    if (rect.width < 10 || rect.height < 10) {
-        setTimeout(() => requestAnimationFrame(drawSysGraphUI), 500);
+    if (rect.width < 20 || rect.height < 20) {
+        setTimeout(drawSysGraphUI, 300);
         return;
     }
 
-    canvas.width = Math.floor(rect.width * window.devicePixelRatio);
-    canvas.height = Math.floor(rect.height * window.devicePixelRatio);
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(rect.height * dpr);
+    canvas.style.width = `${rect.width}px`;
+    canvas.style.height = `${rect.height}px`;
 
-    ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    let last = cpuDataUI[cpuDataUI.length - 1];
-    let next = last + (Math.random() * 30 - 15);
+    let last = cpuDataUI[cpuDataUI.length - 1] || 50;
+    let next = last + (Math.random() * 34 - 17);
 
-    if (state.isExporting) next = 95 + Math.random() * 5;
-    next = Math.max(5, Math.min(100, next));
+    if (state.isExporting) next = 92 + Math.random() * 8;
+    next = Math.max(8, Math.min(100, next));
 
     cpuDataUI.shift();
     cpuDataUI.push(next);
 
     ctx.clearRect(0, 0, rect.width, rect.height);
+
+    const grad = ctx.createLinearGradient(0, 0, 0, rect.height);
+    grad.addColorStop(0, 'rgba(52, 211, 153, 0.35)');
+    grad.addColorStop(1, 'rgba(52, 211, 153, 0.02)');
 
     ctx.beginPath();
     ctx.moveTo(0, rect.height - (cpuDataUI[0] / 100 * rect.height));
@@ -2330,35 +2345,53 @@ if (!state.isSleeping && currentRoomAvatar) {
     ctx.lineTo(rect.width, rect.height);
     ctx.lineTo(0, rect.height);
     ctx.closePath();
-    ctx.fillStyle = 'rgba(52, 211, 153, 0.16)';
+    ctx.fillStyle = grad;
     ctx.fill();
 
     setTimeout(() => requestAnimationFrame(drawSysGraphUI), 180);
 }
 
 
+
     function updateMoodRingWidget() {
-    moodRingStarted = true;
     const glow = document.getElementById('mood-ring-glow');
     const label = document.getElementById('mood-ring-label');
+
     if (!glow || !label) {
-        setTimeout(updateMoodRingWidget, 1000);
+        moodRingStarted = false;
         return;
     }
 
     const moods = [
-        { txt: 'LOCKED IN', bg: 'radial-gradient(circle at 30% 40%, rgba(52,211,153,0.95), transparent 32%), radial-gradient(circle at 75% 60%, rgba(129,140,248,0.75), transparent 36%)', color: 'var(--retro-green)' },
-        { txt: 'OVERTHINKING', bg: 'radial-gradient(circle at 25% 55%, rgba(251,191,36,0.9), transparent 34%), radial-gradient(circle at 80% 35%, rgba(244,63,94,0.65), transparent 38%)', color: 'var(--retro-orange)' },
-        { txt: '3AM SAUCE', bg: 'radial-gradient(circle at 40% 50%, rgba(96,165,250,0.9), transparent 34%), radial-gradient(circle at 72% 45%, rgba(168,85,247,0.75), transparent 40%)', color: 'var(--accent)' }
+        {
+            txt: 'LOCKED IN',
+            bg: 'radial-gradient(circle at 25% 45%, rgba(52,211,153,0.95), transparent 34%), radial-gradient(circle at 75% 55%, rgba(129,140,248,0.8), transparent 42%)',
+            color: '#34d399'
+        },
+        {
+            txt: 'OVERTHINKING',
+            bg: 'radial-gradient(circle at 30% 55%, rgba(251,191,36,0.95), transparent 35%), radial-gradient(circle at 78% 40%, rgba(244,63,94,0.72), transparent 42%)',
+            color: '#fbbf24'
+        },
+        {
+            txt: '3AM SAUCE',
+            bg: 'radial-gradient(circle at 36% 52%, rgba(96,165,250,0.95), transparent 34%), radial-gradient(circle at 78% 42%, rgba(168,85,247,0.8), transparent 44%)',
+            color: '#818cf8'
+        }
     ];
 
-    const mood = moods[Math.floor(Date.now() / 5000) % moods.length];
+    const mood = moods[Math.floor(Date.now() / 4500) % moods.length];
+
     glow.style.background = mood.bg;
+    glow.style.filter = 'blur(0px) saturate(130%)';
+    glow.style.opacity = '1';
+
     label.innerText = mood.txt;
     label.style.color = mood.color;
 
     setTimeout(updateMoodRingWidget, 1000);
 }
+
 
     
     // ==========================================
