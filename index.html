@@ -2636,35 +2636,33 @@ if (!state.isSleeping && currentRoomAvatar) {
             const head = scene.getObjectByName("pixar_head_group");
             const spot = scene.getObjectByName("pixar_spotlight");
 
-            // On utilise la vraie variable de déplacement de ton jeu : currentRoomAvatar
             if (currentRoomAvatar && head && spot) {
                 
-                // 1. Le spot lumineux vise l'avatar (+1.0 en Y pour viser le torse/la tête)
+                // 1. Le spot vise l'avatar
                 spot.target.position.copy(currentRoomAvatar.position);
                 spot.target.position.y += 1.0; 
                 
-                // 2. Calcul mathématique pour tordre le cou de la lampe
+                // 2. Calcul des coordonnées locales
                 const targetPos = new THREE.Vector3();
                 currentRoomAvatar.getWorldPosition(targetPos);
-                targetPos.y += 1.0; // On vise aussi le haut du corps pour le mesh
-                
-                // Convertit la position mondiale en position locale pour la lampe
+                targetPos.y += 1.0; 
                 head.parent.worldToLocal(targetPos);
+
+                // --- LE FIX MAGIQUE : ORDRE DES AXES ---
+                // On tourne horizontalement D'ABORD, on s'incline ENSUITE
+                head.rotation.order = "YXZ"; 
+                // ---------------------------------------
+
+                const dx = targetPos.x - head.position.x;
+                const dy = targetPos.y - head.position.y;
+                const dz = targetPos.z - head.position.z;
                 
-                // 3. Rotation Y (Gauche/Droite)
-                const angleY = Math.atan2(targetPos.x - head.position.x, targetPos.z - head.position.z);
-    
-                // --- FIX : On compense le décalage du maillage (90 degrés) ---
-                head.rotation.y = angleY - Math.PI / 2; 
-                // --------------------------------------------------------------
+                // 3. Rotation Y (Pan : Gauche/Droite)
+                head.rotation.y = Math.atan2(dx, dz); 
                 
-                // 4. Rotation X (Haut/Bas)
-                const distanceH = Math.sqrt(
-                    Math.pow(targetPos.x - head.position.x, 2) + 
-                    Math.pow(targetPos.z - head.position.z, 2)
-                );
-                const angleX = Math.atan2(head.position.y - targetPos.y, distanceH);
-                head.rotation.x = angleX + Math.PI / 6; 
+                // 4. Rotation X (Tilt : Haut/Bas)
+                const distanceH = Math.sqrt(dx * dx + dz * dz);
+                head.rotation.x = Math.atan2(-dy, distanceH); 
             }
         }
         // ---------------------------------------------------------
