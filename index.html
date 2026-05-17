@@ -1824,11 +1824,43 @@ for (let i = 0; i < 4; i++) {
 
 
     // ==========================================
+    // TABLE D'APPOINT (À gauche du canapé)
+    // ==========================================
+    const sideTableGroup = new THREE.Group();
+    // Positionnée contre le mur (-4.5) et à côté du canapé (3.2)
+    sideTableGroup.position.set(-4.5, -1, 3.2);
+
+    const tableTopMat = new THREE.MeshStandardMaterial({ color: '#8a6242', roughness: 0.7 });
+    const tableLegMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.9 });
+
+    // Plateau de la table
+    const sTableTop = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.05, 1.2), tableTopMat);
+    sTableTop.position.set(0, 0.4, 0);
+    sTableTop.castShadow = true; 
+    sTableTop.receiveShadow = true;
+
+    // Contours DA
+    const sTableEdges = new THREE.EdgesGeometry(sTableTop.geometry);
+    sTableTop.add(new THREE.LineSegments(sTableEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 })));
+
+    // Pied de la table
+    const sTableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.3, 0.4, 16), tableLegMat);
+    sTableLeg.position.set(0, 0.2, 0);
+    sTableLeg.castShadow = true;
+    
+    const sLegEdges = new THREE.EdgesGeometry(sTableLeg.geometry);
+    sTableLeg.add(new THREE.LineSegments(sLegEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3 })));
+
+    sideTableGroup.add(sTableTop, sTableLeg);
+    scene.add(sideTableGroup);
+
+
+    // ==========================================
     // PLANTE D'INTÉRIEUR (Posée sur le Rack)
     // ==========================================
     const plantGroup = new THREE.Group();
     // On la place aux mêmes X/Z que le rack, mais on la monte à Y = 0.85
-    plantGroup.position.set(1.3, 0.85, -4.5); 
+    plantGroup.position.set(-4.5, -0.58, 3.2); 
     // On réduit sa taille à 55%
     plantGroup.scale.set(0.55, 0.55, 0.55);
 
@@ -2242,6 +2274,10 @@ scene.add(synthGroup);
 
         // 5. NOUVEAU : Plante Verte (x: -4.4 à -3.6, z: -1.2 à -0.4)
         if (x > -4.4 - r && x < -3.6 + r && z > -1.2 - r && z < -0.4 + r) return true;
+
+        // 6. NOUVEAU : Table d'appoint (x: -5.0 à -3.9, z: 2.6 à 3.8)
+        if (x > -5.0 - r && x < -3.9 + r && z > 2.6 - r && z < 3.8 + r) return true;
+        
         return false; 
     }
     
