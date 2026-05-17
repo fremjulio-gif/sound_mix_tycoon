@@ -71,41 +71,30 @@
         button, select, .seq-pad, .btn-minimal, .btn-action, .desktop-icon, .taskbar-btn { touch-action: manipulation; }
         input[type="range"], .knob { touch-action: none; }
 
-        /* --- CUSTOM GAMER CURSORS --- */
-        /* 1. État par défaut (Room 3D) */
+        /* --- CUSTOM GAMER CURSORS (INLINE SVG) --- */
+        
+        /* 1. État par défaut (Room 3D) - Flèche blanche contour Néon */
         body {
-            /* Le "0 0" définit le point de clic en haut à gauche de l'image */
-            cursor: url('assets/cursor-room.png') 0 0, auto;
+            cursor: url('data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 4l22 11-10 2 5 9-4 2-5-9-6 6z" fill="white" stroke="%23818cf8" stroke-width="2" stroke-linejoin="round"/></svg>') 4 4, auto;
         }
         
-        /* Pointeur au survol (Boutons, objets cliquables, etc.) */
+        /* Pointeur au survol dans la Room - Flèche Néon contour blanc */
         button, select, input, .clickable, .seq-pad, .pr-note, .desktop-icon, .taskbar-btn {
-            cursor: url('assets/cursor-room-pointer.png') 0 0, pointer !important;
+            cursor: url('data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 4l22 11-10 2 5 9-4 2-5-9-6 6z" fill="%23818cf8" stroke="white" stroke-width="2" stroke-linejoin="round"/></svg>') 4 4, pointer !important;
         }
 
         /* 2. État OS Session (PC) - Façon DAW */
-        /* Force le curseur en croix sur tout l'environnement OS */
+        /* Curseur en croix natif pour la navigation globale du PC */
         body.os-active, body.os-active * {
             cursor: crosshair !important;
         }
         
-        /* Maintient le pointeur classique (ou personnalisé) au survol des éléments interactifs */
+        /* Pointeur au survol dans l'OS - Flèche Verte Retro contour noir */
         body.os-active button, body.os-active select, body.os-active input, body.os-active .clickable, body.os-active .desktop-icon, body.os-active .pr-note, body.os-active .taskbar-btn {
-            /* Garde 'pointer' natif, ou utilise ton image custom si besoin : url('assets/cursor-os-pointer.png') 0 0, pointer */
-            cursor: pointer !important;
+            cursor: url('data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M4 4l22 11-10 2 5 9-4 2-5-9-6 6z" fill="%2334d399" stroke="%23000" stroke-width="2" stroke-linejoin="round"/></svg>') 4 4, pointer !important;
         }
         
         /* Conserve la double flèche native pour le stretch MIDI */
-        body.os-active .pr-note-handle {
-            cursor: ew-resize !important;
-        }
-        
-        /* Pointeur au survol dans l'OS */
-        body.os-active button, body.os-active select, body.os-active input, body.os-active .clickable, body.os-active .desktop-icon, body.os-active .pr-note, body.os-active .taskbar-btn {
-            cursor: url('assets/cursor-os-pointer.png') 0 0, pointer !important;
-        }
-        
-        /* Exception pour le redimensionnement MIDI qui a besoin de sa double flèche */
         body.os-active .pr-note-handle {
             cursor: ew-resize !important;
         }
