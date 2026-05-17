@@ -3766,7 +3766,11 @@ group.add(createLeg(-1), createLeg(1));
         updateHUD();
         updateCooldownUIs();
 
-        if (!state.isEventActive) {
+        // --- SÉCURITÉ RNG : Vérification de la période de grâce ---
+        const eventGracePeriod = parseInt(state.cooldowns.eventGracePeriod, 10) || 0;
+        const currentTime = getTotalMins();
+
+        if (!state.isEventActive && currentTime >= eventGracePeriod) {
             const r = Math.random();
             if (r < 0.001) triggerRandomEvent('collab');        
             else if (r < 0.002) triggerRandomEvent('vol');      
@@ -4701,8 +4705,13 @@ desc.innerHTML = textesCollab[Math.floor(Math.random() * textesCollab.length)];
         const overlay = document.getElementById('event-overlay');
         overlay.style.opacity = '0';
         overlay.style.pointerEvents = 'none';
+        
+        // --- NOUVEAU : Période de grâce de 4 heures in-game (~48 sec IRL) ---
+        state.cooldowns.eventGracePeriod = getTotalMins() + 240;
+        
         updateHUD();
         saveGame();
+        
         setTimeout(() => {
             overlay.classList.add('hidden');
             state.isEventActive = false; 
