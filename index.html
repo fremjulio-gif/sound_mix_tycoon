@@ -1789,46 +1789,44 @@ for (let i = 0; i < 4; i++) {
     lShade.position.set(0, -0.1, 0);
     addLampEdges(lShade);
     
-    // Ampoule (Jaune chaude et émissive)
-    const lBulbMat = new THREE.MeshStandardMaterial({ color: '#fef08a', emissive: '#fef08a', emissiveIntensity: 1.8 });
+   // ... (début de la lampe, bras, etc. Étape 5 Tête de la lampe)
+
+    // Ampoule (Off par défaut)
+    const lBulbMat = new THREE.MeshStandardMaterial({ color: '#fef08a', emissive: '#fef08a', emissiveIntensity: 0 });
     const lBulb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), lBulbMat);
     lBulb.position.set(0, -0.18, 0);
-    
-    // Faisceau de lumière (SpotLight) ciblant les machines
-    const lSpot = new THREE.SpotLight('#fef08a', 5); 
+    lBulb.name = "pixar_bulb_mesh"; // <-- ID UNIQUE POUR LE MATÉRIAU
+
+    // Faisceau de lumière (Off par défaut)
+    const lSpot = new THREE.SpotLight('#fef08a', 0); // Intensité à 0
     lSpot.position.set(0, -0.18, 0);
     lSpot.angle = Math.PI / 5.5;
     lSpot.penumbra = 0.5;
     lSpot.distance = 7;
-    
-    // Cible invisible pour orienter le faisceau de lumière
-    const lTarget = new THREE.Object3D();
-    lTarget.position.set(0, 0.5, 0); // Pointe droit devant l'ouverture de l'abat-jour
-    lHeadGroup.add(lTarget);
-    lSpot.target = lTarget;
-// --- FIX : CIBLAGE ABSOLU ---
-    // On place la cible au centre parfait de la pièce, à 0.5 de hauteur (le torse de l'avatar)
+    lSpot.name = "pixar_spotlight"; // <-- ID UNIQUE POUR L'INTENSITÉ
+
     lSpot.target.position.set(0, 0.5, 0); 
-    // Three.js EXIGE que la cible soit dans la scène globale pour que les coordonnées absolues fonctionnent
     scene.add(lSpot.target); 
-    // ----------------------------
+
     lHeadGroup.add(lShade, lBulb, lSpot);
     lampGroup.add(lHeadGroup);
 
-    // --- MODIFICATION : Activation des ombres ET tag interactif ---
+    // Activation des ombres ET tag interactif
     lampGroup.traverse(child => { 
         if (child.isMesh) { 
             child.castShadow = true; 
             child.receiveShadow = true; 
-            child.name = "interactiveLamp"; // Rend chaque bout de métal cliquable
         }
+        child.name = "interactiveLamp"; // Reste cliquable
     });
 
-    // On stocke les éléments à animer directement dans le groupe
-    lampGroup.userData = { bulbMat: lBulbMat, spot: lSpot, isOn: false };
-    
-    // On rend le groupe accessible globalement pour le clic
-    window.pixarLamp = lampGroup;
+    // --- SIMPLIFICATION DE LA FIN ---
+    // On n'utilise plus userData, on utilise juste les noms
+    lampGroup.userData.isOn = false; 
+
+    // On rend le groupe accessible globalement pour le clic (au cas où il ne le serait pas)
+    window.pixarLamp = lampGroup; 
+
     rackGroup.add(lampGroup);
 
     scene.add(rackGroup);
@@ -2392,63 +2390,52 @@ scene.add(synthGroup);
 }
 
 
-function togglePixarLamp() {
-        console.log("💡 Tentative d'allumage de la lampe...");
-
-        const lamp = window.pixarLamp;
-        if (!lamp) {
-            console.error("❌ Erreur : window.pixarLamp est introuvable.");
+function togglePixarLamp() {function togglePixarLamp() {
+        console.log("💡 Interrupteur Pixar activé.");
+        
+        // On vérifie d'abord que 'scene' est accessible
+        if (typeof scene === 'undefined') {
+            console.error("❌ Erreur : La variable globale 'scene' est introuvable. Impossible de trouver les objets.");
             return;
         }
 
-        const data = lamp.userData;
-        data.isOn = !data.isOn; 
+        const lamp = window.pixarLamp;
+        if (!lamp) return;
+        lamp.userData.isOn = !lamp.userData.isOn; // Inverse l'état local
 
-        // --- ASTUCE : On remonte jusqu'à la scène globale sans utiliser la variable 'scene' ---
-        let currentRoot = lamp;
-        while (currentRoot.parent) {
-            currentRoot = currentRoot.parent;
-        }
+        // 1. On cherche les éléments par leur NOM UNIQUE dans la scène entière
+        const spot = scene.getObjectByName("pixar_spotlight");
+        const bulb = scene.getObjectByName("pixar_bulb_mesh");
+        const ceiling = scene.getObjectByName("ceilingLight"); // La lumière principale de la chambre
 
-        // On cherche toutes les lumières de la pièce (sauf celle de notre lampe Pixar)
-        const roomLights = [];
-        currentRoot.traverse((child) => {
-            if (child.isLight && child !== data.spot) {
-                roomLights.push(child);
+        if (lamp.userData.isOn) {
+            console.log("ON : Allumage de la Pixar, extinction du Plafond.");
+            
+            // Allume le spot et l'ampoule
+            if (spot) spot.intensity = 15;
+            if (bulb) bulb.material.emissiveIntensity = 2.0;
+            
+            // Éteint le plafond (on peut aussi mettre .visible = false)
+            if (ceiling) {
+                // On cache l'intensité d'origine pour la restaurer
+                ceiling.userData.savedIntensity = ceiling.intensity;
+                ceiling.intensity = 0.05; // On laisse une veilleuse
+                // ceiling.visible = false; // <-- Si tu veux qu'il disparaisse totalement
             }
-        });
-
-        if (data.isOn) {
-            console.log("ON : Baisse des lumières de la pièce.");
-            
-            // Allume la lampe Pixar
-            data.bulbMat.emissiveIntensity = 2.0; // Un peu plus fort
-            data.spot.intensity = 15;
-            
-            // Baisse drastiquement TOUTES les lumières de la pièce
-            roomLights.forEach(light => {
-                // On sauvegarde leur vraie intensité en cache avant de la modifier
-                if (light.userData.originalIntensity === undefined) {
-                    light.userData.originalIntensity = light.intensity;
-                }
-                // On laisse un tout petit peu de lumière (0.05) pour ne pas être dans le noir total
-                light.intensity = 0.05; 
-            });
             
             if (typeof playTone === 'function') playTone(600, 'square', 0.05, 0.05); 
         } else {
-            console.log("OFF : Restauration des lumières de la pièce.");
+            console.log("OFF : Extinction de la Pixar, restauration du Plafond.");
             
-            // Éteint la lampe Pixar
-            data.bulbMat.emissiveIntensity = 0;
-            data.spot.intensity = 0;
+            // Éteint le spot et l'ampoule
+            if (spot) spot.intensity = 0;
+            if (bulb) bulb.material.emissiveIntensity = 0;
             
-            // Restaure TOUTES les lumières de la pièce à leur valeur d'origine
-            roomLights.forEach(light => {
-                if (light.userData.originalIntensity !== undefined) {
-                    light.intensity = light.userData.originalIntensity;
-                }
-            });
+            // Restaure le plafond
+            if (ceiling) {
+                ceiling.intensity = ceiling.userData.savedIntensity || 1.0;
+                // ceiling.visible = true;
+            }
             
             if (typeof playTone === 'function') playTone(400, 'square', 0.05, 0.05);
         }
