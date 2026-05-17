@@ -1006,6 +1006,39 @@
             </div>
         </div>
 
+
+        <div id="app-pianoroll" class="os-window liquid-glass flex-col font-sans" style="display:none; width: 900px; max-width: 95vw;">
+    <div class="window-header">
+        <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
+            <span class="w-3 h-3 rounded-full bg-[#8b5cf6] shadow-[0_0_10px_#8b5cf6]"></span> Piano Roll Editor
+        </span>
+        <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-pianoroll')">✕</button>
+    </div>
+    
+    <div class="window-content flex flex-col p-0">
+        <!-- Barre de transport (Toolbar) -->
+        <div class="flex items-center gap-4 p-3 bg-black/60 border-b border-white/10 shrink-0">
+            <button class="btn-action px-4 py-2 text-[10px] rounded" id="pr-btn-play">▶ PLAY</button>
+            <button class="btn-minimal px-4 py-2 text-[10px] rounded" id="pr-btn-stop">■ STOP</button>
+            <div class="h-6 w-px bg-white/20 mx-2"></div>
+            <span class="font-retro text-xs text-[var(--accent)] tracking-widest">INSTRUMENT: <span class="text-white">SYNTH_LEAD</span></span>
+        </div>
+
+        <!-- Zone d'édition (Clavier + Grille) -->
+        <div class="flex flex-1 overflow-hidden relative bg-[#09090b]">
+            <!-- Zone Clavier Gauche (Placeholder pour l'Étape 2) -->
+            <div id="pr-keys-container" class="w-[80px] bg-black border-r border-white/10 shrink-0 overflow-hidden relative z-10">
+                <div class="w-full h-full flex items-center justify-center text-gray-700 text-[10px] font-retro rotate-[-90deg]">KEYS</div>
+            </div>
+            
+            <!-- Zone Grille MIDI (Placeholder pour l'Étape 2) -->
+            <div id="pr-grid-container" class="flex-1 overflow-auto relative cursor-crosshair">
+                <div class="w-full h-full flex items-center justify-center text-gray-700 text-[10px] font-retro">MIDI GRID</div>
+            </div>
+        </div>
+    </div>
+</div>
+        
         <div id="app-daw" class="os-window liquid-glass flex-col font-sans" style="display:none;">
             <div class="window-header">
                 <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
@@ -1753,12 +1786,14 @@ const synthBody = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.18, 0.72), synthBo
 synthBody.position.set(0, 1.05, 0);
 synthBody.castShadow = true;
 synthBody.receiveShadow = true;
+synthBody.name = 'synth_mesh'; // <-- AJOUT CRUCIAL ICI
 synthGroup.add(synthBody);
 
 // Panneau supérieur
 const synthPanel = new THREE.Mesh(new THREE.BoxGeometry(2.45, 0.04, 0.28), synthPanelMat);
 synthPanel.position.set(0, 1.18, -0.19);
 synthPanel.castShadow = true;
+synthPanel.name = 'synth_mesh'; // <-- AJOUT CRUCIAL ICI
 synthGroup.add(synthPanel);
 
 // Touches blanches
@@ -2324,6 +2359,9 @@ if (!state.isSleeping && currentRoomAvatar) {
         mousePos.x = (clientX / window.innerWidth) * 2 - 1;
         mousePos.y = -(clientY / window.innerHeight) * 2 + 1;
         raycaster.setFromCamera(mousePos, camera);
+
+            
+
         
         const intersects = raycaster.intersectObjects(scene.children, true);
         for (let i = 0; i < intersects.length; i++) {
@@ -2331,6 +2369,14 @@ if (!state.isSleeping && currentRoomAvatar) {
                 enterPC(); 
                 break; 
             }
+            // --- NOUVEAU BLOC DÉCLENCHEUR PIANO ---
+            if (intersects[i].object.name === 'synth_mesh') {
+                // Fait asseoir l'avatar au bureau (même fonction que le PC pour l'instant)
+                enterPC(); 
+                // Ouvre directement la fenêtre du Piano Roll par-dessus l'OS
+                openApp('app-pianoroll');
+                break;
+                }
             if (intersects[i].object.name === 'bed_mesh') {
                 if (state.energy < 50) {
                     goSleep();
