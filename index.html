@@ -83,10 +83,21 @@
             cursor: url('assets/cursor-room-pointer.png') 0 0, pointer !important;
         }
 
-        /* 2. État OS Session (PC) */
-        /* Le sélecteur * force le curseur sur tous les sous-éléments du PC */
+        /* 2. État OS Session (PC) - Façon DAW */
+        /* Force le curseur en croix sur tout l'environnement OS */
         body.os-active, body.os-active * {
-            cursor: url('assets/cursor-os.png') 0 0, auto !important;
+            cursor: crosshair !important;
+        }
+        
+        /* Maintient le pointeur classique (ou personnalisé) au survol des éléments interactifs */
+        body.os-active button, body.os-active select, body.os-active input, body.os-active .clickable, body.os-active .desktop-icon, body.os-active .pr-note, body.os-active .taskbar-btn {
+            /* Garde 'pointer' natif, ou utilise ton image custom si besoin : url('assets/cursor-os-pointer.png') 0 0, pointer */
+            cursor: pointer !important;
+        }
+        
+        /* Conserve la double flèche native pour le stretch MIDI */
+        body.os-active .pr-note-handle {
+            cursor: ew-resize !important;
         }
         
         /* Pointeur au survol dans l'OS */
