@@ -1779,7 +1779,9 @@ for (let i = 0; i < 4; i++) {
     // 5. Tête de la lampe (Abat-jour + Ampoule + Lumière)
     const lHeadGroup = new THREE.Group();
     lHeadGroup.position.set(0, 0.72, 0.11);
-    lHeadGroup.rotation.x = Math.PI / 3.5; // On penche la tête vers le bas/avant
+    lHeadGroup.rotation.x = Math.PI / 3.5;
+    // --- NOUVEAU : On tourne la tête vers la gauche (axe Y) ---
+    lHeadGroup.rotation.y = -Math.PI / 2.5;
 
     // Abat-jour conique
     const lShade = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.16, 0.25, 16), lampMat);
