@@ -1807,9 +1807,14 @@ for (let i = 0; i < 4; i++) {
     lSpot.name = "pixar_spotlight"; // <-- ID UNIQUE POUR L'INTENSITÉ
 
     lHeadGroup.add(lSpot.target);
-    lSpot.target.position.set(0, -1.5, 0); // Pointe vers le bas en local 
+   // rackGroup est à (1.3, -1, -4.45), lampGroup à (0, 1.9, 0), scale 1.6
+    lSpot.position.set(1.3, 1.8, -4.2);
+    lSpot.target.position.set(0, -1, 0); // Pointe vers le sol de la pièce 
 
-    lHeadGroup.add(lShade, lBulb, lSpot);
+    lHeadGroup.add(lShade, lBulb);
+// Le SpotLight est ajouté directement à la scène, pas au groupe
+    scene.add(lSpot);
+    scene.add(lSpot.target);
     lampGroup.add(lHeadGroup);
 
     // Activation des ombres ET tag interactif
@@ -2392,31 +2397,43 @@ scene.add(synthGroup);
     
 
 
-function togglePixarLamp() {
+function togglePixarLamp() {function togglePixarLamp() {
     const lamp = window.pixarLamp;
     if (!lamp) return;
 
     lamp.userData.isOn = !lamp.userData.isOn;
 
-    const spot = lamp.userData.spot;
-    const bulb = lamp.userData.bulb;
-    // Stockage des références directes pour le toggle
-        lampGroup.userData.spot = lSpot;
-        lampGroup.userData.bulb = lBulb;
+    const spot    = lamp.userData.spot;
+    const bulb    = lamp.userData.bulb;
     const ceiling = scene.getObjectByName("ceilingLight");
 
     if (lamp.userData.isOn) {
-        if (spot)    spot.intensity                = 15;
-        if (bulb)    bulb.material.emissiveIntensity = 2.0;
+        if (spot) {
+            spot.intensity = 18;
+            spot.visible   = true;
+        }
+        if (bulb) {
+            bulb.material.emissive.set('#fef08a');
+            bulb.material.emissiveIntensity = 3.0;
+            bulb.material.needsUpdate = true;
+        }
         if (ceiling) {
             ceiling.userData.savedIntensity = ceiling.intensity;
             ceiling.intensity = 0.05;
         }
         if (typeof playTone === 'function') playTone(600, 'square', 0.05, 0.05);
     } else {
-        if (spot)    spot.intensity                = 0;
-        if (bulb)    bulb.material.emissiveIntensity = 0;
-        if (ceiling) ceiling.intensity = ceiling.userData.savedIntensity ?? 35;
+        if (spot) {
+            spot.intensity = 0;
+            spot.visible   = false;
+        }
+        if (bulb) {
+            bulb.material.emissiveIntensity = 0;
+            bulb.material.needsUpdate = true;
+        }
+        if (ceiling) {
+            ceiling.intensity = ceiling.userData.savedIntensity ?? 35;
+        }
         if (typeof playTone === 'function') playTone(400, 'square', 0.05, 0.05);
     }
 }
