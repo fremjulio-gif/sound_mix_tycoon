@@ -1728,114 +1728,57 @@ for (let i = 0; i < 4; i++) {
     }
 }
 
-// ==========================================
-    // LAMPE PIXAR (Sur le Rack Analogique)
-    // ==========================================
-    const lampGroup = new THREE.Group();
-    // Le rack fait environ 1.8 de haut, on pose la lampe sur le sommet
-    lampGroup.position.set(0, 1.9, 0);
+// Ampoule (Off par défaut)
+const lBulbMat = new THREE.MeshStandardMaterial({ 
+    color: '#fef08a', 
+    emissive: '#fef08a', 
+    emissiveIntensity: 0 
+});
+const lBulb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), lBulbMat);
+lBulb.position.set(0, -0.18, 0);
+lBulb.name = "pixar_bulb_mesh";
 
-    // --- NOUVEAU : AJUSTEMENTS DE TAILLE ET D'ORIENTATION ---
-    // Agrandit toute la structure (géométries et lumières) de 60%
-    lampGroup.scale.set(1.6, 1.6, 1.6);
+// Abat-jour dans lHeadGroup
+lHeadGroup.add(lShade, lBulb);
+lampGroup.add(lHeadGroup);
 
-    // Pivote la lampe de 45 degrés vers la gauche (le centre de la chambre)
-    lampGroup.rotation.y = -Math.PI / 3;
+// SpotLight — ajouté DIRECTEMENT à la scène, position mondiale calculée
+// rackGroup: (1.3, -1, -4.45) + lampGroup: (0, 1.9, 0) * scale 1.6
+const lSpot = new THREE.SpotLight('#fef08a', 0);
+lSpot.name = "pixar_spotlight";
+lSpot.position.set(1.3, 1.8, -4.2);  // Position mondiale de la tête
+lSpot.angle = Math.PI / 5.5;
+lSpot.penumbra = 0.5;
+lSpot.distance = 7;
+lSpot.castShadow = false;
 
-    const lampMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.4, metalness: 0.8 }); // Métal sombre
-    const jointMat = new THREE.MeshStandardMaterial({ color: '#9ca3af', roughness: 0.5, metalness: 0.9 }); // Articulations
-    
-    // Fonction locale pour garder les jolis contours noirs du jeu
-    function addLampEdges(mesh) {
-        const edges = new THREE.EdgesGeometry(mesh.geometry);
-        mesh.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 })));
-    }
+// Target pointe vers le sol de la pièce
+lSpot.target.position.set(1.3, -1, -3.5);
+scene.add(lSpot);
+scene.add(lSpot.target);  // Une seule fois, à la racine de la scène
 
-    // 1. Socle
-    const lBase = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.06, 16), lampMat);
-    lBase.position.y = 0.03;
-    addLampEdges(lBase);
-    lampGroup.add(lBase);
+// Références directes stockées pour togglePixarLamp
+lampGroup.userData.spot = lSpot;
+lampGroup.userData.bulb = lBulb;
+lampGroup.userData.isOn = false;
 
-    // 2. Bras Inférieur (Penché en avant)
-    const lArm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.45), lampMat);
-    lArm1.position.set(0, 0.22, 0.15);
-    lArm1.rotation.x = Math.PI / 4; // 45 degrés
-    addLampEdges(lArm1);
-    lampGroup.add(lArm1);
-
-    // 3. Jointure centrale (Coude)
-    const lJoint = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.05, 12), jointMat);
-    lJoint.rotation.z = Math.PI / 2;
-    lJoint.position.set(0, 0.38, 0.31);
-    addLampEdges(lJoint);
-    lampGroup.add(lJoint);
-
-    // 4. Bras Supérieur (Revient vers le haut/arrière)
-    const lArm2 = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.4), lampMat);
-    lArm2.position.set(0, 0.55, 0.21);
-    lArm2.rotation.x = -Math.PI / 6; // -30 degrés
-    addLampEdges(lArm2);
-    lampGroup.add(lArm2);
-
-    // 5. Tête de la lampe (Abat-jour + Ampoule + Lumière)
-    const lHeadGroup = new THREE.Group();
-    lHeadGroup.position.set(0, 0.72, 0.11);
-  // On penche juste la tête vers le bas (la base a déjà tourné vers l'avatar)
-    lHeadGroup.rotation.x = Math.PI / 4; 
-    lHeadGroup.rotation.y = 0;
-
-    // Abat-jour conique
-    const lShade = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.16, 0.25, 16), lampMat);
-    lShade.position.set(0, -0.1, 0);
-    addLampEdges(lShade);
-    
-   // ... (début de la lampe, bras, etc. Étape 5 Tête de la lampe)
-
-    // Ampoule (Off par défaut)
-    const lBulbMat = new THREE.MeshStandardMaterial({ color: '#fef08a', emissive: '#fef08a', emissiveIntensity: 0 });
-    const lBulb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), lBulbMat);
-    lBulb.position.set(0, -0.18, 0);
-    lBulb.name = "pixar_bulb_mesh"; // <-- ID UNIQUE POUR LE MATÉRIAU
-
-    // Faisceau de lumière (Off par défaut)
-    const lSpot = new THREE.SpotLight('#fef08a', 0); // Intensité à 0
-    lSpot.position.set(0, -0.18, 0);
-    lSpot.angle = Math.PI / 5.5;
-    lSpot.penumbra = 0.5;
-    lSpot.distance = 7;
-    lSpot.name = "pixar_spotlight"; // <-- ID UNIQUE POUR L'INTENSITÉ
-
-    lHeadGroup.add(lSpot.target);
-   // rackGroup est à (1.3, -1, -4.45), lampGroup à (0, 1.9, 0), scale 1.6
-    lSpot.position.set(1.3, 1.8, -4.2);
-    lSpot.target.position.set(0, -1, 0); // Pointe vers le sol de la pièce 
-
-    lHeadGroup.add(lShade, lBulb,);
-// Le SpotLight est ajouté directement à la scène, pas au groupe
-    scene.add(lSpot);
-    scene.add(lSpot.target);
-    lampGroup.add(lHeadGroup);
-
-    // Activation des ombres ET tag interactif
-    lampGroup.traverse(child => { 
-        if (child.isMesh) { 
-            child.castShadow = true; 
-            child.receiveShadow = true; 
+// Tag cliquable — sans écraser les noms fonctionnels
+lampGroup.traverse(child => {
+    if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        if (!child.name || child.name === "") {
+            child.name = "interactiveLamp";
         }
-        child.name = "interactiveLamp"; // Reste cliquable
-    });
+    } else {
+        if (!child.name || child.name === "") {
+            child.name = "interactiveLamp";
+        }
+    }
+});
 
-    // --- SIMPLIFICATION DE LA FIN ---
-    // On n'utilise plus userData, on utilise juste les noms
-    lampGroup.userData.isOn = false; 
-
-    // On rend le groupe accessible globalement pour le clic (au cas où il ne le serait pas)
-    window.pixarLamp = lampGroup; 
-
-    rackGroup.add(lampGroup);
-
-    scene.add(rackGroup);
+window.pixarLamp = lampGroup;
+rackGroup.add(lampGroup);
 
 
 
