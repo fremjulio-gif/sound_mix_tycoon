@@ -1354,6 +1354,7 @@
     // ==========================================
     // 1. Création du spot (Couleur chaude de type ampoule, Intensité forte mais locale)
     const ceilingLight = new THREE.SpotLight('#fff0dd', 35); 
+    ceilingLight.name = "ceilingLight";
     
     // 2. Positionnement : En hauteur, au centre de la pièce
     ceilingLight.position.set(0, 6, 0); 
@@ -2391,57 +2392,31 @@ scene.add(synthGroup);
     
 
 
-function togglePixarLamp() {function togglePixarLamp() {
-        console.log("💡 Interrupteur Pixar activé.");
-        
-        // On vérifie d'abord que 'scene' est accessible
-        if (typeof scene === 'undefined') {
-            console.error("❌ Erreur : La variable globale 'scene' est introuvable. Impossible de trouver les objets.");
-            return;
+function togglePixarLamp() {
+    const lamp = window.pixarLamp;
+    if (!lamp) return;
+
+    lamp.userData.isOn = !lamp.userData.isOn;
+
+    const spot    = scene.getObjectByName("pixar_spotlight");
+    const bulb    = scene.getObjectByName("pixar_bulb_mesh");
+    const ceiling = scene.getObjectByName("ceilingLight");
+
+    if (lamp.userData.isOn) {
+        if (spot)    spot.intensity                = 15;
+        if (bulb)    bulb.material.emissiveIntensity = 2.0;
+        if (ceiling) {
+            ceiling.userData.savedIntensity = ceiling.intensity;
+            ceiling.intensity = 0.05;
         }
-
-        const lamp = window.pixarLamp;
-        if (!lamp) return;
-        lamp.userData.isOn = !lamp.userData.isOn; // Inverse l'état local
-
-        // 1. On cherche les éléments par leur NOM UNIQUE dans la scène entière
-        const spot = scene.getObjectByName("pixar_spotlight");
-        const bulb = scene.getObjectByName("pixar_bulb_mesh");
-        const ceiling = scene.getObjectByName("ceilingLight"); // La lumière principale de la chambre
-
-        if (lamp.userData.isOn) {
-            console.log("ON : Allumage de la Pixar, extinction du Plafond.");
-            
-            // Allume le spot et l'ampoule
-            if (spot) spot.intensity = 15;
-            if (bulb) bulb.material.emissiveIntensity = 2.0;
-            
-            // Éteint le plafond (on peut aussi mettre .visible = false)
-            if (ceiling) {
-                // On cache l'intensité d'origine pour la restaurer
-                ceiling.userData.savedIntensity = ceiling.intensity;
-                ceiling.intensity = 0.05; // On laisse une veilleuse
-                // ceiling.visible = false; // <-- Si tu veux qu'il disparaisse totalement
-            }
-            
-            if (typeof playTone === 'function') playTone(600, 'square', 0.05, 0.05); 
-        } else {
-            console.log("OFF : Extinction de la Pixar, restauration du Plafond.");
-            
-            // Éteint le spot et l'ampoule
-            if (spot) spot.intensity = 0;
-            if (bulb) bulb.material.emissiveIntensity = 0;
-            
-            // Restaure le plafond
-            if (ceiling) {
-                ceiling.intensity = ceiling.userData.savedIntensity || 1.0;
-                // ceiling.visible = true;
-            }
-            
-            if (typeof playTone === 'function') playTone(400, 'square', 0.05, 0.05);
-        }
+        if (typeof playTone === 'function') playTone(600, 'square', 0.05, 0.05);
+    } else {
+        if (spot)    spot.intensity                = 0;
+        if (bulb)    bulb.material.emissiveIntensity = 0;
+        if (ceiling) ceiling.intensity = ceiling.userData.savedIntensity ?? 35;
+        if (typeof playTone === 'function') playTone(400, 'square', 0.05, 0.05);
     }
-    }
+}
     
 function rotateAvatarToward(target, smooth = 0.12) {
     if (!currentRoomAvatar || !target) return;
@@ -2666,25 +2641,19 @@ if (!state.isSleeping && currentRoomAvatar) {
                 break;
             }
             
-            if (intersects[i].object.name === 'floor_mesh') {
-                // On calcule la position brute du clic
-                const rawX = intersects[i].point.x;
-                const rawZ = intersects[i].point.z;
+            if (intersects[i].object.name === 'interactiveLamp') {
+    togglePixarLamp();
+    break;
+}
 
-                // EFFET MAGNÉTIQUE : On arrondit à la grille la plus proche
-                const snappedX = Math.round(rawX / GRID_SIZE) * GRID_SIZE;
-                const snappedZ = Math.round(rawZ / GRID_SIZE) * GRID_SIZE;
-
-                targetPosition = new THREE.Vector3(snappedX, -0.74, snappedZ);
-                break;
-
-                 // --- NOUVEAU : Interception de la lampe ---
-            if (clickedObject.name === "interactiveLamp") {
-                togglePixarLamp();
-                return; // Stoppe l'exécution ici : l'avatar ne marchera pas vers la lampe
-                }
-            }
-        }
+if (intersects[i].object.name === 'floor_mesh') {
+    const rawX = intersects[i].point.x;
+    const rawZ = intersects[i].point.z;
+    const snappedX = Math.round(rawX / GRID_SIZE) * GRID_SIZE;
+    const snappedZ = Math.round(rawZ / GRID_SIZE) * GRID_SIZE;
+    targetPosition = new THREE.Vector3(snappedX, -0.74, snappedZ);
+    break;
+}
     }
     document.getElementById('three-canvas-container').addEventListener('pointerdown', onPointerDown);
 
