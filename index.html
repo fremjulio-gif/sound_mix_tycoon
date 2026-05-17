@@ -2470,6 +2470,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
     currentRoomAvatar.rotation.y = currentYaw + deltaYaw * smooth;
     currentRoomAvatar.rotation.x = 0;
     currentRoomAvatar.rotation.z = 0;
+    
 }
 
     
@@ -2632,6 +2633,7 @@ if (!state.isSleeping && currentRoomAvatar) {
         // --- SUIVI DYNAMIQUE DE LA LAMPE PIXAR ---
     // On vérifie que la lampe est allumée et que l'avatar existe
     if (window.pixarLamp && window.pixarLamp.userData.isOn && window.avatar) {
+        // console.log("👀 La lampe suit l'avatar !");
         const head = scene.getObjectByName("pixar_head_group");
         const spot = scene.getObjectByName("pixar_spotlight");
         
@@ -3257,6 +3259,8 @@ group.add(createLeg(-1), createLeg(1));
     currentRoomAvatar = root;
 }
 
+
+    window.avatar = currentRoomAvatar
 
     const sponsors = [
         { id: 'sp1', name: "Enerji Drink",  reqFollowers: 1000,  reward: 500,  repCost: 15, cooldownDays: 1 },
