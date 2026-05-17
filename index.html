@@ -738,6 +738,33 @@
         
             }
 
+
+        /* --- PIANO ROLL UI --- */
+        .pr-key-row { 
+            height: 24px; display: flex; align-items: center; justify-content: flex-end; 
+            padding-right: 6px; cursor: pointer; transition: filter 0.1s; 
+            flex-shrink: 0; box-sizing: border-box;
+        }
+        .pr-key-row:active { filter: brightness(1.3); }
+        .pr-key-white { background: #cbd5e1; color: #0f172a; width: 100%; border-bottom: 1px solid #94a3b8; border-right: 1px solid #94a3b8; }
+        .pr-key-black { background: #0f172a; color: #fff; width: 65%; border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 2px solid #000; box-shadow: inset 0 2px 4px rgba(255,255,255,0.1); }
+        .pr-key-label { font-size: 9px; font-family: 'Share Tech Mono', monospace; font-weight: bold; pointer-events: none; }
+        
+        .pr-grid-row { 
+            height: 24px; display: flex; box-sizing: border-box; flex-shrink: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .bg-black-key { background: rgba(0,0,0,0.6); }
+        .bg-white-key { background: rgba(255,255,255,0.03); }
+        
+        .pr-cell { 
+            flex-shrink: 0; width: 32px; height: 100%; 
+            border-right: 1px solid rgba(255,255,255,0.05); 
+            box-sizing: border-box; transition: background 0.1s;
+        }
+        .pr-cell:hover { background: rgba(129, 140, 248, 0.2); }
+        /* Marqueur de temps fort (tous les 4 steps = 1 temps) */
+        .pr-cell:nth-child(4n) { border-right: 1px solid rgba(255,255,255,0.25); }
     
     </style>
 </head>
@@ -2978,6 +3005,68 @@ group.add(createLeg(-1), createLeg(1));
 
     function getDawCooldown() { return 15; }
 
+//PIANOROLLLLLL
+    function initPianoRollUI() {
+        const keysContainer = document.getElementById('pr-keys-container');
+        const gridContainer = document.getElementById('pr-grid-container');
+        
+        if (!keysContainer || !gridContainer) return;
+        
+        keysContainer.innerHTML = '';
+        gridContainer.innerHTML = '';
+        
+        const keysWrapper = document.createElement('div');
+        keysWrapper.className = 'flex flex-col w-full py-2';
+        
+        const gridWrapper = document.createElement('div');
+        gridWrapper.className = 'flex flex-col min-w-max py-2';
+        
+        // Ordre inversé pour afficher les notes aiguës en haut et graves en bas
+        const NOTES = ['B', 'A#', 'A', 'G#', 'G', 'F#', 'F', 'E', 'D#', 'D', 'C#', 'C'];
+        const OCTAVES = [4, 3]; // 2 octaves générées
+        const STEPS = 32;       // 2 mesures de 16 steps
+        
+        OCTAVES.forEach(octave => {
+            NOTES.forEach(note => {
+                const isBlack = note.includes('#');
+                const noteName = `${note}${octave}`;
+                
+                // --- CREATION DE LA TOUCHE ---
+                const keyDiv = document.createElement('div');
+                keyDiv.className = `pr-key-row ${isBlack ? 'pr-key-black' : 'pr-key-white'}`;
+                keyDiv.dataset.note = noteName;
+                
+                // On n'affiche le texte que sur les touches blanches pour garder un design propre
+                if (!isBlack) {
+                     keyDiv.innerHTML = `<span class="pr-key-label">${noteName}</span>`;
+                }
+                keysWrapper.appendChild(keyDiv);
+                
+                // --- CREATION DE LA PISTE GRID ---
+                const rowDiv = document.createElement('div');
+                rowDiv.className = `pr-grid-row ${isBlack ? 'bg-black-key' : 'bg-white-key'}`;
+                rowDiv.dataset.note = noteName;
+                
+                for (let i = 0; i < STEPS; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'pr-cell';
+                    cell.dataset.step = i;
+                    cell.dataset.note = noteName;
+                    rowDiv.appendChild(cell);
+                }
+                gridWrapper.appendChild(rowDiv);
+            });
+        });
+        
+        keysContainer.appendChild(keysWrapper);
+        gridContainer.appendChild(gridWrapper);
+
+        // Synchro du scroll vertical entre le clavier et la grille
+        gridContainer.addEventListener('scroll', () => {
+            keysContainer.scrollTop = gridContainer.scrollTop;
+        });
+    }
+    
     // ==========================================
     // 11. INIT UI
     // ==========================================
@@ -3034,7 +3123,7 @@ if (seq) {
             document.addEventListener('touchmove', doDrag, { passive: false });
             document.addEventListener('touchend', stopDrag);
         });
-
+        initPianoRollUI(); // Initialise le DOM du Piano Roll au boot
         initInteractiveStudio();
         document.getElementById('btn-login').addEventListener('click', attemptLogin);
         document.getElementById('login-username').addEventListener('keypress', (e) => { if (e.key === 'Enter') attemptLogin(); });
