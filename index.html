@@ -2906,61 +2906,7 @@ if (!state.isSleeping && currentRoomAvatar) {
 
     document.getElementById('three-canvas-container').addEventListener('pointerdown', onPointerDown);
 
-    // ==========================================
-    // GESTION DU ZOOM (DESKTOP & MOBILE)
-    // ==========================================
-    let targetZoom = 1.0;
-    const MIN_ZOOM = 0.6; // Dézoom max (voir toute la pièce)
-    const MAX_ZOOM = 2.5; // Zoom max (très près de l'avatar)
 
-    const canvasContainer = document.getElementById('three-canvas-container');
-
-    // 1. Zoom Desktop (Molette & Trackpad)
-    canvasContainer.addEventListener('wheel', (e) => {
-        // Empêche le navigateur de scroller la page
-        e.preventDefault(); 
-        
-        // e.deltaY indique la direction du scroll. On l'atténue pour que ce soit doux.
-        targetZoom -= e.deltaY * 0.002; 
-        
-        // Bloque le zoom entre les limites définies
-        targetZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, targetZoom));
-    }, { passive: false });
-
-    // 2. Zoom Mobile (Pinch-to-zoom à 2 doigts)
-    let initialPinchDistance = null;
-    let initialZoomOnPinch = 1.0;
-
-    canvasContainer.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 2) {
-            // Calcule la distance entre les deux doigts au moment où ils touchent l'écran
-            const dx = e.touches[0].clientX - e.touches[1].clientX;
-            const dy = e.touches[0].clientY - e.touches[1].clientY;
-            initialPinchDistance = Math.hypot(dx, dy);
-            initialZoomOnPinch = targetZoom;
-        }
-    }, { passive: false });
-
-    canvasContainer.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 2) {
-            e.preventDefault(); // Empêche le zoom natif du navigateur mobile
-            
-            const dx = e.touches[0].clientX - e.touches[1].clientX;
-            const dy = e.touches[0].clientY - e.touches[1].clientY;
-            const distance = Math.hypot(dx, dy);
-            
-            // On fait un ratio entre l'écartement actuel et l'écartement de départ
-            const pinchRatio = distance / initialPinchDistance;
-            targetZoom = initialZoomOnPinch * pinchRatio;
-            targetZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, targetZoom));
-        }
-    }, { passive: false });
-
-    canvasContainer.addEventListener('touchend', (e) => {
-        if (e.touches.length < 2) {
-            initialPinchDistance = null; // Réinitialise quand on lâche
-        }
-    });
 
     function enterPC() {
         document.getElementById('room-ui').style.display = 'none';
