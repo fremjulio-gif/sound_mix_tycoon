@@ -2861,29 +2861,38 @@ if (!state.isSleeping && currentRoomAvatar) {
             // 3. Obtenir la position de l'avatar
             const avatarFocusPoint = new THREE.Vector3();
             currentRoomAvatar.getWorldPosition(avatarFocusPoint);
-            avatarFocusPoint.y += 1.0; 
 
-            // --- FIX CADRAGE ---
-            // On décale la visée de +2.0 vers le haut (ce qui va faire descendre la pièce sur l'écran)
-            const yOffset = 2.0; 
-            avatarFocusPoint.y += yOffset;
-
-            // 4. LE SECRET : Mixer le centre de la pièce et l'avatar
-            const roomCenter = new THREE.Vector3(0, 0, 0); // Centre parfait de la Room
-            // Si focusStrength = 0, on vise le centre. S'il monte, on glisse vers l'avatar.
+            // 4. Mixer le centre de la pièce et l'avatar
+            const roomCenter = new THREE.Vector3(0, 0, 0); 
             const idealTarget = roomCenter.clone().lerp(avatarFocusPoint, focusStrength);
 
-            // 5. Interpolation Smooth de la caméra
+            // 5. Interpolation Smooth de la cible X et Z
             window.smoothCamTarget.lerp(idealTarget, 0.1); 
 
-            // 6. Placement de la caméra (basé sur 20, 20, 20 pour respecter ton plan de vue d'origine)
-            const baseCamPos = new THREE.Vector3(20, 20, 20);
-            const targetCamPosition = baseCamPos.add(
-                new THREE.Vector3(window.smoothCamTarget.x, 0, window.smoothCamTarget.z)
+            // ==========================================
+            // 🛠️ LE LEVIER DE CADRAGE VERTICAL
+            // ==========================================
+            // C'est ici qu'on règle l'ascenseur de l'écran.
+            // Plus cette valeur est HAUTE, plus la caméra vise vers le plafond, 
+            // ce qui va forcer la pièce à "descendre" sur l'écran.
+            // N'hésite pas à tester 4.0, 6.0 ou même 8.0 pour trouver le bon cadre !
+            const offsetEcran = 5.0; 
+
+            // 6. Placement isométrique strict (On force le Y séparément)
+            const targetCamPosition = new THREE.Vector3(
+                20 + window.smoothCamTarget.x, 
+                20 + offsetEcran,              // Hauteur absolue de la caméra
+                20 + window.smoothCamTarget.z
             );
             
+            const lookTarget = new THREE.Vector3(
+                window.smoothCamTarget.x, 
+                offsetEcran,                   // Hauteur absolue de la visée
+                window.smoothCamTarget.z
+            );
+
             camera.position.lerp(targetCamPosition, 0.1); 
-            camera.lookAt(window.smoothCamTarget);
+            camera.lookAt(lookTarget);
         }
         // =========================================================
         
