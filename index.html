@@ -1807,10 +1807,11 @@ for (let i = 0; i < 4; i++) {
     // =========================================================
     const lSpot = new THREE.SpotLight('#fef08a', 0);
     lSpot.name = "pixar_spotlight";
-    lSpot.angle = Math.PI / 5.5;
-    lSpot.penumbra = 0.5;
-    lSpot.distance = 7;
-    lSpot.castShadow = false;
+    lSpot.angle = Math.PI / 3;
+    lSpot.penumbra = 0.8;
+    lSpot.distance = 12;
+    lSpot.decay = 1.5;
+    lSpot.castShadow = true;
 
     // Le faisceau vise le centre parfait de la pièce (l'avatar)
     lSpot.target.position.set(0, 0, 0);
@@ -2442,11 +2443,11 @@ function togglePixarLamp() {
         }
         if (mainLight) {
             mainLight.userData.savedIntensity = mainLight.intensity;
-            mainLight.intensity = 0.05; // On réduit le "soleil" à presque rien
+            mainLight.intensity = 0.1; // On réduit le "soleil" à presque rien
         }
         if (typeof hemiLight !== 'undefined') {
             hemiLight.userData.savedIntensity = hemiLight.intensity;
-            hemiLight.intensity = 0.1; // On réduit la lumière ambiante globale
+            hemiLight.intensity = 0.2; // On réduit la lumière ambiante globale
         }
 
         if (typeof playTone === 'function') playTone(600, 'square', 0.05, 0.05);
