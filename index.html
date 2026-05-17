@@ -1778,72 +1778,76 @@ for (let i = 0; i < 4; i++) {
     addLampEdges(lArm2);
     lampGroup.add(lArm2);
 
-    // 5. Tête de la lampe (Abat-jour + Ampoule + Lumière)
+    // 5. Tête de la lampe (Abat-jour + Ampoule)
     const lHeadGroup = new THREE.Group();
     lHeadGroup.position.set(0, 0.72, 0.11);
-  // On penche juste la tête vers le bas (la base a déjà tourné vers l'avatar)
-    lHeadGroup.rotation.x = Math.PI / 4; 
-    lHeadGroup.rotation.y = 0
+    
+    // On penche juste la tête vers le bas
+    lHeadGroup.rotation.x = Math.PI / 4;  
+    lHeadGroup.rotation.y = 0; 
 
     // Abat-jour conique
     const lShade = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.16, 0.25, 16), lampMat);
     lShade.position.set(0, -0.1, 0);
     addLampEdges(lShade);
 
-
     // Ampoule (Off par défaut)
-const lBulbMat = new THREE.MeshStandardMaterial({ 
-    color: '#fef08a', 
-    emissive: '#fef08a', 
-    emissiveIntensity: 0 
-});
-const lBulb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), lBulbMat);
-lBulb.position.set(0, -0.18, 0);
-lBulb.name = "pixar_bulb_mesh";
+    const lBulbMat = new THREE.MeshStandardMaterial({ color: '#fef08a', emissive: '#fef08a', emissiveIntensity: 0 });
+    const lBulb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), lBulbMat);
+    lBulb.position.set(0, -0.18, 0);
+    lBulb.name = "pixar_bulb_mesh";
 
-// Abat-jour dans lHeadGroup
-lHeadGroup.add(lShade, lBulb);
-lampGroup.add(lHeadGroup);
+    // --- On remet uniquement la GÉOMÉTRIE dans la tête ---
+    lHeadGroup.add(lShade, lBulb);
+    lampGroup.add(lHeadGroup);
 
-// SpotLight — ajouté DIRECTEMENT à la scène, position mondiale calculée
-// rackGroup: (1.3, -1, -4.45) + lampGroup: (0, 1.9, 0) * scale 1.6
-const lSpot = new THREE.SpotLight('#fef08a', 0);
-lSpot.name = "pixar_spotlight";
-lSpot.position.set(0, -0.18, 0);  // Position mondiale de la tête
-lSpot.angle = Math.PI / 5.5;
-lSpot.penumbra = 0.5;
-lSpot.distance = 7;
-lSpot.castShadow = false;
+    // =========================================================
+    // RETOUR À TA VERSION : SPOTLIGHT DANS LA SCÈNE GLOBALE
+    // =========================================================
+    const lSpot = new THREE.SpotLight('#fef08a', 0);
+    lSpot.name = "pixar_spotlight";
+    lSpot.angle = Math.PI / 5.5;
+    lSpot.penumbra = 0.5;
+    lSpot.distance = 7;
+    lSpot.castShadow = false;
 
-// Target pointe vers le sol de la pièce
-lSpot.target.position.set(0, 0, 0);
-scene.add(lSpot);
-scene.add(lSpot.target);  // Une seule fois, à la racine de la scène
+    // Le faisceau vise le centre parfait de la pièce (l'avatar)
+    lSpot.target.position.set(0, 0, 0);
+    scene.add(lSpot);
+    scene.add(lSpot.target); 
 
-// Références directes stockées pour togglePixarLamp
-lampGroup.userData.spot = lSpot;
-lampGroup.userData.bulb = lBulb;
-lampGroup.userData.isOn = false;
+    // Références directes stockées pour togglePixarLamp
+    lampGroup.userData.spot = lSpot;
+    lampGroup.userData.bulb = lBulb;
+    lampGroup.userData.isOn = false;
 
-// Tag cliquable — sans écraser les noms fonctionnels
-lampGroup.traverse(child => {
-    if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
+    // Tag cliquable — sans écraser les noms fonctionnels
+    lampGroup.traverse(child => {
+        if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+        }
         if (!child.name || child.name === "") {
             child.name = "interactiveLamp";
         }
-    } else {
-        if (!child.name || child.name === "") {
-            child.name = "interactiveLamp";
-        }
-    }
-});
+    });
 
     rackGroup.add(lampGroup);
-window.pixarLamp = lampGroup;
+    window.pixarLamp = lampGroup;
+    scene.add(rackGroup);
 
-scene.add(rackGroup);
+    // =========================================================
+    // L'ASTUCE POUR ALIGNER PARFAITEMENT LA LUMIÈRE
+    // =========================================================
+    // 1. On force le moteur à calculer les positions finales de tous les objets
+    rackGroup.updateMatrixWorld(true);
+    
+    // 2. On récupère les coordonnées (X, Y, Z) réelles de l'ampoule dans la chambre
+    const realBulbPos = new THREE.Vector3();
+    lBulb.getWorldPosition(realBulbPos);
+    
+    // 3. On téléporte le SpotLight global exactement sur l'ampoule
+    lSpot.position.copy(realBulbPos);
 
 
 
