@@ -1062,16 +1062,40 @@
         <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
             <span class="w-3 h-3 rounded-full bg-[#8b5cf6] shadow-[0_0_10px_#8b5cf6]"></span> Piano Roll Editor
         </span>
-        <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-pianoroll')">✕</button>
     </div>
     
-    <div class="window-content flex flex-col p-0">
-        <!-- Barre de transport (Toolbar) -->
+    <!-- Barre de transport (Toolbar) mise à jour -->
         <div class="flex items-center gap-4 p-3 bg-black/60 border-b border-white/10 shrink-0">
-            <button class="btn-action px-4 py-2 text-[10px] rounded" id="pr-btn-play">▶ PLAY</button>
-            <button class="btn-minimal px-4 py-2 text-[10px] rounded" id="pr-btn-stop">■ STOP</button>
+            <button class="btn-minimal px-3 py-2 text-[10px] rounded border-[var(--retro-red)] text-[var(--retro-red)] hover:bg-[var(--retro-red)] hover:text-white transition-colors" onclick="closeApp('app-pianoroll')">
+                <span class="font-bold">✕ CLOSE</span>
+            </button>
+            <div class="h-6 w-px bg-white/20 mx-1"></div>
+            
+            <!-- Contrôles de transport -->
+            <button class="btn-action px-4 py-2 text-[10px] rounded w-20 text-center" id="pr-btn-play" onclick="prTogglePlay()">▶ PLAY</button>
+            <button class="btn-minimal px-4 py-2 text-[10px] rounded w-20 text-center" id="pr-btn-stop" onclick="prStop()">■ STOP</button>
+            
             <div class="h-6 w-px bg-white/20 mx-2"></div>
-            <span class="font-retro text-xs text-[var(--accent)] tracking-widest">INSTRUMENT: <span class="text-white">SYNTH_LEAD</span></span>
+            
+            <!-- Paramètres Globaux -->
+            <div class="flex items-center gap-2">
+                <span class="text-[9px] text-gray-400 font-retro">BPM</span>
+                <input type="number" id="pr-bpm" value="120" min="60" max="200" class="w-12 bg-black/50 border border-white/20 rounded text-white text-[10px] px-1 h-6 outline-none focus:border-[var(--accent)]" onchange="window.prBpm = parseInt(this.value) || 120">
+            </div>
+            <div class="flex items-center gap-2 ml-4">
+                <span class="text-[9px] text-gray-400 font-retro">VOL</span>
+                <input type="range" id="pr-vol" min="0" max="1" step="0.05" value="0.5" class="w-16 accent-[var(--accent)] cursor-pointer" oninput="window.prVolume = parseFloat(this.value)">
+            </div>
+        </div>
+
+        <!-- Zone d'édition (Clavier + Grille) -->
+        <div class="flex flex-1 overflow-hidden relative bg-[#09090b]">
+            <div id="pr-keys-container" class="w-[80px] bg-black border-r border-white/10 shrink-0 overflow-hidden relative z-10"></div>
+            
+            <div id="pr-grid-container" class="flex-1 overflow-auto relative cursor-crosshair">
+                <!-- TÊTE DE LECTURE (Playhead) -->
+                <div id="pr-playhead" class="absolute top-0 bottom-0 w-px bg-white z-50 pointer-events-none shadow-[0_0_10px_#fff] hidden" style="left: 0px;"></div>
+            </div>
         </div>
 
         <!-- Zone d'édition (Clavier + Grille) -->
@@ -2724,7 +2748,8 @@ function drawSysGraphUI(timestamp) {
             
             // Enveloppe d'attaque rapide (évite les clics audio)
             gain.gain.setValueAtTime(0, audioCtxUI.currentTime);
-            gain.gain.linearRampToValueAtTime(0.12, audioCtxUI.currentTime + 0.03); 
+            // Un gain de base de 0.25 multiplié par le fader de l'UI
+            gain.gain.linearRampToValueAtTime(0.25 * window.prVolume, audioCtxUI.currentTime + 0.03);
             
             osc.connect(gain);
             gain.connect(audioCtxUI.destination);
@@ -3201,6 +3226,106 @@ group.add(createLeg(-1), createLeg(1));
         });
     }
 
+
+    // --- VARIABLES DE TRANSPORT PIANO ROLL ---
+    window.prIsPlaying = false;
+    window.prCurrentStep = 0;
+    window.prBpm = 120;
+    window.prVolume = 0.5;
+    window.prLastTime = 0;
+    window.prActivePlaybackNotes = new Set(); // Traque les notes jouées par la séquence
+
+    // --- CONTRÔLES DE LECTURE ---
+    window.prTogglePlay = function() {
+        if (!audioCtxUI) initAudio();
+        if (audioCtxUI && audioCtxUI.state === 'suspended') audioCtxUI.resume();
+
+        window.prIsPlaying = !window.prIsPlaying;
+        const btn = document.getElementById('pr-btn-play');
+        const playhead = document.getElementById('pr-playhead');
+        
+        if (window.prIsPlaying) {
+            btn.innerText = "⏸ PAUSE";
+            btn.classList.replace('btn-action', 'btn-minimal');
+            playhead.classList.remove('hidden');
+            
+            // Initialise le timer de haute précision
+            window.prLastTime = performance.now();
+            requestAnimationFrame(prPlaybackLoop);
+        } else {
+            btn.innerText = "▶ PLAY";
+            btn.classList.replace('btn-minimal', 'btn-action');
+            prStopAllPlaybackNotes(); 
+        }
+    };
+
+    window.prStop = function() {
+        window.prIsPlaying = false;
+        window.prCurrentStep = 0;
+        
+        const btn = document.getElementById('pr-btn-play');
+        btn.innerText = "▶ PLAY";
+        btn.classList.replace('btn-minimal', 'btn-action');
+        
+        const playhead = document.getElementById('pr-playhead');
+        if(playhead) {
+            playhead.style.left = '0px';
+            playhead.classList.add('hidden');
+        }
+        prStopAllPlaybackNotes();
+    };
+
+    function prStopAllPlaybackNotes() {
+        window.prActivePlaybackNotes.forEach(noteId => {
+            const note = window.prNotes.find(n => n.id === noteId);
+            if (note) playSynthNote(note.note, false);
+        });
+        window.prActivePlaybackNotes.clear();
+    }
+
+    // --- MOTEUR DE DÉFILEMENT (AUDIO THREAD UI) ---
+    function prPlaybackLoop(timestamp) {
+        if (!window.prIsPlaying) return;
+
+        // Calcul du Delta Time réel
+        const deltaMs = timestamp - window.prLastTime;
+        window.prLastTime = timestamp;
+
+        // Conversion du BPM en vélocité de la playhead (4 steps = 1 beat)
+        const stepsPerSec = (window.prBpm / 60) * 4;
+        const stepDelta = stepsPerSec * (deltaMs / 1000);
+
+        window.prCurrentStep += stepDelta;
+
+        // Boucle : Retour à zéro après 32 steps (2 mesures)
+        if (window.prCurrentStep >= 32) {
+            window.prCurrentStep = 0;
+            prStopAllPlaybackNotes(); // Hard reset des enveloppes en fin de boucle
+        }
+
+        // Animation visuelle de la tête de lecture (32px de large par cellule)
+        const playhead = document.getElementById('pr-playhead');
+        if (playhead) playhead.style.transform = `translateX(${window.prCurrentStep * 32}px)`;
+
+        // Scan et déclenchement des signaux MIDI
+        window.prNotes.forEach(note => {
+            const isNoteActiveTime = window.prCurrentStep >= note.startStep && window.prCurrentStep < (note.startStep + note.duration);
+            const isCurrentlyPlaying = window.prActivePlaybackNotes.has(note.id);
+
+            if (isNoteActiveTime && !isCurrentlyPlaying) {
+                // Note On
+                window.prActivePlaybackNotes.add(note.id);
+                playSynthNote(note.note, true);
+            } else if (!isNoteActiveTime && isCurrentlyPlaying) {
+                // Note Off
+                window.prActivePlaybackNotes.delete(note.id);
+                playSynthNote(note.note, false);
+            }
+        });
+
+        requestAnimationFrame(prPlaybackLoop);
+    }
+    
     // --- INTERACTIONS SÉQUENCEUR ---
     function initPianoRollEvents() {
         const grid = document.getElementById('pr-grid-container');
