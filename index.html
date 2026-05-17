@@ -1733,6 +1733,13 @@ for (let i = 0; i < 4; i++) {
     // Le rack fait environ 1.8 de haut, on pose la lampe sur le sommet
     lampGroup.position.set(0, 1.9, 0);
 
+    // --- NOUVEAU : AJUSTEMENTS DE TAILLE ET D'ORIENTATION ---
+    // Agrandit toute la structure (géométries et lumières) de 60%
+    lampGroup.scale.set(1.6, 1.6, 1.6);
+
+    // Pivote la lampe de 45 degrés vers la gauche (le centre de la chambre)
+    lampGroup.rotation.y = -Math.PI / 4;
+
     const lampMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.4, metalness: 0.8 }); // Métal sombre
     const jointMat = new THREE.MeshStandardMaterial({ color: '#9ca3af', roughness: 0.5, metalness: 0.9 }); // Articulations
     
