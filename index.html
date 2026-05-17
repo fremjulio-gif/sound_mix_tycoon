@@ -3818,23 +3818,28 @@ function renderStore(tab) {
             let foundAny = false;
             cracks.forEach(c => {
                 const alreadyOwned = state.ownedCracks && state.ownedCracks.includes(c.id);
-                if (state.money < c.reqMoney) {
+
+                if (alreadyOwned) {
+                    // ÉTAPE 1 : Le plugin est déjà dans l'inventaire
+                    foundAny = true;
+                    crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex justify-between items-center bg-black/40 rounded-lg opacity-70">
+                        <div class="flex-1 pr-4"><p class="font-bold text-sm text-[var(--retro-green)]">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc}</p></div>
+                        <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] rounded border-gray-600 text-gray-500 cursor-not-allowed" disabled>OWNED</button>
+                    </div>`;
+                } else if (state.money < c.reqMoney) {
+                    // ÉTAPE 2 : Le joueur n'a pas l'argent requis pour débloquer le lien
                     crackHTML += `<div class="border border-gray-800 p-4 flex justify-between items-center bg-black/60 rounded-lg opacity-50 select-none">
                         <div class="flex-1"><p class="font-bold text-sm text-gray-500 font-retro">???_LOCKED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: $${formatNum(c.reqMoney)} in Bank</p></div>
-                        ${
-                alreadyOwned
-                    ? `<button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] rounded opacity-50 cursor-not-allowed" disabled>OWNED</button>`
-                    : `<button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>`
-            }
-
+                        <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] rounded opacity-50 cursor-not-allowed" disabled>LOCKED</button>
                     </div>`;
-                    return;
+                } else {
+                    // ÉTAPE 3 : Plugin disponible au téléchargement
+                    foundAny = true;
+                    crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex justify-between items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group">
+                        <div class="flex-1 pr-4"><p class="font-bold text-sm text-gray-200">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc} | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p></div>
+                        <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
+                    </div>`;
                 }
-                foundAny = true;
-                crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex justify-between items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group">
-                    <div class="flex-1 pr-4"><p class="font-bold text-sm text-gray-200">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc} | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p></div>
-                    <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
-                </div>`;
             });
             if (!foundAny) crackHTML += `<p class="text-sm text-gray-500 text-center py-10 font-retro">Make some money to access deep web links.</p>`;
             crackHTML += '</div>';
