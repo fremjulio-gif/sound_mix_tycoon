@@ -1802,10 +1802,15 @@ for (let i = 0; i < 4; i++) {
     
     // Cible invisible pour orienter le faisceau de lumière
     const lTarget = new THREE.Object3D();
-    lTarget.position.set(0, 0.5, 0; // Pointe droit devant l'ouverture de l'abat-jour
+    lTarget.position.set(0, 0.5, 0); // Pointe droit devant l'ouverture de l'abat-jour
     lHeadGroup.add(lTarget);
     lSpot.target = lTarget;
-
+// --- FIX : CIBLAGE ABSOLU ---
+    // On place la cible au centre parfait de la pièce, à 0.5 de hauteur (le torse de l'avatar)
+    lSpot.target.position.set(0, 0.5, 0); 
+    // Three.js EXIGE que la cible soit dans la scène globale pour que les coordonnées absolues fonctionnent
+    scene.add(lSpot.target); 
+    // ----------------------------
     lHeadGroup.add(lShade, lBulb, lSpot);
     lampGroup.add(lHeadGroup);
 
