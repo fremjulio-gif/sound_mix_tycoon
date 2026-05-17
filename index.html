@@ -2657,8 +2657,8 @@ if (!state.isSleeping && currentRoomAvatar) {
                 const dy = targetPos.y - head.position.y;
                 const dz = targetPos.z - head.position.z;
                 
-                // 3. Rotation Y (Pan : Gauche/Droite)
-                head.rotation.y = Math.atan2(dx, dz); 
+                 // 3. Rotation Y (Pan : Gauche/Droite) avec compensation du mesh    
+                head.rotation.y = Math.atan2(dx, dz) + Math.PI;
                 
                 // 4. Rotation X (Tilt : Haut/Bas)
                 const distanceH = Math.sqrt(dx * dx + dz * dz);
