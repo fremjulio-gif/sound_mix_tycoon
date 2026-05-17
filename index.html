@@ -3122,7 +3122,7 @@ group.add(createLeg(-1), createLeg(1));
     return Math.max(15, cooldown);
 }
 
-    function getDawCooldown() { return 15; }
+    function getDawCooldown() { return 60; }
 
 //PIANOROLLLLLL
     function initPianoRollUI() {
@@ -3815,7 +3815,8 @@ group.add(createLeg(-1), createLeg(1));
                 btnDaw.innerText = `CPU COOL (${formatTimeLeft(left)})`;
                 btnDaw.disabled = true;
             } else {
-                if (btnDaw.disabled) {
+                // FIX : On vérifie l'état ET le texte exact pour forcer la restauration
+                if (btnDaw.disabled || btnDaw.innerText !== "RENDER MIXDOWN") {
                     btnDaw.innerText = "RENDER MIXDOWN";
                     btnDaw.disabled = false;
                 }
