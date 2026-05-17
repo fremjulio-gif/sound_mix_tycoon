@@ -771,6 +771,12 @@
             border-bottom: 1px solid rgba(255,255,255,0.05);
             position: relative;
         }
+        .pr-note:active { cursor: grabbing; filter: brightness(1.2); }
+        .pr-note-handle {
+            position: absolute; right: 0; top: 0; bottom: 0; width: 8px;
+            cursor: ew-resize; background: rgba(255,255,255,0.2); border-radius: 0 3px 3px 0;
+        }
+        .pr-note-handle:hover { background: rgba(255,255,255,0.5); }
         .bg-black-key { background: rgba(0,0,0,0.6); }
         .bg-white-key { background: rgba(255,255,255,0.03); }
         
@@ -3164,13 +3170,17 @@ group.add(createLeg(-1), createLeg(1));
         return { step, row };
     }
 
+    // --- VARIABLES D'ÉTAT PIANO ROLL ---
+    window.prNotes = window.prNotes || []; 
+    window.prNoteIdCounter = window.prNoteIdCounter || 0;
+    window.prDragState = { active: false, type: null, noteId: null, startX: 0, initialDur: 1 };
+
+    // --- MOTEUR DE RENDU MIDI ---
     function renderPrNotes() {
-        // Nettoie toutes les notes existantes
         document.querySelectorAll('.pr-note').forEach(n => n.remove());
-        
         const rows = Array.from(document.querySelectorAll('.pr-grid-row'));
         
-        prNotes.forEach(note => {
+        window.prNotes.forEach(note => {
             const rowEl = rows.find(r => r.dataset.note === note.note);
             if(!rowEl) return;
 
@@ -3178,105 +3188,108 @@ group.add(createLeg(-1), createLeg(1));
             el.className = 'pr-note';
             el.dataset.id = note.id;
             
-            // La position X dépend uniquement du step, la position Y est réglée automatiquement par la rangée parent !
+            // X est défini par le temps (step), Y est automatique grâce au rowEl
             el.style.left = (note.startStep * 32) + 'px';
-            el.style.top = '2px'; // Marge visuelle
+            el.style.top = '2px';
             el.style.width = (note.duration * 32) + 'px';
             
             const handle = document.createElement('div');
             handle.className = 'pr-note-handle';
             el.appendChild(handle);
             
-            // On accroche la note DIRECTEMENT dans sa propre piste
             rowEl.appendChild(el);
         });
     }
 
-    function initPianoRollEvents() {function initPianoRollEvents() {
+    // --- INTERACTIONS SÉQUENCEUR ---
+    function initPianoRollEvents() {
         const grid = document.getElementById('pr-grid-container');
         if(!grid) return;
 
+        // Désactive le menu clic droit natif sur la zone d'édition
         grid.addEventListener('contextmenu', e => e.preventDefault());
 
-        grid.addEventListener('mousedown', (e) => {
-            // SUPPRESSION
+        grid.addEventListener('pointerdown', (e) => {
+            // 1. SUPPRESSION (Clic droit)
             if (e.button === 2) {
                 const noteEl = e.target.closest('.pr-note');
                 if (noteEl) {
-                    prNotes = prNotes.filter(n => n.id != noteEl.dataset.id);
+                    window.prNotes = window.prNotes.filter(n => n.id != noteEl.dataset.id);
                     renderPrNotes();
                 }
                 return;
             }
 
-            // REDIMENSIONNEMENT
+            // 2. REDIMENSIONNEMENT (Poignée droite)
             if (e.target.classList.contains('pr-note-handle')) {
                 const noteEl = e.target.closest('.pr-note');
-                const noteData = prNotes.find(n => n.id == noteEl.dataset.id);
-                prDragState = { active: true, type: 'resize', noteId: noteData.id, startX: e.clientX, initialDur: noteData.duration };
+                const noteData = window.prNotes.find(n => n.id == noteEl.dataset.id);
+                window.prDragState = { active: true, type: 'resize', noteId: noteData.id, startX: e.clientX, initialDur: noteData.duration };
                 e.stopPropagation();
                 return;
             }
 
-            // DEPLACEMENT
+            // 3. DÉPLACEMENT (Corps de la note)
             if (e.target.closest('.pr-note')) {
                 const noteEl = e.target.closest('.pr-note');
-                const noteData = prNotes.find(n => n.id == noteEl.dataset.id);
-                prDragState = { active: true, type: 'move', noteId: noteData.id, startX: e.clientX };
-                playSynthNote(noteData.note, true);
+                const noteData = window.prNotes.find(n => n.id == noteEl.dataset.id);
+                window.prDragState = { active: true, type: 'move', noteId: noteData.id, startX: e.clientX };
+                if (typeof playSynthNote === 'function') playSynthNote(noteData.note, true);
                 e.stopPropagation();
                 return;
             }
 
-            // CREATION : On lit simplement les datas de la cellule sous le curseur
+            // 4. CRÉATION (Clic sur la grille vide)
             const cell = e.target.closest('.pr-cell');
             if (cell) {
                 const step = parseInt(cell.dataset.step, 10);
                 const noteName = cell.dataset.note;
                 
-                const newNote = { id: prNoteIdCounter++, note: noteName, startStep: step, duration: 1 };
-                prNotes.push(newNote);
-                playSynthNote(noteName, true);
+                const newNote = { id: window.prNoteIdCounter++, note: noteName, startStep: step, duration: 1 };
+                window.prNotes.push(newNote);
+                if (typeof playSynthNote === 'function') playSynthNote(noteName, true);
                 renderPrNotes();
                 
-                prDragState = { active: true, type: 'resize', noteId: newNote.id, startX: e.clientX, initialDur: 1 };
+                // Enchaîne direct sur le mode resize pour étirer la note dans le même mouvement
+                window.prDragState = { active: true, type: 'resize', noteId: newNote.id, startX: e.clientX, initialDur: 1 };
             }
         });
 
-        document.addEventListener('mousemove', (e) => {
-            if (!prDragState.active) return;
-            const note = prNotes.find(n => n.id === prDragState.noteId);
+        document.addEventListener('pointermove', (e) => {
+            if (!window.prDragState.active) return;
+            const note = window.prNotes.find(n => n.id === window.prDragState.noteId);
             if (!note) return;
 
-            if (prDragState.type === 'resize') {
-                const deltaX = e.clientX - prDragState.startX;
+            if (window.prDragState.type === 'resize') {
+                const deltaX = e.clientX - window.prDragState.startX;
                 const addedSteps = Math.floor(deltaX / 32);
-                note.duration = Math.max(1, prDragState.initialDur + addedSteps);
+                note.duration = Math.max(1, window.prDragState.initialDur + addedSteps);
                 renderPrNotes();
-            } else if (prDragState.type === 'move') {
-                // On rend la note "fantôme" au clic pour que la souris puisse voir la cellule de la grille située en dessous
-                const draggedNoteEl = document.querySelector(`.pr-note[data-id="${note.id}"]`);
-                if (draggedNoteEl) draggedNoteEl.style.pointerEvents = 'none';
                 
-                const cell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.pr-cell');
+            } else if (window.prDragState.type === 'move') {
+                const draggedNoteEl = document.querySelector(`.pr-note[data-id="${note.id}"]`);
+                if (draggedNoteEl) draggedNoteEl.style.pointerEvents = 'none'; // Désactive la collision
+                
+                const elemBelow = document.elementFromPoint(e.clientX, e.clientY);
+                const cell = elemBelow ? elemBelow.closest('.pr-cell') : null;
+                
                 if (cell) {
                     note.startStep = parseInt(cell.dataset.step, 10);
                     note.note = cell.dataset.note;
                     renderPrNotes();
                 }
                 
-                if (draggedNoteEl) draggedNoteEl.style.pointerEvents = 'auto';
+                if (draggedNoteEl) draggedNoteEl.style.pointerEvents = 'auto'; // Réactive la collision
             }
         });
 
-        document.addEventListener('mouseup', () => {
-            if (prDragState.active) {
-                const note = prNotes.find(n => n.id === prDragState.noteId);
-                if (note) playSynthNote(note.note, false);
-                prDragState.active = false;
+        document.addEventListener('pointerup', () => {
+            if (window.prDragState.active) {
+                const note = window.prNotes.find(n => n.id === window.prDragState.noteId);
+                if (note && typeof playSynthNote === 'function') playSynthNote(note.note, false);
+                window.prDragState.active = false;
             }
         });
-    }
     }
     
     // ==========================================
