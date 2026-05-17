@@ -2639,6 +2639,27 @@ function drawSysGraphUI(timestamp) {
     // 7. AUDIO
     // ==========================================
     let audioCtxUI = null;
+    // --- VARIABLES PIANO ROLL ---
+    const activeSynthNotes = {};
+    
+    // Mapping basé sur les touches physiques (QWERTY position = AZERTY position)
+    // Rangée du bas (blanches) + Rangée du milieu (noires)
+    const PC_KEY_MAP = {
+        'KeyZ': 'C3', 'KeyS': 'C#3', 'KeyX': 'D3', 'KeyD': 'D#3', 'KeyC': 'E3',
+        'KeyV': 'F3', 'KeyG': 'F#3', 'KeyB': 'G3', 'KeyH': 'G#3', 'KeyN': 'A3',
+        'KeyJ': 'A#3', 'KeyM': 'B3', 'Comma': 'C4', 'KeyL': 'C#4', 'Period': 'D4',
+        'Semicolon': 'D#4', 'Slash': 'E4'
+    };
+
+    // Convertit une note "C3", "A#4" en fréquence Hertz
+    function noteToFreq(note) {
+        const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const octave = parseInt(note.slice(-1));
+        const keyNumber = notes.indexOf(note.slice(0, -1));
+        if (keyNumber === -1) return 0;
+        // Formule standard : La4 (A4) = 440Hz
+        return 440 * Math.pow(2, (keyNumber - 9 + (octave - 4) * 12) / 12);
+    }
     function initAudio() {
         if (!audioCtxUI) {
             try {
@@ -2661,6 +2682,51 @@ function drawSysGraphUI(timestamp) {
             osc.start(); osc.stop(audioCtxUI.currentTime + duration);
         } catch(e) {}
     }
+
+    function playSynthNote(note, isPlaying) {
+        if (!audioCtxUI) initAudio();
+        if (!audioCtxUI) return;
+
+        // Récupère l'élément du clavier UI créé à l'étape 2 pour le feedback visuel
+        const keyEl = document.querySelector(`.pr-key-row[data-note="${note}"]`);
+
+        if (isPlaying) {
+            if (activeSynthNotes[note]) return; // Empêche le chevauchement si la note joue déjà
+
+            const osc = audioCtxUI.createOscillator();
+            const gain = audioCtxUI.createGain();
+            
+            osc.type = 'sawtooth'; // Forme d'onde "Synth Lead"
+            osc.frequency.setValueAtTime(noteToFreq(note), audioCtxUI.currentTime);
+            
+            // Enveloppe d'attaque rapide (évite les clics audio)
+            gain.gain.setValueAtTime(0, audioCtxUI.currentTime);
+            gain.gain.linearRampToValueAtTime(0.12, audioCtxUI.currentTime + 0.03); 
+            
+            osc.connect(gain);
+            gain.connect(audioCtxUI.destination);
+            osc.start();
+            
+            activeSynthNotes[note] = { osc, gain };
+            
+            // Allume la touche UI
+            if (keyEl) keyEl.style.filter = 'brightness(1.5) drop-shadow(0 0 8px var(--accent))';
+            
+        } else {
+            const voice = activeSynthNotes[note];
+            if (voice) {
+                // Enveloppe de relâchement (Release fade out)
+                voice.gain.gain.setValueAtTime(voice.gain.gain.value, audioCtxUI.currentTime);
+                voice.gain.gain.exponentialRampToValueAtTime(0.001, audioCtxUI.currentTime + 0.1); 
+                voice.osc.stop(audioCtxUI.currentTime + 0.15);
+                delete activeSynthNotes[note];
+            }
+            
+            // Éteint la touche UI
+            if (keyEl) keyEl.style.filter = '';
+        }
+    }
+    
     const playBleep   = () => playTone(800, 'sine', 0.05, 0.03);
     const playSuccess = () => { playTone(600, 'square', 0.1, 0.03); setTimeout(() => playTone(800, 'square', 0.15, 0.03), 100); };
     const playError   = () => { playTone(200, 'sawtooth', 0.2, 0.05); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); };
@@ -3077,12 +3143,30 @@ group.add(createLeg(-1), createLeg(1));
                 <img src="${a.img}" alt="${a.id}" class="w-44 h-44 md:w-70 md:h-70 pixelated object-contain mb-2 pointer-events-none" onerror="this.style.border='1px solid red'" />
                 <span class="text-xs md:text-sm font-retro text-[var(--text-muted)] uppercase font-bold tracking-widest pointer-events-none">${a.id}</span>
             </div>`).join('');
+        // --- LISTENERS CLAVIER PIANO ROLL ---
+        window.addEventListener('keydown', (e) => {
+            const prWindow = document.getElementById('app-pianoroll');
+            // Vérifie que la fenêtre du piano est ouverte et ignore la répétition native des touches
+            if (prWindow && prWindow.style.display !== 'none' && !e.repeat) {
+                const note = PC_KEY_MAP[e.code];
+                if (note) {
+                    e.preventDefault(); // Bloque les actions par défaut du navigateur
+                    playSynthNote(note, true);
+                }
+            }
+        });
 
-        const seq = document.getElementById('sequencer-grid');
-if (seq) {
-    seq.innerHTML = Array(16).fill(0).map((_, i) => `<div class="seq-pad" id="pad-${i}" onclick="togglePad(${i})"></div>`).join('');
-}
-
+        window.addEventListener('keyup', (e) => {
+            const note = PC_KEY_MAP[e.code];
+            if (note) {
+                playSynthNote(note, false);
+            }
+        });
+        
+        // Sécurité : couper le son si la fenêtre perd le focus pendant qu'on joue
+        window.addEventListener('blur', () => {
+            Object.keys(activeSynthNotes).forEach(note => playSynthNote(note, false));
+        });
 
         const vuMeter = document.getElementById('vu-meter-container');
         let ledsHTML = '';
