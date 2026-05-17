@@ -2653,7 +2653,10 @@ if (!state.isSleeping && currentRoomAvatar) {
                 
                 // 3. Rotation Y (Gauche/Droite)
                 const angleY = Math.atan2(targetPos.x - head.position.x, targetPos.z - head.position.z);
-                head.rotation.y = angleY;
+    
+                // --- FIX : On compense le décalage du maillage (90 degrés) ---
+                head.rotation.y = angleY - Math.PI / 2; 
+                // --------------------------------------------------------------
                 
                 // 4. Rotation X (Haut/Bas)
                 const distanceH = Math.sqrt(
