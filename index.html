@@ -3232,7 +3232,48 @@ if (seq) {
                 state.stats.viruses          = parseInt(state.stats.viruses, 10)       || 0;
                 state.stats.crackDownloads   = parseInt(state.stats.crackDownloads, 10)|| 0;
                 state.history                = state.history || { money: [], followers: [] };
-                state.trackList              = state.trackList || [];
+                state.trackList = state.trackList || [];
+
+                // --- DÉBUT MIGRATION RÉTROCOMPATIBILITÉ TOP CHARTS ---
+    if (state.trackList.length === 0 && state.stats.tracks > 0) {
+        let bangersToCreate = state.stats.bangers || 0;
+        let flopsToCreate = state.stats.flops || 0;
+
+        for (let i = 0; i < state.stats.tracks; i++) {
+            let score, titlePrefix;
+        
+            if (bangersToCreate > 0) {
+            score = Math.floor(7 + Math.random() * 3); // Score entre 7 et 9
+            titlePrefix = "ARCHIVED_HIT";
+            bangersToCreate--;
+            } else if (flopsToCreate > 0) {
+            score = Math.floor(1 + Math.random() * 3); // Score entre 1 et 3
+            titlePrefix = "ARCHIVED_FLOP";
+            flopsToCreate--;
+            } else {
+            score = Math.floor(4 + Math.random() * 3); // Score entre 4 et 6
+            titlePrefix = "ARCHIVED_TUNE";
+            }
+
+            state.trackList.push({
+            title: `${titlePrefix}_${i + 1}`,
+            genre: "UNKNOWN",
+            score: score,
+            money: 0, // Donnée historique perdue
+            fans: 0,  // Donnée historique perdue
+            date: "???"
+            });
+        }
+    
+    // Tri décroissant pour s'assurer que le Top Charts affiche les meilleurs morceaux archivés
+        state.trackList.sort((a, b) => b.score - a.score);
+
+    // Tronquer à 15 éléments max pour préserver les performances et la mémoire
+        if (state.trackList.length > 15) {
+            state.trackList.length = 15;
+    }
+    }
+// --- FIN MIGRATION ---
                 state.isExporting            = false;
                 state.isSleeping             = false;
                 state.activeCharacter = parseInt(state.activeCharacter ?? state.avatar, 10) || 0;
