@@ -1738,7 +1738,7 @@ for (let i = 0; i < 4; i++) {
     lampGroup.scale.set(1.6, 1.6, 1.6);
 
     // Pivote la lampe de 45 degrés vers la gauche (le centre de la chambre)
-    lampGroup.rotation.y = -Math.PI / 2;
+    lampGroup.rotation.y = -Math.PI / 3;
 
     const lampMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.4, metalness: 0.8 }); // Métal sombre
     const jointMat = new THREE.MeshStandardMaterial({ color: '#9ca3af', roughness: 0.5, metalness: 0.9 }); // Articulations
@@ -1779,9 +1779,9 @@ for (let i = 0; i < 4; i++) {
     // 5. Tête de la lampe (Abat-jour + Ampoule + Lumière)
     const lHeadGroup = new THREE.Group();
     lHeadGroup.position.set(0, 0.72, 0.11);
-    lHeadGroup.rotation.x = Math.PI / 3.5;
-    // --- NOUVEAU : On tourne la tête vers la gauche (axe Y) ---
-    lHeadGroup.rotation.y = -Math.PI / 2.5;
+  // On penche juste la tête vers le bas (la base a déjà tourné vers l'avatar)
+    lHeadGroup.rotation.x = Math.PI / 4; 
+    lHeadGroup.rotation.y = 0;
 
     // Abat-jour conique
     const lShade = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.16, 0.25, 16), lampMat);
@@ -1789,20 +1789,20 @@ for (let i = 0; i < 4; i++) {
     addLampEdges(lShade);
     
     // Ampoule (Jaune chaude et émissive)
-    const lBulbMat = new THREE.MeshStandardMaterial({ color: '#fef08a', emissive: '#fef08a', emissiveIntensity: 1.5 });
+    const lBulbMat = new THREE.MeshStandardMaterial({ color: '#fef08a', emissive: '#fef08a', emissiveIntensity: 1.8 });
     const lBulb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), lBulbMat);
     lBulb.position.set(0, -0.18, 0);
     
     // Faisceau de lumière (SpotLight) ciblant les machines
-    const lSpot = new THREE.SpotLight('#fef08a', 8); 
+    const lSpot = new THREE.SpotLight('#fef08a', 5); 
     lSpot.position.set(0, -0.18, 0);
-    lSpot.angle = Math.PI / 4.5;
-    lSpot.penumbra = 0.6;
-    lSpot.distance = 3.5;
+    lSpot.angle = Math.PI / 5.5;
+    lSpot.penumbra = 0.5;
+    lSpot.distance = 7;
     
     // Cible invisible pour orienter le faisceau de lumière
     const lTarget = new THREE.Object3D();
-    lTarget.position.set(0, -1, 0); // Pointe droit devant l'ouverture de l'abat-jour
+    lTarget.position.set(0, 0.5, 0; // Pointe droit devant l'ouverture de l'abat-jour
     lHeadGroup.add(lTarget);
     lSpot.target = lTarget;
 
