@@ -4077,15 +4077,6 @@ group.add(createLeg(-1), createLeg(1));
             result.score = 3;
             if (Math.random() > 0.5) { critique = "\nXray Antidote : Hit absolu, mais Bad Buzz de tricheur (-20 REP)."; repGain -= 20; }
             else critique = "\nXray Antidote : Algos bypassés. Personne n'a remarqué. Hit assuré.";
-            // --- NOUVEAU : CONSOMMATION DU PLUGIN (SINGLE-USE) ---
-            state.ownedCracks = (state.ownedCracks || []).filter(id => id !== pluginId);
-            state.inventory = (state.inventory || []).filter(id => id !== pluginId);
-            
-            // Met à jour l'UI instantanément pour refléter la perte du plugin
-            updateDawPlugins();
-            renderStore('crackz'); // Le plugin redevient achetable/téléchargeable
-            // -------------------------------------------------------
-        }
         }
         
         if (result.score === 3) {
@@ -4120,6 +4111,15 @@ group.add(createLeg(-1), createLeg(1));
                     critique += `\n[${usedCrack.name}] : Bonus +${bonusPercent}% sur les royalties !`;
                 }
             }
+            
+            // --- NOUVEAU : CONSOMMATION DU PLUGIN (SINGLE-USE) ---
+            state.ownedCracks = (state.ownedCracks || []).filter(id => id !== pluginId);
+            state.inventory = (state.inventory || []).filter(id => id !== pluginId);
+            
+            // Met à jour l'UI instantanément pour refléter la perte du plugin
+            updateDawPlugins();
+            renderStore('crackz'); 
+            // -------------------------------------------------------
         }
 
         logMoney(moneyGain, 'Track Royalties');
