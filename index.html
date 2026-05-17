@@ -982,7 +982,7 @@
 
 <div class="desktop-widget liquid-glass p-5 relative z-0">
     <div class="flex justify-between items-center mb-4">
-        <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">Signal Chain</span>
+        <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">Chaine de routing</span>
         <span class="text-[10px] font-retro text-[var(--accent)] animate-pulse drop-shadow-[0_0_5px_var(--accent)]">ARMED</span>
     </div>
     <div class="relative flex items-center justify-between gap-2 w-full mt-2">
@@ -998,7 +998,7 @@
 
 <div class="desktop-widget liquid-glass p-5">
     <div class="flex justify-between items-end mb-3">
-        <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">Mood Ring</span>
+        <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">Mood</span>
         <span id="mood-ring-label" class="text-[10px] font-retro text-[var(--retro-green)] transition-colors duration-500">LOCKED IN</span>
     </div>
     <div class="h-16 rounded-2xl border border-white/10 overflow-hidden relative bg-black/40 shadow-inner">
@@ -1025,7 +1025,7 @@
 </div>
 
                 <div class="desktop-widget liquid-glass !bg-yellow-500/15 !border-yellow-400/30 rotate-2 p-5 w-full max-h-[210px] overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-                    <h4 class="font-handwriting text-yellow-300/90 text-2xl mb-2 border-b border-yellow-500/40 pb-1">To-Do List :</h4>
+                    <h4 class="font-handwriting text-yellow-300/90 text-2xl mb-2 border-b border-yellow-500/40 pb-1">To-Do Liste :</h4>
                     <ul id="todo-list" class="font-handwriting text-yellow-100/90 text-lg space-y-0.5">
                         <li class="todo-item line-through opacity-40" onclick="toggleTodo(this)">Setup OS</li>
                         <li class="todo-item" onclick="toggleTodo(this)">Check Trends</li>
@@ -1201,8 +1201,8 @@
             </div>
             <div class="window-content p-6 md:p-8">
                 <div class="border border-[var(--accent)]/30 bg-black/40 p-6 md:p-8 rounded-xl text-center mb-8 shadow-inner">
-                    <p class="text-sm text-[var(--text-muted)] mb-6">Keep the hype alive. Feed your fans.</p>
-                    <button id="btn-story" class="btn-action px-10 py-4 text-xs rounded-lg tracking-widest font-bold w-full md:w-auto" onclick="postStory()">POST DAILY STORY</button>
+                    <p class="text-sm text-[var(--text-muted)] mb-6">Poste pour trouver ta commu</p>
+                    <button id="btn-story" class="btn-action px-10 py-4 text-xs rounded-lg tracking-widest font-bold w-full md:w-auto" onclick="postStory()">POSTER UNE STORY</button>
                     <p id="story-status" class="text-xs text-[var(--retro-green)] mt-5 font-retro tracking-widest drop-shadow-[0_0_5px_var(--retro-green)]">STATUS: READY</p>
                 </div>
                 <div>
@@ -2556,7 +2556,7 @@ function updateMoodRingWidget() {
         void globalTooltip.offsetWidth;
         globalTooltip.style.opacity = '1';
         if (type === 'money') {
-            let html = '<div class="text-[var(--retro-green)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Bank Statement</div><div class="space-y-3">';
+            let html = '<div class="text-[var(--retro-green)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Compte en Banque</div><div class="space-y-3">';
             if (state.history.money.length === 0) html += '<div class="text-gray-500">No transactions.</div>';
             state.history.money.forEach(m => {
                 const color = m.amt >= 0 ? 'text-[var(--retro-green)]' : 'text-[var(--retro-red)]';
@@ -2568,12 +2568,12 @@ function updateMoodRingWidget() {
         }
         if (type === 'rep') {
             const streams = Math.floor(state.rep * 42.5 + Math.random() * 20);
-            globalTooltip.innerHTML = `<div class="text-[var(--retro-orange)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Streaming Data</div>
+            globalTooltip.innerHTML = `<div class="text-[var(--retro-orange)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Reputatiob - Streaming Data</div>
                 <div class="text-gray-300 text-[11px]">Estimated Daily Streams:</div>
                 <div class="text-2xl text-white mt-2 font-bold tracking-wider">~${formatNum(streams)} <span class="text-[9px] text-[var(--retro-orange)]">PLAYS</span></div>`;
         }
         if (type === 'fol') {
-            let html = '<div class="text-[var(--accent)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Recent Subscribers</div><div class="space-y-3">';
+            let html = '<div class="text-[var(--accent)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Follow recents</div><div class="space-y-3">';
             if (state.history.followers.length === 0) html += '<div class="text-gray-500">No recent activity.</div>';
             state.history.followers.forEach(f => { html += `<div class="text-gray-200 flex items-center gap-3 text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_5px_var(--accent)]"></span> @${f}</div>`; });
             html += '</div>';
@@ -3766,7 +3766,7 @@ group.add(createLeg(-1), createLeg(1));
         document.getElementById('hud-money').innerText = formatNum(state.money);
         document.getElementById('hud-rep').innerText   = formatNum(state.rep);
         document.getElementById('hud-foll').innerText  = formatNum(state.followers);
-        document.getElementById('hud-day').innerText   = `DAY ${state.day}`;
+        document.getElementById('hud-day').innerText   = `JOUR ${state.day}`;
 
         const energyVal = Math.floor(state.energy);
         document.getElementById('hud-energy-val').innerText = `${energyVal}%`;
@@ -4222,7 +4222,7 @@ function renderStore(tab) {
                 return;
             }
             let crackHTML = `<h3 class="font-bold text-xl mb-5 text-[var(--retro-green)] tracking-widest uppercase drop-shadow-[0_0_5px_var(--retro-green)]">💀 CrackZ_World_2026</h3>
-                             <p class="text-[10px] mb-8 text-[var(--text-muted)] border-b border-gray-800 pb-3 uppercase">All plugins are SINGLE-USE consumables.</p>
+                             <p class="text-[10px] mb-8 text-[var(--text-muted)] border-b border-gray-800 pb-3 uppercase">Attention à ce que tu télécharges...</p>
                              <div class="space-y-4">`;
             let foundAny = false;
             cracks.forEach(c => {
@@ -4381,11 +4381,24 @@ function renderStore(tab) {
         const total      = getTotalMins();
         const storyReady = parseInt(state.cooldowns.storyTimeReady, 10) || 0;
         if (total < storyReady) return;
+        
         state.cooldowns.storyTimeReady = total + 120;
-        const gain = Math.floor((state.rep * 0.5) + 10);
-        logFollower(gain);
-        showToast(`Story posted! +${gain} followers.`, "info");
-        playSuccess(); saveGame(); updateHUD(); refreshSocial();
+        
+        // Calcul des gains
+        const followerGain = Math.floor((state.rep * 0.5) + 10);
+        const repGain = Math.floor(Math.random() * 3) + 1; // Gain aléatoire de 1 à 3 REP
+        
+        // Application
+        logFollower(followerGain);
+        state.rep = Math.max(0, state.rep + repGain);
+        
+        // Feedback visuel
+        showToast(`Story posted! +${followerGain} Fans | +${repGain} REP`, "info");
+        
+        playSuccess(); 
+        saveGame(); 
+        updateHUD(); 
+        refreshSocial();
     }
 
     function acceptSponsor(id) {
