@@ -2632,31 +2632,43 @@ if (!state.isSleeping && currentRoomAvatar) {
 
         // --- SUIVI DYNAMIQUE DE LA LAMPE PIXAR ---
     // On vérifie que la lampe est allumée et que l'avatar existe
-    if (window.pixarLamp && window.pixarLamp.userData.isOn && window.avatar) {
-        // console.log("👀 La lampe suit l'avatar !");
-        const head = scene.getObjectByName("pixar_head_group");
-        const spot = scene.getObjectByName("pixar_spotlight");
+    // --- SUIVI DYNAMIQUE DE LA LAMPE PIXAR (VERSION DIAGNOSTIC) ---
+    if (window.pixarLamp && window.pixarLamp.userData.isOn) {
         
-        if (head && spot) {
-            // 1. Le faisceau lumineux (SpotLight) suit les coordonnées de l'avatar
+        // 1. Tests de présence (ça va crier dans la console s'il manque un truc)
+        if (!window.avatar) {
+            console.error("🚨 CRASH SUIVI : window.avatar est introuvable. Le perso n'a pas été exporté globalement.");
+        }
+        
+        const head = scene.getObjectByName("pixar_head_group");
+        if (!head) {
+            console.error("🚨 CRASH SUIVI : 'pixar_head_group' introuvable. La tête n'a pas été renommée lors de sa création.");
+        }
+        
+        const spot = scene.getObjectByName("pixar_spotlight");
+        if (!spot) {
+            console.error("🚨 CRASH SUIVI : 'pixar_spotlight' introuvable.");
+        }
+
+        // 2. Si les trois éléments sont bien là, on lance la mécanique
+        if (window.avatar && head && spot) {
+            
+            // Le spot vise l'avatar
             spot.target.position.copy(window.avatar.position);
             
-            // 2. Calcul de la position de l'avatar relativement à la tête de la lampe
+            // Calcul mathématique pour tordre le cou de la lampe
             const targetPos = new THREE.Vector3();
             window.avatar.getWorldPosition(targetPos);
             head.parent.worldToLocal(targetPos);
             
-            // 3. Rotation Horizontale (Axe Y) pour faire pivoter la tête vers le joueur
             const angleY = Math.atan2(targetPos.x - head.position.x, targetPos.z - head.position.z);
             head.rotation.y = angleY;
             
-            // 4. Rotation Verticale (Axe X) pour incliner la tête vers le haut/bas selon la distance
             const distanceH = Math.sqrt(
                 Math.pow(targetPos.x - head.position.x, 2) + 
                 Math.pow(targetPos.z - head.position.z, 2)
             );
             const angleX = Math.atan2(head.position.y - targetPos.y, distanceH);
-            // Le + Math.PI / 6 sert à compenser l'orientation native du cône de l'abat-jour
             head.rotation.x = angleX + Math.PI / 6; 
         }
     }
