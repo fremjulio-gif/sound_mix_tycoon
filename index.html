@@ -1733,14 +1733,14 @@ for (let i = 0; i < 4; i++) {
     // ==========================================
     const lampGroup = new THREE.Group();
     // Le rack fait environ 1.8 de haut, on pose la lampe sur le sommet
-    lampGroup.position.set(0, 1.9, 0);
+    lampGroup.position.set(0, 1.9, 0.2);
 
     // --- NOUVEAU : AJUSTEMENTS DE TAILLE ET D'ORIENTATION ---
     // Agrandit toute la structure (géométries et lumières) de 60%
     lampGroup.scale.set(1.6, 1.6, 1.6);
 
     // Pivote la lampe de 45 degrés vers la gauche (le centre de la chambre)
-    lampGroup.rotation.y = Math.PI / 5.5;
+    lampGroup.rotation.y = Math.PI / 4;
 
     const lampMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.4, metalness: 0.8 }); // Métal sombre
     const jointMat = new THREE.MeshStandardMaterial({ color: '#9ca3af', roughness: 0.5, metalness: 0.9 }); // Articulations
@@ -1783,7 +1783,7 @@ for (let i = 0; i < 4; i++) {
     lHeadGroup.position.set(0, 0.72, 0.11);
   // On penche juste la tête vers le bas (la base a déjà tourné vers l'avatar)
     lHeadGroup.rotation.x = Math.PI / 4; 
-    lHeadGroup.rotation.y = Math.PI / 5.5;
+    lHeadGroup.rotation.y = 0
 
     // Abat-jour conique
     const lShade = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.16, 0.25, 16), lampMat);
@@ -1809,14 +1809,14 @@ lampGroup.add(lHeadGroup);
 // rackGroup: (1.3, -1, -4.45) + lampGroup: (0, 1.9, 0) * scale 1.6
 const lSpot = new THREE.SpotLight('#fef08a', 0);
 lSpot.name = "pixar_spotlight";
-lSpot.position.set(1.3, 1.8, -4.2);  // Position mondiale de la tête
+lSpot.position.set(1.3, 1.8, -4.0);  // Position mondiale de la tête
 lSpot.angle = Math.PI / 5.5;
 lSpot.penumbra = 0.5;
 lSpot.distance = 7;
 lSpot.castShadow = false;
 
 // Target pointe vers le sol de la pièce
-lSpot.target.position.set(1.3, -1, -3.5);
+lSpot.target.position.set(0, 0, 0);
 scene.add(lSpot);
 scene.add(lSpot.target);  // Une seule fois, à la racine de la scène
 
