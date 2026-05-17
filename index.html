@@ -1344,8 +1344,14 @@
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 2048;
     dirLight.shadow.bias = -0.0005;
-    dirLight.shadow.camera.left = -15; dirLight.shadow.camera.right = 15;
-    dirLight.shadow.camera.top = 15;   dirLight.shadow.camera.bottom = -15;
+    // On concentre les pixels de l'ombre uniquement sur la taille de la pièce
+    dirLight.shadow.camera.left = -8; 
+    dirLight.shadow.camera.right = 8;
+    dirLight.shadow.camera.top = 8;   
+    dirLight.shadow.camera.bottom = -8;
+    // NOUVEAU : Le lissage magique qui cache la pixellisation
+    dirLight.shadow.radius = 4; 
+    dirLight.shadow.normalBias = 0.02; // Évite les bugs de hachures sur les murs plats
     scene.add(dirLight);
 
 
@@ -1811,6 +1817,8 @@ for (let i = 0; i < 4; i++) {
     lSpot.penumbra = 0.8;
     lSpot.distance = 5;
     lSpot.decay = 1.6;
+    lSpot.shadow.radius = 4;
+    lSpot.shadow.normalBias = 0.02;
     lSpot.castShadow = true;
 
     // Le faisceau vise le centre parfait de la pièce (l'avatar)
