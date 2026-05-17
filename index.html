@@ -2839,44 +2839,45 @@ if (!state.isSleeping && currentRoomAvatar) {
         }
       
          // =========================================================
-        // --- APPLICATION DU ZOOM FLUIDE & ANCRAGE SUR L'AVATAR ---
+        // --- APPLICATION DU ZOOM FLUIDE & ANCRAGE INTELLIGENT ---
         // =========================================================
         if (window.targetCamZoom && currentRoomAvatar) {
-            // 1. Appliquer le smooth zoom existant
+            
+            // 1. Appliquer le smooth zoom
             camera.zoom += (window.targetCamZoom - camera.zoom) * 0.1;
             camera.updateProjectionMatrix();
 
-            // 2. CALCUL DU FOCUS (SUBTIL)
-            // On calcule une force entre 0 (dézoomé) et 1 (zoomé à fond)
-            // MIN_ZOOM=0.5, MAX_ZOOM=3.0 (définis dans l'étape précédente)
-            const zoomVal = camera.zoom;
-            let focusStrength = Math.max(0, (zoomVal - 1.0) / (3.0 - 1.0));
+            // 2. CALCUL DE LA FORCE DE FOCUS (L'ancrage conditionnel)
+            // C'est le seuil de zoom à partir duquel on considère que la room est visible en entier.
+            const ZOOM_THRESHOLD = 1.1; 
+            let focusStrength = 0; // Par défaut, on ne suit pas (0%)
             
-            // "Subtilement" : On bride la force à 70%. La caméra se rapproche de
-            // l'avatar mais ne le centre jamais totalement (conserve le contexte).
-            focusStrength = Math.min(focusStrength, 0.6); 
+            if (camera.zoom > ZOOM_THRESHOLD) {
+                // Plus on zoome au-delà du seuil, plus le focus augmente
+                focusStrength = (camera.zoom - ZOOM_THRESHOLD) / (3.0 - ZOOM_THRESHOLD);
+                focusStrength = Math.min(focusStrength, 0.7); // On bride à 70% max pour la subtilité
+            }
             
-            // 3. OBTENIR LA POSITION DE L'AVATAR
+            // 3. Obtenir la position de l'avatar
             const avatarFocusPoint = new THREE.Vector3();
             currentRoomAvatar.getWorldPosition(avatarFocusPoint);
-            avatarFocusPoint.y += 1.0; // Vise le centre de l'avatar, pas ses pieds
+            avatarFocusPoint.y += 1.0; 
 
-            // 4. INTERPOLATION SMOOTH DE LA VISÉE
-            // On fait glisser window.smoothCamTarget du centre (0,0,0) vers l'avatar
-            window.smoothCamTarget.lerp(avatarFocusPoint, 0.1); 
+            // 4. LE SECRET : Mixer le centre de la pièce et l'avatar
+            const roomCenter = new THREE.Vector3(0, 0, 0); // Centre parfait de la Room
+            // Si focusStrength = 0, on vise le centre. S'il monte, on glisse vers l'avatar.
+            const idealTarget = roomCenter.clone().lerp(avatarFocusPoint, focusStrength);
 
-            // 5. CALCUL DE LA NOUVELLE POSITION DE LA CAMÉRA
-            // Pour garder l'angle isométrique, la caméra doit glisser
-            // horizontalement au-dessus de la pièce.
-            // On glisse de baseCameraPosition (10,10,10) vers (avatar.x+10, 10, avatar.z+10)
-            const targetCamPosition = window.baseCameraPosition.clone().add(
+            // 5. Interpolation Smooth de la caméra
+            window.smoothCamTarget.lerp(idealTarget, 0.1); 
+
+            // 6. Placement de la caméra (basé sur 20, 20, 20 pour respecter ton plan de vue d'origine)
+            const baseCamPos = new THREE.Vector3(20, 20, 20);
+            const targetCamPosition = baseCamPos.add(
                 new THREE.Vector3(window.smoothCamTarget.x, 0, window.smoothCamTarget.z)
             );
             
-            // Appliquer le mouvement smooth physique de la caméra
             camera.position.lerp(targetCamPosition, 0.1); 
-
-            // 6. OBLIGATOIRE : Redire à la caméra de regarder le nouveau centre smooth
             camera.lookAt(window.smoothCamTarget);
         }
         // =========================================================
