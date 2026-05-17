@@ -1728,7 +1728,70 @@ for (let i = 0; i < 4; i++) {
     }
 }
 
-// Ampoule (Off par défaut)
+// ==========================================
+    // LAMPE PIXAR (Sur le Rack Analogique)
+    // ==========================================
+    const lampGroup = new THREE.Group();
+    // Le rack fait environ 1.8 de haut, on pose la lampe sur le sommet
+    lampGroup.position.set(0, 1.9, 0);
+
+    // --- NOUVEAU : AJUSTEMENTS DE TAILLE ET D'ORIENTATION ---
+    // Agrandit toute la structure (géométries et lumières) de 60%
+    lampGroup.scale.set(1.6, 1.6, 1.6);
+
+    // Pivote la lampe de 45 degrés vers la gauche (le centre de la chambre)
+    lampGroup.rotation.y = -Math.PI / 3;
+
+    const lampMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.4, metalness: 0.8 }); // Métal sombre
+    const jointMat = new THREE.MeshStandardMaterial({ color: '#9ca3af', roughness: 0.5, metalness: 0.9 }); // Articulations
+    
+    // Fonction locale pour garder les jolis contours noirs du jeu
+    function addLampEdges(mesh) {
+        const edges = new THREE.EdgesGeometry(mesh.geometry);
+        mesh.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 })));
+    }
+
+    // 1. Socle
+    const lBase = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.06, 16), lampMat);
+    lBase.position.y = 0.03;
+    addLampEdges(lBase);
+    lampGroup.add(lBase);
+
+    // 2. Bras Inférieur (Penché en avant)
+    const lArm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.45), lampMat);
+    lArm1.position.set(0, 0.22, 0.15);
+    lArm1.rotation.x = Math.PI / 4; // 45 degrés
+    addLampEdges(lArm1);
+    lampGroup.add(lArm1);
+
+    // 3. Jointure centrale (Coude)
+    const lJoint = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.05, 12), jointMat);
+    lJoint.rotation.z = Math.PI / 2;
+    lJoint.position.set(0, 0.38, 0.31);
+    addLampEdges(lJoint);
+    lampGroup.add(lJoint);
+
+    // 4. Bras Supérieur (Revient vers le haut/arrière)
+    const lArm2 = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.4), lampMat);
+    lArm2.position.set(0, 0.55, 0.21);
+    lArm2.rotation.x = -Math.PI / 6; // -30 degrés
+    addLampEdges(lArm2);
+    lampGroup.add(lArm2);
+
+    // 5. Tête de la lampe (Abat-jour + Ampoule + Lumière)
+    const lHeadGroup = new THREE.Group();
+    lHeadGroup.position.set(0, 0.72, 0.11);
+  // On penche juste la tête vers le bas (la base a déjà tourné vers l'avatar)
+    lHeadGroup.rotation.x = Math.PI / 4; 
+    lHeadGroup.rotation.y = 0;
+
+    // Abat-jour conique
+    const lShade = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.16, 0.25, 16), lampMat);
+    lShade.position.set(0, -0.1, 0);
+    addLampEdges(lShade);
+
+
+    // Ampoule (Off par défaut)
 const lBulbMat = new THREE.MeshStandardMaterial({ 
     color: '#fef08a', 
     emissive: '#fef08a', 
