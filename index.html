@@ -3477,19 +3477,24 @@ group.add(createLeg(-1), createLeg(1));
     playBleep();
 }
 
-    function updateDawPlugins() {
+   function updateDawPlugins() {
         const select = document.getElementById('daw-plugin');
-        const availableCracks = state.ownedCracks || state.inventory || [];
+        
+        // FIX : Fusion sécurisée des anciens et nouveaux inventaires
+        const safeOwned = Array.isArray(state.ownedCracks) ? state.ownedCracks : [];
+        const safeInv = Array.isArray(state.inventory) ? state.inventory : [];
+        const availableCracks = [...new Set([...safeOwned, ...safeInv])];
+        
         let html = '<option value="">- Clean Mix (No Plugin) -</option>';
 
         if (availableCracks.length > 0) {
             availableCracks.forEach((crackId) => {
-           const c = cracks.find(x => x.id === crackId);
-        if (c) html += `<option value="${c.id}">Use: ${c.name}</option>`;
-    });
-}
+                const c = cracks.find(x => x.id === crackId);
+                if (c) html += `<option value="${c.id}">Use: ${c.name}</option>`;
+            });
+        }
 
-        select.innerHTML = html;
+        if (select) select.innerHTML = html;
     }
 
     // ==========================================
@@ -4072,8 +4077,17 @@ group.add(createLeg(-1), createLeg(1));
             result.score = 3;
             if (Math.random() > 0.5) { critique = "\nXray Antidote : Hit absolu, mais Bad Buzz de tricheur (-20 REP)."; repGain -= 20; }
             else critique = "\nXray Antidote : Algos bypassés. Personne n'a remarqué. Hit assuré.";
+            // --- NOUVEAU : CONSOMMATION DU PLUGIN (SINGLE-USE) ---
+            state.ownedCracks = (state.ownedCracks || []).filter(id => id !== pluginId);
+            state.inventory = (state.inventory || []).filter(id => id !== pluginId);
+            
+            // Met à jour l'UI instantanément pour refléter la perte du plugin
+            updateDawPlugins();
+            renderStore('crackz'); // Le plugin redevient achetable/téléchargeable
+            // -------------------------------------------------------
         }
-
+        }
+        
         if (result.score === 3) {
             resultTxt = "🔥 PERFECT BANGER! (Top Charts)"; state.stats.bangers++; playSuccess();
             if (result.rewardType === 'money')     { moneyGain = 600;  repGain += 15; }
