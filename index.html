@@ -1310,6 +1310,34 @@
     const listener = new THREE.AudioListener();
     camera.add(listener);
 
+
+
+    // ==========================================
+    // MÉMOIRE DES TOUCHES CLAVIER
+    // ==========================================
+    window.kbdState = { up: false, down: false, left: false, right: false };
+
+    window.addEventListener('keydown', (e) => {
+        // Sécurité : On ignore le clavier si on est sur l'OS du PC ou si on tape du texte
+        if (document.getElementById('pc-ui-layer').style.display === 'flex') return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const k = e.key.toLowerCase();
+        if (k === 'z' || k === 'w' || e.key === 'ArrowUp') window.kbdState.up = true;
+        if (k === 's' || e.key === 'ArrowDown') window.kbdState.down = true;
+        if (k === 'q' || k === 'a' || e.key === 'ArrowLeft') window.kbdState.left = true;
+        if (k === 'd' || e.key === 'ArrowRight') window.kbdState.right = true;
+    });
+
+    window.addEventListener('keyup', (e) => {
+        const k = e.key.toLowerCase();
+        if (k === 'z' || k === 'w' || e.key === 'ArrowUp') window.kbdState.up = false;
+        if (k === 's' || e.key === 'ArrowDown') window.kbdState.down = false;
+        if (k === 'q' || k === 'a' || e.key === 'ArrowLeft') window.kbdState.left = false;
+        if (k === 'd' || e.key === 'ArrowRight') window.kbdState.right = false;
+    });
+
+    
     // EVENEMENT RESIZE GLOBAL
     window.addEventListener('resize', () => {
         setTimeout(() => {
@@ -2596,8 +2624,51 @@ function rotateAvatarToward(target, smooth = 0.12) {
         
         if (currentRoomAvatar) {
             let isMoving = false;
-            // --- 1. DÉPLACEMENT & ROTATION SÉCURISÉS ---
-            if (targetPosition) {
+            
+            // ==========================================
+            // --- 1A. GESTION DU CLAVIER (ZQSD / WASD / FLÈCHES) ---
+            // ==========================================
+            let kbdDirX = 0;
+            let kbdDirZ = 0;
+            
+            // On vérifie qu'on n'est pas bloqué par une animation (Dodo, Event)
+            if (!state.isSleeping && !state.isEventActive) {
+                if (window.kbdState.up) kbdDirZ -= 1;
+                if (window.kbdState.down) kbdDirZ += 1;
+                if (window.kbdState.left) kbdDirX -= 1;
+                if (window.kbdState.right) kbdDirX += 1;
+            }
+
+            if (kbdDirX !== 0 || kbdDirZ !== 0) {
+                isMoving = true;
+                targetPosition = null; // Annule le déplacement à la souris si on touche au clavier
+
+                // Normalise le vecteur pour ne pas courir plus vite en diagonale
+                const length = Math.sqrt(kbdDirX * kbdDirX + kbdDirZ * kbdDirZ);
+                kbdDirX /= length;
+                kbdDirZ /= length;
+
+                const speed = 0.05; // Vitesse de marche au clavier
+                const nextX = currentRoomAvatar.position.x + kbdDirX * speed;
+                const nextZ = currentRoomAvatar.position.z + kbdDirZ * speed;
+
+                // Rotation douce de l'avatar
+                const targetYaw = Math.atan2(kbdDirX, kbdDirZ);
+                const currentYaw = currentRoomAvatar.rotation.y;
+                currentRoomAvatar.rotation.y = currentYaw + normalizeAngle(targetYaw - currentYaw) * 0.15;
+
+                // Applique le mouvement avec détection des collisions
+                if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
+                    currentRoomAvatar.position.x = nextX;
+                }
+                if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
+                    currentRoomAvatar.position.z = nextZ;
+                }
+            } 
+            // ==========================================
+            // --- 1B. DÉPLACEMENT À LA SOURIS (Clic) ---
+            // ==========================================
+            else if (targetPosition) {
                 const currentFlatPos = new THREE.Vector2(currentRoomAvatar.position.x, currentRoomAvatar.position.z);
                 const targetFlatPos = new THREE.Vector2(targetPosition.x, targetPosition.z);
                 const distance = currentFlatPos.distanceTo(targetFlatPos);
