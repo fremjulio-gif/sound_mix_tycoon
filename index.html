@@ -2393,37 +2393,66 @@ scene.add(synthGroup);
 
 
 function togglePixarLamp() {
+        console.log("💡 Tentative d'allumage de la lampe...");
+
         const lamp = window.pixarLamp;
-        if (!lamp) return;
+        if (!lamp) {
+            console.error("❌ Erreur : window.pixarLamp est introuvable.");
+            return;
+        }
 
         const data = lamp.userData;
-        data.isOn = !data.isOn; // Inverse l'état
+        data.isOn = !data.isOn; 
 
-        // On cherche la lumière principale grâce au nom qu'on lui a donné
-        const mainLight = scene.getObjectByName("mainRoomLight");
+        // --- ASTUCE : On remonte jusqu'à la scène globale sans utiliser la variable 'scene' ---
+        let currentRoot = lamp;
+        while (currentRoot.parent) {
+            currentRoot = currentRoot.parent;
+        }
+
+        // On cherche toutes les lumières de la pièce (sauf celle de notre lampe Pixar)
+        const roomLights = [];
+        currentRoot.traverse((child) => {
+            if (child.isLight && child !== data.spot) {
+                roomLights.push(child);
+            }
+        });
 
         if (data.isOn) {
+            console.log("ON : Baisse des lumières de la pièce.");
+            
             // Allume la lampe Pixar
-            data.bulbMat.emissiveIntensity = 1.5;
+            data.bulbMat.emissiveIntensity = 2.0; // Un peu plus fort
             data.spot.intensity = 15;
             
-            // Éteint la lumière de la chambre (on laisse 0.1 pour ne pas être dans le noir absolu)
-            if (mainLight) mainLight.intensity = 0.1; 
+            // Baisse drastiquement TOUTES les lumières de la pièce
+            roomLights.forEach(light => {
+                // On sauvegarde leur vraie intensité en cache avant de la modifier
+                if (light.userData.originalIntensity === undefined) {
+                    light.userData.originalIntensity = light.intensity;
+                }
+                // On laisse un tout petit peu de lumière (0.05) pour ne pas être dans le noir total
+                light.intensity = 0.05; 
+            });
             
-            // Feedback sonore optionnel (clic d'interrupteur)
             if (typeof playTone === 'function') playTone(600, 'square', 0.05, 0.05); 
         } else {
+            console.log("OFF : Restauration des lumières de la pièce.");
+            
             // Éteint la lampe Pixar
             data.bulbMat.emissiveIntensity = 0;
             data.spot.intensity = 0;
             
-            // Rallume la chambre (Remplacer "1" par l'intensité par défaut de ta lumière)
-            if (mainLight) mainLight.intensity = 1.0; 
+            // Restaure TOUTES les lumières de la pièce à leur valeur d'origine
+            roomLights.forEach(light => {
+                if (light.userData.originalIntensity !== undefined) {
+                    light.intensity = light.userData.originalIntensity;
+                }
+            });
             
             if (typeof playTone === 'function') playTone(400, 'square', 0.05, 0.05);
         }
     }
-
     
 function rotateAvatarToward(target, smooth = 0.12) {
     if (!currentRoomAvatar || !target) return;
