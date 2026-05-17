@@ -1726,7 +1726,90 @@ for (let i = 0; i < 4; i++) {
     }
 }
 
+// ==========================================
+    // LAMPE PIXAR (Sur le Rack Analogique)
+    // ==========================================
+    const lampGroup = new THREE.Group();
+    // Le rack fait environ 1.8 de haut, on pose la lampe sur le sommet
+    lampGroup.position.set(0, 1.9, 0);
 
+    const lampMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.4, metalness: 0.8 }); // Métal sombre
+    const jointMat = new THREE.MeshStandardMaterial({ color: '#9ca3af', roughness: 0.5, metalness: 0.9 }); // Articulations
+    
+    // Fonction locale pour garder les jolis contours noirs du jeu
+    function addLampEdges(mesh) {
+        const edges = new THREE.EdgesGeometry(mesh.geometry);
+        mesh.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 })));
+    }
+
+    // 1. Socle
+    const lBase = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.06, 16), lampMat);
+    lBase.position.y = 0.03;
+    addLampEdges(lBase);
+    lampGroup.add(lBase);
+
+    // 2. Bras Inférieur (Penché en avant)
+    const lArm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.45), lampMat);
+    lArm1.position.set(0, 0.22, 0.15);
+    lArm1.rotation.x = Math.PI / 4; // 45 degrés
+    addLampEdges(lArm1);
+    lampGroup.add(lArm1);
+
+    // 3. Jointure centrale (Coude)
+    const lJoint = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.05, 12), jointMat);
+    lJoint.rotation.z = Math.PI / 2;
+    lJoint.position.set(0, 0.38, 0.31);
+    addLampEdges(lJoint);
+    lampGroup.add(lJoint);
+
+    // 4. Bras Supérieur (Revient vers le haut/arrière)
+    const lArm2 = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.4), lampMat);
+    lArm2.position.set(0, 0.55, 0.21);
+    lArm2.rotation.x = -Math.PI / 6; // -30 degrés
+    addLampEdges(lArm2);
+    lampGroup.add(lArm2);
+
+    // 5. Tête de la lampe (Abat-jour + Ampoule + Lumière)
+    const lHeadGroup = new THREE.Group();
+    lHeadGroup.position.set(0, 0.72, 0.11);
+    lHeadGroup.rotation.x = Math.PI / 3.5; // On penche la tête vers le bas/avant
+
+    // Abat-jour conique
+    const lShade = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.16, 0.25, 16), lampMat);
+    lShade.position.set(0, -0.1, 0);
+    addLampEdges(lShade);
+    
+    // Ampoule (Jaune chaude et émissive)
+    const lBulbMat = new THREE.MeshStandardMaterial({ color: '#fef08a', emissive: '#fef08a', emissiveIntensity: 1.5 });
+    const lBulb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), lBulbMat);
+    lBulb.position.set(0, -0.18, 0);
+    
+    // Faisceau de lumière (SpotLight) ciblant les machines
+    const lSpot = new THREE.SpotLight('#fef08a', 8); 
+    lSpot.position.set(0, -0.18, 0);
+    lSpot.angle = Math.PI / 4.5;
+    lSpot.penumbra = 0.6;
+    lSpot.distance = 3.5;
+    
+    // Cible invisible pour orienter le faisceau de lumière
+    const lTarget = new THREE.Object3D();
+    lTarget.position.set(0, -1, 0); // Pointe droit devant l'ouverture de l'abat-jour
+    lHeadGroup.add(lTarget);
+    lSpot.target = lTarget;
+
+    lHeadGroup.add(lShade, lBulb, lSpot);
+    lampGroup.add(lHeadGroup);
+
+    // Activation des ombres sur toute la structure
+    lampGroup.traverse(child => { 
+        if (child.isMesh) { 
+            child.castShadow = true; 
+            child.receiveShadow = true; 
+        }
+    });
+
+    // On attache la lampe au rack (elle hérite de sa rotation)
+    rackGroup.add(lampGroup);
 
     scene.add(rackGroup);
 
