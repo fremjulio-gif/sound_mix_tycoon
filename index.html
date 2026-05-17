@@ -1763,6 +1763,26 @@ for (let i = 0; i < 4; i++) {
     addLampEdges(lBase);
     lampGroup.add(lBase);
 
+    // ==========================================
+    // NOUVEAU : INTERRUPTEUR VISUEL (AFFORDANCE)
+    // ==========================================
+    const switchGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.015, 12);
+    const switchMat = new THREE.MeshStandardMaterial({ 
+        color: '#fb7185',        // Un rouge/rose subtil
+        emissive: '#fb7185',     // La même couleur qui émet de la lumière
+        emissiveIntensity: 0.6   // Juste assez pour ressortir dans la pénombre
+    });
+    const lampSwitch = new THREE.Mesh(switchGeo, switchMat);
+    
+    // On le positionne sur l'avant du socle
+    lampSwitch.position.set(0, 0.035, 0.12); 
+    
+    // Assure que le clic fonctionne si le joueur vise pile le bouton
+    lampSwitch.name = "interactiveLamp"; 
+    
+    lBase.add(lampSwitch);
+    // ==========================================
+
     // 2. Bras Inférieur (Penché en avant)
     const lArm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.45), lampMat);
     lArm1.position.set(0, 0.22, 0.15);
@@ -1819,6 +1839,11 @@ for (let i = 0; i < 4; i++) {
     lSpot.decay = 1.6;
     lSpot.shadow.radius = 4;
     lSpot.shadow.normalBias = 0.02;
+    // Définit la netteté de l'ombre (1024 ou 2048 pour effacer l'effet escalier)
+    lSpot.shadow.mapSize.width = 2048;
+    lSpot.shadow.mapSize.height = 2048;
+
+    
     lSpot.castShadow = true;
 
     // Le faisceau vise le centre parfait de la pièce (l'avatar)
