@@ -1881,18 +1881,17 @@ for (let i = 0; i < 4; i++) {
         singlePanelGroup.add(ridge);
     }
 
-    // 2. Fonction pour plaquer une grille de panneaux sur n'importe quel mur
+    // 2. Fonction pour plaquer une grille de panneaux sur n'importe quel mur + Cadre LED
     function createAcousticWall(startX, startY, startZ, isLeftWall) {
         for (let col = 0; col < 3; col++) {
             for (let row = 0; row < 2; row++) {
                 const panel = singlePanelGroup.clone();
                 
-                // On tourne 1 panneau sur 2 à 90° pour le vrai style studio
                 if ((col + row) % 2 === 0) panel.rotation.z = Math.PI / 2;
 
                 if (isLeftWall) {
                     panel.position.set(startX, startY + (row * 0.75), startZ + (col * 0.75));
-                    panel.rotation.y = Math.PI / 2; // Orienté vers la pièce
+                    panel.rotation.y = Math.PI / 2;
                 } else {
                     panel.position.set(startX + (col * 0.75), startY + (row * 0.75), startZ);
                 }
@@ -1900,6 +1899,67 @@ for (let i = 0; i < 4; i++) {
                 acousticGroup.add(panel);
             }
         }
+
+        // ==========================================
+        // AJOUT DES BANDES LEDS / NÉONS (AUTOUR)
+        // ==========================================
+        const gridW = 2.15; // Largeur totale de la grille 3x2
+        const gridH = 1.40; // Hauteur totale de la grille 3x2
+        const centerX = isLeftWall ? startX : startX + 0.75;
+        const centerY = startY + 0.375;
+        const centerZ = isLeftWall ? startZ + 0.75 : startZ;
+
+        // Matériau unique par cadre pour pouvoir les piloter indépendamment
+        const neonMat = new THREE.MeshStandardMaterial({
+            color: '#818cf8',
+            emissive: '#818cf8',
+            emissiveIntensity: 0, // Éteint de base
+            roughness: 0.1
+        });
+
+        const tubeGeoH = new THREE.BoxGeometry(gridW, 0.02, 0.02);
+        const tubeGeoV = new THREE.BoxGeometry(0.02, gridH, 0.02);
+        const frame = new THREE.Group();
+
+        if (!isLeftWall) {
+            // Mur du fond (Cadre aligné sur l'axe X/Y)
+            const top = new THREE.Mesh(tubeGeoH, neonMat);
+            top.position.set(centerX, centerY + gridH/2 + 0.05, centerZ + 0.04);
+            const bottom = new THREE.Mesh(tubeGeoH, neonMat);
+            bottom.position.set(centerX, centerY - gridH/2 - 0.05, centerZ + 0.04);
+            const left = new THREE.Mesh(tubeGeoV, neonMat);
+            left.position.set(centerX - gridW/2 - 0.05, centerY, centerZ + 0.04);
+            const right = new THREE.Mesh(tubeGeoV, neonMat);
+            right.position.set(centerX + gridW/2 + 0.05, centerY, centerZ + 0.04);
+            frame.add(top, bottom, left, right);
+        } else {
+            // Mur de gauche (Cadre aligné sur l'axe Z/Y)
+            const top = new THREE.Mesh(tubeGeoH, neonMat);
+            top.rotation.y = Math.PI / 2;
+            top.position.set(startX + 0.04, centerY + gridH/2 + 0.05, centerZ);
+            const bottom = new THREE.Mesh(tubeGeoH, neonMat);
+            bottom.rotation.y = Math.PI / 2;
+            bottom.position.set(startX + 0.04, centerY - gridH/2 - 0.05, centerZ);
+            const left = new THREE.Mesh(tubeGeoV, neonMat);
+            left.position.set(startX + 0.04, centerY, centerZ - gridW/2 - 0.05);
+            const right = new THREE.Mesh(tubeGeoV, neonMat);
+            right.position.set(startX + 0.04, centerY, centerZ + gridW/2 + 0.05);
+            frame.add(top, bottom, left, right);
+        }
+
+        // Lumière omnidirectionnelle très douce pour l'effet de halo diffusé sur le mur
+        const neonLight = new THREE.PointLight('#818cf8', 0, 6, 1.2);
+        neonLight.position.set(
+            isLeftWall ? startX + 0.15 : centerX,
+            centerY,
+            isLeftWall ? centerZ : startZ + 0.15
+        );
+        frame.add(neonLight);
+        acousticGroup.add(frame);
+
+        // Enregistrement global pour l'interrupteur
+        if (!window.acousticNeons) window.acousticNeons = [];
+        window.acousticNeons.push({ material: neonMat, light: neonLight });
     }
 
     // Mur du fond (Derrière l'écran / bureau)
@@ -2422,56 +2482,38 @@ function togglePixarLamp() {
     const spot    = lamp.userData.spot;
     const bulb    = lamp.userData.bulb;
     const ceiling = scene.getObjectByName("ceilingLight");
-    const mainLight = scene.getObjectByName("mainRoomLight"); // On récupère la lumière principale
+    const mainLight = scene.getObjectByName("mainRoomLight");
 
     if (lamp.userData.isOn) {
-        // --- 1. ON BOOST LA LAMPE PIXAR ---
-        if (spot) {
-            spot.intensity = 80; // Puissance du projecteur considérablement augmentée
-            spot.visible   = true;
-        }
-        if (bulb) {
-            bulb.material.emissive.set('#fef08a');
-            bulb.material.emissiveIntensity = 8.0; // L'ampoule brille beaucoup plus
-            bulb.material.needsUpdate = true;
-        }
-        
-        // --- 2. ON ASSOMBRIT LE RESTE DE LA PIÈCE ---
-        if (ceiling) {
-            ceiling.userData.savedIntensity = ceiling.intensity;
-            ceiling.intensity = 0.0; // On coupe la lumière du plafond
-        }
-        if (mainLight) {
-            mainLight.userData.savedIntensity = mainLight.intensity;
-            mainLight.intensity = 0.1; // On réduit le "soleil" à presque rien
-        }
-        if (typeof hemiLight !== 'undefined') {
-            hemiLight.userData.savedIntensity = hemiLight.intensity;
-            hemiLight.intensity = 0.2; // On réduit la lumière ambiante globale
+        if (spot) { spot.intensity = 80; spot.visible = true; }
+        if (bulb) { bulb.material.emissive.set('#fef08a'); bulb.material.emissiveIntensity = 8.0; bulb.material.needsUpdate = true; }
+        if (ceiling) { ceiling.userData.savedIntensity = ceiling.intensity; ceiling.intensity = 0.0; }
+        if (mainLight) { mainLight.userData.savedIntensity = mainLight.intensity; mainLight.intensity = 0.05; }
+        if (typeof hemiLight !== 'undefined') { hemiLight.userData.savedIntensity = hemiLight.intensity; hemiLight.intensity = 0.1; }
+
+        // === ALLUMER LES NÉONS ACOUSTIQUES ===
+        if (window.acousticNeons) {
+            window.acousticNeons.forEach(neon => {
+                neon.material.emissiveIntensity = 5.0; // Fait briller la bande LED
+                neon.light.intensity = 12;            // Active le halo diffus sur le mur
+            });
         }
 
         if (typeof playTone === 'function') playTone(600, 'square', 0.05, 0.05);
         
     } else {
-        // --- 3. ON ÉTEINT LA PIXAR ET ON RALLUME LA PIÈCE ---
-        if (spot) {
-            spot.intensity = 0;
-            spot.visible   = false;
-        }
-        if (bulb) {
-            bulb.material.emissiveIntensity = 0;
-            bulb.material.needsUpdate = true;
-        }
-        
-        // Restauration des lumières avec leurs valeurs par défaut de secours
-        if (ceiling) {
-            ceiling.intensity = ceiling.userData.savedIntensity ?? 35;
-        }
-        if (mainLight) {
-            mainLight.intensity = mainLight.userData.savedIntensity ?? 0.8;
-        }
-        if (typeof hemiLight !== 'undefined') {
-            hemiLight.intensity = hemiLight.userData.savedIntensity ?? 0.55;
+        if (spot) { spot.intensity = 0; spot.visible = false; }
+        if (bulb) { bulb.material.emissiveIntensity = 0; bulb.material.needsUpdate = true; }
+        if (ceiling) { ceiling.intensity = ceiling.userData.savedIntensity ?? 35; }
+        if (mainLight) { mainLight.intensity = mainLight.userData.savedIntensity ?? 0.8; }
+        if (typeof hemiLight !== 'undefined') { hemiLight.intensity = hemiLight.userData.savedIntensity ?? 0.55; }
+
+        // === ÉTEINDRE LES NÉONS ACOUSTIQUES ===
+        if (window.acousticNeons) {
+            window.acousticNeons.forEach(neon => {
+                neon.material.emissiveIntensity = 0.0;
+                neon.light.intensity = 0;
+            });
         }
 
         if (typeof playTone === 'function') playTone(400, 'square', 0.05, 0.05);
