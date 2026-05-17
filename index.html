@@ -2630,48 +2630,41 @@ if (!state.isSleeping && currentRoomAvatar) {
             camera.lookAt(cameraLookTarget);
         }
 
-        // --- SUIVI DYNAMIQUE DE LA LAMPE PIXAR ---
-    // On vérifie que la lampe est allumée et que l'avatar existe
-    // --- SUIVI DYNAMIQUE DE LA LAMPE PIXAR (VERSION DIAGNOSTIC) ---
-    if (window.pixarLamp && window.pixarLamp.userData.isOn) {
-        
-        // 1. Tests de présence (ça va crier dans la console s'il manque un truc)
-        if (!window.avatar) {
-            console.error("🚨 CRASH SUIVI : window.avatar est introuvable. Le perso n'a pas été exporté globalement.");
-        }
-        
-        const head = scene.getObjectByName("pixar_head_group");
-        if (!head) {
-            console.error("🚨 CRASH SUIVI : 'pixar_head_group' introuvable. La tête n'a pas été renommée lors de sa création.");
-        }
-        
-        const spot = scene.getObjectByName("pixar_spotlight");
-        if (!spot) {
-            console.error("🚨 CRASH SUIVI : 'pixar_spotlight' introuvable.");
-        }
+       // --- SUIVI DYNAMIQUE DE LA LAMPE PIXAR ---
+        if (window.pixarLamp && window.pixarLamp.userData.isOn) {
+            
+            const head = scene.getObjectByName("pixar_head_group");
+            const spot = scene.getObjectByName("pixar_spotlight");
 
-        // 2. Si les trois éléments sont bien là, on lance la mécanique
-        if (window.avatar && head && spot) {
-            
-            // Le spot vise l'avatar
-            spot.target.position.copy(window.avatar.position);
-            
-            // Calcul mathématique pour tordre le cou de la lampe
-            const targetPos = new THREE.Vector3();
-            window.avatar.getWorldPosition(targetPos);
-            head.parent.worldToLocal(targetPos);
-            
-            const angleY = Math.atan2(targetPos.x - head.position.x, targetPos.z - head.position.z);
-            head.rotation.y = angleY;
-            
-            const distanceH = Math.sqrt(
-                Math.pow(targetPos.x - head.position.x, 2) + 
-                Math.pow(targetPos.z - head.position.z, 2)
-            );
-            const angleX = Math.atan2(head.position.y - targetPos.y, distanceH);
-            head.rotation.x = angleX + Math.PI / 6; 
+            // On utilise la vraie variable de déplacement de ton jeu : currentRoomAvatar
+            if (currentRoomAvatar && head && spot) {
+                
+                // 1. Le spot lumineux vise l'avatar (+1.0 en Y pour viser le torse/la tête)
+                spot.target.position.copy(currentRoomAvatar.position);
+                spot.target.position.y += 1.0; 
+                
+                // 2. Calcul mathématique pour tordre le cou de la lampe
+                const targetPos = new THREE.Vector3();
+                currentRoomAvatar.getWorldPosition(targetPos);
+                targetPos.y += 1.0; // On vise aussi le haut du corps pour le mesh
+                
+                // Convertit la position mondiale en position locale pour la lampe
+                head.parent.worldToLocal(targetPos);
+                
+                // 3. Rotation Y (Gauche/Droite)
+                const angleY = Math.atan2(targetPos.x - head.position.x, targetPos.z - head.position.z);
+                head.rotation.y = angleY;
+                
+                // 4. Rotation X (Haut/Bas)
+                const distanceH = Math.sqrt(
+                    Math.pow(targetPos.x - head.position.x, 2) + 
+                    Math.pow(targetPos.z - head.position.z, 2)
+                );
+                const angleX = Math.atan2(head.position.y - targetPos.y, distanceH);
+                head.rotation.x = angleX + Math.PI / 6; 
+            }
         }
-    }
+        // ---------------------------------------------------------
     
         
 
@@ -3205,8 +3198,6 @@ group.add(createLeg(-1), createLeg(1));
             const armR = new THREE.Mesh(armGeo, blackMat); armR.position.set(0.28, -0.05, 0.15);
             headGroup.add(shadeL, shadeR, bridge, armL, armR);
         }
-
-        window.avatar = avatarGroup;
         
         return group;
     }
