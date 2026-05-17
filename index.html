@@ -2863,6 +2863,11 @@ if (!state.isSleeping && currentRoomAvatar) {
             currentRoomAvatar.getWorldPosition(avatarFocusPoint);
             avatarFocusPoint.y += 1.0; 
 
+            // --- FIX CADRAGE ---
+            // On décale la visée de +2.0 vers le haut (ce qui va faire descendre la pièce sur l'écran)
+            const yOffset = 2.0; 
+            avatarFocusPoint.y += yOffset;
+
             // 4. LE SECRET : Mixer le centre de la pièce et l'avatar
             const roomCenter = new THREE.Vector3(0, 0, 0); // Centre parfait de la Room
             // Si focusStrength = 0, on vise le centre. S'il monte, on glisse vers l'avatar.
