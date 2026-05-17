@@ -769,6 +769,7 @@
         .pr-grid-row { 
             height: 24px; display: flex; box-sizing: border-box; flex-shrink: 0;
             border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: relative;
         }
         .bg-black-key { background: rgba(0,0,0,0.6); }
         .bg-white-key { background: rgba(255,255,255,0.03); }
@@ -3164,44 +3165,41 @@ group.add(createLeg(-1), createLeg(1));
     }
 
     function renderPrNotes() {
-        const grid = document.getElementById('pr-grid-container');
-        // Nettoie les anciennes notes pour tout redessiner
-        grid.querySelectorAll('.pr-note').forEach(n => n.remove());
+        // Nettoie toutes les notes existantes
+        document.querySelectorAll('.pr-note').forEach(n => n.remove());
         
         const rows = Array.from(document.querySelectorAll('.pr-grid-row'));
         
         prNotes.forEach(note => {
-            const rowIdx = rows.findIndex(r => r.dataset.note === note.note);
-            if(rowIdx === -1) return;
+            const rowEl = rows.find(r => r.dataset.note === note.note);
+            if(!rowEl) return;
 
             const el = document.createElement('div');
             el.className = 'pr-note';
             el.dataset.id = note.id;
+            
+            // La position X dépend uniquement du step, la position Y est réglée automatiquement par la rangée parent !
             el.style.left = (note.startStep * 32) + 'px';
-            el.style.top = (rowIdx * 24) + 'px';
+            el.style.top = '2px'; // Marge visuelle
             el.style.width = (note.duration * 32) + 'px';
             
             const handle = document.createElement('div');
             handle.className = 'pr-note-handle';
             el.appendChild(handle);
-            grid.appendChild(el);
+            
+            // On accroche la note DIRECTEMENT dans sa propre piste
+            rowEl.appendChild(el);
         });
     }
 
-    function initPianoRollEvents() {
+    function initPianoRollEvents() {function initPianoRollEvents() {
         const grid = document.getElementById('pr-grid-container');
         if(!grid) return;
 
-        // Bloque le menu clic droit natif
         grid.addEventListener('contextmenu', e => e.preventDefault());
 
         grid.addEventListener('mousedown', (e) => {
-            const { step, row } = getGridCoords(e, grid);
-            const rows = document.querySelectorAll('.pr-grid-row');
-            if(row < 0 || row >= rows.length) return;
-            const noteName = rows[row].dataset.note;
-
-            // SUPPRESSION (Clic Droit)
+            // SUPPRESSION
             if (e.button === 2) {
                 const noteEl = e.target.closest('.pr-note');
                 if (noteEl) {
@@ -3211,7 +3209,7 @@ group.add(createLeg(-1), createLeg(1));
                 return;
             }
 
-            // REDIMENSIONNEMENT (Clic sur la poignée droite)
+            // REDIMENSIONNEMENT
             if (e.target.classList.contains('pr-note-handle')) {
                 const noteEl = e.target.closest('.pr-note');
                 const noteData = prNotes.find(n => n.id == noteEl.dataset.id);
@@ -3220,24 +3218,29 @@ group.add(createLeg(-1), createLeg(1));
                 return;
             }
 
-            // DEPLACEMENT (Clic sur le corps de la note)
+            // DEPLACEMENT
             if (e.target.closest('.pr-note')) {
                 const noteEl = e.target.closest('.pr-note');
                 const noteData = prNotes.find(n => n.id == noteEl.dataset.id);
                 prDragState = { active: true, type: 'move', noteId: noteData.id, startX: e.clientX };
-                playSynthNote(noteData.note, true); // Écoute la note au clic
+                playSynthNote(noteData.note, true);
                 e.stopPropagation();
                 return;
             }
 
-            // CREATION (Clic dans le vide)
-            const newNote = { id: prNoteIdCounter++, note: noteName, startStep: step, duration: 1 };
-            prNotes.push(newNote);
-            playSynthNote(noteName, true);
-            renderPrNotes();
-            
-            // Enchaîne direct sur le mode resize pour une création fluide (Drag to draw)
-            prDragState = { active: true, type: 'resize', noteId: newNote.id, startX: e.clientX, initialDur: 1 };
+            // CREATION : On lit simplement les datas de la cellule sous le curseur
+            const cell = e.target.closest('.pr-cell');
+            if (cell) {
+                const step = parseInt(cell.dataset.step, 10);
+                const noteName = cell.dataset.note;
+                
+                const newNote = { id: prNoteIdCounter++, note: noteName, startStep: step, duration: 1 };
+                prNotes.push(newNote);
+                playSynthNote(noteName, true);
+                renderPrNotes();
+                
+                prDragState = { active: true, type: 'resize', noteId: newNote.id, startX: e.clientX, initialDur: 1 };
+            }
         });
 
         document.addEventListener('mousemove', (e) => {
@@ -3251,20 +3254,25 @@ group.add(createLeg(-1), createLeg(1));
                 note.duration = Math.max(1, prDragState.initialDur + addedSteps);
                 renderPrNotes();
             } else if (prDragState.type === 'move') {
-                const { step, row } = getGridCoords(e, grid);
-                const rows = document.querySelectorAll('.pr-grid-row');
-                if(row >= 0 && row < rows.length) {
-                    note.startStep = Math.max(0, step);
-                    note.note = rows[row].dataset.note;
+                // On rend la note "fantôme" au clic pour que la souris puisse voir la cellule de la grille située en dessous
+                const draggedNoteEl = document.querySelector(`.pr-note[data-id="${note.id}"]`);
+                if (draggedNoteEl) draggedNoteEl.style.pointerEvents = 'none';
+                
+                const cell = document.elementFromPoint(e.clientX, e.clientY)?.closest('.pr-cell');
+                if (cell) {
+                    note.startStep = parseInt(cell.dataset.step, 10);
+                    note.note = cell.dataset.note;
                     renderPrNotes();
                 }
+                
+                if (draggedNoteEl) draggedNoteEl.style.pointerEvents = 'auto';
             }
         });
 
         document.addEventListener('mouseup', () => {
             if (prDragState.active) {
                 const note = prNotes.find(n => n.id === prDragState.noteId);
-                if (note) playSynthNote(note.note, false); // Coupe le son au relâchement
+                if (note) playSynthNote(note.note, false);
                 prDragState.active = false;
             }
         });
@@ -4487,9 +4495,9 @@ desc.innerHTML = textesCollab[Math.floor(Math.random() * textesCollab.length)];
             const textesVol = [
                 `Belek à toi, <span class="text-white font-bold text-base">"${voleur}"</span> t'a volé une prod pour son nouvel album. Que souhaites-tu faire ?`,
     
-                `Coup dur ! <span class="text-white font-bold text-base">"${voleur}"</span> a rippé ton dernier beat sur SoundNet sans te créditer. On gère ça comment ?`,
+                `Coup dur ! <span class="text-white font-bold text-base">"${voleur}"</span> a péta ton dernier beat sur SoundNet sans te créditer. On gère ça comment ?`,
     
-                `Une de tes vieilles loop s'est retrouvée miraculeusement sur le projet de <span class="text-white font-bold text-base">"${voleur}"</span>. Ça sent la douille...`
+                `Une de tes vieilles loop s'est retrouvée sur le projet de <span class="text-white font-bold text-base">"${voleur}"</span>. Ça sent la douille...`
 ];
 
             // 2. On en tire une au hasard
