@@ -2625,11 +2625,6 @@ if (!state.isSleeping && currentRoomAvatar) {
 
         
         const intersects = raycaster.intersectObjects(scene.children, true);
-        // --- NOUVEAU : Interception de la lampe ---
-            if (clickedObject.name === "interactiveLamp") {
-                togglePixarLamp();
-                return; // Stoppe l'exécution ici : l'avatar ne marchera pas vers la lampe
-            }
         for (let i = 0; i < intersects.length; i++) {
             if (intersects[i].object.name === 'pc_mesh') { 
                 enterPC(); 
@@ -2664,6 +2659,12 @@ if (!state.isSleeping && currentRoomAvatar) {
 
                 targetPosition = new THREE.Vector3(snappedX, -0.74, snappedZ);
                 break;
+
+                 // --- NOUVEAU : Interception de la lampe ---
+            if (clickedObject.name === "interactiveLamp") {
+                togglePixarLamp();
+                return; // Stoppe l'exécution ici : l'avatar ne marchera pas vers la lampe
+                }
             }
         }
     }
