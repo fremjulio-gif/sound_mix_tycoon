@@ -230,7 +230,7 @@
             100% { filter: hue-rotate(0deg) brightness(1); transform: scale(1); }
         }
         .mood-animated {
-            animation: moodDrift 8s infinite ease-in-out;
+            animation: moodDrift 30s infinite ease-in-out;
             transition: background 1s ease-in-out, filter 0.5s ease;
         }
         
@@ -4169,15 +4169,24 @@ saveGame(); updateHUD(); updateCooldownUIs();
 
     let isTapeRecording = true;
 
+let isTapeRecording = true;
+
 function toggleSecretTape() {
     isTapeRecording = !isTapeRecording;
     const reel1 = document.getElementById('tape-reel-1');
     const reel2 = document.getElementById('tape-reel-2');
     const status = document.getElementById('tape-status');
+    
+    // --- NOUVEAU : Ciblage des animations de la Signal Chain ---
+    const signalElements = document.querySelectorAll('.signal-line, .signal-node');
 
     if (isTapeRecording) {
         reel1.classList.remove('tape-paused');
         reel2.classList.remove('tape-paused');
+        
+        // Reprise du flux de la Signal Chain
+        signalElements.forEach(el => el.classList.remove('tape-paused'));
+
         status.innerText = "REC";
         status.className = "text-[10px] font-retro text-[var(--retro-red)] animate-pulse font-bold drop-shadow-[0_0_5px_var(--retro-red)]";
         showToast('Secret tape en cours d\'enregistrement.', 'info');
@@ -4185,6 +4194,10 @@ function toggleSecretTape() {
     } else {
         reel1.classList.add('tape-paused');
         reel2.classList.add('tape-paused');
+        
+        // Gel immédiat du flux de la Signal Chain (Glow et Lignes figés)
+        signalElements.forEach(el => el.classList.add('tape-paused'));
+
         status.innerText = "STOP";
         status.className = "text-[10px] font-retro text-gray-500 font-bold";
         showToast('Secret tape mise en pause.', 'info');
