@@ -29,6 +29,22 @@
             --bg-color-4: #312e81;
         }
 
+
+
+
+        /* 0.1 --- PIANO ROLL NOTES --- */
+        .pr-note {
+            position: absolute; height: 20px; background: var(--accent); border-radius: 3px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.4);
+            cursor: grab; z-index: 20; box-sizing: border-box; margin-top: 2px;
+        }
+        .pr-note:active { cursor: grabbing; filter: brightness(1.2); }
+        .pr-note-handle {
+            position: absolute; right: 0; top: 0; bottom: 0; width: 8px;
+            cursor: ew-resize; background: rgba(255,255,255,0.2); border-radius: 0 3px 3px 0;
+        }
+        .pr-note-handle:hover { background: rgba(255,255,255,0.5); }
+        
         /* =========================================
            2. BASE & TYPOGRAPHY
            ========================================= */
@@ -3121,15 +3137,136 @@ group.add(createLeg(-1), createLeg(1));
                     rowDiv.appendChild(cell);
                 }
                 gridWrapper.appendChild(rowDiv);
+
+                let prNotes = []; // Stocke les blocs MIDI { id, note, startStep, duration }
+                let prNoteIdCounter = 0;
+                let prDragState = { active: false, type: null, noteId: null, startX: 0, initialStep: 0, initialDur: 0 };
             });
         });
         
         keysContainer.appendChild(keysWrapper);
         gridContainer.appendChild(gridWrapper);
+        
 
         // Synchro du scroll vertical entre le clavier et la grille
         gridContainer.addEventListener('scroll', () => {
             keysContainer.scrollTop = gridContainer.scrollTop;
+        });
+    }
+
+    function getGridCoords(e, container) {
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left + container.scrollLeft;
+        const y = e.clientY - rect.top + container.scrollTop;
+        const step = Math.floor(x / 32); // 32px de largeur de cellule
+        const row = Math.floor(y / 24);  // 24px de hauteur de ligne
+        return { step, row };
+    }
+
+    function renderPrNotes() {
+        const grid = document.getElementById('pr-grid-container');
+        // Nettoie les anciennes notes pour tout redessiner
+        grid.querySelectorAll('.pr-note').forEach(n => n.remove());
+        
+        const rows = Array.from(document.querySelectorAll('.pr-grid-row'));
+        
+        prNotes.forEach(note => {
+            const rowIdx = rows.findIndex(r => r.dataset.note === note.note);
+            if(rowIdx === -1) return;
+
+            const el = document.createElement('div');
+            el.className = 'pr-note';
+            el.dataset.id = note.id;
+            el.style.left = (note.startStep * 32) + 'px';
+            el.style.top = (rowIdx * 24) + 'px';
+            el.style.width = (note.duration * 32) + 'px';
+            
+            const handle = document.createElement('div');
+            handle.className = 'pr-note-handle';
+            el.appendChild(handle);
+            grid.appendChild(el);
+        });
+    }
+
+    function initPianoRollEvents() {
+        const grid = document.getElementById('pr-grid-container');
+        if(!grid) return;
+
+        // Bloque le menu clic droit natif
+        grid.addEventListener('contextmenu', e => e.preventDefault());
+
+        grid.addEventListener('mousedown', (e) => {
+            const { step, row } = getGridCoords(e, grid);
+            const rows = document.querySelectorAll('.pr-grid-row');
+            if(row < 0 || row >= rows.length) return;
+            const noteName = rows[row].dataset.note;
+
+            // SUPPRESSION (Clic Droit)
+            if (e.button === 2) {
+                const noteEl = e.target.closest('.pr-note');
+                if (noteEl) {
+                    prNotes = prNotes.filter(n => n.id != noteEl.dataset.id);
+                    renderPrNotes();
+                }
+                return;
+            }
+
+            // REDIMENSIONNEMENT (Clic sur la poignée droite)
+            if (e.target.classList.contains('pr-note-handle')) {
+                const noteEl = e.target.closest('.pr-note');
+                const noteData = prNotes.find(n => n.id == noteEl.dataset.id);
+                prDragState = { active: true, type: 'resize', noteId: noteData.id, startX: e.clientX, initialDur: noteData.duration };
+                e.stopPropagation();
+                return;
+            }
+
+            // DEPLACEMENT (Clic sur le corps de la note)
+            if (e.target.closest('.pr-note')) {
+                const noteEl = e.target.closest('.pr-note');
+                const noteData = prNotes.find(n => n.id == noteEl.dataset.id);
+                prDragState = { active: true, type: 'move', noteId: noteData.id, startX: e.clientX };
+                playSynthNote(noteData.note, true); // Écoute la note au clic
+                e.stopPropagation();
+                return;
+            }
+
+            // CREATION (Clic dans le vide)
+            const newNote = { id: prNoteIdCounter++, note: noteName, startStep: step, duration: 1 };
+            prNotes.push(newNote);
+            playSynthNote(noteName, true);
+            renderPrNotes();
+            
+            // Enchaîne direct sur le mode resize pour une création fluide (Drag to draw)
+            prDragState = { active: true, type: 'resize', noteId: newNote.id, startX: e.clientX, initialDur: 1 };
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!prDragState.active) return;
+            const note = prNotes.find(n => n.id === prDragState.noteId);
+            if (!note) return;
+
+            if (prDragState.type === 'resize') {
+                const deltaX = e.clientX - prDragState.startX;
+                const addedSteps = Math.floor(deltaX / 32);
+                note.duration = Math.max(1, prDragState.initialDur + addedSteps);
+                renderPrNotes();
+            } else if (prDragState.type === 'move') {
+                const { step, row } = getGridCoords(e, grid);
+                const rows = document.querySelectorAll('.pr-grid-row');
+                if(row >= 0 && row < rows.length) {
+                    note.startStep = Math.max(0, step);
+                    note.note = rows[row].dataset.note;
+                    renderPrNotes();
+                }
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (prDragState.active) {
+                const note = prNotes.find(n => n.id === prDragState.noteId);
+                if (note) playSynthNote(note.note, false); // Coupe le son au relâchement
+                prDragState.active = false;
+            }
         });
     }
     
@@ -3208,6 +3345,7 @@ group.add(createLeg(-1), createLeg(1));
             document.addEventListener('touchend', stopDrag);
         });
         initPianoRollUI(); // Initialise le DOM du Piano Roll au boot
+        initPianoRollEvents();
         initInteractiveStudio();
         document.getElementById('btn-login').addEventListener('click', attemptLogin);
         document.getElementById('login-username').addEventListener('keypress', (e) => { if (e.key === 'Enter') attemptLogin(); });
