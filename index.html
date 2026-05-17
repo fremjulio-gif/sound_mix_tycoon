@@ -2838,11 +2838,48 @@ if (!state.isSleeping && currentRoomAvatar) {
             }
         }
       
-         // --- APPLICATION DU ZOOM FLUIDE ---
-                if (window.targetCamZoom) {
-                camera.zoom += (window.targetCamZoom - camera.zoom) * 0.1;
-                camera.updateProjectionMatrix();
+         // =========================================================
+        // --- APPLICATION DU ZOOM FLUIDE & ANCRAGE SUR L'AVATAR ---
+        // =========================================================
+        if (window.targetCamZoom && currentRoomAvatar) {
+            // 1. Appliquer le smooth zoom existant
+            camera.zoom += (window.targetCamZoom - camera.zoom) * 0.1;
+            camera.updateProjectionMatrix();
+
+            // 2. CALCUL DU FOCUS (SUBTIL)
+            // On calcule une force entre 0 (dézoomé) et 1 (zoomé à fond)
+            // MIN_ZOOM=0.5, MAX_ZOOM=3.0 (définis dans l'étape précédente)
+            const zoomVal = camera.zoom;
+            let focusStrength = Math.max(0, (zoomVal - 1.0) / (3.0 - 1.0));
+            
+            // "Subtilement" : On bride la force à 70%. La caméra se rapproche de
+            // l'avatar mais ne le centre jamais totalement (conserve le contexte).
+            focusStrength = Math.min(focusStrength, 0.6); 
+            
+            // 3. OBTENIR LA POSITION DE L'AVATAR
+            const avatarFocusPoint = new THREE.Vector3();
+            currentRoomAvatar.getWorldPosition(avatarFocusPoint);
+            avatarFocusPoint.y += 1.0; // Vise le centre de l'avatar, pas ses pieds
+
+            // 4. INTERPOLATION SMOOTH DE LA VISÉE
+            // On fait glisser window.smoothCamTarget du centre (0,0,0) vers l'avatar
+            window.smoothCamTarget.lerp(avatarFocusPoint, 0.1); 
+
+            // 5. CALCUL DE LA NOUVELLE POSITION DE LA CAMÉRA
+            // Pour garder l'angle isométrique, la caméra doit glisser
+            // horizontalement au-dessus de la pièce.
+            // On glisse de baseCameraPosition (10,10,10) vers (avatar.x+10, 10, avatar.z+10)
+            const targetCamPosition = window.baseCameraPosition.clone().add(
+                new THREE.Vector3(window.smoothCamTarget.x, 0, window.smoothCamTarget.z)
+            );
+            
+            // Appliquer le mouvement smooth physique de la caméra
+            camera.position.lerp(targetCamPosition, 0.1); 
+
+            // 6. OBLIGATOIRE : Redire à la caméra de regarder le nouveau centre smooth
+            camera.lookAt(window.smoothCamTarget);
         }
+        // =========================================================
         
 
         renderer.render(scene, camera);
@@ -5353,6 +5390,13 @@ setTimeout(() => {
             initialPinchDist = null;
         }
     }, { passive: true });
+
+    // === NOUVELLES VARIABLES DE FOCUS (SMOOTH ANCHOR) ===
+// 1. La position fixe par défaut de la caméra isométrique
+window.baseCameraPosition = new THREE.Vector3(10, 10, 10); 
+// 2. Un vecteur vide qui servira à calculer la visée smooth
+window.smoothCamTarget = new THREE.Vector3(0, 0, 0); 
+// ====================================================
     
     // ==========================================
     // 22. GLOBAL EXPORTS
