@@ -1300,12 +1300,12 @@
     camera.position.set(20, 20, 20);
     camera.lookAt(0, 0, 0);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    container.appendChild(renderer.domElement);
+    const  = new THREE.WebGL({ antialias: true });
+    .setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    .setSize(window.innerWidth, window.innerHeight);
+    .shadowMap.enabled = true;
+    .shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(.domElement);
 
     const listener = new THREE.AudioListener();
     camera.add(listener);
@@ -1325,7 +1325,7 @@
             camera.bottom = frustumSize / -2;
             camera.updateProjectionMatrix(); 
             
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            .setSize(window.innerWidth, window.innerHeight);
 
             if (isMobile) {
                 document.querySelectorAll('.os-window').forEach(win => {
@@ -1781,6 +1781,7 @@ for (let i = 0; i < 4; i++) {
     // 5. Tête de la lampe (Abat-jour + Ampoule)
     const lHeadGroup = new THREE.Group();
     lHeadGroup.position.set(0, 0.72, 0.11);
+    lHeadGroup.name = "pixar_head_group";
     
     // On penche juste la tête vers le bas
     lHeadGroup.rotation.x = Math.PI / 4;  
@@ -2605,6 +2606,11 @@ if (!state.isSleeping && currentRoomAvatar) {
 
 
             // --- 3. SUIVI DE CAMÉRA ---
+
+            
+
+
+            
             const followIntensity = 0.2;
             // On décale la caméra vers le haut de +3 sur PC pour "tasser" la pièce vers le bas
             const yPan = isMobile ? 0 : 1.5; 
@@ -2626,9 +2632,42 @@ if (!state.isSleeping && currentRoomAvatar) {
             cameraLookTarget.z += (targetLookZ - cameraLookTarget.z) * 0.05;
             
             camera.lookAt(cameraLookTarget);
+            
         }
 
-        renderer.render(scene, camera);
+
+            // --- SUIVI DYNAMIQUE DE LA LAMPE PIXAR ---
+    // On vérifie que la lampe est allumée et que l'avatar existe
+    if (window.pixarLamp && window.pixarLamp.userData.isOn && window.avatar) {
+        const head = scene.getObjectByName("pixar_head_group");
+        const spot = scene.getObjectByName("pixar_spotlight");
+        
+        if (head && spot) {
+            // 1. Le faisceau lumineux (SpotLight) suit les coordonnées de l'avatar
+            spot.target.position.copy(window.avatar.position);
+            
+            // 2. Calcul de la position de l'avatar relativement à la tête de la lampe
+            const targetPos = new THREE.Vector3();
+            window.avatar.getWorldPosition(targetPos);
+            head.parent.worldToLocal(targetPos);
+            
+            // 3. Rotation Horizontale (Axe Y) pour faire pivoter la tête vers le joueur
+            const angleY = Math.atan2(targetPos.x - head.position.x, targetPos.z - head.position.z);
+            head.rotation.y = angleY;
+            
+            // 4. Rotation Verticale (Axe X) pour incliner la tête vers le haut/bas selon la distance
+            const distanceH = Math.sqrt(
+                Math.pow(targetPos.x - head.position.x, 2) + 
+                Math.pow(targetPos.z - head.position.z, 2)
+            );
+            const angleX = Math.atan2(head.position.y - targetPos.y, distanceH);
+            // Le + Math.PI / 6 sert à compenser l'orientation native du cône de l'abat-jour
+            head.rotation.x = angleX + Math.PI / 6; 
+        }
+    }
+
+
+        .render(scene, camera);
     }
     animate3D();
 
@@ -3173,7 +3212,7 @@ group.add(createLeg(-1), createLeg(1));
         const scn = new THREE.Scene();
         scn.background = new THREE.Color(['#1e1b4b', '#0f172a', '#064e3b', '#4c0519'][styleIndex]);
 
-        const rnd = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
+        const rnd = new THREE.WebGL({ antialias: true, alpha: false, preserveDrawingBuffer: true });
         rnd.setSize(256, 256); 
 
         const light = new THREE.DirectionalLight(0xffffff, 1.2);
@@ -3190,6 +3229,7 @@ group.add(createLeg(-1), createLeg(1));
         
         rnd.dispose(); 
         return dataUrl;
+        
     }
 
     const avatars = [
