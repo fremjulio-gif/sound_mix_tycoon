@@ -71,6 +71,34 @@
         button, select, .seq-pad, .btn-minimal, .btn-action, .desktop-icon, .taskbar-btn { touch-action: manipulation; }
         input[type="range"], .knob { touch-action: none; }
 
+        /* --- CUSTOM GAMER CURSORS --- */
+        /* 1. État par défaut (Room 3D) */
+        body {
+            /* Le "0 0" définit le point de clic en haut à gauche de l'image */
+            cursor: url('assets/cursor-room.png') 0 0, auto;
+        }
+        
+        /* Pointeur au survol (Boutons, objets cliquables, etc.) */
+        button, select, input, .clickable, .seq-pad, .pr-note, .desktop-icon, .taskbar-btn {
+            cursor: url('assets/cursor-room-pointer.png') 0 0, pointer !important;
+        }
+
+        /* 2. État OS Session (PC) */
+        /* Le sélecteur * force le curseur sur tous les sous-éléments du PC */
+        body.os-active, body.os-active * {
+            cursor: url('assets/cursor-os.png') 0 0, auto !important;
+        }
+        
+        /* Pointeur au survol dans l'OS */
+        body.os-active button, body.os-active select, body.os-active input, body.os-active .clickable, body.os-active .desktop-icon, body.os-active .pr-note, body.os-active .taskbar-btn {
+            cursor: url('assets/cursor-os-pointer.png') 0 0, pointer !important;
+        }
+        
+        /* Exception pour le redimensionnement MIDI qui a besoin de sa double flèche */
+        body.os-active .pr-note-handle {
+            cursor: ew-resize !important;
+        }
+
         /* =========================================
            3. MAIN CONTAINERS & 3D ROOM
            ========================================= */
@@ -2461,6 +2489,8 @@ if (!state.isSleeping && currentRoomAvatar) {
     function quitPC() {
         document.getElementById('pc-ui-layer').style.display = 'none';
         document.getElementById('room-ui').style.display = 'flex';
+        document.body.classList.add('os-active');
+        document.body.classList.remove('os-active');
         playTone(300, 'sawtooth', 0.1, 0.05);
     }
 
