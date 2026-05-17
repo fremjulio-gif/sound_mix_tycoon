@@ -2730,47 +2730,57 @@ function drawSysGraphUI(timestamp) {
         } catch(e) {}
     }
 
+    / --- VARIABLES DE TRANSPORT & SÉCURITÉS ---
+    window.activeSynthNotes = window.activeSynthNotes || {};
+    window.prIsPlaying = false;
+    window.prCurrentStep = 0;
+    window.prBpm = window.prBpm || 120;
+    window.prVolume = window.prVolume !== undefined ? window.prVolume : 0.5;
+    window.prLastTime = 0;
+    window.prActivePlaybackNotes = window.prActivePlaybackNotes || new Set();
+
+    // --- MOTEUR AUDIO BLINDÉ ---
     function playSynthNote(note, isPlaying) {
         if (!audioCtxUI) initAudio();
         if (!audioCtxUI) return;
+        if (audioCtxUI.state === 'suspended') audioCtxUI.resume();
 
-        // Récupère l'élément du clavier UI créé à l'étape 2 pour le feedback visuel
         const keyEl = document.querySelector(`.pr-key-row[data-note="${note}"]`);
 
         if (isPlaying) {
-            if (activeSynthNotes[note]) return; // Empêche le chevauchement si la note joue déjà
+            if (window.activeSynthNotes[note]) return;
 
             const osc = audioCtxUI.createOscillator();
             const gain = audioCtxUI.createGain();
             
-            osc.type = 'sawtooth'; // Forme d'onde "Synth Lead"
+            osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(noteToFreq(note), audioCtxUI.currentTime);
             
-            // Enveloppe d'attaque rapide (évite les clics audio)
             gain.gain.setValueAtTime(0, audioCtxUI.currentTime);
-            // Un gain de base de 0.25 multiplié par le fader de l'UI
-            gain.gain.linearRampToValueAtTime(0.25 * window.prVolume, audioCtxUI.currentTime + 0.03);
+            
+            // Sécurité anti-crash : on force la conversion en nombre valide
+            const safeVol = parseFloat(window.prVolume) || 0.5;
+            gain.gain.linearRampToValueAtTime(0.25 * safeVol, audioCtxUI.currentTime + 0.03); 
             
             osc.connect(gain);
             gain.connect(audioCtxUI.destination);
             osc.start();
             
-            activeSynthNotes[note] = { osc, gain };
-            
-            // Allume la touche UI
+            window.activeSynthNotes[note] = { osc, gain };
             if (keyEl) keyEl.style.filter = 'brightness(1.5) drop-shadow(0 0 8px var(--accent))';
             
         } else {
-            const voice = activeSynthNotes[note];
+            const voice = window.activeSynthNotes[note];
             if (voice) {
-                // Enveloppe de relâchement (Release fade out)
-                voice.gain.gain.setValueAtTime(voice.gain.gain.value, audioCtxUI.currentTime);
-                voice.gain.gain.exponentialRampToValueAtTime(0.001, audioCtxUI.currentTime + 0.1); 
-                voice.osc.stop(audioCtxUI.currentTime + 0.15);
-                delete activeSynthNotes[note];
+                const now = audioCtxUI.currentTime;
+                try {
+                    voice.gain.gain.cancelScheduledValues(now);
+                    voice.gain.gain.setValueAtTime(voice.gain.gain.value, now);
+                    voice.gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1); 
+                    voice.osc.stop(now + 0.15);
+                } catch(e) {} // Capture l'erreur silencieusement si la note est coupée trop vite
+                delete window.activeSynthNotes[note];
             }
-            
-            // Éteint la touche UI
             if (keyEl) keyEl.style.filter = '';
         }
     }
@@ -3245,19 +3255,50 @@ group.add(createLeg(-1), createLeg(1));
         const playhead = document.getElementById('pr-playhead');
         
         if (window.prIsPlaying) {
-            btn.innerText = "⏸ PAUSE";
-            btn.classList.replace('btn-action', 'btn-minimal');
-            playhead.classList.remove('hidden');
+            if (btn) {
+                btn.innerText = "⏸ PAUSE";
+                btn.classList.replace('btn-action', 'btn-minimal');
+            }
+            if (playhead) playhead.classList.remove('hidden');
             
-            // Initialise le timer de haute précision
             window.prLastTime = performance.now();
             requestAnimationFrame(prPlaybackLoop);
         } else {
-            btn.innerText = "▶ PLAY";
-            btn.classList.replace('btn-minimal', 'btn-action');
+            if (btn) {
+                btn.innerText = "▶ PLAY";
+                btn.classList.replace('btn-minimal', 'btn-action');
+            }
             prStopAllPlaybackNotes(); 
         }
     };
+
+    window.prStop = function() {
+        window.prIsPlaying = false;
+        window.prCurrentStep = 0;
+        
+        const btn = document.getElementById('pr-btn-play');
+        if (btn) {
+            btn.innerText = "▶ PLAY";
+            btn.classList.replace('btn-minimal', 'btn-action');
+        }
+        
+        const playhead = document.getElementById('pr-playhead');
+        if (playhead) {
+            playhead.style.transform = `translateX(0px)`;
+            playhead.classList.add('hidden');
+        }
+        prStopAllPlaybackNotes();
+    };
+
+    function prStopAllPlaybackNotes() {
+        if (window.prActivePlaybackNotes) {
+            window.prActivePlaybackNotes.forEach(noteId => {
+                const note = (window.prNotes || []).find(n => n.id === noteId);
+                if (note) playSynthNote(note.note, false);
+            });
+            window.prActivePlaybackNotes.clear();
+        }
+    }
 
     window.prStop = function() {
         window.prIsPlaying = false;
@@ -3283,41 +3324,45 @@ group.add(createLeg(-1), createLeg(1));
         window.prActivePlaybackNotes.clear();
     }
 
-    // --- MOTEUR DE DÉFILEMENT (AUDIO THREAD UI) ---
+    // --- MOTEUR DE DÉFILEMENT (SÉQUENCEUR) ---
     function prPlaybackLoop(timestamp) {
         if (!window.prIsPlaying) return;
 
-        // Calcul du Delta Time réel
+        // Protection si la variable saute
+        window.prActivePlaybackNotes = window.prActivePlaybackNotes || new Set();
+        if (!window.prLastTime) window.prLastTime = timestamp;
+
         const deltaMs = timestamp - window.prLastTime;
         window.prLastTime = timestamp;
 
-        // Conversion du BPM en vélocité de la playhead (4 steps = 1 beat)
-        const stepsPerSec = (window.prBpm / 60) * 4;
+        // Sécurité : Si l'onglet était inactif, on annule ce calcul pour ne pas "sprinter"
+        if (deltaMs > 150) {
+            requestAnimationFrame(prPlaybackLoop);
+            return;
+        }
+
+        const safeBpm = parseFloat(window.prBpm) || 120;
+        const stepsPerSec = (safeBpm / 60) * 4;
         const stepDelta = stepsPerSec * (deltaMs / 1000);
 
         window.prCurrentStep += stepDelta;
 
-        // Boucle : Retour à zéro après 32 steps (2 mesures)
         if (window.prCurrentStep >= 32) {
             window.prCurrentStep = 0;
-            prStopAllPlaybackNotes(); // Hard reset des enveloppes en fin de boucle
+            prStopAllPlaybackNotes(); 
         }
 
-        // Animation visuelle de la tête de lecture (32px de large par cellule)
         const playhead = document.getElementById('pr-playhead');
         if (playhead) playhead.style.transform = `translateX(${window.prCurrentStep * 32}px)`;
 
-        // Scan et déclenchement des signaux MIDI
-        window.prNotes.forEach(note => {
+        (window.prNotes || []).forEach(note => {
             const isNoteActiveTime = window.prCurrentStep >= note.startStep && window.prCurrentStep < (note.startStep + note.duration);
             const isCurrentlyPlaying = window.prActivePlaybackNotes.has(note.id);
 
             if (isNoteActiveTime && !isCurrentlyPlaying) {
-                // Note On
                 window.prActivePlaybackNotes.add(note.id);
                 playSynthNote(note.note, true);
             } else if (!isNoteActiveTime && isCurrentlyPlaying) {
-                // Note Off
                 window.prActivePlaybackNotes.delete(note.id);
                 playSynthNote(note.note, false);
             }
