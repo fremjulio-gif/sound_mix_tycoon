@@ -2189,8 +2189,8 @@ for (let i = 0; i < 4; i++) {
     // TABLE D'APPOINT (À gauche du canapé)
     // ==========================================
     const sideTableGroup = new THREE.Group();
-    // On la rapproche du centre (X = -1.8 au lieu de -4.5) et on la centre sur le tapis (Z = 1.5)
-    sideTableGroup.position.set(-1.8, -1, 1.5);
+    // On passe de -1.8 à -0.8 sur l'axe X
+    sideTableGroup.position.set(-0.8, -1, 1.5);
 
     const tableTopMat = new THREE.MeshStandardMaterial({ color: '#8a6242', roughness: 0.7 });
     const tableLegMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.9 });
@@ -2221,8 +2221,8 @@ for (let i = 0; i < 4; i++) {
     // PLANTE D'INTÉRIEUR (Posée sur le Rack)
     // ==========================================
     const plantGroup = new THREE.Group();
-    // On l'aligne exactement sur les mêmes X et Z que la table pour qu'elle reste posée dessus
-    plantGroup.position.set(-1.8, -0.58, 1.5); 
+    // Idem ici, on s'aligne sur X = -0.8
+    plantGroup.position.set(-0.8, -0.58, 1.5);
     plantGroup.scale.set(0.55, 0.55, 0.55);
 
     
@@ -2630,42 +2630,89 @@ scene.add(synthGroup);
     
 
     // ==========================================
-    // PORTE DU STUDIO (Mur de gauche)
+    // PORTE DU STUDIO HAUTE DÉFINITION (Reliefs et Positionnement)
     // ==========================================
     const doorGroup = new THREE.Group();
-    // Plaquée sur le mur X=-5, à gauche du canapé (Z = 4.2)
-    doorGroup.position.set(-4.95, -1, 4.2); 
-    doorGroup.rotation.y = Math.PI / 2; // Pivotée pour s'aligner le long du mur
+    
+    // NOUVELLE POSITION : On l'avance le long du mur X=-5 pour la décoller du coin
+    // Elle est maintenant centrée sur Z = 1.0 (plus proche du joueur)
+    doorGroup.position.set(-4.95, -1, 1.0); 
+    doorGroup.rotation.y = Math.PI / 2; // Reste parallèle au mur
 
-    const doorFrameMat = new THREE.MeshStandardMaterial({ color: '#1e1b4b', roughness: 0.8 }); // Encadrement sombre
-    const doorPanelMat = new THREE.MeshStandardMaterial({ color: '#27272a', roughness: 0.6 }); // Panneau de porte
-    const handleMat = new THREE.MeshStandardMaterial({ color: '#d1d5db', metalness: 0.8, roughness: 0.2 }); // Poignée métal
+    // --- Matériaux améliorés ---
+    const frameMat = new THREE.MeshStandardMaterial({ color: '#262626', roughness: 0.9, metalness: 0.1 }); // Cadre mat très sombre
+    const doorMat = new THREE.MeshStandardMaterial({ color: '#3f3f46', roughness: 0.7, metalness: 0.0 }); // Porte bois peint gris sombre
+    const hardwareMat = new THREE.MeshStandardMaterial({ color: '#b5a67c', metalness: 0.9, roughness: 0.2 }); // Laiton vieilli pour poignée
 
-    // 1. Cadre de la porte (Montants gauche, droit et haut)
-    const frameLeft = new THREE.Mesh(new THREE.BoxGeometry(0.05, 3.2, 0.1), doorFrameMat);
-    frameLeft.position.set(-0.7, 1.6, 0);
-    const frameRight = new THREE.Mesh(new THREE.BoxGeometry(0.05, 3.2, 0.1), doorFrameMat);
-    frameRight.position.set(0.7, 1.6, 0);
-    const frameTop = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.05, 0.1), doorFrameMat);
-    frameTop.position.set(0, 3.2, 0);
-    doorGroup.add(frameLeft, frameRight, frameTop);
+    // 1. Encadrement de porte massif (Plus profond pour le réalisme)
+    const frameDepth = 0.15;
+    const frameCasingLeft = new THREE.Mesh(new THREE.BoxGeometry(0.06, 3.3, frameDepth), frameMat);
+    frameCasingLeft.position.set(-0.73, 1.65, 0);
+    
+    const frameCasingRight = new THREE.Mesh(new THREE.BoxGeometry(0.06, 3.3, frameDepth), frameMat);
+    frameCasingRight.position.set(0.73, 1.65, 0);
+    
+    const frameCasingTop = new THREE.Mesh(new THREE.BoxGeometry(1.52, 0.06, frameDepth), frameMat);
+    frameCasingTop.position.set(0, 3.3, 0);
+    
+    doorGroup.add(frameCasingLeft, frameCasingRight, frameCasingTop);
 
-    // 2. Panneau de la porte
-    const doorPanel = new THREE.Mesh(new THREE.BoxGeometry(1.35, 3.15, 0.04), doorPanelMat);
-    doorPanel.position.set(0, 1.575, 0);
+    // 2. Panneau de porte principal (Recalculé pour s'ajuster parfaitement au cadre)
+    const doorPanel = new THREE.Mesh(new THREE.BoxGeometry(1.39, 3.24, 0.05), doorMat);
+    doorPanel.position.set(0, 1.62, 0);
     doorGroup.add(doorPanel);
 
-    // 3. Poignée de porte (Style moderne minimaliste)
-    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.12), handleMat);
-    handle.rotation.x = Math.PI / 2;
-    handle.position.set(0.45, 1.5, 0.06); 
-    doorGroup.add(handle);
+    // 3. --- DÉTAILS DE RELIEF (Panneautage classique) ---
+    // Ces éléments sont ajoutés SUR la porte pour simuler les moulures
+    const reliefColor = '#323238'; // Légèrement plus sombre que la porte pour ombrer
+    const reliefMat = new THREE.MeshStandardMaterial({ color: reliefColor, roughness: 0.7 });
+    
+    // Montants verticaux décoratifs
+    const stilesW = 0.10;
+    const stileL = new THREE.Mesh(new THREE.BoxGeometry(stilesW, 3.04, 0.02), reliefMat);
+    stileL.position.set(-0.55, 1.62, 0.035); // Légère surépaisseur en Z
+    
+    const stileR = new THREE.Mesh(new THREE.BoxGeometry(stilesW, 3.04, 0.02), reliefMat);
+    stileR.position.set(0.55, 1.62, 0.035);
 
-    // 4. Application des contours sombres (DA du jeu)
+    // Traverses horizontales décoratives (Haut, Milieu, Bas)
+    const railH = 0.10;
+    const railTop = new THREE.Mesh(new THREE.BoxGeometry(1.0, railH, 0.02), reliefMat);
+    railTop.position.set(0, 3.10, 0.035);
+    
+    const railMid = new THREE.Mesh(new THREE.BoxGeometry(1.0, railH + 0.05, 0.02), reliefMat);
+    railMid.position.set(0, 1.5, 0.035); // Traverse centrale plus large
+    
+    const railBottom = new THREE.Mesh(new THREE.BoxGeometry(1.0, railH + 0.05, 0.02), reliefMat);
+    railBottom.position.set(0, 0.15, 0.035); // Base plus solide
+
+    doorGroup.add(stileL, stileR, railTop, railMid, railBottom);
+
+    // 4. --- QUINCAILLERIE DÉTAILLÉE ---
+    // Plaque de propreté de la poignée
+    const handlePlate = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.25, 0.01), hardwareMat);
+    handlePlate.position.set(0.52, 1.5, 0.06); 
+    doorGroup.add(handlePlate);
+
+    // Poignée type béquille (plus réaliste)
+    const handleStem = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.06), hardwareMat);
+    handleStem.rotation.x = Math.PI / 2;
+    handleStem.position.set(0.52, 1.53, 0.09);
+    
+    const handleLever = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, 0.02), hardwareMat);
+    handleLever.position.set(0.56, 1.53, 0.12);
+    
+    doorGroup.add(handleStem, handleLever);
+
+    // 5. Application des contours sombres (Cohérence graphique DA)
     doorGroup.traverse(child => {
         if (child.isMesh && child.geometry) {
-            const edges = new THREE.EdgesGeometry(child.geometry);
-            const lines = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
+            // Ombre portée pour les reliefs
+            child.castShadow = true; 
+            child.receiveShadow = true;
+            
+            const edges = new THREE.EdgesGeometry(child.geometry, 20); // Angle limite pour éviter trop de traits
+            const lines = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3 }));
             child.add(lines);
         }
     });
@@ -2687,8 +2734,8 @@ scene.add(synthGroup);
         // 5. NOUVEAU : Plante Verte (x: -4.4 à -3.6, z: -1.2 à -0.4)
         if (x > -4.4 - r && x < -3.6 + r && z > -1.2 - r && z < -0.4 + r) return true;
 
-        // 6. NOUVEAU : Table basse devant le canapé (Zone X: -2.4 à -1.2 / Z: 0.9 à 2.1)
-        if (x > -2.4 - r && x < -1.2 + r && z > 0.9 - r && z < 2.1 + r) return true;
+        // 6. NOUVEAU : Table basse devant le canapé (Zone recalée en X: -1.4 à -0.2 / Z: 0.9 à 2.1)
+        if (x > -1.4 - r && x < -0.2 + r && z > 0.9 - r && z < 2.1 + r) return true;
         
         return false; 
     }
@@ -3248,7 +3295,7 @@ function updateMoodRingWidget() {
         }
         if (type === 'rep') {
             const streams = Math.floor(state.rep * 42.5 + Math.random() * 20);
-            globalTooltip.innerHTML = `<div class="text-[var(--retro-orange)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Reputatiob - Streaming Data</div>
+            globalTooltip.innerHTML = `<div class="text-[var(--retro-orange)] mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Reputation - Streaming Data</div>
                 <div class="text-gray-300 text-[11px]">Estimated Daily Streams:</div>
                 <div class="text-2xl text-white mt-2 font-bold tracking-wider">~${formatNum(streams)} <span class="text-[9px] text-[var(--retro-orange)]">PLAYS</span></div>`;
         }
