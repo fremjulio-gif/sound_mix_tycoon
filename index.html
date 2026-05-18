@@ -2315,7 +2315,7 @@ scene.add(synthGroup);
     
     // Facteur d'échelle pour le corps (réduit pour équilibrer avec le manche)
     const bs = 0.8;
-    const bodyYOffset = 0.1; // Pour recoller le corps au manche après réduction
+    const bodyYOffset = 0.1; 
 
     // --- Corps (Extrusion détaillée avec Cutaway) ---
     const bodyShape = new THREE.Shape();
@@ -2330,7 +2330,7 @@ scene.add(synthGroup);
 
     const extrudeSettings = { depth: 0.12, bevelEnabled: true, bevelSegments: 4, steps: 1, bevelSize: 0.03, bevelThickness: 0.03 };
     const bodyGeo = new THREE.ExtrudeGeometry(bodyShape, extrudeSettings);
-    bodyGeo.translate(0, bodyYOffset, -0.06); // Centré sur Z, ajusté sur Y
+    bodyGeo.translate(0, bodyYOffset, -0.06); 
     const body = new THREE.Mesh(bodyGeo, bodyMat);
     guitarGroup.add(body);
 
@@ -2355,9 +2355,16 @@ scene.add(synthGroup);
     fretboard.position.set(0, 1.25, 0.025);
     guitarGroup.add(fretboard);
 
+    // === NOUVEAU : Le Sillet (Nut) ===
+    const nutGeo = new THREE.BoxGeometry(0.15, 0.03, 0.03);
+    const nutMat = new THREE.MeshStandardMaterial({ color: '#e5e7eb', roughness: 0.8 });
+    const nut = new THREE.Mesh(nutGeo, nutMat);
+    nut.position.set(0, 2.015, 0.03); // Posé à la fin de la touche
+    guitarGroup.add(nut);
+
     // --- Tête (Headstock inclinée) ---
     const headGroup = new THREE.Group();
-    headGroup.position.set(0, 2.0, -0.02);
+    headGroup.position.set(0, 2.03, -0.02); // Légèrement remonté pour s'aligner avec le sillet
     headGroup.rotation.x = -0.15; 
     
     const headShape = new THREE.Shape();
@@ -2433,12 +2440,13 @@ scene.add(synthGroup);
         guitarGroup.add(fret);
     }
 
-    // --- Cordes ---
-    const stringGeo = new THREE.CylinderGeometry(0.0015, 0.0015, 2.02, 4);
+    // === CORRECTION : Cordes ===
+    // Cordes allongées (2.45 au lieu de 2.02) pour atteindre le haut de la tête
+    const stringGeo = new THREE.CylinderGeometry(0.001, 0.001, 2.45, 4);
     for(let i=0; i<6; i++) {
         const string = new THREE.Mesh(stringGeo, hardwareMat);
         const px = (-0.09 + (i * 0.036)) * bs;
-        string.position.set(px, 0.79, 0.045);
+        string.position.set(px, 1.0, 0.042); // Re-centrées
         guitarGroup.add(string);
     }
 
@@ -2490,7 +2498,7 @@ scene.add(synthGroup);
     mountBody.position.set(0, -0.3, -0.15);
     guitarGroup.add(mountBody);
 
-    // --- Contours (Edges) pour le style du jeu ---
+    // --- Contours (Edges) ---
     guitarGroup.traverse((child) => {
         if(child.isMesh && child.geometry && child.material !== hardwareMat && child.material !== pickguardMat) {
             const edges = new THREE.EdgesGeometry(child.geometry);
