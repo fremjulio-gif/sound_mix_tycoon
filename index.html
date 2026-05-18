@@ -1388,6 +1388,53 @@ window.addEventListener('load', simulateLoading);
         root.style.setProperty('--bg-color-3', t.vars[2]);
         root.style.setProperty('--bg-color-4', t.vars[3]);
         playBleep();
+
+        updateThemeColors();
+    }
+
+
+    // ==========================================
+    // MISE À JOUR DYNAMIQUE DES LEDS ET NÉONS
+    // ==========================================
+    function updateThemeColors() {
+        if (!rackLeds || rackLeds.length === 0) return;
+
+        // Couleurs liées à l'avatar (0:Beatmaker, 1:Cyber, 2:Street, 3:Exec)
+        const avatarColors = ['#818cf8', '#00e5ff', '#ef4444', '#fbbf24']; 
+        
+        // Couleurs liées au background (0:Neon, 1:Synth, 2:Matrix, 3:Blood)
+        const themeColors = ['#34d399', '#ff007f', '#10b981', '#f43f5e']; 
+
+        // On se base sur l'index sélectionné à l'écran de login ou en jeu
+        const cAvatar = avatarColors[selectedAvatarIndex] || '#818cf8';
+        const cTheme = themeColors[currentThemeIdx] || '#34d399';
+
+        let smallLedIndex = 0;
+
+        // 1. Mise à jour des LEDs du Rack Analogique
+        rackLeds.forEach(item => {
+            // On différencie les VU Meters (larges) des petites LEDs rondes
+            if (item.geometry.parameters.width > 0.1) {
+                // VU Meters : Couleur de l'avatar
+                item.material.color.set(cAvatar);
+                item.material.emissive.set(cAvatar);
+            } else {
+                // Petites LEDs : Alternance entre couleur avatar et couleur thème
+                const color = (smallLedIndex % 2 === 0) ? cAvatar : cTheme;
+                item.material.color.set(color);
+                item.material.emissive.set(color);
+                smallLedIndex++;
+            }
+        });
+
+        // 2. Mise à jour des Néons Muraux (Acoustique)
+        if (window.acousticNeons) {
+            window.acousticNeons.forEach(neon => {
+                neon.material.color.set(cAvatar);
+                neon.material.emissive.set(cAvatar);
+                neon.light.color.set(cAvatar);
+            });
+        }
     }
 
     // ==========================================
@@ -4150,6 +4197,8 @@ group.add(createLeg(-1), createLeg(1));
         document.querySelectorAll('.avatar-sel').forEach(el => el.classList.remove('selected'));
         document.querySelector(`.avatar-sel[data-idx="${idx}"]`).classList.add('selected');
         playBleep();
+
+        updateThemeColors();
     }
 
     function initInteractiveStudio() {
@@ -4549,6 +4598,9 @@ group.add(createLeg(-1), createLeg(1));
         if (!cpuGraphStarted) drawSysGraphUI(performance.now());
         updateMoodRingWidget();
         updateTopChartsWidget();
+
+        // --- AJOUT : Force les couleurs correctes à l'apparition de la 3D ---
+        updateThemeColors();
 
 
         if (window.gameInterval) { clearInterval(window.gameInterval); window.gameInterval = null; }
