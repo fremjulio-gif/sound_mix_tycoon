@@ -3787,7 +3787,7 @@ group.add(createLeg(-1), createLeg(1));
         inventory: [], ownedCracks: [], downloadedCracks: {},
         history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
         isExporting: false, isSleeping: false, isEventActive: false,
-        state.isSitting = false,
+        isSitting = false,
         trackList: [] // <-- AJOUTE CETTE LIGNE
     };
 
@@ -4374,7 +4374,7 @@ group.add(createLeg(-1), createLeg(1));
     }
 
     function standUp(energyGain) {
-    
+        state.isSitting = false;
 
         if (currentRoomAvatar) {
             // Restauration de la position debout d'origine
