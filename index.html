@@ -3958,9 +3958,9 @@ group.add(createLeg(-1), createLeg(1));
     function initUI() {
         const cont = document.getElementById('avatar-container');
         cont.innerHTML = avatars.map((a, i) => `
-            <div class="avatar-sel flex flex-col items-center justify-center p-2 md:p-4 ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
-                <img src="${a.img}" alt="${a.id}" class="w-44 h-44 md:w-70 md:h-70 pixelated object-contain mb-2 pointer-events-none" onerror="this.style.border='1px solid red'" />
-                <span class="text-xs md:text-sm font-retro text-[var(--text-muted)] uppercase font-bold tracking-widest pointer-events-none">${a.id}</span>
+            <div class="avatar-sel aspect-square flex flex-col items-center justify-center p-2 md:p-4 ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
+                <img src="${a.img}" alt="${a.id}" class="w-3/4 h-3/4 pixelated object-contain mb-2 pointer-events-none" onerror="this.style.border='1px solid red'" />
+                <span class="text-[10px] md:text-xs font-retro text-[var(--text-muted)] uppercase font-bold tracking-widest pointer-events-none mt-auto">${a.id}</span>
             </div>`).join('');
         // --- LISTENERS CLAVIER PIANO ROLL ---
         window.addEventListener('keydown', (e) => {
