@@ -5169,33 +5169,30 @@ function renderStore(tab) {
     function downloadCrack(id) {
         const crack = cracks.find(c => c.id === id);
         if (!crack) return;
+        
         state.stats.crackDownloads = (parseInt(state.stats.crackDownloads, 10) || 0) + 1;
         state.cooldowns.crackzTimeReady = getTotalMins() + getVpnCooldown();
+        
+        // Si on tombe dans le pourcentage de risque : ÉCHEC
         if (Math.random() < crack.risk) {
-            if (Math.random() < 0.35) {
-                const loss = Math.floor(20 + (state.rep * 8) + (state.money * 0.05));
-                logMoney(-loss, 'Ransomware Attack');
-                state.stats.viruses++;
-                showToast(`⚠️ STEALTH HACK!\nHackers ont siphonné $${loss}.`, "error");
-                playError(); saveGame(); updateHUD();
-            } else {
-                triggerBSOD();
-            }
+            // On déclenche directement et uniquement le BSOD (Écran bleu)
+            triggerBSOD();
         } else {
+            // SUCCÈS
             if (!state.ownedCracks.includes(id)) {
-    state.ownedCracks.push(id);
-    }
+                state.ownedCracks.push(id);
+            }
 
-    if (!state.inventory.includes(id)) {
-        state.inventory.push(id);
-    }
+            if (!state.inventory.includes(id)) {
+                state.inventory.push(id);
+            }
 
-        state.downloadedCracks[id] = getTotalMins();
+            state.downloadedCracks[id] = getTotalMins();
 
-        showToast(`Download Complete! Plugin unlocked in AbleStudio.`, "success");
-        playSuccess();
-
+            showToast(`Download Complete! Plugin unlocked in AbleStudio.`, "success");
+            playSuccess();
         }
+        
         saveGame();
         renderStore('crackz');
     }
