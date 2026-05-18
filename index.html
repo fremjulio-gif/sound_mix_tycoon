@@ -2157,7 +2157,7 @@ for (let i = 0; i < 4; i++) {
         }
 
         // Lumière omnidirectionnelle très douce pour l'effet de halo diffusé sur le mur
-        const neonLight = new THREE.PointLight('#818cf8', 0, 2, 0.5);
+        const neonLight = new THREE.PointLight('#818cf8', 0, 4, 1);
         neonLight.position.set(
             isLeftWall ? startX + 0.15 : centerX,
             centerY,
@@ -2799,10 +2799,11 @@ function togglePixarLamp() {
         if (typeof hemiLight !== 'undefined') { hemiLight.userData.savedIntensity = hemiLight.intensity; hemiLight.intensity = 0.1; }
 
         // === ALLUMER LES NÉONS ACOUSTIQUES ===
+        // === ALLUMER LES NÉONS ACOUSTIQUES ===
         if (window.acousticNeons) {
             window.acousticNeons.forEach(neon => {
-                neon.material.emissiveIntensity = 3.0; // Fait briller la bande LED
-                neon.light.intensity = 7;            // Active le halo diffus sur le mur
+                neon.material.emissiveIntensity = 1.5; // Très léger sur le tube lui-même
+                neon.light.intensity = 15;             // Éclaire la pièce doucement
             });
         }
 
