@@ -234,6 +234,21 @@
             animation: moodDrift 30s infinite ease-in-out;
             transition: background 1s ease-in-out, filter 0.5s ease;
         }
+
+
+
+
+        /* Animation de l'onde sonore du loader */
+        @keyframes soundWave {
+        0%, 100% { height: 20%; opacity: 0.4; }
+        50% { height: 100%; opacity: 1; box-shadow: 0 0 10px rgba(129,140,248,0.6); }
+    }
+
+        .animate-wave {
+        height: 20%;
+        animation: soundWave 1.2s ease-in-out infinite;
+    }
+
         
         /* =========================================
            4. OS LAYER & WINDOWS
@@ -836,6 +851,8 @@
     
     </style>
 </head>
+
+    
 <body data-theme="neon">
 <div id="game-container">
 
@@ -1252,6 +1269,96 @@
     <div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[999999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
 
 </div> <script type="module">
+
+//ECRAN CHARGEMENT---------------------
+    <div id="studio-loader" class="fixed inset-0 z-[9999] bg-[#0f172a] flex flex-col items-center justify-center transition-opacity duration-1000">
+    
+    <div class="flex items-end gap-1.5 h-8 mb-6">
+        <div class="w-1.5 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.0s"></div>
+        <div class="w-1.5 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.2s"></div>
+        <div class="w-1.5 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.4s"></div>
+        <div class="w-1.5 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.1s"></div>
+    </div>
+
+    <div id="loader-text" class="text-gray-400 font-mono text-sm tracking-widest uppercase h-4">
+        Initialisation...
+    </div>
+
+    <div class="w-48 h-[1px] bg-gray-800 mt-6 rounded-full overflow-hidden">
+        <div id="loader-progress" class="h-full bg-[var(--accent)] w-0 transition-all duration-300 shadow-[0_0_10px_rgba(129,140,248,0.8)]"></div>
+    </div>
+</div>
+
+
+// ==========================================
+// GESTION DE L'ÉCRAN DE CHARGEMENT
+// ==========================================
+const studioLoader = document.getElementById('studio-loader');
+const loaderText = document.getElementById('loader-text');
+const loaderProgress = document.getElementById('loader-progress');
+
+// Phrases d'immersion (studio vibe)
+const loadingPhrases = [
+    "Chauffe des lampes analogiques...",
+    "Patching de la console...",
+    "Accordage des instruments...",
+    "Calibration des moniteurs...",
+    "Prêt."
+];
+
+let phraseIndex = 0;
+let loadPercentage = 0;
+
+function simulateLoading() {
+    // Fait défiler le texte toutes les 800ms
+    const textInterval = setInterval(() => {
+        phraseIndex++;
+        if (phraseIndex < loadingPhrases.length) {
+            loaderText.innerText = loadingPhrases[phraseIndex];
+        }
+    }, 800);
+
+    // Fait avancer la barre de progression fluidement
+    const progressInterval = setInterval(() => {
+        // Vitesse de chargement aléatoire pour un effet naturel
+        loadPercentage += Math.random() * 15; 
+        
+        if (loadPercentage >= 100) {
+            loadPercentage = 100;
+            clearInterval(progressInterval);
+            clearInterval(textInterval);
+            loaderText.innerText = loadingPhrases[loadingPhrases.length - 1]; // "Prêt."
+            
+            // Laisse le texte "Prêt" visible une demi-seconde avant de fondre
+            setTimeout(hideLoader, 500); 
+        }
+        
+        loaderProgress.style.width = `${loadPercentage}%`;
+    }, 300);
+}
+
+function hideLoader() {
+    // Ajoute une classe pour baisser l'opacité (transition CSS)
+    studioLoader.style.opacity = '0';
+    
+    // Supprime le loader du DOM après la transition (1s) pour libérer la mémoire
+    setTimeout(() => {
+        studioLoader.style.display = 'none';
+        
+        // C'est ICI qu'il faut appeler ta fonction qui affiche l'écran de login 
+        // ou qui démarre l'animation de la room 3D.
+        // ex: initGame();
+    }, 1000);
+}
+
+// Lancement automatique au chargement de la page
+window.addEventListener('load', simulateLoading);
+
+
+
+
+    
+ //------------------------   
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
     // ==========================================
