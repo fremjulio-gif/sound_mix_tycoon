@@ -792,6 +792,12 @@
         
             }
 
+            #three-canvas-container {
+            touch-action: none; /* Bloque le comportement tactile natif (zoom, scroll) */
+              overflow: hidden;   /* Évite l'apparition de barres de défilement */
+            }
+
+        
 
         /* --- PIANO ROLL UI --- */
         .pr-key-row { 
@@ -2509,8 +2515,6 @@ scene.add(synthGroup);
 
     scene.add(guitarGroup);
     
-    
-
     
    
 
@@ -5401,15 +5405,22 @@ setTimeout(() => {
     let initialPinchDist = null;
     let initialZoomState = 1.0;
 
-    // 1. Molette PC
+   // 1. Molette PC & Trackpad
     window.addEventListener('wheel', (e) => {
+        // === NOUVEAU : Bloque le zoom natif du navigateur ===
+        if (e.ctrlKey) {
+            e.preventDefault(); 
+        }
+        // ====================================================
+
         if (document.getElementById('pc-ui-layer').style.display === 'flex') return;
         if (document.getElementById('login-screen').style.display !== 'none') return;
         
         window.targetCamZoom -= e.deltaY * 0.002;
         window.targetCamZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, window.targetCamZoom));
-    }, { passive: true });
-
+        
+    }, { passive: false });
+    
     // 2. Tactile Mobile (Pincement)
     window.addEventListener('touchstart', (e) => {
         if (document.getElementById('pc-ui-layer').style.display === 'flex') return;
