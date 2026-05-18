@@ -1399,40 +1399,24 @@ window.addEventListener('load', simulateLoading);
     function updateThemeColors() {
         if (!rackLeds || rackLeds.length === 0) return;
 
-        // Couleurs liées à l'avatar (0:Beatmaker, 1:Cyber, 2:Street, 3:Exec)
-        const avatarColors = ['#818cf8', '#00e5ff', '#ef4444', '#fbbf24']; 
-        
         // Couleurs liées au background (0:Neon, 1:Synth, 2:Matrix, 3:Blood)
         const themeColors = ['#34d399', '#ff007f', '#10b981', '#f43f5e']; 
 
-        // On se base sur l'index sélectionné à l'écran de login ou en jeu
-        const cAvatar = avatarColors[selectedAvatarIndex] || '#818cf8';
+        // On récupère uniquement la couleur du thème actuel
         const cTheme = themeColors[currentThemeIdx] || '#34d399';
 
-        let smallLedIndex = 0;
-
-        // 1. Mise à jour des LEDs du Rack Analogique
+        // 1. Mise à jour de TOUTES les LEDs du Rack Analogique
         rackLeds.forEach(item => {
-            // On différencie les VU Meters (larges) des petites LEDs rondes
-            if (item.geometry.parameters.width > 0.1) {
-                // VU Meters : Couleur de l'avatar
-                item.material.color.set(cAvatar);
-                item.material.emissive.set(cAvatar);
-            } else {
-                // Petites LEDs : Alternance entre couleur avatar et couleur thème
-                const color = (smallLedIndex % 2 === 0) ? cAvatar : cTheme;
-                item.material.color.set(color);
-                item.material.emissive.set(color);
-                smallLedIndex++;
-            }
+            item.material.color.set(cTheme);
+            item.material.emissive.set(cTheme);
         });
 
         // 2. Mise à jour des Néons Muraux (Acoustique)
         if (window.acousticNeons) {
             window.acousticNeons.forEach(neon => {
-                neon.material.color.set(cAvatar);
-                neon.material.emissive.set(cAvatar);
-                neon.light.color.set(cAvatar);
+                neon.material.color.set(cTheme);
+                neon.material.emissive.set(cTheme);
+                neon.light.color.set(cTheme);
             });
         }
     }
@@ -2173,7 +2157,7 @@ for (let i = 0; i < 4; i++) {
         }
 
         // Lumière omnidirectionnelle très douce pour l'effet de halo diffusé sur le mur
-        const neonLight = new THREE.PointLight('#818cf8', 0, 6, 1.2);
+        const neonLight = new THREE.PointLight('#818cf8', 0, 3, 1.2);
         neonLight.position.set(
             isLeftWall ? startX + 0.15 : centerX,
             centerY,
