@@ -2749,11 +2749,10 @@ function rotateAvatarToward(target, smooth = 0.12) {
         if (currentRoomAvatar) {
             let isMoving = false;
             
+            
             // ==========================================
-            // --- // ==========================================
             // --- 1A. GESTION DU CLAVIER (SMOOTH ZQSD) ---
             // ==========================================
-            // Mémoire de la vitesse (pour l'inertie)
             window.velX = window.velX || 0;
             window.velZ = window.velZ || 0;
             
@@ -2775,46 +2774,54 @@ function rotateAvatarToward(target, smooth = 0.12) {
             }
 
             // --- LA MAGIE DU SMOOTH (Accélération & Freinage) ---
-            // Plus le chiffre est bas (ex: 0.1), plus le perso met du temps à démarrer/freiner
             const acceleration = 0.15; 
             window.velX += (targetDirX - window.velX) * acceleration;
             window.velZ += (targetDirZ - window.velZ) * acceleration;
 
             // --- VITESSE MAXIMALE ---
-            // Réduite de moitié par rapport à l'ancienne version pour une marche posée
             const maxSpeed = 0.025; 
             
-            // On ne déclenche le mouvement que si la vélocité est visible
             if (Math.abs(window.velX) > 0.005 || Math.abs(window.velZ) > 0.005) {
-                isMoving = true;
                 targetPosition = null; // Annule le clic souris
 
                 const nextX = currentRoomAvatar.position.x + (window.velX * maxSpeed);
                 const nextZ = currentRoomAvatar.position.z + (window.velZ * maxSpeed);
 
-                // L'avatar tourne le regard vers sa vélocité, pas juste vers la touche
+                // L'avatar tourne le regard vers sa vélocité
                 const targetYaw = Math.atan2(window.velX, window.velZ);
                 const currentYaw = currentRoomAvatar.rotation.y;
                 currentRoomAvatar.rotation.y = currentYaw + normalizeAngle(targetYaw - currentYaw) * 0.15;
 
-                // Collisions (avec arrêt brutal de l'inertie si on tape un mur)
+                // Variables témoins pour mesurer le mouvement réel de ce frame
+                let displacementX = 0;
+                let displacementZ = 0;
+
+                // Application des collisions et calcul du mouvement réel
                 if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
+                    displacementX = nextX - currentRoomAvatar.position.x;
                     currentRoomAvatar.position.x = nextX;
                 } else {
-                    window.velX = 0; 
+                    window.velX = 0; // Arrêt de la vélocité sur X si impact
                 }
                 
                 if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
+                    displacementZ = nextZ - currentRoomAvatar.position.z;
                     currentRoomAvatar.position.z = nextZ;
                 } else {
-                    window.velZ = 0; 
+                    window.velZ = 0; // Arrêt de la vélocité sur Z si impact
+                }
+
+                // === CORRECTION CRITIQUE ===
+                // L'animation de marche s'active UNIQUEMENT si l'avatar a bougé physiquement dans l'espace
+                if (Math.abs(displacementX) > 0.001 || Math.abs(displacementZ) > 0.001) {
+                    isMoving = true;
+                } else {
+                    isMoving = false;
                 }
             } else {
-                // Arrêt total net pour éviter les micro-glissements fantômes
                 window.velX = 0;
                 window.velZ = 0;
             }
-            // ==========================================
             // ==========================================
             // --- 1B. DÉPLACEMENT À LA SOURIS (Clic) ---
             // ==========================================
