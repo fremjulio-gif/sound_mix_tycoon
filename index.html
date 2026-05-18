@@ -2626,45 +2626,71 @@ function rotateAvatarToward(target, smooth = 0.12) {
             let isMoving = false;
             
             // ==========================================
-            // --- 1A. GESTION DU CLAVIER (ZQSD / WASD / FLÈCHES) ---
+            // --- // ==========================================
+            // --- 1A. GESTION DU CLAVIER (SMOOTH ZQSD) ---
             // ==========================================
-            let kbdDirX = 0;
-            let kbdDirZ = 0;
+            // Mémoire de la vitesse (pour l'inertie)
+            window.velX = window.velX || 0;
+            window.velZ = window.velZ || 0;
             
-            // On vérifie qu'on n'est pas bloqué par une animation (Dodo, Event)
+            let targetDirX = 0;
+            let targetDirZ = 0;
+            
             if (!state.isSleeping && !state.isEventActive) {
-                if (window.kbdState.up) kbdDirZ -= 1;
-                if (window.kbdState.down) kbdDirZ += 1;
-                if (window.kbdState.left) kbdDirX -= 1;
-                if (window.kbdState.right) kbdDirX += 1;
+                if (window.kbdState.up) targetDirZ -= 1;
+                if (window.kbdState.down) targetDirZ += 1;
+                if (window.kbdState.left) targetDirX -= 1;
+                if (window.kbdState.right) targetDirX += 1;
             }
 
-            if (kbdDirX !== 0 || kbdDirZ !== 0) {
+            // Normalisation pour ne pas courir en diagonale
+            if (targetDirX !== 0 || targetDirZ !== 0) {
+                const length = Math.sqrt(targetDirX * targetDirX + targetDirZ * targetDirZ);
+                targetDirX /= length;
+                targetDirZ /= length;
+            }
+
+            // --- LA MAGIE DU SMOOTH (Accélération & Freinage) ---
+            // Plus le chiffre est bas (ex: 0.1), plus le perso met du temps à démarrer/freiner
+            const acceleration = 0.15; 
+            window.velX += (targetDirX - window.velX) * acceleration;
+            window.velZ += (targetDirZ - window.velZ) * acceleration;
+
+            // --- VITESSE MAXIMALE ---
+            // Réduite de moitié par rapport à l'ancienne version pour une marche posée
+            const maxSpeed = 0.025; 
+            
+            // On ne déclenche le mouvement que si la vélocité est visible
+            if (Math.abs(window.velX) > 0.005 || Math.abs(window.velZ) > 0.005) {
                 isMoving = true;
-                targetPosition = null; // Annule le déplacement à la souris si on touche au clavier
+                targetPosition = null; // Annule le clic souris
 
-                // Normalise le vecteur pour ne pas courir plus vite en diagonale
-                const length = Math.sqrt(kbdDirX * kbdDirX + kbdDirZ * kbdDirZ);
-                kbdDirX /= length;
-                kbdDirZ /= length;
+                const nextX = currentRoomAvatar.position.x + (window.velX * maxSpeed);
+                const nextZ = currentRoomAvatar.position.z + (window.velZ * maxSpeed);
 
-                const speed = 0.05; // Vitesse de marche au clavier
-                const nextX = currentRoomAvatar.position.x + kbdDirX * speed;
-                const nextZ = currentRoomAvatar.position.z + kbdDirZ * speed;
-
-                // Rotation douce de l'avatar
-                const targetYaw = Math.atan2(kbdDirX, kbdDirZ);
+                // L'avatar tourne le regard vers sa vélocité, pas juste vers la touche
+                const targetYaw = Math.atan2(window.velX, window.velZ);
                 const currentYaw = currentRoomAvatar.rotation.y;
                 currentRoomAvatar.rotation.y = currentYaw + normalizeAngle(targetYaw - currentYaw) * 0.15;
 
-                // Applique le mouvement avec détection des collisions
+                // Collisions (avec arrêt brutal de l'inertie si on tape un mur)
                 if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
                     currentRoomAvatar.position.x = nextX;
+                } else {
+                    window.velX = 0; 
                 }
+                
                 if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
                     currentRoomAvatar.position.z = nextZ;
+                } else {
+                    window.velZ = 0; 
                 }
-            } 
+            } else {
+                // Arrêt total net pour éviter les micro-glissements fantômes
+                window.velX = 0;
+                window.velZ = 0;
+            }
+            // ==========================================
             // ==========================================
             // --- 1B. DÉPLACEMENT À LA SOURIS (Clic) ---
             // ==========================================
