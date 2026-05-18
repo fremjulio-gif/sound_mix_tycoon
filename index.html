@@ -3084,7 +3084,7 @@ if (!state.isSleeping && currentRoomAvatar) {
             }
         }
       
-         // =========================================================
+                 // =========================================================
         // --- APPLICATION DU ZOOM FLUIDE & ANCRAGE INTELLIGENT ---
         // =========================================================
         if (window.targetCamZoom && currentRoomAvatar) {
@@ -3093,16 +3093,25 @@ if (!state.isSleeping && currentRoomAvatar) {
             camera.zoom += (window.targetCamZoom - camera.zoom) * 0.1;
             camera.updateProjectionMatrix();
 
-            // 2. CALCUL DE LA FORCE DE FOCUS (L'ancrage conditionnel)
-            // C'est le seuil de zoom à partir duquel on considère que la room est visible en entier.
-            const ZOOM_THRESHOLD = 1.1; 
-            let focusStrength = 0; // Par défaut, on ne suit pas (0%)
+            // ==========================================
+            // 🛠️ CORRECTION : SUIVI ALIGNÉ SUR MOBILE
+            // ==========================================
+            // Seuil de zoom légèrement plus réactif sur mobile
+            const ZOOM_THRESHOLD = isMobile ? 1.05 : 1.1; 
+            let focusStrength = 0; 
             
             if (camera.zoom > ZOOM_THRESHOLD) {
-                // Plus on zoome au-delà du seuil, plus le focus augmente
+                // Calcul de la progression du focus selon le niveau de zoom
                 focusStrength = (camera.zoom - ZOOM_THRESHOLD) / (3.0 - ZOOM_THRESHOLD);
-                focusStrength = Math.min(focusStrength, 0.7); // On bride à 70% max pour la subtilité
+                
+                // --- LA DIFFÉRENCE MOBILE / PC ---
+                // Mobile : Verrouillage total (1.0) pour centrer parfaitement l'avatar
+                // PC : Bridage subtil (0.7) pour laisser respirer la room
+                const maxFocus = isMobile ? 1.0 : 0.7;
+                
+                focusStrength = Math.min(focusStrength, maxFocus); 
             }
+            // ==========================================
             
             // 3. Obtenir la position de l'avatar
             const avatarFocusPoint = new THREE.Vector3();
@@ -3115,31 +3124,26 @@ if (!state.isSleeping && currentRoomAvatar) {
             // 5. Interpolation Smooth de la cible X et Z
             window.smoothCamTarget.lerp(idealTarget, 0.1); 
 
-            // ==========================================
             // 🛠️ LE LEVIER DE CADRAGE VERTICAL
-            // ==========================================
-            // C'est ici qu'on règle l'ascenseur de l'écran.
-            // Plus cette valeur est HAUTE, plus la caméra vise vers le plafond, 
-            // ce qui va forcer la pièce à "descendre" sur l'écran.
-            // N'hésite pas à tester 4.0, 6.0 ou même 8.0 pour trouver le bon cadre !
             const offsetEcran = 1.7; 
 
             // 6. Placement isométrique strict (On force le Y séparément)
             const targetCamPosition = new THREE.Vector3(
                 20 + window.smoothCamTarget.x, 
-                20 + offsetEcran,              // Hauteur absolue de la caméra
+                20 + offsetEcran,              
                 20 + window.smoothCamTarget.z
             );
             
             const lookTarget = new THREE.Vector3(
                 window.smoothCamTarget.x, 
-                offsetEcran,                   // Hauteur absolue de la visée
+                offsetEcran,                    
                 window.smoothCamTarget.z
             );
 
             camera.position.lerp(targetCamPosition, 0.1); 
             camera.lookAt(lookTarget);
         }
+
         // =========================================================
         
 
