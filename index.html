@@ -5114,7 +5114,11 @@ function renderStore(tab) {
                              <div class="space-y-4">`;
             let foundAny = false;
             cracks.forEach(c => {
-                const alreadyOwned = state.ownedCracks && state.ownedCracks.includes(c.id);
+                // 🛠️ CORRECTION 1 : On vérifie à la fois la nouvelle variable (ownedCracks) et l'ancienne (inventory)
+                const alreadyOwned = (state.ownedCracks && state.ownedCracks.includes(c.id)) || (state.inventory && state.inventory.includes(c.id));
+                
+                // 🛠️ CORRECTION 2 : Si le joueur l'a déjà téléchargé dans le passé, le lien reste visible à vie !
+                const alreadyDiscovered = state.downloadedCracks && state.downloadedCracks[c.id] !== undefined;
 
                 if (alreadyOwned) {
                     // ÉTAPE 1 : Le plugin est déjà dans l'inventaire
@@ -5123,8 +5127,8 @@ function renderStore(tab) {
                         <div class="flex-1 pr-4"><p class="font-bold text-sm text-[var(--retro-green)]">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc}</p></div>
                         <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] rounded border-gray-600 text-gray-500 cursor-not-allowed" disabled>OWNED</button>
                     </div>`;
-                } else if (state.money < c.reqMoney) {
-                    // ÉTAPE 2 : Le joueur n'a pas l'argent requis pour débloquer le lien
+                } else if (!alreadyDiscovered && state.money < c.reqMoney) {
+                    // ÉTAPE 2 : Le joueur n'a pas l'argent requis ET ne l'a jamais téléchargé avant
                     crackHTML += `<div class="border border-gray-800 p-4 flex justify-between items-center bg-black/60 rounded-lg opacity-50 select-none">
                         <div class="flex-1"><p class="font-bold text-sm text-gray-500 font-retro">???_LOCKED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: $${formatNum(c.reqMoney)} in Bank</p></div>
                         <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] rounded opacity-50 cursor-not-allowed" disabled>LOCKED</button>
