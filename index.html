@@ -2628,89 +2628,82 @@ scene.add(synthGroup);
     
     
 
-    // ==========================================
+   // ==========================================
     // PORTE DU STUDIO HAUTE DÉFINITION (Reliefs et Positionnement)
     // ==========================================
     const doorGroup = new THREE.Group();
     
-    // NOUVELLE POSITION : On l'avance le long du mur X=-5 pour la décoller du coin
-    // Elle est maintenant centrée sur Z = 4
     doorGroup.position.set(-4.95, -1, 4); 
-    doorGroup.rotation.y = Math.PI / 2; // Reste parallèle au mur
+    doorGroup.rotation.y = Math.PI / 2; 
 
-    // --- Matériaux améliorés (Nom modifié pour éviter le conflit avec le lit) ---
+    // --- Matériaux améliorés ---
     const doorOuterFrameMat = new THREE.MeshStandardMaterial({ color: '#262626', roughness: 0.9, metalness: 0.1 }); 
     const doorMat = new THREE.MeshStandardMaterial({ color: '#3f3f46', roughness: 0.7, metalness: 0.0 }); 
-    const doorHardwareMat = new THREE.MeshStandardMaterial({ color: '#b5a67c', metalness: 0.9, roughness: 0.2 });
+    // Variable renommée en quincailleriePorteMat pour tuer le doublon avec la guitare
+    const quincailleriePorteMat = new THREE.MeshStandardMaterial({ color: '#b5a67c', metalness: 0.9, roughness: 0.2 });
 
-    // 1. Encadrement de porte massif (Plus profond pour le réalisme)
+    // 1. Encadrement de porte massif (CORRIGÉ : Utilise doorOuterFrameMat au lieu de frameMat)
     const frameDepth = 0.15;
-    const frameCasingLeft = new THREE.Mesh(new THREE.BoxGeometry(0.06, 3.3, frameDepth), frameMat);
+    const frameCasingLeft = new THREE.Mesh(new THREE.BoxGeometry(0.06, 3.3, frameDepth), doorOuterFrameMat);
     frameCasingLeft.position.set(-0.73, 1.65, 0);
     
-    const frameCasingRight = new THREE.Mesh(new THREE.BoxGeometry(0.06, 3.3, frameDepth), frameMat);
+    const frameCasingRight = new THREE.Mesh(new THREE.BoxGeometry(0.06, 3.3, frameDepth), doorOuterFrameMat);
     frameCasingRight.position.set(0.73, 1.65, 0);
     
-    const frameCasingTop = new THREE.Mesh(new THREE.BoxGeometry(1.52, 0.06, frameDepth), frameMat);
+    const frameCasingTop = new THREE.Mesh(new THREE.BoxGeometry(1.52, 0.06, frameDepth), doorOuterFrameMat);
     frameCasingTop.position.set(0, 3.3, 0);
     
     doorGroup.add(frameCasingLeft, frameCasingRight, frameCasingTop);
 
-    // 2. Panneau de porte principal (Recalculé pour s'ajuster parfaitement au cadre)
+    // 2. Panneau de porte principal
     const doorPanel = new THREE.Mesh(new THREE.BoxGeometry(1.39, 3.24, 0.05), doorMat);
     doorPanel.position.set(0, 1.62, 0);
     doorGroup.add(doorPanel);
 
-    // 3. --- DÉTAILS DE RELIEF (Panneautage classique) ---
-    // Ces éléments sont ajoutés SUR la porte pour simuler les moulures
-    const reliefColor = '#323238'; // Légèrement plus sombre que la porte pour ombrer
+    // 3. --- DÉTAILS DE RELIEF ---
+    const reliefColor = '#323238'; 
     const reliefMat = new THREE.MeshStandardMaterial({ color: reliefColor, roughness: 0.7 });
     
-    // Montants verticaux décoratifs
     const stilesW = 0.10;
     const stileL = new THREE.Mesh(new THREE.BoxGeometry(stilesW, 3.04, 0.02), reliefMat);
-    stileL.position.set(-0.55, 1.62, 0.035); // Légère surépaisseur en Z
+    stileL.position.set(-0.55, 1.62, 0.035); 
     
     const stileR = new THREE.Mesh(new THREE.BoxGeometry(stilesW, 3.04, 0.02), reliefMat);
     stileR.position.set(0.55, 1.62, 0.035);
 
-    // Traverses horizontales décoratives (Haut, Milieu, Bas)
     const railH = 0.10;
     const railTop = new THREE.Mesh(new THREE.BoxGeometry(1.0, railH, 0.02), reliefMat);
     railTop.position.set(0, 3.10, 0.035);
     
     const railMid = new THREE.Mesh(new THREE.BoxGeometry(1.0, railH + 0.05, 0.02), reliefMat);
-    railMid.position.set(0, 1.5, 0.035); // Traverse centrale plus large
+    railMid.position.set(0, 1.5, 0.035); 
     
     const railBottom = new THREE.Mesh(new THREE.BoxGeometry(1.0, railH + 0.05, 0.02), reliefMat);
-    railBottom.position.set(0, 0.15, 0.035); // Base plus solide
+    railBottom.position.set(0, 0.15, 0.035); 
 
     doorGroup.add(stileL, stileR, railTop, railMid, railBottom);
 
     // 4. --- QUINCAILLERIE DÉTAILLÉE ---
-    // Plaque de propreté de la poignée
-    const handlePlate = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.25, 0.01), doorHardwareMat);
+    const handlePlate = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.25, 0.01), quincailleriePorteMat);
     handlePlate.position.set(0.52, 1.5, 0.06); 
     doorGroup.add(handlePlate);
 
-    // Poignée type béquille (plus réaliste)
-    const handleStem = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.06), doorHardwareMat);
+    const handleStem = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.06), quincailleriePorteMat);
     handleStem.rotation.x = Math.PI / 2;
     handleStem.position.set(0.52, 1.53, 0.09);
     
-    const handleLever = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, 0.02), doorHardwareMat);
+    const handleLever = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, 0.02), quincailleriePorteMat);
     handleLever.position.set(0.56, 1.53, 0.12);
     
     doorGroup.add(handleStem, handleLever);
 
-    // 5. Application des contours sombres (Cohérence graphique DA)
+    // 5. Application des contours sombres
     doorGroup.traverse(child => {
         if (child.isMesh && child.geometry) {
-            // Ombre portée pour les reliefs
             child.castShadow = true; 
             child.receiveShadow = true;
             
-            const edges = new THREE.EdgesGeometry(child.geometry, 20); // Angle limite pour éviter trop de traits
+            const edges = new THREE.EdgesGeometry(child.geometry, 20); 
             const lines = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3 }));
             child.add(lines);
         }
