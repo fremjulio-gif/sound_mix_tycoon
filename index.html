@@ -2427,7 +2427,7 @@ scene.add(synthGroup);
     const bodyMat = new THREE.MeshStandardMaterial({ color: '#991b1b', roughness: 0.3, metalness: 0.2 }); 
     const neckMat = new THREE.MeshStandardMaterial({ color: '#e6c280', roughness: 0.7 }); 
     const fretboardMat = new THREE.MeshStandardMaterial({ color: '#292524', roughness: 0.9 }); 
-    const hardwareMat = new THREE.MeshStandardMaterial({ color: '#f3f4f6', roughness: 0.1, metalness: 0.9 }); 
+    const doorHardwareMat = new THREE.MeshStandardMaterial({ color: '#f3f4f6', roughness: 0.1, metalness: 0.9 }); 
     const plasticMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.6 }); 
     const pickguardMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.5 }); 
     
@@ -2510,22 +2510,22 @@ scene.add(synthGroup);
     poleGeo.rotateX(Math.PI/2);
     for(let i=0; i<6; i++) {
         const px = (-0.09 + (i * 0.036)) * bs;
-        const pole1 = new THREE.Mesh(poleGeo, hardwareMat);
+        const pole1 = new THREE.Mesh(poleGeo, doorHardwareMat);
         pole1.position.set(px, 0.18, 0.07);
-        const pole2 = new THREE.Mesh(poleGeo, hardwareMat);
+        const pole2 = new THREE.Mesh(poleGeo, doorHardwareMat);
         pole2.position.set(px, -0.02, 0.07);
         guitarGroup.add(pole1, pole2);
     }
 
     // --- Chevalet (Bridge) ---
-    const bridgeBase = new THREE.Mesh(new THREE.BoxGeometry(0.28 * bs, 0.12, 0.04), hardwareMat);
+    const bridgeBase = new THREE.Mesh(new THREE.BoxGeometry(0.28 * bs, 0.12, 0.04), doorHardwareMat);
     bridgeBase.position.set(0, -0.22, 0.07);
     guitarGroup.add(bridgeBase);
     
     // Pontets
     const saddleGeo = new THREE.BoxGeometry(0.03 * bs, 0.04, 0.05);
     for(let i=0; i<6; i++) {
-        const saddle = new THREE.Mesh(saddleGeo, hardwareMat);
+        const saddle = new THREE.Mesh(saddleGeo, doorHardwareMat);
         saddle.position.set((-0.09 + (i * 0.036)) * bs, -0.20 + (Math.random()*0.01), 0.08);
         guitarGroup.add(saddle);
     }
@@ -2540,10 +2540,10 @@ scene.add(synthGroup);
     guitarGroup.add(k1, k2, k3, k4);
 
     // --- Sélecteur de micro ---
-    const switchBase = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.02, 16), hardwareMat);
+    const switchBase = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.02, 16), doorHardwareMat);
     switchBase.rotation.x = Math.PI/2;
     switchBase.position.set(-0.2, 0.26, 0.08);
-    const switchTip = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.06), hardwareMat);
+    const switchTip = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.06), doorHardwareMat);
     switchTip.rotation.x = -0.5;
     switchTip.position.set(-0.2, 0.28, 0.1);
     guitarGroup.add(switchBase, switchTip);
@@ -2553,7 +2553,7 @@ scene.add(synthGroup);
     let fretY = 1.95;
     for(let i=0; i<22; i++) {
         fretY -= 0.12 * Math.pow(0.96, i); 
-        const fret = new THREE.Mesh(fretGeo, hardwareMat);
+        const fret = new THREE.Mesh(fretGeo, doorHardwareMat);
         fret.position.set(0, fretY, 0.036);
         guitarGroup.add(fret);
     }
@@ -2562,7 +2562,7 @@ scene.add(synthGroup);
     // Cordes allongées (2.45 au lieu de 2.02) pour atteindre le haut de la tête
     const stringGeo = new THREE.CylinderGeometry(0.001, 0.001, 2.45, 4);
     for(let i=0; i<6; i++) {
-        const string = new THREE.Mesh(stringGeo, hardwareMat);
+        const string = new THREE.Mesh(stringGeo, doorHardwareMat);
         const px = (-0.09 + (i * 0.036)) * bs;
         string.position.set(px, 1.0, 0.042); // Re-centrées
         guitarGroup.add(string);
@@ -2576,18 +2576,18 @@ scene.add(synthGroup);
     for(let i=0; i<3; i++) {
         // Gauche
         const pegL = new THREE.Group();
-        const bL = new THREE.Mesh(pegBoxGeo, hardwareMat);
-        const cL = new THREE.Mesh(pegCylGeo, hardwareMat); cL.position.x = -0.04;
-        const hL = new THREE.Mesh(pegHeadGeo, hardwareMat); hL.position.x = -0.08;
+        const bL = new THREE.Mesh(pegBoxGeo, doorHardwareMat);
+        const cL = new THREE.Mesh(pegCylGeo, doorHardwareMat); cL.position.x = -0.04;
+        const hL = new THREE.Mesh(pegHeadGeo, doorHardwareMat); hL.position.x = -0.08;
         pegL.add(bL, cL, hL);
         pegL.position.set(-0.06, 0.1 + (i*0.08), 0);
         headGroup.add(pegL);
 
         // Droite
         const pegR = new THREE.Group();
-        const bR = new THREE.Mesh(pegBoxGeo, hardwareMat);
-        const cR = new THREE.Mesh(pegCylGeo, hardwareMat); cR.position.x = 0.04;
-        const hR = new THREE.Mesh(pegHeadGeo, hardwareMat); hR.position.x = 0.08;
+        const bR = new THREE.Mesh(pegBoxGeo, doorHardwareMat);
+        const cR = new THREE.Mesh(pegCylGeo, doorHardwareMat); cR.position.x = 0.04;
+        const hR = new THREE.Mesh(pegHeadGeo, doorHardwareMat); hR.position.x = 0.08;
         pegR.add(bR, cR, hR);
         pegR.position.set(0.06, 0.1 + (i*0.08), 0);
         headGroup.add(pegR);
@@ -2602,7 +2602,7 @@ scene.add(synthGroup);
 
     // Support Manche
     const mountNeck = new THREE.Group();
-    const arm1 = new THREE.Mesh(mountArmGeo, hardwareMat); arm1.position.z = -0.1;
+    const arm1 = new THREE.Mesh(mountArmGeo, doorHardwareMat); arm1.position.z = -0.1;
     const pad1 = new THREE.Mesh(mountPadGeo, wallMountMat); pad1.position.z = 0;
     mountNeck.add(arm1, pad1);
     mountNeck.position.set(0, 1.4, -0.08);
@@ -2610,7 +2610,7 @@ scene.add(synthGroup);
 
     // Support Corps
     const mountBody = new THREE.Group();
-    const arm2 = new THREE.Mesh(mountArmGeo, hardwareMat); arm2.position.z = -0.1;
+    const arm2 = new THREE.Mesh(mountArmGeo, doorHardwareMat); arm2.position.z = -0.1;
     const pad2 = new THREE.Mesh(mountPadGeo, wallMountMat); pad2.position.z = 0;
     mountBody.add(arm2, pad2);
     mountBody.position.set(0, -0.3, -0.15);
@@ -2618,7 +2618,7 @@ scene.add(synthGroup);
 
     // --- Contours (Edges) ---
     guitarGroup.traverse((child) => {
-        if(child.isMesh && child.geometry && child.material !== hardwareMat && child.material !== pickguardMat) {
+        if(child.isMesh && child.geometry && child.material !== doorHardwareMat && child.material !== pickguardMat) {
             const edges = new THREE.EdgesGeometry(child.geometry);
             const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3 }));
             child.add(line);
@@ -2639,10 +2639,10 @@ scene.add(synthGroup);
     doorGroup.position.set(-4.95, -1, 1.0); 
     doorGroup.rotation.y = Math.PI / 2; // Reste parallèle au mur
 
-    // --- Matériaux améliorés ---
-    const frameMat = new THREE.MeshStandardMaterial({ color: '#262626', roughness: 0.9, metalness: 0.1 }); // Cadre mat très sombre
-    const doorMat = new THREE.MeshStandardMaterial({ color: '#3f3f46', roughness: 0.7, metalness: 0.0 }); // Porte bois peint gris sombre
-    const hardwareMat = new THREE.MeshStandardMaterial({ color: '#b5a67c', metalness: 0.9, roughness: 0.2 }); // Laiton vieilli pour poignée
+    // --- Matériaux améliorés (Nom modifié pour éviter le conflit avec le lit) ---
+    const doorOuterFrameMat = new THREE.MeshStandardMaterial({ color: '#262626', roughness: 0.9, metalness: 0.1 }); 
+    const doorMat = new THREE.MeshStandardMaterial({ color: '#3f3f46', roughness: 0.7, metalness: 0.0 }); 
+    const doorHardwareMat = new THREE.MeshStandardMaterial({ color: '#b5a67c', metalness: 0.9, roughness: 0.2 });
 
     // 1. Encadrement de porte massif (Plus profond pour le réalisme)
     const frameDepth = 0.15;
@@ -2690,16 +2690,16 @@ scene.add(synthGroup);
 
     // 4. --- QUINCAILLERIE DÉTAILLÉE ---
     // Plaque de propreté de la poignée
-    const handlePlate = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.25, 0.01), hardwareMat);
+    const handlePlate = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.25, 0.01), doorHardwareMat);
     handlePlate.position.set(0.52, 1.5, 0.06); 
     doorGroup.add(handlePlate);
 
     // Poignée type béquille (plus réaliste)
-    const handleStem = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.06), hardwareMat);
+    const handleStem = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.06), doorHardwareMat);
     handleStem.rotation.x = Math.PI / 2;
     handleStem.position.set(0.52, 1.53, 0.09);
     
-    const handleLever = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, 0.02), hardwareMat);
+    const handleLever = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, 0.02), doorHardwareMat);
     handleLever.position.set(0.56, 1.53, 0.12);
     
     doorGroup.add(handleStem, handleLever);
