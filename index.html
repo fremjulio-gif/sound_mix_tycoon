@@ -4051,35 +4051,33 @@
                         // (Interactions simples conservées en 1 clic)
                         if (intersects[i].object.name === 'pc_mesh') { enterPC(); break; }
                         if (intersects[i].object.name === 'synth_mesh') { enterPC(); openApp('app-pianoroll'); break; }
+                        
                         if (intersects[i].object.name === 'bed_mesh') {
                             if (state.energy < 50) goSleep();
                             else { showToast("Tu n'es pas assez fatigué pour dormir (< 50% NRJ).", "info"); playBleep(); }
                             break;
                         }
-                        if (intersects[i].object.name === 'bed_mesh') {
-                            if (intersects[i].object.name === 'interactiveLamp') { togglePixarLamp(); break; }
+                        
+                        if (intersects[i].object.name === 'interactiveLamp') { togglePixarLamp(); break; }
 
-                            // --- NOUVELLE MÉCANIQUE : DOUBLE CLIC POUR SE DÉPLACER ---
-                            if (intersects[i].object.name === 'floor_mesh') {
-                                const currentTime = performance.now();
-                                const timeDiff = currentTime - lastFloorClickTime;
+                        // --- NOUVELLE MÉCANIQUE : DOUBLE CLIC POUR SE DÉPLACER ---
+                        if (intersects[i].object.name === 'floor_mesh') {
+                            const currentTime = performance.now();
+                            const timeDiff = currentTime - lastFloorClickTime;
 
-                                // Si moins de 350ms se sont écoulées depuis le dernier clic, c'est validé
-                                if (timeDiff < 350) {
-                                    const rawX = intersects[i].point.x;
-                                    const rawZ = intersects[i].point.z;
-                                    const snappedX = Math.round(rawX / GRID_SIZE) * GRID_SIZE;
-                                    const snappedZ = Math.round(rawZ / GRID_SIZE) * GRID_SIZE;
-                                    targetPosition = new THREE.Vector3(snappedX, -0.74, snappedZ);
-                                }
-
-                                // On met à jour le chrono pour le prochain essai
-                                lastFloorClickTime = currentTime;
-                                break;
+                            // Si moins de 350ms se sont écoulées depuis le dernier clic, c'est validé
+                            if (timeDiff < 350) {
+                                const rawX = intersects[i].point.x;
+                                const rawZ = intersects[i].point.z;
+                                const snappedX = Math.round(rawX / GRID_SIZE) * GRID_SIZE;
+                                const snappedZ = Math.round(rawZ / GRID_SIZE) * GRID_SIZE;
+                                targetPosition = new THREE.Vector3(snappedX, -0.74, snappedZ);
                             }
-                            // ---------------------------------------------------------
+
+                            // On met à jour le chrono pour le prochain essai
+                            lastFloorClickTime = currentTime;
+                            break;
                         }
-                    }
 
                     document.getElementById('three-canvas-container').addEventListener('pointerdown', onPointerDown);
 
