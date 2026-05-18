@@ -4963,7 +4963,7 @@ group.add(createLeg(-1), createLeg(1));
         
         if (pads > 8) { moneyGain += 20; }
 
-        if (pluginId) {
+       if (pluginId) {
             const usedCrack = cracks.find(c => c.id === pluginId);
             if (usedCrack) {
                 const match = usedCrack.desc.match(/\+(\d+)%/);
@@ -4979,6 +4979,7 @@ group.add(createLeg(-1), createLeg(1));
             state.ownedCracks = (state.ownedCracks || []).filter(id => id !== pluginId);
             state.inventory = (state.inventory || []).filter(id => id !== pluginId);
             
+    
             // Met à jour l'UI instantanément pour refléter la perte du plugin
             updateDawPlugins();
             renderStore('crackz'); 
