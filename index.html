@@ -1394,6 +1394,7 @@ window.addEventListener('load', simulateLoading);
     let rackLeds = [];
     let currentRoomAvatar = null;
     let targetPosition = null;
+    state.isSitting = false;
     
     // VARIABLES GLOBALES POUR L'ANIMATION
     let time = 0;
@@ -2173,6 +2174,7 @@ for (let i = 0; i < 4; i++) {
 
     [seat, back, armL, armR].forEach(mesh => {
         mesh.castShadow = true; mesh.receiveShadow = true;
+        mesh.name = 'sofa_mesh';
         const edges = new THREE.EdgesGeometry(mesh.geometry);
         const lines = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
         mesh.add(lines);
@@ -3181,6 +3183,7 @@ if (!state.isSleeping && currentRoomAvatar) {
                 else { showToast("Tu n'es pas assez fatigué pour dormir (< 50% NRJ).", "info"); playBleep(); }
                 break;
             }
+            if (intersects[i].object.name === 'bed_mesh') {
             if (intersects[i].object.name === 'interactiveLamp') { togglePixarLamp(); break; }
 
             // --- NOUVELLE MÉCANIQUE : DOUBLE CLIC POUR SE DÉPLACER ---
@@ -4319,6 +4322,87 @@ group.add(createLeg(-1), createLeg(1));
     saveGame();
 }
 
+    // ==========================================
+    // MÉCANIQUE CHILL : S'ASSEOIR SUR LE CANAPÉ
+    // ==========================================
+    function goSit() {
+        if (state.isExporting || state.isSleeping || state.isSitting) return;
+        
+        if (state.energy >= 100) {
+            showToast("Tu es déjà rechargé à bloc, va plutôt faire un banger !", "info");
+            return;
+        }
+
+        state.isSitting = true;
+        targetPosition = null; // Annule tout déplacement en cours
+
+        // Calculs aléatoires demandés
+        const energyGain = Math.floor(Math.random() * (20 - 5 + 1)) + 5; // Entre 5 et 20
+        const durationMs = (Math.floor(Math.random() * (15 - 3 + 1)) + 3) * 1000; // Entre 3s et 15s
+
+        showToast(`Petite pause chill... (${Math.ceil(durationMs / 1000)}s)`, "info");
+        playTone(480, 'sine', 0.1, 0.04);
+
+        if (currentRoomAvatar) {
+            // Sauvegarde de la position pour le retour
+            currentRoomAvatar.userData.preSitPos = currentRoomAvatar.position.clone();
+            currentRoomAvatar.userData.preSitRot = currentRoomAvatar.rotation.clone();
+
+            // Téléportation sur l'assise du canapé (Sofa pos: -4.2, -1, 1.5)
+            currentRoomAvatar.position.set(-3.95, -0.82, 1.5);
+            currentRoomAvatar.rotation.set(0, Math.PI / 2, 0); // Regarde vers la pièce
+
+            // --- ANIMATION DE LA POSE ASSISE ---
+            const visual = currentRoomAvatar.getObjectByName("AvatarVisual");
+            if (visual) {
+                visual.position.y = -0.14; // On abaisse le bassin dans le coussin
+                const legL = visual.getObjectByName("Leg_L");
+                const legR = visual.getObjectByName("Leg_R");
+                if (legL && legR) {
+                    legL.rotation.x = -Math.PI / 2; // Jambe gauche tendue vers l'avant
+                    legR.rotation.x = -Math.PI / 2; // Jambe droite tendue vers l'avant
+                }
+            }
+        }
+
+        // Fin de l'animation après le temps imparti
+        setTimeout(() => {
+            standUp(energyGain);
+        }, durationMs);
+    }
+
+    function standUp(energyGain) {
+        state.isSitting = false;
+
+        if (currentRoomAvatar) {
+            // Restauration de la position debout d'origine
+            if (currentRoomAvatar.userData.preSitPos) {
+                currentRoomAvatar.position.copy(currentRoomAvatar.userData.preSitPos);
+                currentRoomAvatar.rotation.copy(currentRoomAvatar.userData.preSitRot);
+            }
+
+            // Reset des membres de l'avatar
+            const visual = currentRoomAvatar.getObjectByName("AvatarVisual");
+            if (visual) {
+                visual.position.y = 0;
+                const legL = visual.getObjectByName("Leg_L");
+                const legR = visual.getObjectByName("Leg_R");
+                if (legL && legR) {
+                    legL.rotation.x = 0;
+                    legR.rotation.x = 0;
+                }
+            }
+        }
+
+        // Application du gain d'énergie
+        state.energy = Math.min(100, state.energy + energyGain);
+        
+        showToast(`Pause terminée. Énergie récupérée (+${energyGain}% NRJ)`, "success");
+        playSuccess();
+        updateHUD();
+        saveGame();
+    }
+        
 
 
     // ==========================================
@@ -4469,7 +4553,7 @@ group.add(createLeg(-1), createLeg(1));
     // 13. GAME TICK
     // ==========================================
     function gameTick() {
-        if (state.isSleeping || state.isEventActive) return; 
+        if (state.isSleeping || state.isEventActive || state.isSitting) return; 
 
         state.timeMins = (parseInt(state.timeMins, 10) || 0) + 5;
         state.day      =  parseInt(state.day, 10) || 1;
@@ -5691,6 +5775,7 @@ window.smoothCamTarget = new THREE.Vector3(0, 0, 0);
     window.selectAvatar     = selectAvatar;
     window.attemptLogin     = attemptLogin;
     window.goSleep          = goSleep; // Export du sommeil
+    window.goSit             = goSit;
     window.closeReview      = closeReview; // Export de la fermeture review
     window.toggleSecretTape = toggleSecretTape;
     
