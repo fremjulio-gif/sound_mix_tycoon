@@ -57,7 +57,6 @@
             /* FIX CRITIQUE: position fixed et overscroll-behavior none empêchent tout scroll natif (pull-to-refresh) du navigateur mobile */
             position: fixed;
             overscroll-behavior: none;
-            touch-action: none;
             color: var(--text-main);
             font-family: 'Outfit', system-ui, sans-serif;
             user-select: none;
@@ -666,6 +665,7 @@
     overflow-x: hidden !important;
     overflow-y: scroll !important;
     -webkit-overflow-scrolling: touch !important;
+    pointer-events: auto !important;
     padding-top: calc(130px + env(safe-area-inset-top)) !important;
     padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
     padding-left: 18px !important;
@@ -716,6 +716,8 @@
     /* PAS de height ni overflow ici — laisser le contenu dicter la hauteur */
     flex-shrink: 0 !important;
     min-height: min-content !important;
+    height: auto !important;
+    overflow: visible !important;
 }
 
 .widgets-container .desktop-widget {
