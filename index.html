@@ -2873,29 +2873,28 @@ function rotateAvatarToward(target, smooth = 0.12) {
 
 
     // ==========================================
-    // SYSTÈME DE PROXIMITÉ (SURLIGNAGE)
+    // SYSTÈME DE PROXIMITÉ (SURLIGNAGE) - FIXÉ
     // ==========================================
-    const INTERACTION_DIST = 2.8; // Distance max pour interagir
-    const HIGHLIGHT_COLOR = new THREE.Color('#818cf8'); // Couleur néon (Accent)
+    const INTERACTION_DIST = 3.5; // On augmente la distance (pratique pour le grand lit)
+    const HIGHLIGHT_COLOR = new THREE.Color('#818cf8'); // Ton bleu/violet néon
     const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp'];
     const interactableMeshes = [];
 
     function initProximityHighlight() {
         scene.traverse(child => {
             if (child.isMesh && interactableNames.includes(child.name)) {
-                // On exclut les objets qui brillent déjà de base (comme l'écran du PC ou les LEDs)
+                // On exclut les objets qui brillent déjà (écran PC, LEDs...)
                 if (child.material && (child.material.emissiveIntensity || 0) < 0.1) {
                     
-                    // On clone le matériau pour l'isoler
+                    // On clone pour isoler le matériau
                     child.material = child.material.clone();
                     
-                    if (!child.material.emissive) {
-                        child.material.emissive = new THREE.Color(0x000000);
-                    }
+                    // L'ASTUCE EST ICI : On applique la couleur tout de suite mais à 0% d'intensité.
+                    // Ça force le moteur 3D à activer le calcul de la lumière sur ces objets.
+                    child.material.emissive = HIGHLIGHT_COLOR.clone();
+                    child.material.emissiveIntensity = 0;
                     
-                    // Sauvegarde de l'état d'origine
-                    child.userData.baseEmissive = child.material.emissive.clone();
-                    child.userData.baseEmissiveIntensity = child.material.emissiveIntensity || 0;
+                    child.userData.baseEmissiveIntensity = 0;
                     
                     interactableMeshes.push(child);
                 }
@@ -2903,7 +2902,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
         });
     }
 
-    // On lance l'initialisation
+    // Lancement
     initProximityHighlight();
 
     
@@ -3254,28 +3253,27 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
 
 
 
-        // --- SURLIGNAGE SMOOTH PAR PROXIMITÉ ---
+       // --- SURLIGNAGE SMOOTH PAR PROXIMITÉ ---
         if (currentRoomAvatar) {
             const avatarPos = currentRoomAvatar.position;
             const targetPos = new THREE.Vector3();
 
             interactableMeshes.forEach(mesh => {
+                // On récupère la position réelle de l'objet dans la pièce
                 mesh.getWorldPosition(targetPos);
-                // Calcul de la distance 2D (on ignore la hauteur Y)
+                
+                // Calcul de la distance 2D entre l'avatar et l'objet
                 const dist = Math.hypot(targetPos.x - avatarPos.x, targetPos.z - avatarPos.z);
                 
-                let targetIntensity = mesh.userData.baseEmissiveIntensity;
-                let targetColor = mesh.userData.baseEmissive;
+                let targetIntensity = mesh.userData.baseEmissiveIntensity; // Retour à 0
 
-                // Si l'avatar est dans la zone
+                // Si l'avatar entre dans la zone
                 if (dist < INTERACTION_DIST) {
-                    targetIntensity = 0.35; // Force du surlignage (discret et stylé)
-                    targetColor = HIGHLIGHT_COLOR;
+                    targetIntensity = 1.2; // Grosse intensité (1.2) pour que ça brille vraiment !
                 }
 
-                // Transition ultra-fluide (Lerp)
-                mesh.material.emissiveIntensity += (targetIntensity - mesh.material.emissiveIntensity) * 0.1;
-                mesh.material.emissive.lerp(targetColor, 0.1);
+                // Transition ultra-fluide (Lerp sur l'intensité)
+                mesh.material.emissiveIntensity += (targetIntensity - mesh.material.emissiveIntensity) * 0.15;
             });
         }
         // =========================================================
