@@ -2873,10 +2873,10 @@ function rotateAvatarToward(target, smooth = 0.12) {
 
 
    // ==========================================
-    // SYSTÈME DE PROXIMITÉ (SURLIGNAGE NÉON) - V3
+    // SYSTÈME DE PROXIMITÉ (SURLIGNAGE NÉON) - V4 (Intégré)
     // ==========================================
-    const INTERACTION_DIST = 3.5; 
-    const HIGHLIGHT_COLOR = new THREE.Color('#ffffff'); // Blanc
+    const INTERACTION_DIST = 1.8; // Ton rayon d'action ajusté
+    const HIGHLIGHT_LINE_COLOR = new THREE.Color('#ffffff'); // Contours en blanc
     const DEFAULT_LINE_COLOR = new THREE.Color(0x000000); // Contours normaux
     const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp'];
     const highlightItems = [];
@@ -2885,15 +2885,14 @@ function rotateAvatarToward(target, smooth = 0.12) {
         scene.traverse(child => {
             if (child.isMesh && interactableNames.includes(child.name)) {
                 
-                // 1. Clonage et forçage de l'emissive pour le moteur 3D
                 if (child.material) {
                     child.material = child.material.clone();
-                    child.material.emissive = new THREE.Color(0x000000);
-                    child.material.emissiveIntensity = 0;
-                    child.material.needsUpdate = true; // <-- CRUCIAL ICI
+                    // LA MAGIE EST LÀ : L'emissive prend la couleur de l'objet !
+                    child.material.emissive = child.material.color.clone(); 
+                    child.material.emissiveIntensity = 0; // Mais reste éteint au début
+                    child.material.needsUpdate = true;
                 }
 
-                // 2. On récupère les contours noirs (Edges) s'ils existent
                 let edgesLine = null;
                 child.children.forEach(subChild => {
                     if (subChild.isLineSegments && subChild.material) {
@@ -2902,18 +2901,12 @@ function rotateAvatarToward(target, smooth = 0.12) {
                     }
                 });
 
-                // On stocke tout dans notre tableau
-                highlightItems.push({
-                    mesh: child,
-                    edges: edgesLine
-                });
+                highlightItems.push({ mesh: child, edges: edgesLine });
             }
         });
     }
 
-    // On lance la fonction pour préparer la scène
     initProximityHighlight();
-
     
     
     function animate3D() {
@@ -3268,30 +3261,25 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
             const targetPos = new THREE.Vector3();
 
             highlightItems.forEach(item => {
-                // On cible la vraie position 3D de l'objet
                 item.mesh.getWorldPosition(targetPos);
-                
-                // Calcul de la distance à plat (sans la hauteur Y)
                 const dist = Math.hypot(targetPos.x - avatarPos.x, targetPos.z - avatarPos.z);
                 
                 let targetEmissive = 0;
-                let targetLineOp = 0.4; // Opacité normale des traits noirs
+                let targetLineOp = 0.4; 
                 let targetLineColor = DEFAULT_LINE_COLOR;
 
-                // Si l'avatar est proche
                 if (dist < INTERACTION_DIST) {
-                    targetEmissive = 0.15; // Léger halo sur l'objet
-                    targetLineOp = 0.6;    // Les contours deviennent 100% opaques
-                    targetLineColor = HIGHLIGHT_COLOR; // Les contours s'allument en néon
+                    targetEmissive = 0.25; // On peut mettre plus fort (0.25) car ça respecte la couleur de base !
+                    targetLineOp = 0.6;    // Les traits noirs deviennent de fins traits clairs
+                    targetLineColor = HIGHLIGHT_LINE_COLOR; 
                 }
 
-                // A. Animation de la couleur de l'objet
+                // A. On ne lerp QUE l'intensité, la couleur reste pure et intacte !
                 if (item.mesh.material) {
                     item.mesh.material.emissiveIntensity += (targetEmissive - item.mesh.material.emissiveIntensity) * 0.15;
-                    item.mesh.material.emissive.lerp(targetEmissive > 0 ? HIGHLIGHT_COLOR : new THREE.Color(0x000000), 0.1);
                 }
 
-                // B. Animation des contours en néon (C'est ça qui va vraiment faire le style !)
+                // B. Animation des contours 
                 if (item.edges && item.edges.material) {
                     item.edges.material.opacity += (targetLineOp - item.edges.material.opacity) * 0.15;
                     item.edges.material.color.lerp(targetLineColor, 0.15);
