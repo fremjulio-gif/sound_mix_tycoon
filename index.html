@@ -930,7 +930,7 @@
    <div id="hud" class="liquid-glass-heavy min-h-[64px] md:min-h-[76px] fixed top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 rounded-[30px] flex items-center justify-between px-3 md:px-8 transition-all w-[96%] md:w-max max-w-6xl border border-white/10 shadow-2xl gap-2 md:gap-8">
         
         <div class="flex items-center gap-3 shrink-0">
-            <div id="hud-avatar" class="w-[38px] h-[38px] md:w-[52px] md:h-[52px] rounded-full bg-black bg-cover bg-center bg-no-repeat border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shadow-[0_0_15px_rgba(129,140,248,0.5)]"></div>
+            <div id="hud-avatar" class="w-[38px] h-[38px] md:w-[52px] md:h-[52px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shadow-[0_0_15px_rgba(129,140,248,0.5)]"></div>
             <span id="hud-name" class="font-bold font-retro text-lg tracking-widest uppercase text-white hidden md:block">Artiste</span>
         </div>
         
@@ -3410,7 +3410,7 @@ let cpuGraphStarted = false;
 let lastCpuTick = 0;
 
 function drawSysGraphUI(timestamp) {
-    cpuGraphStarted = true;
+    if (!cpuGraphStarted) return;
     
     // FIX: La request doit être en haut pour ne pas briser la boucle si le canvas est caché
     requestAnimationFrame(drawSysGraphUI);
@@ -5067,38 +5067,42 @@ saveGame(); updateHUD(); updateCooldownUIs();
     let isTapeRecording = true;
 
 function toggleSecretTape() {
-    isTapeRecording = !isTapeRecording;
-    const reel1 = document.getElementById('tape-reel-1');
-    const reel2 = document.getElementById('tape-reel-2');
-    const status = document.getElementById('tape-status');
-    
-    // --- NOUVEAU : Ciblage des animations de la Signal Chain ---
-    const signalElements = document.querySelectorAll('.signal-line, .signal-node');
-
-    if (isTapeRecording) {
-        reel1.classList.remove('tape-paused');
-        reel2.classList.remove('tape-paused');
+        isTapeRecording = !isTapeRecording;
+        const reel1 = document.getElementById('tape-reel-1');
+        const reel2 = document.getElementById('tape-reel-2');
+        const status = document.getElementById('tape-status');
         
-        // Reprise du flux de la Signal Chain
-        signalElements.forEach(el => el.classList.remove('tape-paused'));
+        // Cible les animations de la Signal Chain
+        const signalElements = document.querySelectorAll('.signal-line, .signal-node');
 
-        status.innerText = "REC";
-        status.className = "text-[10px] font-retro text-[var(--retro-red)] animate-pulse font-bold drop-shadow-[0_0_5px_var(--retro-red)]";
-        showToast('Secret tape en cours d\'enregistrement.', "discreet");
-        playTone(500, 'sine', 0.1, 0.05); // Bruit d'enclenchement
-    } else {
-        reel1.classList.add('tape-paused');
-        reel2.classList.add('tape-paused');
-        
-        // Gel immédiat du flux de la Signal Chain (Glow et Lignes figés)
-        signalElements.forEach(el => el.classList.add('tape-paused'));
+        if (isTapeRecording) {
+            reel1.classList.remove('tape-paused');
+            reel2.classList.remove('tape-paused');
+            signalElements.forEach(el => el.classList.remove('tape-paused'));
 
-        status.innerText = "STOP";
-        status.className = "text-[10px] font-retro text-gray-500 font-bold";
-        showToast('Secret tape mise en pause.', "discreet");
-        playTone(300, 'sine', 0.1, 0.05); // Bruit d'arrêt
+            // --- NOUVEAU : RELANCE DU GRAPHE CPU ---
+            if (!cpuGraphStarted) {
+                drawSysGraphUI(performance.now());
+            }
+
+            status.innerText = "REC";
+            status.className = "text-[10px] font-retro text-[var(--retro-red)] animate-pulse font-bold drop-shadow-[0_0_5px_var(--retro-red)]";
+            showToast('Secret tape en cours d\'enregistrement.', "discreet");
+            playTone(500, 'sine', 0.1, 0.05);
+        } else {
+            reel1.classList.add('tape-paused');
+            reel2.classList.add('tape-paused');
+            signalElements.forEach(el => el.classList.add('tape-paused'));
+
+            // --- NOUVEAU : ARRÊT DU GRAPHE CPU ---
+            cpuGraphStarted = false; 
+
+            status.innerText = "STOP";
+            status.className = "text-[10px] font-retro text-gray-500 font-bold";
+            showToast('Secret tape mise en pause.', "discreet");
+            playTone(300, 'sine', 0.1, 0.05);
+        }
     }
-}
 
 // Pour rayer la ToDo list interactive
 window.toggleTodo = function(el) {
