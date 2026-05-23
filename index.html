@@ -2872,37 +2872,46 @@ function rotateAvatarToward(target, smooth = 0.12) {
 }
 
 
+   // ==========================================
+    // SYSTÈME DE PROXIMITÉ (SURLIGNAGE NÉON) - V3
     // ==========================================
-    // SYSTÈME DE PROXIMITÉ (SURLIGNAGE) - FIXÉ
-    // ==========================================
-    const INTERACTION_DIST = 3.5; // On augmente la distance (pratique pour le grand lit)
-    const HIGHLIGHT_COLOR = new THREE.Color('#818cf8'); // Ton bleu/violet néon
+    const INTERACTION_DIST = 3.5; 
+    const HIGHLIGHT_COLOR = new THREE.Color('#818cf8'); // Bleu néon
+    const DEFAULT_LINE_COLOR = new THREE.Color(0x000000); // Contours normaux
     const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp'];
-    const interactableMeshes = [];
+    const highlightItems = [];
 
     function initProximityHighlight() {
         scene.traverse(child => {
             if (child.isMesh && interactableNames.includes(child.name)) {
-                // On exclut les objets qui brillent déjà (écran PC, LEDs...)
-                if (child.material && (child.material.emissiveIntensity || 0) < 0.1) {
-                    
-                    // On clone pour isoler le matériau
+                
+                // 1. Clonage et forçage de l'emissive pour le moteur 3D
+                if (child.material) {
                     child.material = child.material.clone();
-                    
-                    // L'ASTUCE EST ICI : On applique la couleur tout de suite mais à 0% d'intensité.
-                    // Ça force le moteur 3D à activer le calcul de la lumière sur ces objets.
-                    child.material.emissive = HIGHLIGHT_COLOR.clone();
+                    child.material.emissive = new THREE.Color(0x000000);
                     child.material.emissiveIntensity = 0;
-                    
-                    child.userData.baseEmissiveIntensity = 0;
-                    
-                    interactableMeshes.push(child);
+                    child.material.needsUpdate = true; // <-- CRUCIAL ICI
                 }
+
+                // 2. On récupère les contours noirs (Edges) s'ils existent
+                let edgesLine = null;
+                child.children.forEach(subChild => {
+                    if (subChild.isLineSegments && subChild.material) {
+                        subChild.material = subChild.material.clone();
+                        edgesLine = subChild;
+                    }
+                });
+
+                // On stocke tout dans notre tableau
+                highlightItems.push({
+                    mesh: child,
+                    edges: edgesLine
+                });
             }
         });
     }
 
-    // Lancement
+    // On lance la fonction pour préparer la scène
     initProximityHighlight();
 
     
@@ -3258,25 +3267,37 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
             const avatarPos = currentRoomAvatar.position;
             const targetPos = new THREE.Vector3();
 
-            interactableMeshes.forEach(mesh => {
-                // On récupère la position réelle de l'objet dans la pièce
-                mesh.getWorldPosition(targetPos);
+            highlightItems.forEach(item => {
+                // On cible la vraie position 3D de l'objet
+                item.mesh.getWorldPosition(targetPos);
                 
-                // Calcul de la distance 2D entre l'avatar et l'objet
+                // Calcul de la distance à plat (sans la hauteur Y)
                 const dist = Math.hypot(targetPos.x - avatarPos.x, targetPos.z - avatarPos.z);
                 
-                let targetIntensity = mesh.userData.baseEmissiveIntensity; // Retour à 0
+                let targetEmissive = 0;
+                let targetLineOp = 0.4; // Opacité normale des traits noirs
+                let targetLineColor = DEFAULT_LINE_COLOR;
 
-                // Si l'avatar entre dans la zone
+                // Si l'avatar est proche
                 if (dist < INTERACTION_DIST) {
-                    targetIntensity = 1.2; // Grosse intensité (1.2) pour que ça brille vraiment !
+                    targetEmissive = 0.35; // Léger halo sur l'objet
+                    targetLineOp = 1.0;    // Les contours deviennent 100% opaques
+                    targetLineColor = HIGHLIGHT_COLOR; // Les contours s'allument en néon
                 }
 
-                // Transition ultra-fluide (Lerp sur l'intensité)
-                mesh.material.emissiveIntensity += (targetIntensity - mesh.material.emissiveIntensity) * 0.15;
+                // A. Animation de la couleur de l'objet
+                if (item.mesh.material) {
+                    item.mesh.material.emissiveIntensity += (targetEmissive - item.mesh.material.emissiveIntensity) * 0.15;
+                    item.mesh.material.emissive.lerp(targetEmissive > 0 ? HIGHLIGHT_COLOR : new THREE.Color(0x000000), 0.1);
+                }
+
+                // B. Animation des contours en néon (C'est ça qui va vraiment faire le style !)
+                if (item.edges && item.edges.material) {
+                    item.edges.material.opacity += (targetLineOp - item.edges.material.opacity) * 0.15;
+                    item.edges.material.color.lerp(targetLineColor, 0.15);
+                }
             });
         }
-        // =========================================================
         
 
         renderer.render(scene, camera);
