@@ -387,20 +387,24 @@
 }
 
        .widgets-container {
-    grid-column: 2 / 4;
-    grid-row: 1 / 3;
-    width: 100%;
-    height: 100%;
-    max-height: none;
-    overflow: hidden;
-    padding-right: 0;
+            grid-column: 2 / 4;
+            grid-row: 1 / 3;
+            width: 100%;
+            height: 100%;
+            max-height: none;
+            overflow: hidden;
+            padding-right: 0;
 
-    display: grid;
-    grid-template-columns: minmax(220px, 0.9fr) minmax(260px, 1.1fr) minmax(240px, 0.9fr);
-    grid-template-rows: 150px 150px minmax(250px, 1fr); /* 1. On augmente la hauteur minimale */
-    gap: 18px;
-    align-content: stretch; /* 2. MAGIE : Permet à la ligne du Top Charts de s'étirer jusqu'en bas */
-}
+            display: grid;
+            grid-template-columns: minmax(220px, 0.9fr) minmax(260px, 1.1fr) minmax(240px, 0.9fr);
+            
+            /* 1. On donne un peu plus de place minimale à la 3ème ligne (1fr = prend le reste) */
+            grid-template-rows: 150px 150px minmax(220px, 1fr);
+            gap: 18px;
+            
+            /* 2. LA MAGIE : Autorise la grille à s'étirer jusqu'en bas */
+            align-content: stretch; 
+        }
 
         .widgets-container .desktop-widget {
     width: 100% !important;
@@ -420,6 +424,7 @@
     align-self: stretch;
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
         .widgets-container::-webkit-scrollbar { width: 0px; }
         .desktop-widget { flex-shrink: 0; transition: transform 0.3s ease; }
