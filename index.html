@@ -3120,64 +3120,79 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
             }
         }
       
-                 // =========================================================
-        // --- APPLICATION DU ZOOM FLUIDE & ANCRAGE INTELLIGENT ---
+         // =========================================================
+        // --- APPLICATION DU ZOOM FLUIDE & CINÉMATIQUE D'INTRO ---
         // =========================================================
         if (window.targetCamZoom && currentRoomAvatar) {
             
-            // 1. Appliquer le smooth zoom
-            camera.zoom += (window.targetCamZoom - camera.zoom) * 0.1;
-            camera.updateProjectionMatrix();
-
-            // ==========================================
-            // 🛠️ CORRECTION : SUIVI ALIGNÉ SUR MOBILE
-            // ==========================================
-            // Seuil de zoom légèrement plus réactif sur mobile
+            // 1. Calcul de l'ancre de base (Mix Centre de pièce / Avatar)
             const ZOOM_THRESHOLD = isMobile ? 1.05 : 1.1; 
             let focusStrength = 0; 
             
-            if (camera.zoom > ZOOM_THRESHOLD) {
-                // Calcul de la progression du focus selon le niveau de zoom
-                focusStrength = (camera.zoom - ZOOM_THRESHOLD) / (3.0 - ZOOM_THRESHOLD);
-                
-                // --- LA DIFFÉRENCE MOBILE / PC ---
-                // Mobile : Verrouillage total (1.0) pour centrer parfaitement l'avatar
-                // PC : Bridage subtil (0.7) pour laisser respirer la room
+            if (window.targetCamZoom > ZOOM_THRESHOLD) {
+                focusStrength = (window.targetCamZoom - ZOOM_THRESHOLD) / (3.0 - ZOOM_THRESHOLD);
                 const maxFocus = isMobile ? 1.0 : 0.7;
-                
                 focusStrength = Math.min(focusStrength, maxFocus); 
             }
-            // ==========================================
-            
-            // 3. Obtenir la position de l'avatar
+
             const avatarFocusPoint = new THREE.Vector3();
             currentRoomAvatar.getWorldPosition(avatarFocusPoint);
-
-            // 4. Mixer le centre de la pièce et l'avatar
             const roomCenter = new THREE.Vector3(0, 0, 0); 
             const idealTarget = roomCenter.clone().lerp(avatarFocusPoint, focusStrength);
-
-            // 5. Interpolation Smooth de la cible X et Z
             window.smoothCamTarget.lerp(idealTarget, 0.1); 
 
-            // 🛠️ LE LEVIER DE CADRAGE VERTICAL
             const offsetEcran = 1.7; 
 
-            // 6. Placement isométrique strict (On force le Y séparément)
-            const targetCamPosition = new THREE.Vector3(
+            // 2. Positions "Finales" de la vue isométrique classique
+            const finalCamPosition = new THREE.Vector3(
                 20 + window.smoothCamTarget.x, 
                 20 + offsetEcran,              
                 20 + window.smoothCamTarget.z
             );
             
-            const lookTarget = new THREE.Vector3(
+            const finalLookTarget = new THREE.Vector3(
                 window.smoothCamTarget.x, 
                 offsetEcran,                    
                 window.smoothCamTarget.z
             );
 
-            camera.position.lerp(targetCamPosition, 0.1); 
-            camera.lookAt(lookTarget);
+            // 3. LOGIQUE D'AFFICHAGE : Intro vs Gameplay
+            if (window.isIntroAnimating) {
+                // Progression fluide de 0 à 1 (sur environ 2 secondes)
+                window.introProgress += 0.008; 
+                
+                if (window.introProgress >= 1) {
+                    window.introProgress = 1;
+                    window.isIntroAnimating = false; // Fin de la cinématique
+                }
+
+                // Easing (Accélération douce puis freinage doux)
+                const t = window.introProgress;
+                const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+                // Configuration de départ (Vue très basse depuis le coin invisible)
+                const startPos = new THREE.Vector3(15, 0.5, 15);
+                const startLook = new THREE.Vector3(0, 0, 0); // Regarde le centre
+                const startZoom = 2.2; // Très zoomé pour l'immersion
+
+                // Interpolation globale Position + Regard + Zoom
+                const currentPos = new THREE.Vector3().lerpVectors(startPos, finalCamPosition, ease);
+                camera.position.copy(currentPos);
+                
+                const currentLook = new THREE.Vector3().lerpVectors(startLook, finalLookTarget, ease);
+                camera.lookAt(currentLook);
+
+                camera.zoom = startZoom + (window.targetCamZoom - startZoom) * ease;
+                camera.updateProjectionMatrix();
+
+            } else {
+                // Comportement standard (Le joueur contrôle le zoom)
+                camera.zoom += (window.targetCamZoom - camera.zoom) * 0.1;
+                camera.updateProjectionMatrix();
+
+                camera.position.lerp(finalCamPosition, 0.1); 
+                camera.lookAt(finalLookTarget);
+            }
         }
 
         // =========================================================
@@ -4569,6 +4584,10 @@ group.add(createLeg(-1), createLeg(1));
         spawnRoomAvatar(state.activeCharacter);
 
         saveGame();
+
+        // --- DÉCLENCHEMENT DE LA CINÉMATIQUE D'INTRO ---
+        window.isIntroAnimating = true;
+        window.introProgress = 0;
 
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('room-ui').style.display = 'flex';
