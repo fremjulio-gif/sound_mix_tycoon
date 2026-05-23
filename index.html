@@ -2871,6 +2871,42 @@ function rotateAvatarToward(target, smooth = 0.12) {
     
 }
 
+
+    // ==========================================
+    // SYSTÈME DE PROXIMITÉ (SURLIGNAGE)
+    // ==========================================
+    const INTERACTION_DIST = 2.8; // Distance max pour interagir
+    const HIGHLIGHT_COLOR = new THREE.Color('#818cf8'); // Couleur néon (Accent)
+    const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp'];
+    const interactableMeshes = [];
+
+    function initProximityHighlight() {
+        scene.traverse(child => {
+            if (child.isMesh && interactableNames.includes(child.name)) {
+                // On exclut les objets qui brillent déjà de base (comme l'écran du PC ou les LEDs)
+                if (child.material && (child.material.emissiveIntensity || 0) < 0.1) {
+                    
+                    // On clone le matériau pour l'isoler
+                    child.material = child.material.clone();
+                    
+                    if (!child.material.emissive) {
+                        child.material.emissive = new THREE.Color(0x000000);
+                    }
+                    
+                    // Sauvegarde de l'état d'origine
+                    child.userData.baseEmissive = child.material.emissive.clone();
+                    child.userData.baseEmissiveIntensity = child.material.emissiveIntensity || 0;
+                    
+                    interactableMeshes.push(child);
+                }
+            }
+        });
+    }
+
+    // On lance l'initialisation
+    initProximityHighlight();
+
+    
     
     function animate3D() {
         requestAnimationFrame(animate3D);
@@ -3216,6 +3252,32 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
             }
         }
 
+
+
+        // --- SURLIGNAGE SMOOTH PAR PROXIMITÉ ---
+        if (currentRoomAvatar) {
+            const avatarPos = currentRoomAvatar.position;
+            const targetPos = new THREE.Vector3();
+
+            interactableMeshes.forEach(mesh => {
+                mesh.getWorldPosition(targetPos);
+                // Calcul de la distance 2D (on ignore la hauteur Y)
+                const dist = Math.hypot(targetPos.x - avatarPos.x, targetPos.z - avatarPos.z);
+                
+                let targetIntensity = mesh.userData.baseEmissiveIntensity;
+                let targetColor = mesh.userData.baseEmissive;
+
+                // Si l'avatar est dans la zone
+                if (dist < INTERACTION_DIST) {
+                    targetIntensity = 0.35; // Force du surlignage (discret et stylé)
+                    targetColor = HIGHLIGHT_COLOR;
+                }
+
+                // Transition ultra-fluide (Lerp)
+                mesh.material.emissiveIntensity += (targetIntensity - mesh.material.emissiveIntensity) * 0.1;
+                mesh.material.emissive.lerp(targetColor, 0.1);
+            });
+        }
         // =========================================================
         
 
@@ -3245,20 +3307,49 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
 
         const intersects = raycaster.intersectObjects(scene.children, true);
         for (let i = 0; i < intersects.length; i++) {
-            
-            // (Interactions simples conservées en 1 clic)
-            if (intersects[i].object.name === 'pc_mesh') { enterPC(); break; }
-            if (intersects[i].object.name === 'synth_mesh') { enterPC(); openApp('app-pianoroll'); break; }
-            if (intersects[i].object.name === 'bed_mesh') {
-                if (state.energy < 50) goSleep();
-                else { showToast("Tu n'es pas assez fatigué pour dormir (< 50% NRJ).", "info"); playBleep(); }
+            const objName = intersects[i].object.name;
+
+            // --- VÉRIFICATION DES OBJETS INTERACTIFS ---
+            if (interactableNames.includes(objName)) {
+                
+                // Calcul de la distance lors du clic
+                const targetPos = new THREE.Vector3();
+                intersects[i].object.getWorldPosition(targetPos);
+                const dist = Math.hypot(targetPos.x - currentRoomAvatar.position.x, targetPos.z - currentRoomAvatar.position.z);
+
+                if (dist > INTERACTION_DIST) {
+                    showToast("Trop loin ! Rapproche-toi pour interagir.", "discreet");
+                    break; // On stoppe le clic
+                }
+
+                // Actions si on est assez proche
+                if (objName === 'pc_mesh') { enterPC(); break; }
+                if (objName === 'synth_mesh') { enterPC(); openApp('app-pianoroll'); break; }
+                if (objName === 'bed_mesh') {
+                    if (state.energy < 50) goSleep();
+                    else { showToast("Tu n'es pas assez fatigué pour dormir (< 50% NRJ).", "info"); playBleep(); }
+                    break;
+                }
+                if (objName === 'sofa_mesh') { goSit(); break; }
+                if (objName === 'interactiveLamp') { togglePixarLamp(); break; }
+            }
+
+            // --- DÉPLACEMENT (Reste inchangé) ---
+            if (objName === 'floor_mesh') {
+                const currentTime = performance.now();
+                const timeDiff = currentTime - lastFloorClickTime;
+                
+                if (timeDiff < 350) {
+                    const rawX = intersects[i].point.x;
+                    const rawZ = intersects[i].point.z;
+                    const snappedX = Math.round(rawX / GRID_SIZE) * GRID_SIZE;
+                    const snappedZ = Math.round(rawZ / GRID_SIZE) * GRID_SIZE;
+                    targetPosition = new THREE.Vector3(snappedX, -0.74, snappedZ);
+                }
+                lastFloorClickTime = currentTime;
                 break;
             }
-            if (intersects[i].object.name === 'sofa_mesh') {
-                goSit();
-                break;
-            }
-            if (intersects[i].object.name === 'interactiveLamp') { togglePixarLamp(); break; }
+        }
 
             // --- NOUVELLE MÉCANIQUE : DOUBLE CLIC POUR SE DÉPLACER ---
             if (intersects[i].object.name === 'floor_mesh') {
