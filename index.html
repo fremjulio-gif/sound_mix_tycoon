@@ -996,6 +996,36 @@
         </div>
     </div>
 </div>
+
+
+
+    <div id="standalone-pianoroll" class="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 hidden px-4">
+        <div class="liquid-glass-heavy rounded-2xl w-full max-w-4xl border border-[#8b5cf6] shadow-[0_0_40px_rgba(139,92,246,0.2)] flex flex-col overflow-hidden" style="height: 85dvh;">
+            
+            <div class="window-header bg-black/80 p-4 border-b border-white/10 flex justify-between items-center shrink-0">
+                <span class="font-retro text-xs md:text-sm text-white tracking-widest uppercase flex items-center gap-3 font-bold">
+                    <span class="w-3 h-3 rounded-full bg-[#8b5cf6] shadow-[0_0_10px_#8b5cf6] animate-pulse"></span> Piano Roll Editor
+                </span>
+                <button class="text-gray-400 hover:text-[var(--retro-red)] transition-colors p-1 text-2xl font-bold" onclick="closePianoRoll()">✕</button>
+            </div>
+            
+            <div class="window-content flex flex-col p-0 flex-1 min-h-0 bg-[#09090b]">
+                <!-- Barre de transport -->
+                <div class="flex items-center gap-4 p-3 bg-black/60 border-b border-white/10 shrink-0">
+                    <button class="btn-action px-4 py-2 text-[10px] rounded" id="pr-btn-play">▶ PLAY</button>
+                    <button class="btn-minimal px-4 py-2 text-[10px] rounded" id="pr-btn-stop">■ STOP</button>
+                    <div class="h-6 w-px bg-white/20 mx-2"></div>
+                    <span class="font-retro text-xs text-[var(--accent)] tracking-widest">INSTRUMENT: <span class="text-white">SYNTH_LEAD</span></span>
+                </div>
+
+                <!-- Zone d'édition (Clavier + Grille) -->
+                <div class="flex flex-1 overflow-hidden relative bg-[#09090b]">
+                    <div id="pr-keys-container" class="w-[80px] bg-black border-r border-white/10 shrink-0 overflow-y-auto relative z-10 custom-scrollbar"></div>
+                    <div id="pr-grid-container" class="flex-1 overflow-auto relative cursor-crosshair custom-scrollbar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
         
 
     <div id="pc-ui-layer" style="display: none;">
@@ -1147,37 +1177,7 @@
         </div>
 
 
-        <div id="app-pianoroll" class="os-window liquid-glass flex-col font-sans" style="display:none; width: 900px; max-width: 95vw;">
-    <div class="window-header">
-        <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold">
-            <span class="w-3 h-3 rounded-full bg-[#8b5cf6] shadow-[0_0_10px_#8b5cf6]"></span> Piano Roll Editor
-        </span>
-        <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-pianoroll')">✕</button>
-    </div>
-    
-    <div class="window-content flex flex-col p-0">
-        <!-- Barre de transport (Toolbar) -->
-        <div class="flex items-center gap-4 p-3 bg-black/60 border-b border-white/10 shrink-0">
-            <button class="btn-action px-4 py-2 text-[10px] rounded" id="pr-btn-play">▶ PLAY</button>
-            <button class="btn-minimal px-4 py-2 text-[10px] rounded" id="pr-btn-stop">■ STOP</button>
-            <div class="h-6 w-px bg-white/20 mx-2"></div>
-            <span class="font-retro text-xs text-[var(--accent)] tracking-widest">INSTRUMENT: <span class="text-white">SYNTH_LEAD</span></span>
-        </div>
 
-        <!-- Zone d'édition (Clavier + Grille) -->
-        <div class="flex flex-1 overflow-hidden relative bg-[#09090b]">
-            <!-- Zone Clavier Gauche (Placeholder pour l'Étape 2) -->
-            <div id="pr-keys-container" class="w-[80px] bg-black border-r border-white/10 shrink-0 overflow-hidden relative z-10">
-                <div class="w-full h-full flex items-center justify-center text-gray-700 text-[10px] font-retro rotate-[-90deg]">KEYS</div>
-            </div>
-            
-            <!-- Zone Grille MIDI (Placeholder pour l'Étape 2) -->
-            <div id="pr-grid-container" class="flex-1 overflow-auto relative cursor-crosshair">
-                <div class="w-full h-full flex items-center justify-center text-gray-700 text-[10px] font-retro">MIDI GRID</div>
-            </div>
-        </div>
-    </div>
-</div>
         
         <div id="app-daw" class="os-window liquid-glass flex-col font-sans" style="display:none;">
             <div class="window-header">
@@ -3345,7 +3345,7 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
 
                 // Actions si on est assez proche
                 if (objName === 'pc_mesh') { enterPC(); break; }
-                if (objName === 'synth_mesh') { enterPC(); openApp('app-pianoroll'); break; }
+               if (objName === 'synth_mesh') { openPianoRoll(); break; }
                 if (objName === 'bed_mesh') {
                     if (state.energy < 50) goSleep();
                     else { showToast("Tu n'es pas assez fatigué pour dormir (< 50% NRJ).", "info"); playBleep(); }
@@ -3378,7 +3378,41 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
 
     document.getElementById('three-canvas-container').addEventListener('pointerdown', onPointerDown);
 
+    // ==========================================
+    // GESTION DU PIANO ROLL INDÉPENDANT
+    // ==========================================
+    function openPianoRoll() {
+        // Cache l'UI de la chambre (bulle d'aide, etc)
+        document.getElementById('room-ui').style.display = 'none'; 
+        
+        const prWindow = document.getElementById('standalone-pianoroll');
+        prWindow.classList.remove('hidden');
+        prWindow.style.display = 'flex';
+        
+        // Petite latence pour laisser le display:flex s'appliquer avant l'opacité (animation smooth)
+        setTimeout(() => {
+            prWindow.style.opacity = '1';
+            prWindow.style.pointerEvents = 'all';
+        }, 10);
+        
+        playTone(600, 'square', 0.1, 0.05);
+    }
 
+    function closePianoRoll() {
+        const prWindow = document.getElementById('standalone-pianoroll');
+        prWindow.style.opacity = '0';
+        prWindow.style.pointerEvents = 'none';
+        
+        setTimeout(() => {
+            prWindow.classList.add('hidden');
+            prWindow.style.display = 'none';
+            document.getElementById('room-ui').style.display = 'flex'; // Réaffiche l'UI de la chambre
+        }, 300); // Durée de la transition
+        
+        // Stoppe la lecture si elle est en cours
+        if (typeof stopPrPlayback === 'function') stopPrPlayback();
+        playTone(300, 'sawtooth', 0.1, 0.05);
+    }
 
     function enterPC() {
         document.getElementById('room-ui').style.display = 'none';
@@ -4134,6 +4168,28 @@ group.add(createLeg(-1), createLeg(1));
 
     // --- INTERACTIONS SÉQUENCEUR ---
     function initPianoRollEvents() {
+        // --- NOUVEAU : CONNEXION DES BOUTONS PLAY/STOP ---
+        const btnPlay = document.getElementById('pr-btn-play');
+        const btnStop = document.getElementById('pr-btn-stop');
+
+        if (btnPlay) {
+            // Empêche les clics multiples de bugger
+            btnPlay.replaceWith(btnPlay.cloneNode(true)); 
+            document.getElementById('pr-btn-play').addEventListener('click', () => {
+                togglePrPlay();
+                playBleep();
+            });
+        }
+
+        if (btnStop) {
+            btnStop.replaceWith(btnStop.cloneNode(true));
+            document.getElementById('pr-btn-stop').addEventListener('click', () => {
+                stopPrPlayback();
+                playBleep();
+            });
+        }
+        // ----------------------------------
+        
         const grid = document.getElementById('pr-grid-container');
         if(!grid) return;
 
@@ -4237,10 +4293,10 @@ group.add(createLeg(-1), createLeg(1));
         window.addEventListener('keydown', (e) => {
             const prWindow = document.getElementById('app-pianoroll');
             // Vérifie que la fenêtre du piano est ouverte et ignore la répétition native des touches
-            if (prWindow && prWindow.style.display !== 'none' && !e.repeat) {
+            if (prWindow && !prWindow.classList.contains('hidden') && !e.repeat) {
                 const note = PC_KEY_MAP[e.code];
                 if (note) {
-                    e.preventDefault(); // Bloque les actions par défaut du navigateur
+                    e.preventDefault();
                     playSynthNote(note, true);
                 }
             }
@@ -5936,6 +5992,123 @@ setTimeout(() => {
 window.baseCameraPosition = new THREE.Vector3(10, 10, 10); 
 // 2. Un vecteur vide qui servira à calculer la visée smooth
 window.smoothCamTarget = new THREE.Vector3(0, 0, 0); 
+
+
+
+    // ==========================================
+    // MOTEUR DE LECTURE DU PIANO ROLL
+    // ==========================================
+    let prPlayInterval = null;
+    let prIsPlaying = false;
+    let prCurrentStep = 0;
+    const PR_TOTAL_STEPS = 32; // 2 mesures
+
+    function startPrPlayback() {
+        if (prIsPlaying) return;
+        prIsPlaying = true;
+        
+        // On récupère le BPM du DAW pour synchroniser la vitesse
+        const bpmInput = document.getElementById('daw-bpm');
+        const prBpm = bpmInput ? (parseInt(bpmInput.value, 10) || 120) : 120;
+        
+        // Calcul de la durée d'un step (double croche) en millisecondes
+        const stepDurationMs = (15 / prBpm) * 1000;
+        
+        const btnPlay = document.getElementById('pr-btn-play');
+        if (btnPlay) {
+            btnPlay.innerText = "⏸ PAUSE";
+            btnPlay.classList.add('text-[var(--retro-red)]', 'border-[var(--retro-red)]');
+        }
+
+        updatePrPlayheadUI();
+
+        prPlayInterval = setInterval(() => {
+            // 1. Éteindre les notes qui se terminent sur ce step
+            window.prNotes.forEach(note => {
+                if (note.startStep + note.duration === prCurrentStep) {
+                    playSynthNote(note.note, false);
+                }
+            });
+
+            // 2. Allumer les notes qui commencent sur ce step
+            window.prNotes.forEach(note => {
+                if (note.startStep === prCurrentStep) {
+                    playSynthNote(note.note, true);
+                }
+            });
+
+            // 3. Avancer la tête de lecture
+            prCurrentStep++;
+            if (prCurrentStep >= PR_TOTAL_STEPS) {
+                prCurrentStep = 0; // Loop !
+            }
+            
+            updatePrPlayheadUI();
+        }, stepDurationMs);
+    }
+
+    function stopPrPlayback() {
+        prIsPlaying = false;
+        clearInterval(prPlayInterval);
+        prCurrentStep = 0;
+        updatePrPlayheadUI();
+        
+        // Failsafe : on coupe tout le son en cours
+        Object.keys(activeSynthNotes).forEach(note => playSynthNote(note, false));
+
+        const btnPlay = document.getElementById('pr-btn-play');
+        if (btnPlay) {
+            btnPlay.innerText = "▶ PLAY";
+            btnPlay.classList.remove('text-[var(--retro-red)]', 'border-[var(--retro-red)]');
+        }
+    }
+
+    function togglePrPlay() {
+        if (prIsPlaying) stopPrPlayback();
+        else startPrPlayback();
+    }
+
+    function updatePrPlayheadUI() {
+        const gridContainer = document.getElementById('pr-grid-container');
+        if (!gridContainer) return;
+
+        let playhead = document.getElementById('pr-playhead');
+        if (!playhead) {
+            playhead = document.createElement('div');
+            playhead.id = 'pr-playhead';
+            playhead.style.position = 'absolute';
+            playhead.style.top = '0';
+            playhead.style.bottom = '0';
+            playhead.style.width = '2px';
+            playhead.style.backgroundColor = 'var(--retro-red)';
+            playhead.style.zIndex = '50';
+            playhead.style.pointerEvents = 'none';
+            playhead.style.boxShadow = '0 0 10px var(--retro-red)';
+            
+            // Calcule la vitesse de la transition CSS pour qu'elle corresponde au BPM
+            const bpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
+            const stepMs = (15 / bpm);
+            playhead.style.transition = `left ${stepMs}s linear`;
+            
+            gridContainer.appendChild(playhead);
+        }
+
+        // On déplace la barre
+        const playheadX = prCurrentStep * 32;
+        playhead.style.left = playheadX + 'px';
+
+        // Auto-scroll : si la barre sort de l'écran, on fait défiler le container
+        if (playheadX > gridContainer.scrollLeft + gridContainer.clientWidth - 64) {
+            gridContainer.scrollLeft = playheadX - gridContainer.clientWidth / 2;
+        } else if (playheadX < gridContainer.scrollLeft && prCurrentStep !== 0) {
+            gridContainer.scrollLeft = playheadX;
+        } else if (prCurrentStep === 0) {
+            gridContainer.scrollLeft = 0; // Retour au début
+        }
+    }
+
+
+    
 // ====================================================
     
     // ==========================================
@@ -5963,7 +6136,7 @@ window.smoothCamTarget = new THREE.Vector3(0, 0, 0);
     window.goSit            = goSit;
     window.closeReview      = closeReview; // Export de la fermeture review
     window.toggleSecretTape = toggleSecretTape;
-    
+    window.closePianoRoll   = closePianoRoll;
     
     // Boot
     initUI();
