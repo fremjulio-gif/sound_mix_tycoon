@@ -2873,11 +2873,11 @@ function rotateAvatarToward(target, smooth = 0.12) {
 
 
    // ==========================================
-    // SYSTÈME DE PROXIMITÉ (SURLIGNAGE NÉON) - V4 (Intégré)
+    // SYSTÈME DE PROXIMITÉ (SURLIGNAGE NÉON) - V5
     // ==========================================
-    const INTERACTION_DIST = 1.8; // Ton rayon d'action ajusté
-    const HIGHLIGHT_LINE_COLOR = new THREE.Color('#ffffff'); // Contours en blanc
-    const DEFAULT_LINE_COLOR = new THREE.Color(0x000000); // Contours normaux
+    const INTERACTION_DIST = 2; 
+    const HIGHLIGHT_LINE_COLOR = new THREE.Color('#ffffff'); 
+    const DEFAULT_LINE_COLOR = new THREE.Color(0x000000); 
     const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp'];
     const highlightItems = [];
 
@@ -2887,9 +2887,15 @@ function rotateAvatarToward(target, smooth = 0.12) {
                 
                 if (child.material) {
                     child.material = child.material.clone();
-                    // LA MAGIE EST LÀ : L'emissive prend la couleur de l'objet !
-                    child.material.emissive = child.material.color.clone(); 
-                    child.material.emissiveIntensity = 0; // Mais reste éteint au début
+                    
+                    // On sauvegarde l'intensité d'origine (vital pour l'écran PC qui brille déjà)
+                    const baseInt = child.material.emissiveIntensity || 0;
+                    child.userData.baseEmissiveIntensity = baseInt;
+                    
+                    // Si l'objet ne brille pas de base, on lui assigne sa propre couleur en emissive
+                    if (baseInt === 0) {
+                        child.material.emissive = child.material.color.clone(); 
+                    }
                     child.material.needsUpdate = true;
                 }
 
@@ -3264,22 +3270,30 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
                 item.mesh.getWorldPosition(targetPos);
                 const dist = Math.hypot(targetPos.x - avatarPos.x, targetPos.z - avatarPos.z);
                 
-                let targetEmissive = 0;
+                // 1. Rayons d'action sur-mesure pour les gros objets (Lit et Bureau)
+                let customDist = INTERACTION_DIST;
+                if (item.mesh.name === 'bed_mesh') customDist = 2.8; 
+                if (item.mesh.name === 'pc_mesh') customDist = 2.4;  
+                
+                // 2. Maintien de l'animation de base de l'écran PC (Pulsation bleue)
+                if (item.mesh.geometry.type === "PlaneGeometry" && item.mesh.name === 'pc_mesh') {
+                    item.mesh.userData.baseEmissiveIntensity = 0.5 + Math.sin(time) * 0.3;
+                }
+
+                let targetEmissive = item.mesh.userData.baseEmissiveIntensity;
                 let targetLineOp = 0.4; 
                 let targetLineColor = DEFAULT_LINE_COLOR;
 
-                if (dist < INTERACTION_DIST) {
-                    targetEmissive = 0.25; // On peut mettre plus fort (0.25) car ça respecte la couleur de base !
-                    targetLineOp = 0.6;    // Les traits noirs deviennent de fins traits clairs
+                if (dist < customDist) {
+                    targetEmissive += 0.25; // On AJOUTE de la lumière (ne casse pas l'écran)
+                    targetLineOp = 0.6;    
                     targetLineColor = HIGHLIGHT_LINE_COLOR; 
                 }
 
-                // A. On ne lerp QUE l'intensité, la couleur reste pure et intacte !
                 if (item.mesh.material) {
                     item.mesh.material.emissiveIntensity += (targetEmissive - item.mesh.material.emissiveIntensity) * 0.15;
                 }
 
-                // B. Animation des contours 
                 if (item.edges && item.edges.material) {
                     item.edges.material.opacity += (targetLineOp - item.edges.material.opacity) * 0.15;
                     item.edges.material.color.lerp(targetLineColor, 0.15);
