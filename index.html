@@ -4794,13 +4794,13 @@ function createAvatarGroup(styleIndex) {
             currentRoomAvatar.userData.preSitRot = currentRoomAvatar.rotation.clone();
 
             // Téléportation sur l'assise du canapé
-            currentRoomAvatar.position.set(-3.95, -0.82, 1.5);
+            currentRoomAvatar.position.set(-3.95, -0.86, 1.5);
             currentRoomAvatar.rotation.set(0, Math.PI / 2, 0); // Regarde vers la pièce
 
             // Animation de la pose assise
             const visual = currentRoomAvatar.getObjectByName("AvatarVisual") || currentRoomAvatar.children[0];
             if (visual) {
-                visual.position.y = -0.14; // On abaisse le bassin dans le coussin
+                visual.position.y = -0.18; // On abaisse le bassin dans le coussin
                 const legL = visual.getObjectByName("Leg_L");
                 const legR = visual.getObjectByName("Leg_R");
                 if (legL && legR) {
@@ -4824,6 +4824,9 @@ function createAvatarGroup(styleIndex) {
             if (currentRoomAvatar.userData.preSitPos) {
                 currentRoomAvatar.position.copy(currentRoomAvatar.userData.preSitPos);
                 currentRoomAvatar.rotation.copy(currentRoomAvatar.userData.preSitRot);
+
+                // --- NOUVEAU : On force la gravité pour écraser tout bug de lévitation ---
+                currentRoomAvatar.position.y = -0.95;
             }
 
             // Reset des membres de l'avatar
