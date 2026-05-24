@@ -5751,20 +5751,61 @@ function renderStore(tab) {
         t.innerText = msg;
         zone.appendChild(t);
 
-        const addSwipe = (getX) => {
-            t.addEventListener('mousedown', e => {
-                let sx = e.clientX, cx = 0; t.style.transition = 'none';
-                const onMove = e => { cx = e.clientX - sx; if (cx < 0) { t.style.transform = `translateX(${cx}px)`; t.style.opacity = Math.max(0, 1 + cx/200); } };
-                const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); t.style.transition = 'all 0.3s ease-out'; if (cx < -50) { t.style.transform = 'translateX(-120%)'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); } else { t.style.transform = 'translateX(0)'; t.style.opacity = '1'; } };
-                document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+        const addSwipe = () => {
+            let isDragging = false;
+            let startX = 0;
+            let currentDelta = 0;
+
+            // Utilisation des PointerEvents (Remplace à la fois le touch et la mouse)
+            t.addEventListener('pointerdown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                currentDelta = 0;
+                
+                // CRUCIAL : Capture le mouvement même si la souris/le doigt sort du toast !
+                t.setPointerCapture(e.pointerId);
+                
+                // On retire les transitions CSS pour un suivi 1:1 en temps réel
+                t.style.transition = 'none';
             });
-            t.addEventListener('touchstart', e => {
-                let sx = e.touches[0].clientX, cx = 0; t.style.transition = 'none';
-                const onMove = e => { cx = e.touches[0].clientX - sx; if (cx < 0) { t.style.transform = `translateX(${cx}px)`; t.style.opacity = Math.max(0, 1 + cx/200); } };
-                const onUp = () => { document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp); t.style.transition = 'all 0.3s ease-out'; if (cx < -50) { t.style.transform = 'translateX(-120%)'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); } else { t.style.transform = 'translateX(0)'; t.style.opacity = '1'; } };
-                document.addEventListener('touchmove', onMove); document.addEventListener('touchend', onUp);
-            }, { passive: true });
+
+            t.addEventListener('pointermove', (e) => {
+                if (!isDragging) return;
+                
+                currentDelta = e.clientX - startX;
+                
+                // On n'autorise le déplacement visuel QUE vers la gauche (valeurs négatives)
+                if (currentDelta < 0) {
+                    t.style.transform = `translateX(${currentDelta}px)`;
+                    // L'opacité baisse progressivement (150px de tolérance avant le transparent total)
+                    t.style.opacity = Math.max(0, 1 + currentDelta / 150);
+                }
+            });
+
+            const onEnd = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                t.releasePointerCapture(e.pointerId);
+                
+                // On remet une transition avec une courbe de Bézier type "iOS" (légèrement élastique)
+                t.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease';
+
+                // Si on a glissé de plus de 60 pixels vers la gauche -> On supprime
+                if (currentDelta < -60) {
+                    t.style.transform = 'translateX(-120%)';
+                    t.style.opacity = '0';
+                    setTimeout(() => { if (t.parentElement) t.remove(); }, 300);
+                } else {
+                    // Sinon, effet "Snap Back" : la notification rebondit à sa place d'origine
+                    t.style.transform = 'translateX(0)';
+                    t.style.opacity = '1';
+                }
+            };
+
+            t.addEventListener('pointerup', onEnd);
+            t.addEventListener('pointercancel', onEnd);
         };
+        
         addSwipe();
 
         setTimeout(() => { if (t.parentElement) { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => { if (t.parentElement) t.remove(); }, 400); } }, 4000);
