@@ -3073,7 +3073,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
             // --- VITESSE MAXIMALE ---
             const energySpeedMult = Math.max(0.2, state.energy / 100);
             
-            const maxSpeed = 0.025 * energySpeedMult;
+            const maxSpeed = 0.04 * energySpeedMult;
             
             if (Math.abs(window.velX) > 0.005 || Math.abs(window.velZ) > 0.005) {
                 targetPosition = null; // Annule le clic souris
@@ -3181,7 +3181,9 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
                     }
                 }
     const innerModel = currentRoomAvatar.getObjectByName("AvatarVisual");
-    if (!innerModel) return;
+    if (!innerModel) {
+    // On saute juste l'animation sans couper tout le reste
+    } else {
 
     const legL = innerModel.getObjectByName("Leg_L");
     const legR = innerModel.getObjectByName("Leg_R");
@@ -3204,7 +3206,7 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
     if (shouldWalkAnimate) {
         const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 1000));
 
-        walkTime += isMoving ? (0.10 * energySpeedMult) : 0.05;
+        walkTime += isMoving ? (0.18 * energySpeedMult) : 0.08;
 
         innerModel.rotation.z = Math.sin(walkTime) * 0.012 * fade;
         innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012 * fade;
