@@ -578,9 +578,7 @@
         .toast { animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; pointer-events: auto; cursor: grab; }
         .toast:active { cursor: grabbing; }
 
-        .avatar-sel { border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.4); transition: all 0.2s; touch-action: manipulation; object-fit: cover; 
-    image-rendering: -webkit-optimize-contrast; /* Rend l'image plus nette */
-    image-rendering: crisp-edges; }
+        .avatar-sel { border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.4); transition: all 0.2s; touch-action: manipulation; }
         .avatar-sel.selected { border-color: var(--accent); background: rgba(129, 140, 248, 0.2); box-shadow: 0 0 25px rgba(129, 140, 248, 0.4), inset 0 1px 1px rgba(255,255,255,0.3); }
 
         #mobile-nav { display: none; }
@@ -4393,7 +4391,7 @@ function createAvatarGroup(styleIndex) {
         const cont = document.getElementById('avatar-container');
         cont.innerHTML = avatars.map((a, i) => `
             <div class="avatar-sel aspect-square relative p-0 overflow-hidden flex items-center justify-center ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
-                <img src="${a.img}" alt="${a.id}" class="w-full h-full pixelated object-cover pointer-events-none" onerror="this.style.border='1px solid red'" />
+                <img src="${a.img}" alt="${a.id}" class="w-full h-full object-cover pointer-events-none" onerror="this.style.border='1px solid red'" />
                 <span class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded-md text-[8px] md:text-[10px] font-retro text-white uppercase font-bold tracking-widest pointer-events-none text-center whitespace-nowrap border border-white/5 shadow-md">${a.id}</span>
             </div>`).join('');
         // --- LISTENERS CLAVIER PIANO ROLL ---
