@@ -2278,8 +2278,23 @@ for (let i = 0; i < 4; i++) {
     tvGroup.position.set(0, 0.375, 0);
 
     const tvFrameMat = new THREE.MeshStandardMaterial({ color: '#1a1a1c', roughness: 0.8 });
-    // Dalle noire brillante
-    const tvScreenMat = new THREE.MeshStandardMaterial({ color: '#030303', roughness: 0.1, metalness: 0.9 }); 
+    
+    // Dalle avec capacité d'émission de lumière (noire par défaut)
+    const tvScreenMat = new THREE.MeshStandardMaterial({ 
+        color: '#030303', 
+        roughness: 0.1, 
+        metalness: 0.9,
+        emissive: '#000000',
+        emissiveIntensity: 0
+    }); 
+    
+    // On rend le matériau accessible globalement pour l'animer
+    window.tvScreenMat = tvScreenMat;
+
+    // On crée un faisceau de lumière qui sortira de l'écran pour éclairer la pièce
+    window.tvLight = new THREE.PointLight('#38bdf8', 0, 5, 1);
+    window.tvLight.position.set(-0.5, 0.7, 0); // Décalé devant l'écran (-X)
+    tvGroup.add(window.tvLight); 
     const cableMat = new THREE.MeshStandardMaterial({ color: '#0a0a0a', roughness: 0.9 });
 
     function addTvEdges(mesh) {
@@ -2964,11 +2979,34 @@ function rotateAvatarToward(target, smooth = 0.12) {
     function animate3D() {
         requestAnimationFrame(animate3D);
         time += 0.02;
-        
-        // Sécurité pour l'écran du PC
-        if (typeof pcScreenMat !== 'undefined') {
-            pcScreenMat.emissiveIntensity = 0.5 + Math.sin(time) * 0.3;
+
+
+
+        // ==========================================
+        // --- LOGIQUE DE LA TÉLÉVISION ---
+        // ==========================================
+        if (window.tvScreenMat && window.tvLight) {
+            // On vérifie les deux conditions
+            const isLampOn = window.pixarLamp && window.pixarLamp.userData.isOn;
+            const isSitting = state.isSitting;
+
+            if (isSitting && isLampOn) {
+                // TV ALLUMÉE : Effet de scintillement dynamique (flicker)
+                const flicker = 0.7 + Math.random() * 0.3; // Varie entre 0.7 et 1.0
+                
+                window.tvScreenMat.emissive.set('#0ea5e9'); // Bleu électrique/Cyan
+                window.tvScreenMat.emissiveIntensity = flicker;
+                
+                // La lumière éclaire l'avatar sur le canapé
+                window.tvLight.intensity = flicker * 4; 
+            } else {
+                // TV ÉTEINTE
+                window.tvScreenMat.emissive.set('#000000');
+                window.tvScreenMat.emissiveIntensity = 0;
+                window.tvLight.intensity = 0;
+            }
         }
+        // ==========================================
 
         // --- ANIMATION DES LEDS DU RACK ---
         rackLeds.forEach(led => {
@@ -3337,9 +3375,14 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
                 if (item.mesh.name === 'bed_mesh') customDist = 2.8; 
                 if (item.mesh.name === 'pc_mesh') customDist = 2.4;  
                 
-                // 2. Maintien de l'animation de base de l'écran PC (Pulsation bleue)
+                // 2. ÉCRAN PC : Le glow réagit à l'approche de l'avatar !
                 if (item.mesh.geometry.type === "PlaneGeometry" && item.mesh.name === 'pc_mesh') {
-                    item.mesh.userData.baseEmissiveIntensity = 0.5 + Math.sin(time) * 0.3;
+                    // On calcule un "facteur d'approche" (0 si on est loin, 1 si on est tout près)
+                    // Le + 1.5 permet de commencer à allumer l'écran un peu avant d'arriver dans la zone de clic
+                    let proximityFocus = Math.max(0, 1 - (dist / (customDist + 1.5))); 
+                    
+                    // Intensité : Faible de base (0.1) + Boost selon la distance (0.8 max) + Pulsation légère
+                    item.mesh.userData.baseEmissiveIntensity = 0.1 + (proximityFocus * 0.8) + (Math.sin(time) * 0.1);
                 }
 
                 let targetEmissive = item.mesh.userData.baseEmissiveIntensity;
@@ -3347,11 +3390,15 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
                 let targetLineColor = DEFAULT_LINE_COLOR;
 
                 if (dist < customDist) {
-                    targetEmissive += 0.25; // On AJOUTE de la lumière (ne casse pas l'écran)
+                    // On ajoute le surlignage +0.25 sur tous les objets SAUF l'écran (qui gère déjà sa lumière)
+                    if (!(item.mesh.geometry.type === "PlaneGeometry" && item.mesh.name === 'pc_mesh')) {
+                        targetEmissive += 0.25; 
+                    }
                     targetLineOp = 0.6;    
                     targetLineColor = HIGHLIGHT_LINE_COLOR; 
                 }
 
+                // Application des transitions fluides (Lerp)
                 if (item.mesh.material) {
                     item.mesh.material.emissiveIntensity += (targetEmissive - item.mesh.material.emissiveIntensity) * 0.15;
                 }
