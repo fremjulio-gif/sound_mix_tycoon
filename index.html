@@ -950,7 +950,7 @@
                 <div class="flex flex-col gap-1 w-12 md:w-20 relative">
                     <div class="flex justify-between text-[10px] md:text-[13px] font-retro text-[var(--retro-red)] font-bold tracking-widest">
                         <span>NRJ</span>
-                        <span id="hud-energy-val">100%</span>
+                        <span id="hud--val">100%</span>
                     </div>
                     <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--retro-red)]/30 rounded-full overflow-hidden shadow-inner">
                         <div id="hud-energy-bar" class="h-full bg-[var(--retro-red)] shadow-[0_0_5px_var(--retro-red)] transition-all duration-300" style="width: 100%;"></div>
@@ -3487,6 +3487,41 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
 
     document.getElementById('three-canvas-container').addEventListener('pointerdown', onPointerDown);
 
+
+
+
+    // On cible l'ID exact de ton HUD
+const nrjEl = document.getElementById('hud-energy-bar');
+
+if (nrjEl) {
+    const tooltip = document.createElement('div');
+    tooltip.id = 'tooltip-nrj';
+    document.body.appendChild(tooltip);
+
+    nrjEl.addEventListener('mouseenter', () => {
+        const energy = Math.floor(state.energy);
+        let statePhrase = energy > 70 ? "Tu es en pleine forme." : 
+                          energy > 30 ? "Tu commences à fatiguer." : 
+                          "Il est urgent de te reposer.";
+
+        tooltip.innerHTML = `<strong>${statePhrase}</strong><br><br>
+        <span style="color: #94a3b8; font-size: 12px;">
+        Explication : Peut être perdue en se déplaçant, en sortant des prods.<br>
+        Mais régénéré via le lit et le canapé.
+        </span>`;
+        tooltip.style.opacity = 1;
+    });
+
+    nrjEl.addEventListener('mousemove', (e) => {
+        tooltip.style.left = (e.clientX + 15) + 'px';
+        tooltip.style.top = (e.clientY + 15) + 'px';
+    });
+
+    nrjEl.addEventListener('mouseleave', () => {
+        tooltip.style.opacity = 0;
+    });
+}
+    
     // ==========================================
     // GESTION DU PIANO ROLL INDÉPENDANT
     // ==========================================
