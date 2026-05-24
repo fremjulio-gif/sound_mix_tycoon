@@ -5756,17 +5756,21 @@ function renderStore(tab) {
             let startX = 0;
             let currentDelta = 0;
 
-            // Utilisation des PointerEvents (Remplace à la fois le touch et la mouse)
+            // 1. Blocage des comportements natifs (Scroll, Sélection, Drag d'image)
+            t.style.touchAction = 'none'; 
+            t.style.userSelect = 'none';  
+            t.style.webkitUserSelect = 'none';
+
             t.addEventListener('pointerdown', (e) => {
                 isDragging = true;
                 startX = e.clientX;
                 currentDelta = 0;
                 
-                // CRUCIAL : Capture le mouvement même si la souris/le doigt sort du toast !
                 t.setPointerCapture(e.pointerId);
                 
-                // On retire les transitions CSS pour un suivi 1:1 en temps réel
+                // 2. Désactivation stricte de toute animation ou transition CSS en cours
                 t.style.transition = 'none';
+                t.style.animation = 'none'; 
             });
 
             t.addEventListener('pointermove', (e) => {
@@ -5774,13 +5778,34 @@ function renderStore(tab) {
                 
                 currentDelta = e.clientX - startX;
                 
-                // On n'autorise le déplacement visuel QUE vers la gauche (valeurs négatives)
                 if (currentDelta < 0) {
+                    // Le toast suit maintenant parfaitement le pointeur
                     t.style.transform = `translateX(${currentDelta}px)`;
-                    // L'opacité baisse progressivement (150px de tolérance avant le transparent total)
                     t.style.opacity = Math.max(0, 1 + currentDelta / 150);
                 }
             });
+
+            const onEnd = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                t.releasePointerCapture(e.pointerId);
+                
+                // Réactivation d'une transition douce pour le relâchement
+                t.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease';
+
+                if (currentDelta < -60) {
+                    t.style.transform = 'translateX(-120%)';
+                    t.style.opacity = '0';
+                    setTimeout(() => { if (t.parentElement) t.remove(); }, 300);
+                } else {
+                    t.style.transform = 'translateX(0)';
+                    t.style.opacity = '1';
+                }
+            };
+
+            t.addEventListener('pointerup', onEnd);
+            t.addEventListener('pointercancel', onEnd); // Gère les interruptions (ex: appel entrant sur mobile)
+        };
 
             const onEnd = (e) => {
                 if (!isDragging) return;
