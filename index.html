@@ -3063,6 +3063,20 @@ function rotateAvatarToward(target, smooth = 0.12) {
 
             // --- 2. ANIMATION INTERNE ---
 if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
+
+
+    // --- NOUVEAU : PERTE D'ÉNERGIE LORS DU DÉPLACEMENT ---
+                if (isMoving && state.energy > 0) {
+                    const oldEnergyFloor = Math.floor(state.energy);
+                    
+                    // On retire environ 0.004 par frame (ce qui fait une perte de ~0.25% d'énergie par seconde de marche)
+                    state.energy = Math.max(0, state.energy - 0.004); 
+                    
+                    // On actualise l'UI uniquement si le chiffre affiché baisse de 1%
+                    if (Math.floor(state.energy) !== oldEnergyFloor) {
+                        updateHUD();
+                    }
+                }
     const innerModel = currentRoomAvatar.getObjectByName("AvatarVisual");
     if (!innerModel) return;
 
