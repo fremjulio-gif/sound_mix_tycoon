@@ -2986,22 +2986,23 @@ function rotateAvatarToward(target, smooth = 0.12) {
         // --- LOGIQUE DE LA TÉLÉVISION ---
         // ==========================================
         if (window.tvScreenMat && window.tvLight) {
-            // On vérifie les deux conditions
-            const isLampOn = window.pixarLamp && window.pixarLamp.userData.isOn;
-            const isSitting = state.isSitting;
+            // Sécurisation : vérification stricte de l'existence des objets avant la lecture
+            const isLampOn = window.pixarLamp && window.pixarLamp.userData && window.pixarLamp.userData.isOn;
+            const isSitting = (typeof state !== 'undefined') ? state.isSitting : false;
 
             if (isSitting && isLampOn) {
                 // TV ALLUMÉE : Effet de scintillement dynamique (flicker)
                 const flicker = 0.7 + Math.random() * 0.3; // Varie entre 0.7 et 1.0
                 
-                window.tvScreenMat.emissive.set('#0ea5e9'); // Bleu électrique/Cyan
+                // Utilisation de setHex() (plus performant dans une boucle d'animation)
+                window.tvScreenMat.emissive.setHex(0x0ea5e9); 
                 window.tvScreenMat.emissiveIntensity = flicker;
                 
                 // La lumière éclaire l'avatar sur le canapé
                 window.tvLight.intensity = flicker * 4; 
             } else {
                 // TV ÉTEINTE
-                window.tvScreenMat.emissive.set('#000000');
+                window.tvScreenMat.emissive.setHex(0x000000);
                 window.tvScreenMat.emissiveIntensity = 0;
                 window.tvLight.intensity = 0;
             }
