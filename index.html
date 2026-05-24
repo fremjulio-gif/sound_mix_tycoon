@@ -3734,7 +3734,7 @@ function createAvatarGroup(styleIndex) {
   const shoesMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.5 });
   const blackMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.9 });
 
-  // Fonction pour les arêtes (appliquée uniquement sur les formes cubiques)
+  // Fonction pour les arêtes (appliquée uniquement sur les géométries dures)
   function addEdges(mesh) {
     const edges = new THREE.EdgesGeometry(mesh.geometry);
     const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({
@@ -3819,13 +3819,12 @@ function createAvatarGroup(styleIndex) {
   group.add(headGroup);
 
   // ==========================================
-  // FONCTIONS DE FÉMINISATION RÉALISTES
+  // FONCTIONS DE FÉMINISATION (Cheveux + Buste subtil)
   // ==========================================
 
   const addRealisticHairAndBun = (hairColor = '#2a1a10') => {
     const hairMat = new THREE.MeshStandardMaterial({ color: hairColor, roughness: 0.95 });
     
-    // Base des cheveux (légèrement ajustée pour englober la tête)
     const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.12, 0.66), hairMat);
     hairTop.position.set(0, 0.32, 0);
     addEdges(hairTop);
@@ -3834,32 +3833,16 @@ function createAvatarGroup(styleIndex) {
     hairBack.position.set(0, -0.02, -0.32);
     addEdges(hairBack);
 
-    // Chignon sphérique et réaliste (écrasé sur l'axe Z pour faire une "boule" naturelle)
     const bunGeo = new THREE.SphereGeometry(0.18, 24, 24);
     const bun = new THREE.Mesh(bunGeo, hairMat);
-    bun.scale.set(1, 0.9, 0.6); // Aplatit légèrement le chignon
+    bun.scale.set(1, 0.9, 0.6); 
     bun.position.set(0, 0.12, -0.42);
     
-    // Petit détail : un chouchou/élastique à la base du chignon
     const tieGeo = new THREE.TorusGeometry(0.13, 0.03, 12, 24);
     const tie = new THREE.Mesh(tieGeo, blackMat);
     tie.position.set(0, 0.12, -0.35);
 
     headGroup.add(hairTop, hairBack, bun, tie);
-  };
-
-  const createRealisticBreasts = (material, xOffset, yPos, zPos) => {
-    const breastGeo = new THREE.SphereGeometry(0.13, 24, 24);
-    
-    const breastL = new THREE.Mesh(breastGeo, material);
-    breastL.scale.set(1.1, 0.85, 0.6); // Forme de goutte naturelle
-    breastL.position.set(-xOffset, yPos, zPos);
-    
-    const breastR = new THREE.Mesh(breastGeo, material);
-    breastR.scale.set(1.1, 0.85, 0.6);
-    breastR.position.set(xOffset, yPos, zPos);
-
-    return { breastL, breastR };
   };
 
   // ==========================================
@@ -3869,9 +3852,13 @@ function createAvatarGroup(styleIndex) {
   if (styleIndex === 0) {
     addRealisticHairAndBun('#1a1a1a');
 
-    // Poitrine (Style Veste unie)
-    const { breastL, breastR } = createRealisticBreasts(clothesMat, 0.12, 0.62, 0.13);
-    group.add(breastL, breastR);
+    // Buste naturel (Style Veste unie)
+    // Une seule sphère très large et écrasée pour simuler la courbe du tissu sur toute la largeur
+    const bustGeo = new THREE.SphereGeometry(0.22, 32, 16);
+    const bust = new THREE.Mesh(bustGeo, clothesMat);
+    bust.scale.set(0.95, 0.4, 0.28); 
+    bust.position.set(0, 0.61, 0.12);
+    group.add(bust);
 
     // Casque audio
     const hpGroup = new THREE.Group();
@@ -3925,22 +3912,33 @@ function createAvatarGroup(styleIndex) {
     addRealisticHairAndBun('#4a3018');
     const whiteMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.9 });
     
-    // Torse principal - Chemise
+    // Torse principal - Chemise plate
     const shirt = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.41, 0.26), whiteMat);
     shirt.position.set(0, 0.57, 0);
     group.add(shirt);
 
-    // Poitrine (Style Veste ouverte + Chemise)
-    // 1. Partie veste (extérieur)
-    const { breastL: jacketL, breastR: jacketR } = createRealisticBreasts(clothesMat, 0.14, 0.62, 0.13);
-    group.add(jacketL, jacketR);
+    // Buste naturel (Style Veste ouverte)
+    // On superpose 3 volumes écrasés qui se fondent pour créer une courbe continue
+    // tout en gardant la démarcation couleur chemise/veste.
 
-    // 2. Partie chemise (centre) avec une légère extrusion pour relier la veste
-    const shirtChestGeo = new THREE.SphereGeometry(0.11, 24, 24);
-    const shirtChest = new THREE.Mesh(shirtChestGeo, whiteMat);
-    shirtChest.scale.set(1.2, 0.9, 0.5);
-    shirtChest.position.set(0, 0.62, 0.14);
-    group.add(shirtChest);
+    // 1. Volume central (chemise)
+    const shirtBustGeo = new THREE.SphereGeometry(0.12, 24, 16);
+    const shirtBust = new THREE.Mesh(shirtBustGeo, whiteMat);
+    shirtBust.scale.set(1, 0.45, 0.3); // Légèrement poussé vers l'avant
+    shirtBust.position.set(0, 0.61, 0.13);
+
+    // 2. Volumes latéraux (pans de la veste)
+    const jacketBustGeo = new THREE.SphereGeometry(0.14, 24, 16);
+    
+    const jacketBustL = new THREE.Mesh(jacketBustGeo, clothesMat);
+    jacketBustL.scale.set(1, 0.45, 0.28);
+    jacketBustL.position.set(-0.11, 0.61, 0.12);
+    
+    const jacketBustR = new THREE.Mesh(jacketBustGeo, clothesMat);
+    jacketBustR.scale.set(1, 0.45, 0.28);
+    jacketBustR.position.set(0.11, 0.61, 0.12);
+
+    group.add(shirtBust, jacketBustL, jacketBustR);
 
     // Lunettes
     const shadeGeo = new THREE.BoxGeometry(0.22, 0.14, 0.04);
