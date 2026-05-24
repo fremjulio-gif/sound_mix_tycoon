@@ -578,7 +578,9 @@
         .toast { animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; pointer-events: auto; cursor: grab; }
         .toast:active { cursor: grabbing; }
 
-        .avatar-sel { border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.4); transition: all 0.2s; touch-action: manipulation; }
+        .avatar-sel { border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.4); transition: all 0.2s; touch-action: manipulation; object-fit: cover; 
+    image-rendering: -webkit-optimize-contrast; /* Rend l'image plus nette */
+    image-rendering: crisp-edges; }
         .avatar-sel.selected { border-color: var(--accent); background: rgba(129, 140, 248, 0.2); box-shadow: 0 0 25px rgba(129, 140, 248, 0.4), inset 0 1px 1px rgba(255,255,255,0.3); }
 
         #mobile-nav { display: none; }
@@ -3985,8 +3987,17 @@ function createAvatarGroup(styleIndex) {
         const scn = new THREE.Scene();
         scn.background = new THREE.Color(['#1e1b4b', '#0f172a', '#064e3b', '#4c0519'][styleIndex]);
 
-        const rnd = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true });
-        rnd.setSize(256, 256); 
+        // NOUVEAU : Augmente la taille du rendu (512x512 est suffisant pour une miniature)
+        const size = 512; 
+        const rnd = new THREE.WebGLRenderer({ 
+            antialias: true, // Lissage des bords
+            alpha: false, 
+            preserveDrawingBuffer: true 
+        });
+        
+        // Force la résolution
+        rnd.setSize(size, size);
+        rnd.setPixelRatio(window.devicePixelRatio || 2); // Net sur tous les écrans
 
         const light = new THREE.DirectionalLight(0xffffff, 1.2);
         light.position.set(2, 3, 2);
@@ -3998,7 +4009,9 @@ function createAvatarGroup(styleIndex) {
         scn.add(group);
 
         rnd.render(scn, cam);
-        const dataUrl = rnd.domElement.toDataURL('image/png'); 
+        
+        // Utilise 'image/png' pour une meilleure qualité que le jpeg par défaut
+        const dataUrl = rnd.domElement.toDataURL('image/png', 1.0); 
         
         rnd.dispose(); 
         return dataUrl;
