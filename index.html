@@ -3896,22 +3896,26 @@ function createAvatarGroup(styleIndex) {
     // Volontairement sans "addEdges" pour que la lumière crée le volume sans marquer un trait dur
     group.add(bust);
 
-    // Casque audio
     const hpGroup = new THREE.Group();
-    const headband = new THREE.Mesh(new THREE.TorusGeometry(0.50, 0.045, 16, 32, Math.PI), blackMat);
-    headband.position.set(0, 0.02, 0);
-
-    const cupGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.12, 16);
-    const cupL = new THREE.Mesh(cupGeo, blackMat);
-    cupL.rotation.z = Math.PI / 2;
-    cupL.position.set(-0.46, -0.01, 0);
-    const cupR = new THREE.Mesh(cupGeo, blackMat);
-    cupR.rotation.z = Math.PI / 2;
-    cupR.position.set(0.46, -0.01, 0);
-
-    addEdges(cupL); addEdges(cupR);
-    hpGroup.add(headband, cupL, cupR);
-    headGroup.add(hpGroup);
+        
+        // 1. On agrandit le rayon de l'arceau (de 0.50 à 0.54) et on le remonte un poil (+0.08 en Y)
+        const headband = new THREE.Mesh(new THREE.TorusGeometry(0.54, 0.045, 16, 32, Math.PI), blackMat);
+        headband.position.set(0, 0.08, 0);
+        
+        const cupGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.12, 16);
+        
+        // 2. On écarte les écouteurs sur les côtés (de 0.46 à 0.52) pour ne pas rentrer dans la masse de cheveux
+        const cupL = new THREE.Mesh(cupGeo, blackMat); 
+        cupL.rotation.z = Math.PI/2; 
+        cupL.position.set(-0.52, 0.02, 0);
+        
+        const cupR = new THREE.Mesh(cupGeo, blackMat); 
+        cupR.rotation.z = Math.PI/2; 
+        cupR.position.set(0.52, 0.02, 0);
+        
+        addEdges(cupL); addEdges(cupR);
+        hpGroup.add(headband, cupL, cupR);
+        headGroup.add(hpGroup);
 
   } else if (styleIndex === 1) {
     const cyanEmissive = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 1 });
