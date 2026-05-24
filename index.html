@@ -607,25 +607,6 @@
             pointer-events: all;
         }
 
-
-
-        #tooltip-nrj {
-    position: absolute;
-    background: rgba(17, 24, 39, 0.95);
-    color: #e2e8f0;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 13px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    border: 1px solid #3730a3;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-    z-index: 2000;
-    max-width: 250px;
-    line-height: 1.4;
-}
-
         /* =========================================
            9. MOBILE RESPONSIVE RULES (PORTRAIT - Max 767px)
            ========================================= */
@@ -969,7 +950,7 @@
                 <div class="flex flex-col gap-1 w-12 md:w-20 relative">
                     <div class="flex justify-between text-[10px] md:text-[13px] font-retro text-[var(--retro-red)] font-bold tracking-widest">
                         <span>NRJ</span>
-                        <span id="hud--val">100%</span>
+                        <span id="hud-energy-val">100%</span>
                     </div>
                     <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--retro-red)]/30 rounded-full overflow-hidden shadow-inner">
                         <div id="hud-energy-bar" class="h-full bg-[var(--retro-red)] shadow-[0_0_5px_var(--retro-red)] transition-all duration-300" style="width: 100%;"></div>
@@ -3073,7 +3054,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
             // --- VITESSE MAXIMALE ---
             const energySpeedMult = Math.max(0.2, state.energy / 100);
             
-            const maxSpeed = 0.04 * energySpeedMult;
+            const maxSpeed = 0.025 * energySpeedMult;
             
             if (Math.abs(window.velX) > 0.005 || Math.abs(window.velZ) > 0.005) {
                 targetPosition = null; // Annule le clic souris
@@ -3165,65 +3146,82 @@ function rotateAvatarToward(target, smooth = 0.12) {
             }
 
             // --- 2. ANIMATION INTERNE ---
-            if (!state.isSleeping && !state.isSitting) {
+if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
 
+
+    // --- NOUVEAU : PERTE D'ÉNERGIE LORS DU DÉPLACEMENT ---
                 if (isMoving && state.energy > 0) {
                     const oldEnergyFloor = Math.floor(state.energy);
-                    state.energy = Math.max(0, state.energy - 0.004);
+                    
+                    // On retire environ 0.004 par frame (ce qui fait une perte de ~0.25% d'énergie par seconde de marche)
+                    state.energy = Math.max(0, state.energy - 0.004); 
+                    
+                    // On actualise l'UI uniquement si le chiffre affiché baisse de 1%
                     if (Math.floor(state.energy) !== oldEnergyFloor) {
                         updateHUD();
                     }
                 }
+    const innerModel = currentRoomAvatar.getObjectByName("AvatarVisual");
+    if (!innerModel) return;
 
-                const innerModel = currentRoomAvatar.getObjectByName("AvatarVisual");
-                if (innerModel) {
-                    const legL = innerModel.getObjectByName("Leg_L");
-                    const legR = innerModel.getObjectByName("Leg_R");
+    const legL = innerModel.getObjectByName("Leg_L");
+    const legR = innerModel.getObjectByName("Leg_R");
 
-                    const now = performance.now();
 
-                    if (isMoving) {
-                        stoppedMovingAt = now;
-                        wasMovingLastFrame = true;
-                    } else if (wasMovingLastFrame) {
-                        stoppedMovingAt = now;
-                        wasMovingLastFrame = false;
-                    }
 
-                    const keepAnimatingAfterStop = !isMoving && (now - stoppedMovingAt < 1000);
-                    const shouldWalkAnimate = isMoving || keepAnimatingAfterStop;
+    const now = performance.now();
 
-                    if (shouldWalkAnimate) {
-                        const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 1000));
-                        walkTime += isMoving ? (0.18 * energySpeedMult) : 0.08;
+    if (isMoving) {
+        stoppedMovingAt = now;
+        wasMovingLastFrame = true;
+    } else if (wasMovingLastFrame) {
+        stoppedMovingAt = now;
+        wasMovingLastFrame = false;
+    }
 
-                        innerModel.rotation.z = Math.sin(walkTime) * 0.012 * fade;
-                        innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012 * fade;
+    const keepAnimatingAfterStop = !isMoving && (now - stoppedMovingAt < 1000);
+    const shouldWalkAnimate = isMoving || keepAnimatingAfterStop;
 
-                        if (legL && legR) {
-                            const legSwing = Math.sin(walkTime * 1.2) * 0.35 * fade;
-                            legL.rotation.x = legSwing;
-                            legR.rotation.x = -legSwing;
-                        }
-                    } else {
-                        walkTime = 0;
-                        innerModel.rotation.z *= 0.6;
-                        innerModel.position.y += (0 - innerModel.position.y) * 0.25;
+    if (shouldWalkAnimate) {
+        const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 1000));
 
-                        if (legL && legR) {
-                            legL.rotation.x *= 0.6;
-                            legR.rotation.x *= 0.6;
-                            if (Math.abs(legL.rotation.x) < 0.001) legL.rotation.x = 0;
-                            if (Math.abs(legR.rotation.x) < 0.001) legR.rotation.x = 0;
-                        }
+        walkTime += isMoving ? (0.10 * energySpeedMult) : 0.05;
 
-                        if (Math.abs(innerModel.rotation.z) < 0.001) {
-                            innerModel.rotation.z = 0;
-                            innerModel.position.y = 0;
-                        }
-                    }
-                }
-            } // ← fermeture du if (!isSleeping && !isSitting)
+        innerModel.rotation.z = Math.sin(walkTime) * 0.012 * fade;
+        innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012 * fade;
+
+
+
+        if (legL && legR) {
+            const legSwing = Math.sin(walkTime * 1.2) * 0.12 * fade;
+            legL.rotation.x = legSwing;
+            legR.rotation.x = -legSwing;
+        }
+    } else {
+        walkTime = 0;
+
+        innerModel.rotation.z *= 0.6;
+        innerModel.position.y += (0 - innerModel.position.y) * 0.25;
+
+
+
+        if (legL && legR) {
+            legL.rotation.x *= 0.6;
+            legR.rotation.x *= 0.6;
+
+            if (Math.abs(legL.rotation.x) < 0.001) legL.rotation.x = 0;
+            if (Math.abs(legR.rotation.x) < 0.001) legR.rotation.x = 0;
+        }
+
+        if (Math.abs(innerModel.rotation.z) < 0.001) {
+            innerModel.rotation.z = 0;
+            innerModel.position.y = 0;
+        }
+    }
+}
+
+
+
 
             // --- 3. SUIVI DE CAMÉRA ---
             const followIntensity = 0.2;
@@ -3285,8 +3283,6 @@ function rotateAvatarToward(target, smooth = 0.12) {
                
             }
         }
-
-            }
       
          // =========================================================
         // --- APPLICATION DU ZOOM FLUIDE & CINÉMATIQUE D'INTRO ---
@@ -3491,41 +3487,6 @@ function rotateAvatarToward(target, smooth = 0.12) {
 
     document.getElementById('three-canvas-container').addEventListener('pointerdown', onPointerDown);
 
-
-
-
-    // On cible l'ID exact de ton HUD
-const nrjEl = document.getElementById('hud-energy-bar');
-
-if (nrjEl) {
-    const tooltip = document.createElement('div');
-    tooltip.id = 'tooltip-nrj';
-    document.body.appendChild(tooltip);
-
-    nrjEl.addEventListener('mouseenter', () => {
-        const energy = Math.floor(state.energy);
-        let statePhrase = energy > 70 ? "Tu es en pleine forme." : 
-                          energy > 30 ? "Tu commences à fatiguer." : 
-                          "Il est urgent de te reposer.";
-
-        tooltip.innerHTML = `<strong>${statePhrase}</strong><br><br>
-        <span style="color: #94a3b8; font-size: 12px;">
-        Explication : Peut être perdue en se déplaçant, en sortant des prods.<br>
-        Mais régénéré via le lit et le canapé.
-        </span>`;
-        tooltip.style.opacity = 1;
-    });
-
-    nrjEl.addEventListener('mousemove', (e) => {
-        tooltip.style.left = (e.clientX + 15) + 'px';
-        tooltip.style.top = (e.clientY + 15) + 'px';
-    });
-
-    nrjEl.addEventListener('mouseleave', () => {
-        tooltip.style.opacity = 0;
-    });
-}
-    
     // ==========================================
     // GESTION DU PIANO ROLL INDÉPENDANT
     // ==========================================
