@@ -3724,6 +3724,46 @@ function drawSysGraphUI(timestamp) {
     function createAvatarGroup(styleIndex) {
         const group = new THREE.Group();
 
+        // 1. Paramètres de morphologie
+    // Les femmes ont souvent des épaules légèrement plus étroites et un bassin un poil plus large en Low-Poly
+    const isFemale = (styleIndex === 0 || styleIndex === 3);
+    const shoulderWidth = isFemale ? 0.38 : 0.44; 
+    const hipWidth = isFemale ? 0.46 : 0.44;
+
+    const skinColors = ['#FFCBA4', '#8D4E28', '#F0C080', '#C68642'];
+    const clothesColors = ['#3730a3', '#0e7490', '#065f46', '#27272a']; 
+    
+    const skinMat = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.6 });
+    const clothesMat = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.9 });
+    const shoesMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.5 });
+    const blackMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.9 });
+
+    // --- LE TORSE (Adapté) ---
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(shoulderWidth, 0.4, 0.22), clothesMat);
+    torso.position.set(0, 0.57, 0);
+    torso.castShadow = true;
+    group.add(torso);
+
+    // --- LA TÊTE & COIFFURE (Non cliché) ---
+    const headGroup = new THREE.Group();
+    headGroup.position.set(0, 1.07, 0);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.6, 0.6), skinMat);
+    headGroup.add(head);
+
+    if (isFemale) {
+        // Au lieu de cheveux longs/ondulés, on part sur une coupe courte structurée (type "Pixie" ou "Undercut")
+        // Ça fait moderne, technique et très "studio de son".
+        const hairGeo = new THREE.BoxGeometry(0.68, 0.2, 0.62);
+        const hairMat = new THREE.MeshStandardMaterial({ color: '#2d2d2d' });
+        const hair = new THREE.Mesh(hairGeo, hairMat);
+        hair.position.set(0, 0.25, 0);
+        headGroup.add(hair);
+    }
+    
+    group.add(headGroup);
+
+        
+
         // 1. Couleurs définies selon le personnage
         const skinColors = ['#FFCBA4', '#8D4E28', '#F0C080', '#C68642'];
         const clothesColors = ['#3730a3', '#0e7490', '#065f46', '#27272a']; 
