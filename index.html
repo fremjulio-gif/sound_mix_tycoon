@@ -2271,14 +2271,14 @@ for (let i = 0; i < 4; i++) {
 
 
     // ==========================================
-    // TÉLÉVISION ÉTEINTE (Posée sur la table basse)
+    // TÉLÉVISION ÉTEINTE XXL (Posée sur la table basse)
     // ==========================================
     const tvGroup = new THREE.Group();
     // On la pose sur le plateau de la table (Y local = 0.35 hauteur + 0.025 épaisseur)
     tvGroup.position.set(0, 0.375, 0);
 
     const tvFrameMat = new THREE.MeshStandardMaterial({ color: '#1a1a1c', roughness: 0.8 });
-    // Matériau très lisse (metalness fort, roughness bas) pour faire un écran noir qui reflète la pièce
+    // Dalle noire brillante
     const tvScreenMat = new THREE.MeshStandardMaterial({ color: '#030303', roughness: 0.1, metalness: 0.9 }); 
     const cableMat = new THREE.MeshStandardMaterial({ color: '#0a0a0a', roughness: 0.9 });
 
@@ -2289,60 +2289,59 @@ for (let i = 0; i < 4; i++) {
         mesh.receiveShadow = true;
     }
 
-    // 1. Le Socle
-    const tvBase = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.02, 0.6), tvFrameMat);
+    // 1. Le Socle (Élargi pour supporter le grand écran)
+    const tvBase = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.02, 0.9), tvFrameMat);
     tvBase.position.set(0, 0.01, 0);
     addTvEdges(tvBase);
 
-    // Le pied (cou/neck)
-    const tvNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.06, 0.12, 8), tvFrameMat);
-    tvNeck.position.set(0, 0.06, 0);
+    // Le pied (plus épais)
+    const tvNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.12, 8), tvFrameMat);
+    tvNeck.position.set(0, 0.07, 0);
     addTvEdges(tvNeck);
     
     tvGroup.add(tvBase, tvNeck);
 
-    // 2. L'écran plat (Tourné vers le canapé : -X)
-    const screenWidth = 1.5;  // Largeur de la TV (sur l'axe Z)
-    const screenHeight = 0.8; // Hauteur de l'écran
+    // 2. L'écran plat XXL
+    const screenWidth = 2.1;  // Écran beaucoup plus large !
+    const screenHeight = 1.2; // Écran beaucoup plus haut !
+    const tvCenterY = 0.7;    // On remonte le centre de l'écran
     
     const tvBody = new THREE.Mesh(new THREE.BoxGeometry(0.04, screenHeight, screenWidth), tvFrameMat);
-    tvBody.position.set(0, 0.5, 0);
+    tvBody.position.set(0, tvCenterY, 0);
     addTvEdges(tvBody);
     
-    // La dalle noire (légèrement décalée vers -X pour être à la surface du cadre)
+    // La dalle
     const tvScreen = new THREE.Mesh(new THREE.PlaneGeometry(screenWidth - 0.05, screenHeight - 0.05), tvScreenMat);
-    tvScreen.rotation.y = -Math.PI / 2; // Regarde vers la gauche (-X = le canapé)
-    tvScreen.position.set(-0.021, 0.5, 0);
+    tvScreen.rotation.y = -Math.PI / 2; // Regarde vers le canapé (-X)
+    tvScreen.position.set(-0.021, tvCenterY, 0);
     
-    // 3. Le boîtier électronique à l'arrière (+X)
-    const tvBack = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.4, 0.7), tvFrameMat);
-    tvBack.position.set(0.06, 0.4, 0);
+    // 3. Le boîtier électronique à l'arrière (+X) proportionnel à l'écran
+    const tvBack = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.6, 1.0), tvFrameMat);
+    tvBack.position.set(0.06, tvCenterY - 0.1, 0);
     addTvEdges(tvBack);
 
     tvGroup.add(tvBody, tvScreen, tvBack);
 
-    // 4. Le Câblage à l'arrière (Alimentation + HDMI)
-    // On dessine des courbes qui tombent du boîtier, touchent la table, et pendent dans le vide derrière
+    // 4. Le Câblage à l'arrière
     const createCable = (startX, startY, startZ, dropZ) => {
         const curve = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(startX, startY, startZ),             // Sort du boîtier TV
-            new THREE.Vector3(startX + 0.1, startY - 0.2, startZ), // Courbe descendante
-            new THREE.Vector3(startX + 0.2, 0.01, dropZ * 0.5),    // Repose sur la table
-            new THREE.Vector3(startX + 0.35, -0.4, dropZ)          // Pend dans le vide derrière la table
+            new THREE.Vector3(startX, startY, startZ),             
+            new THREE.Vector3(startX + 0.1, startY - 0.3, startZ), 
+            new THREE.Vector3(startX + 0.2, 0.01, dropZ * 0.5),    
+            new THREE.Vector3(startX + 0.35, -0.4, dropZ)          
         ]);
-        // TubeGeometry crée un cylindre le long de notre courbe (radius = 0.008)
-        const tubeGeo = new THREE.TubeGeometry(curve, 12, 0.008, 6, false);
+        const tubeGeo = new THREE.TubeGeometry(curve, 16, 0.008, 6, false);
         const cableMesh = new THREE.Mesh(tubeGeo, cableMat);
         cableMesh.castShadow = true;
         return cableMesh;
     };
 
-    // Génération de deux câbles qui partent vers l'arrière (+X) de la table
-    const cable1 = createCable(0.1, 0.35, 0.15, 0.4);  // Câble d'alimentation
-    const cable2 = createCable(0.1, 0.3, -0.15, -0.4); // Câble vidéo
+    // Les câbles partent maintenant un peu plus haut et s'écartent davantage
+    const cable1 = createCable(0.1, tvCenterY - 0.2, 0.25, 0.5);  
+    const cable2 = createCable(0.1, tvCenterY - 0.25, -0.25, -0.5); 
     tvGroup.add(cable1, cable2);
 
-    // On imbrique la TV dans la table pour qu'elle la suive parfaitement
+    // On imbrique la TV dans la table
     sideTableGroup.add(tvGroup);
 
     
