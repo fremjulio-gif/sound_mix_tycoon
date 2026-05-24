@@ -2985,16 +2985,15 @@ function rotateAvatarToward(target, smooth = 0.12) {
         // ==========================================
         // --- LOGIQUE DE LA TÉLÉVISION ---
         // ==========================================
-        if (window.tvScreenMat && window.tvLight) {
-            // Sécurisation : vérification stricte de l'existence des objets avant la lecture
+        // Ajout de "currentRoomAvatar" dans la condition pour garantir que le jeu est bien initialisé
+        if (window.tvScreenMat && window.tvLight && currentRoomAvatar) {
             const isLampOn = window.pixarLamp && window.pixarLamp.userData && window.pixarLamp.userData.isOn;
-            const isSitting = (typeof state !== 'undefined') ? state.isSitting : false;
+            const isSitting = state.isSitting;
 
             if (isSitting && isLampOn) {
                 // TV ALLUMÉE : Effet de scintillement dynamique (flicker)
-                const flicker = 0.7 + Math.random() * 0.3; // Varie entre 0.7 et 1.0
+                const flicker = 0.7 + Math.random() * 0.3; 
                 
-                // Utilisation de setHex() (plus performant dans une boucle d'animation)
                 window.tvScreenMat.emissive.setHex(0x0ea5e9); 
                 window.tvScreenMat.emissiveIntensity = flicker;
                 
