@@ -3719,13 +3719,13 @@ function drawSysGraphUI(timestamp) {
     const playKick    = () => { playTone(60, 'sine', 0.2, 0.2); playTone(120, 'square', 0.05, 0.1); };
 
 // ==========================================
-// CRÉATION DES AVATARS (Style Funko Pop / Semi-Organique)
+// CRÉATION DES AVATARS (Style Funko Pop Blocky / Flat 3D)
 // ==========================================
 
 function createAvatarGroup(styleIndex) {
   const group = new THREE.Group();
 
-  // 1. Couleurs définies selon le personnage
+  // 1. Couleurs
   const skinColors = ['#FFCBA4', '#8D4E28', '#F0C080', '#C68642'];
   const clothesColors = ['#3730a3', '#0e7490', '#065f46', '#27272a'];
 
@@ -3734,7 +3734,7 @@ function createAvatarGroup(styleIndex) {
   const shoesMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.5 });
   const blackMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.9 });
 
-  // Fonction pour les arêtes (appliquée uniquement sur les géométries dures)
+  // Utilitaire pour les arêtes noires typiques du style
   function addEdges(mesh) {
     const edges = new THREE.EdgesGeometry(mesh.geometry);
     const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({
@@ -3745,7 +3745,7 @@ function createAvatarGroup(styleIndex) {
     mesh.add(line);
   }
 
-  // --- Membres de base ---
+  // --- Membres & Chaussures (Intégration des Doc Martens) ---
   const createLeg = (xSign) => {
     const legGroup = new THREE.Group();
     legGroup.name = xSign < 0 ? "Leg_L" : "Leg_R";
@@ -3756,22 +3756,44 @@ function createAvatarGroup(styleIndex) {
     leg.castShadow = true;
     addEdges(leg);
 
-    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.28), shoesMat);
-    shoe.position.set(0, -0.34, 0.04);
-    shoe.castShadow = true;
-    addEdges(shoe);
+    // Ajout des Doc Martens pour les avatars 0 et 3
+    if (styleIndex === 0 || styleIndex === 3) {
+      // Corps de la botte
+      const boot = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.22), blackMat);
+      boot.position.set(0, -0.27, 0.02);
+      addEdges(boot);
 
-    legGroup.add(leg, shoe);
+      // Surpiqûre jaune signature
+      const stitch = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.01, 0.23), new THREE.MeshStandardMaterial({ color: '#fbbf24', roughness: 0.8 }));
+      stitch.position.set(0, -0.355, 0.02);
+
+      // Semelle épaisse
+      const sole = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.07, 0.23), blackMat);
+      sole.position.set(0, -0.395, 0.02);
+      addEdges(sole);
+
+      legGroup.add(leg, boot, stitch, sole);
+    } else {
+      // Chaussure classique pour les autres
+      const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.28), shoesMat);
+      shoe.position.set(0, -0.34, 0.04);
+      shoe.castShadow = true;
+      addEdges(shoe);
+      legGroup.add(leg, shoe);
+    }
+
     return legGroup;
   };
   group.add(createLeg(-1), createLeg(1));
 
+  // --- Torse de base ---
   const torso = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.4, 0.25), clothesMat);
   torso.position.set(0, 0.57, 0);
   torso.castShadow = true;
   addEdges(torso);
   group.add(torso);
 
+  // --- Bras ---
   const createArm = (xSign) => {
     const armGroup = new THREE.Group();
     armGroup.name = xSign < 0 ? "Arm_L" : "Arm_R";
@@ -3804,8 +3826,7 @@ function createAvatarGroup(styleIndex) {
   headGroup.add(head);
 
   const createEye = (xPos) => {
-    const eyeGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.04, 16);
-    const eye = new THREE.Mesh(eyeGeo, blackMat);
+    const eye = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.04, 16), blackMat);
     eye.rotation.x = Math.PI / 2;
     eye.position.set(xPos, -0.05, 0.31);
     return eye;
@@ -3819,30 +3840,30 @@ function createAvatarGroup(styleIndex) {
   group.add(headGroup);
 
   // ==========================================
-  // FONCTIONS DE FÉMINISATION (Cheveux + Buste subtil)
+  // FONCTIONS DE FÉMINISATION (Subtiles & Blocky)
   // ==========================================
 
-  const addRealisticHairAndBun = (hairColor = '#2a1a10') => {
+  const addBlockyHairAndBun = (hairColor) => {
     const hairMat = new THREE.MeshStandardMaterial({ color: hairColor, roughness: 0.95 });
     
-    const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.12, 0.66), hairMat);
-    hairTop.position.set(0, 0.32, 0);
+    const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.14, 0.64), hairMat);
+    hairTop.position.set(0, 0.34, 0);
     addEdges(hairTop);
 
-    const hairBack = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.64, 0.16), hairMat);
-    hairBack.position.set(0, -0.02, -0.32);
+    const hairBack = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.60, 0.16), hairMat);
+    hairBack.position.set(0, 0, -0.32);
     addEdges(hairBack);
 
-    const bunGeo = new THREE.SphereGeometry(0.18, 24, 24);
-    const bun = new THREE.Mesh(bunGeo, hairMat);
-    bun.scale.set(1, 0.9, 0.6); 
-    bun.position.set(0, 0.12, -0.42);
+    // Chignon façon "blocs empilés" pour rester cohérent avec le style géométrique
+    const bunBase = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.24, 0.12), hairMat);
+    bunBase.position.set(0, 0.15, -0.46);
+    addEdges(bunBase);
     
-    const tieGeo = new THREE.TorusGeometry(0.13, 0.03, 12, 24);
-    const tie = new THREE.Mesh(tieGeo, blackMat);
-    tie.position.set(0, 0.12, -0.35);
+    const bunTip = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.08), hairMat);
+    bunTip.position.set(0, 0.15, -0.56);
+    addEdges(bunTip);
 
-    headGroup.add(hairTop, hairBack, bun, tie);
+    headGroup.add(hairTop, hairBack, bunBase, bunTip);
   };
 
   // ==========================================
@@ -3850,14 +3871,13 @@ function createAvatarGroup(styleIndex) {
   // ==========================================
 
   if (styleIndex === 0) {
-    addRealisticHairAndBun('#1a1a1a');
+    addBlockyHairAndBun('#1a1a1a');
 
-    // Buste naturel (Style Veste unie)
-    // Une seule sphère très large et écrasée pour simuler la courbe du tissu sur toute la largeur
-    const bustGeo = new THREE.SphereGeometry(0.22, 32, 16);
-    const bust = new THREE.Mesh(bustGeo, clothesMat);
-    bust.scale.set(0.95, 0.4, 0.28); 
-    bust.position.set(0, 0.61, 0.12);
+    // Buste subtil : une plaque très fine, très légèrement inclinée pour se fondre dans le torse
+    const bust = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.18, 0.03), clothesMat);
+    bust.position.set(0, 0.64, 0.135); 
+    bust.rotation.x = -0.12; // Légère inclinaison vers le bas
+    // Volontairement sans "addEdges" pour que la lumière crée le volume sans marquer un trait dur
     group.add(bust);
 
     // Casque audio
@@ -3909,7 +3929,7 @@ function createAvatarGroup(styleIndex) {
     group.add(chain, pendant);
 
   } else if (styleIndex === 3) {
-    addRealisticHairAndBun('#4a3018');
+    addBlockyHairAndBun('#4a3018');
     const whiteMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.9 });
     
     // Torse principal - Chemise plate
@@ -3917,28 +3937,21 @@ function createAvatarGroup(styleIndex) {
     shirt.position.set(0, 0.57, 0);
     group.add(shirt);
 
-    // Buste naturel (Style Veste ouverte)
-    // On superpose 3 volumes écrasés qui se fondent pour créer une courbe continue
-    // tout en gardant la démarcation couleur chemise/veste.
+    // Buste subtil pour la veste ouverte : un groupe incliné
+    const bustGroup = new THREE.Group();
+    bustGroup.position.set(0, 0.64, 0.135);
+    bustGroup.rotation.x = -0.12; // Légère inclinaison pour la douceur
 
-    // 1. Volume central (chemise)
-    const shirtBustGeo = new THREE.SphereGeometry(0.12, 24, 16);
-    const shirtBust = new THREE.Mesh(shirtBustGeo, whiteMat);
-    shirtBust.scale.set(1, 0.45, 0.3); // Légèrement poussé vers l'avant
-    shirtBust.position.set(0, 0.61, 0.13);
-
-    // 2. Volumes latéraux (pans de la veste)
-    const jacketBustGeo = new THREE.SphereGeometry(0.14, 24, 16);
+    const shirtBust = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 0.035), whiteMat);
     
-    const jacketBustL = new THREE.Mesh(jacketBustGeo, clothesMat);
-    jacketBustL.scale.set(1, 0.45, 0.28);
-    jacketBustL.position.set(-0.11, 0.61, 0.12);
+    const jacketBustL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.03), clothesMat);
+    jacketBustL.position.set(-0.15, 0, 0);
     
-    const jacketBustR = new THREE.Mesh(jacketBustGeo, clothesMat);
-    jacketBustR.scale.set(1, 0.45, 0.28);
-    jacketBustR.position.set(0.11, 0.61, 0.12);
+    const jacketBustR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.03), clothesMat);
+    jacketBustR.position.set(0.15, 0, 0);
 
-    group.add(shirtBust, jacketBustL, jacketBustR);
+    bustGroup.add(shirtBust, jacketBustL, jacketBustR);
+    group.add(bustGroup);
 
     // Lunettes
     const shadeGeo = new THREE.BoxGeometry(0.22, 0.14, 0.04);
