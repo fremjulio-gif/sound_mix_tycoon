@@ -3019,7 +3019,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
             }
         });
         
-                        if (currentRoomAvatar) {
+                                if (currentRoomAvatar) {
             // 1. Sauvegarde de la position EXACTE avant tout mouvement
             const oldX = currentRoomAvatar.position.x;
             const oldZ = currentRoomAvatar.position.z;
@@ -3102,79 +3102,73 @@ function rotateAvatarToward(target, smooth = 0.12) {
                 }
             }
 
+            // --- DÉTECTION INFAILLIBLE DU MOUVEMENT ---
+            const distMoved = Math.hypot(currentRoomAvatar.position.x - oldX, currentRoomAvatar.position.z - oldZ);
+            const isMoving = distMoved > 0.0001;
 
-           // --- ANIMATION INTERNE CORRIGÉE ---
-if (!state.isSleeping && !state.isSitting) {
+            // --- ANIMATION INTERNE CORRIGÉE ---
+            if (!state.isSleeping && !state.isSitting) {
 
-    let innerModel, legL, legR;
-    
-    currentRoomAvatar.traverse((child) => {
-        if (child.name === "AvatarVisual") innerModel = child;
-        
-        // CORRECTION : On cherche les MESH des jambes, pas les GROUPS
-        if (child.name === "Leg_L" && child.type === 'Group') {
-            legL = child.children[0]; // Le mesh de la cuisse/jambe
-        }
-        if (child.name === "Leg_R" && child.type === 'Group') {
-            legR = child.children[0]; // Le mesh de la cuisse/jambe
-        }
-    });
+                if (isMoving && state.energy > 0) {
+                    const oldEnergyFloor = Math.floor(state.energy);
+                    state.energy = Math.max(0, state.energy - 0.004); 
+                    if (Math.floor(state.energy) !== oldEnergyFloor) updateHUD();
+                }
 
-    if (innerModel) {
-        const now = performance.now();
-
-        if (isMoving) {
-            stoppedMovingAt = now;
-            wasMovingLastFrame = true;
-        } else if (wasMovingLastFrame) {
-            stoppedMovingAt = now;
-            wasMovingLastFrame = false;
-        }
-
-        const keepAnimatingAfterStop = !isMoving && (now - stoppedMovingAt < 1000);
-        const shouldWalkAnimate = isMoving || keepAnimatingAfterStop;
-
-        if (shouldWalkAnimate) {
-            const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 1000));
-
-            // Vitesse fixe garantie
-            walkTime += 0.15;
-
-            innerModel.rotation.z = Math.sin(walkTime) * 0.012 * fade;
-            innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012 * fade;
-
-            if (legL && legR) {
-                // CORRECTION : On anime les MESH directement
-                const legSwing = Math.sin(walkTime) * 0.45 * fade; 
+                let innerModel, legL, legR;
                 
-                // Rotation sur X pour le balancement avant/arrière de la jambe
-                legL.rotation.x = THREE.MathUtils.lerp(legL.rotation.x, legSwing, 0.2);
-                legR.rotation.x = THREE.MathUtils.lerp(legR.rotation.x, -legSwing, 0.2);
+                currentRoomAvatar.traverse((child) => {
+                    if (child.name === "AvatarVisual") innerModel = child;
+                    
+                    // On retourne sur les GROUPES pour embarquer la cuisse ET la chaussure !
+                    if (child.name === "Leg_L" && child.type === 'Group') legL = child;
+                    if (child.name === "Leg_R" && child.type === 'Group') legR = child;
+                });
+
+                if (innerModel) {
+                    const now = performance.now();
+
+                    if (isMoving) {
+                        stoppedMovingAt = now;
+                        wasMovingLastFrame = true;
+                    } else if (wasMovingLastFrame) {
+                        stoppedMovingAt = now;
+                        wasMovingLastFrame = false;
+                    }
+
+                    const keepAnimatingAfterStop = !isMoving && (now - stoppedMovingAt < 1000);
+                    const shouldWalkAnimate = isMoving || keepAnimatingAfterStop;
+
+                    if (shouldWalkAnimate) {
+                        const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 1000));
+
+                        // Vitesse d'animation fixée pour la fluidité visuelle
+                        walkTime += 0.15;
+
+                        innerModel.rotation.z = Math.sin(walkTime) * 0.012 * fade;
+                        innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012 * fade;
+
+                        if (legL && legR) {
+                            const legSwing = Math.sin(walkTime) * 0.45 * fade; 
+                            legL.rotation.x = THREE.MathUtils.lerp(legL.rotation.x, legSwing, 0.2);
+                            legR.rotation.x = THREE.MathUtils.lerp(legR.rotation.x, -legSwing, 0.2);
+                        }
+                    } else {
+                        walkTime = 0;
+                        
+                        innerModel.rotation.z *= 0.6;
+                        innerModel.position.y += (0 - innerModel.position.y) * 0.25;
+
+                        if (legL && legR) {
+                            legL.rotation.x = THREE.MathUtils.lerp(legL.rotation.x, 0, 0.2);
+                            legR.rotation.x = THREE.MathUtils.lerp(legR.rotation.x, 0, 0.2);
+                            
+                            if (Math.abs(legL.rotation.x) < 0.001) legL.rotation.x = 0;
+                            if (Math.abs(legR.rotation.x) < 0.001) legR.rotation.x = 0;
+                        }
+                    }
+                }
             }
-        } else {
-            // --- BLOC ELSE MANQUANT (Retour à la position neutre) ---
-            walkTime = 0;
-            
-            // Remise en position de repos du torse
-            innerModel.rotation.z *= 0.6;
-            innerModel.position.y += (0 - innerModel.position.y) * 0.25;
-
-            if (legL && legR) {
-                // Retour progressif des jambes à la position neutre
-                legL.rotation.x = THREE.MathUtils.lerp(legL.rotation.x, 0, 0.2);
-                legR.rotation.x = THREE.MathUtils.lerp(legR.rotation.x, 0, 0.2);
-                
-                // Nettoyage des valeurs très proches de zéro
-                if (Math.abs(legL.rotation.x) < 0.001) legL.rotation.x = 0;
-                if (Math.abs(legR.rotation.x) < 0.001) legR.rotation.x = 0;
-            }
-        }
-    }
-}
-
-        
-
-
 
 
 
