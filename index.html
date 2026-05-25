@@ -3102,66 +3102,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
                 }
             }
 
-            // --- DÉTECTION INFAILLIBLE DU MOUVEMENT ---
-            const distMoved = Math.hypot(currentRoomAvatar.position.x - oldX, currentRoomAvatar.position.z - oldZ);
-            const isMoving = distMoved > 0.0001;
-
-// Dans ta boucle animate3D, juste avant le bloc de l'animation des jambes
-if (legL && legR) {
-    console.log("Jambes trouvées, rotation actuelle X :", legL.rotation.x); 
-    // Si la console affiche toujours 0 alors que tu marches, 
-    // c'est que ton code est bien placé, mais qu'il est écrasé 
-    // par une autre instruction plus bas dans la même fonction !
-}
-
-                                    
-                        // --- ANIMATION INTERNE (ULTRA-ROBUSTE) ---
-            if (!state.isSleeping && !state.isSitting) {
-
-                // Consommation d'énergie en marchant
-                if (isMoving && state.energy > 0) {
-                    const oldEnergyFloor = Math.floor(state.energy);
-                    state.energy = Math.max(0, state.energy - 0.004); 
-                    if (Math.floor(state.energy) !== oldEnergyFloor) updateHUD();
-                }
-
-                let innerModel, legL, legR;
-                
-                // Recherche simple par nom (sans filtre de type qui pourrait bugger)
-                currentRoomAvatar.traverse((child) => {
-                    if (child.name === "AvatarVisual") innerModel = child;
-                    if (child.name === "Leg_L") legL = child;
-                    if (child.name === "Leg_R") legR = child;
-                });
-
-                if (innerModel) {
-                    if (isMoving) {
-                        // Vitesse constante garantie : on force le chrono à avancer
-                        walkTime += 0.15; 
-
-                        // Balancement du corps (Bumping)
-                        innerModel.rotation.z = Math.sin(walkTime) * 0.012;
-                        innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012;
-
-                        // Balancement des jambes (Attribution DIRECTE, adieu le lerp !)
-                        if (legL && legR) {
-                            const legSwing = Math.sin(walkTime) * 0.45; 
-                            legL.rotation.x = legSwing;
-                            legR.rotation.x = -legSwing;
-                        }
-                    } else {
-                        // Arrêt immédiat et réinitialisation propre (Guérit les bugs de NaN)
-                        walkTime = 0;
-                        innerModel.rotation.z = 0;
-                        innerModel.position.y = 0;
-
-                        if (legL && legR) {
-                            legL.rotation.x = 0;
-                            legR.rotation.x = 0;
-                        }
-                    }
-                }
-            }
+            
 
 
 
@@ -3351,6 +3292,59 @@ if (legL && legR) {
                 }
             });
         }
+
+
+        // --- DÉTECTION INFAILLIBLE DU MOUVEMENT ---
+            const distMoved = Math.hypot(currentRoomAvatar.position.x - oldX, currentRoomAvatar.position.z - oldZ);
+            const isMoving = distMoved > 0.0001;
+                                    
+                        // --- ANIMATION INTERNE (ULTRA-ROBUSTE) ---
+            if (!state.isSleeping && !state.isSitting) {
+
+                // Consommation d'énergie en marchant
+                if (isMoving && state.energy > 0) {
+                    const oldEnergyFloor = Math.floor(state.energy);
+                    state.energy = Math.max(0, state.energy - 0.004); 
+                    if (Math.floor(state.energy) !== oldEnergyFloor) updateHUD();
+                }
+
+                let innerModel, legL, legR;
+                
+                // Recherche simple par nom (sans filtre de type qui pourrait bugger)
+                currentRoomAvatar.traverse((child) => {
+                    if (child.name === "AvatarVisual") innerModel = child;
+                    if (child.name === "Leg_L") legL = child;
+                    if (child.name === "Leg_R") legR = child;
+                });
+
+                if (innerModel) {
+                    if (isMoving) {
+                        // Vitesse constante garantie : on force le chrono à avancer
+                        walkTime += 0.15; 
+
+                        // Balancement du corps (Bumping)
+                        innerModel.rotation.z = Math.sin(walkTime) * 0.012;
+                        innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012;
+
+                        // Balancement des jambes (Attribution DIRECTE, adieu le lerp !)
+                        if (legL && legR) {
+                            const legSwing = Math.sin(walkTime) * 0.45; 
+                            legL.rotation.x = legSwing;
+                            legR.rotation.x = -legSwing;
+                        }
+                    } else {
+                        // Arrêt immédiat et réinitialisation propre (Guérit les bugs de NaN)
+                        walkTime = 0;
+                        innerModel.rotation.z = 0;
+                        innerModel.position.y = 0;
+
+                        if (legL && legR) {
+                            legL.rotation.x = 0;
+                            legR.rotation.x = 0;
+                        }
+                    }
+                }
+            }
         
 
         renderer.render(scene, camera);
