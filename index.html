@@ -3192,8 +3192,9 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
 
 
 
-        if (legL && legR) {
-            const legSwing = Math.sin(walkTime * 1.2) * 0.12 * fade;
+                if (legL && legR) {
+            // Vitesse du pas (1.5) et Angle d'ouverture (0.45) augmentés pour les grosses bottes !
+            const legSwing = Math.sin(walkTime * 1.5) * 0.45 * fade; 
             legL.rotation.x = legSwing;
             legR.rotation.x = -legSwing;
         }
@@ -5778,6 +5779,7 @@ function renderStore(tab) {
             clearTimeout(autoRemoveTimeout); 
             
             t.style.transition = 'none'; // Désactive la transition pour coller au doigt
+            t.style.animation = 'none';
             t.setPointerCapture(e.pointerId); // Verrouille le curseur sur cet élément
             t.style.cursor = 'grabbing';
         });
