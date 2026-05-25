@@ -3088,7 +3088,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
 
                 // === CORRECTION CRITIQUE ===
                 // L'animation de marche s'active UNIQUEMENT si l'avatar a bougé physiquement dans l'espace
-                if (Math.abs(displacementX) > 0.001 || Math.abs(displacementZ) > 0.001) {
+                if (Math.abs(displacementX) > 0.00001 || Math.abs(displacementZ) > 0.00001) {
                     isMoving = true;
                 } else {
                     isMoving = false;
@@ -3185,7 +3185,7 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
     if (shouldWalkAnimate) {
         const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 1000));
 
-        walkTime += isMoving ? (0.10 * energySpeedMult) : 0.05;
+        walkTime += isMoving ? (0.12 * energySpeedMult) : 0.05;
 
         innerModel.rotation.z = Math.sin(walkTime) * 0.012 * fade;
         innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012 * fade;
