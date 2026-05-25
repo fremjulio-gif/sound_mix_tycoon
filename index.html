@@ -3106,7 +3106,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
             // --- ANIMATION INTERNE CORRIGÉE ---
 if (!state.isSleeping && !state.isSitting) {
 
-    let innerModel, legLMesh, legRMesh;
+    let innerModel, legL, legR;
     
     currentRoomAvatar.traverse((child) => {
         if (child.name === "AvatarVisual") innerModel = child;
@@ -3114,10 +3114,10 @@ if (!state.isSleeping && !state.isSitting) {
         // CORRECTION : On cherche les MESH des jambes, pas les GROUPS
         // Le groupe "Leg_L" contient le mesh de la jambe comme premier enfant
         if (child.name === "Leg_L" && child.type === 'Group') {
-            legLMesh = child.children[0]; // Le mesh de la cuisse/jambe
+            legL = child.children[0]; // Le mesh de la cuisse/jambe
         }
         if (child.name === "Leg_R" && child.type === 'Group') {
-            legRMesh = child.children[0]; // Le mesh de la cuisse/jambe
+            legR = child.children[0]; // Le mesh de la cuisse/jambe
         }
     });
 
@@ -3144,19 +3144,19 @@ if (!state.isSleeping && !state.isSitting) {
             innerModel.rotation.z = Math.sin(walkTime) * 0.012 * fade;
             innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012 * fade;
 
-            if (legLMesh && legRMesh) {
+            if (legL && legR) {
                 // CORRECTION : On anime les MESH directement
                 const legSwing = Math.sin(walkTime) * 0.45 * fade; 
                 
                 // Rotation sur X pour le balancement avant/arrière de la jambe
-                legLMesh.rotation.x = THREE.MathUtils.lerp(legLMesh.rotation.x, legSwing, 0.2);
-                legRMesh.rotation.x = THREE.MathUtils.lerp(legRMesh.rotation.x, -
+                legL.rotation.x = THREE.MathUtils.lerp(legL.rotation.x, legSwing, 0.2);
+                legR.rotation.x = THREE.MathUtils.lerp(legR.rotation.x, -legSwing, 0.2);
 
                     
                     }
                 }
             }
-    }
+    
         
 
 
