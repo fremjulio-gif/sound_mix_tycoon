@@ -3107,6 +3107,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
             const distMoved = Math.hypot(currentRoomAvatar.position.x - oldX, currentRoomAvatar.position.z - oldZ);
             const isMoving = distMoved > 0.0001;
 
+            // --- 2. ANIMATION INTERNE ---
             // --- ANIMATION INTERNE CORRIGÉE ---
 if (!state.isSleeping && !state.isSitting) {
 
@@ -3156,6 +3157,10 @@ if (!state.isSleeping && !state.isSitting) {
                 legLMesh.rotation.x = THREE.MathUtils.lerp(legLMesh.rotation.x, legSwing, 0.2);
                 legRMesh.rotation.x = THREE.MathUtils.lerp(legRMesh.rotation.x, -
 
+                        }
+                    }
+                }
+            }
 
 
 
