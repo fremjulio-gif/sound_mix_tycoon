@@ -3106,6 +3106,15 @@ function rotateAvatarToward(target, smooth = 0.12) {
             const distMoved = Math.hypot(currentRoomAvatar.position.x - oldX, currentRoomAvatar.position.z - oldZ);
             const isMoving = distMoved > 0.0001;
 
+// Dans ta boucle animate3D, juste avant le bloc de l'animation des jambes
+if (legL && legR) {
+    console.log("Jambes trouvées, rotation actuelle X :", legL.rotation.x); 
+    // Si la console affiche toujours 0 alors que tu marches, 
+    // c'est que ton code est bien placé, mais qu'il est écrasé 
+    // par une autre instruction plus bas dans la même fonction !
+}
+
+                                    
                         // --- ANIMATION INTERNE (ULTRA-ROBUSTE) ---
             if (!state.isSleeping && !state.isSitting) {
 
