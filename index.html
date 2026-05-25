@@ -3246,20 +3246,16 @@ function rotateAvatarToward(target, smooth = 0.12) {
                         // --- ANIMATION INTERNE CORRIGÉE ---
 if (!state.isSleeping && !state.isSitting) {
 
-    let innerModel, legL, legR;
+    let innerModel, thighL, thighR; // ← Changé de legL/legR à thighL/thighR
     
     currentRoomAvatar.traverse((child) => {
         if (child.name === "AvatarVisual") innerModel = child;
-        if (child.name === "Leg_L") legL = child;
-        if (child.name === "Leg_R") legR = child;
+        if (child.name === "Thigh" && child.parent.name === "Leg_L") thighL = child; // ← Cible le mesh de la cuisse gauche
+        if (child.name === "Thigh" && child.parent.name === "Leg_R") thighR = child; // ← Cible le mesh de la cuisse droite
     });
 
     if (innerModel) {
         const now = performance.now();
-
-        // Détection du mouvement avec seuil ADAPTATIF selon l'énergie
-        const minMoveThreshold = 0.0005 + (state.energy / state.maxEnergy) * 0.001;
-        const isMoving = distMoved > Math.max(0.0002, minMoveThreshold);
 
         if (isMoving) {
             stoppedMovingAt = now;
@@ -3275,37 +3271,32 @@ if (!state.isSleeping && !state.isSitting) {
         if (shouldWalkAnimate) {
             const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 1000));
 
-            // Vitesse d'animation proportionnelle à l'énergie (plus on a de l'énergie, plus on marche vite)
-            const walkSpeed = 0.15 * (state.energy / state.maxEnergy);
-            walkTime += Math.max(0.08, walkSpeed);
+            // Vitesse fixe garantie
+            walkTime += 0.15;
 
-            // BALANCE DU CORPS - Appliquée en dernier pour ne pas affecter les jambes
             innerModel.rotation.z = Math.sin(walkTime) * 0.012 * fade;
             innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012 * fade;
 
-            // JAMBES - Rotation sur l'axe X LOCAL (CORRIGÉ : on utilise setFromEuler pour forcer)
-            if (legL && legR) {
+            if (thighL && thighR) { // ← Utilise les références aux cuisses
                 const legSwing = Math.sin(walkTime) * 0.45 * fade; 
-                
-                // CRUCIAL : On force la rotation sur l'axe X du groupe de jambe
-                // en réinitialisant d'abord les autres axes
-                legL.rotation.set(legSwing, 0, 0);
-                legR.rotation.set(-legSwing, 0, 0);
+                thighL.rotation.x = legSwing;    // ← Anime la cuisse gauche directement
+                thighR.rotation.x = -legSwing;   // ← Anime la cuisse droite directement
             }
         } else {
             walkTime = 0;
-            
-            // RESET PROPRE - On force toutes les rotations à zéro
-            innerModel.rotation.z = 0;
-            innerModel.position.y = THREE.MathUtils.lerp(innerModel.position.y, 0, 0.25);
+            innerModel.rotation.z *= 0.6;
+            innerModel.position.y += (0 - innerModel.position.y) * 0.25;
 
-            if (legL && legR) {
-                legL.rotation.set(0, 0, 0);
-                legR.rotation.set(0, 0, 0);
+            if (thighL && thighR) { // ← Utilise les références aux cuisses
+                thighL.rotation.x *= 0.6;    // ← Reset de la cuisse gauche
+                thighR.rotation.x *= 0.6;    // ← Reset de la cuisse droite
+                if (Math.abs(thighL.rotation.x) < 0.001) thighL.rotation.x = 0;
+                if (Math.abs(thighR.rotation.x) < 0.001) thighR.rotation.x = 0;
             }
         }
     }
 }
+
 
 
        // --- SURLIGNAGE SMOOTH PAR PROXIMITÉ ---
@@ -3810,7 +3801,8 @@ function createAvatarGroup(styleIndex) {
     legGroup.name = xSign < 0 ? "Leg_L" : "Leg_R";
     legGroup.position.set(xSign * 0.12, 0.42, 0);
 
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.16), clothesMat);
+    const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.16), clothesMat);
+    thigh.name = "Thigh";
     leg.position.set(0, -0.12, 0);
     leg.castShadow = true;
     addEdges(leg);
@@ -3835,6 +3827,7 @@ function createAvatarGroup(styleIndex) {
     } else {
       // Chaussure classique pour les autres
       const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.28), shoesMat);
+      shoe.name = "Shoe";
       shoe.position.set(0, -0.34, 0.04);
       shoe.castShadow = true;
       addEdges(shoe);
