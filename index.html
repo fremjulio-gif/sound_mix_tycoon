@@ -5806,30 +5806,6 @@ function renderStore(tab) {
             t.addEventListener('pointerup', onEnd);
             t.addEventListener('pointercancel', onEnd); // Gère les interruptions (ex: appel entrant sur mobile)
         };
-
-            const onEnd = (e) => {
-                if (!isDragging) return;
-                isDragging = false;
-                t.releasePointerCapture(e.pointerId);
-                
-                // On remet une transition avec une courbe de Bézier type "iOS" (légèrement élastique)
-                t.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease';
-
-                // Si on a glissé de plus de 60 pixels vers la gauche -> On supprime
-                if (currentDelta < -60) {
-                    t.style.transform = 'translateX(-120%)';
-                    t.style.opacity = '0';
-                    setTimeout(() => { if (t.parentElement) t.remove(); }, 300);
-                } else {
-                    // Sinon, effet "Snap Back" : la notification rebondit à sa place d'origine
-                    t.style.transform = 'translateX(0)';
-                    t.style.opacity = '1';
-                }
-            };
-
-            t.addEventListener('pointerup', onEnd);
-            t.addEventListener('pointercancel', onEnd);
-        };
         
         addSwipe();
 
