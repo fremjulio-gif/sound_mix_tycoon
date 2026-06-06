@@ -3442,15 +3442,15 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
             // --- VÉRIFICATION DES OBJETS INTERACTIFS ---
             if (interactableNames.includes(objName)) {
                 
-                //const targetPos = new THREE.Vector3();
-                //intersects[i].object.getWorldPosition(targetPos);
-                const targetPos = intersects[i].point.clone();
+                // Calcul de la distance lors du clic
+                const targetPos = new THREE.Vector3();
+                intersects[i].object.getWorldPosition(targetPos);
                 const dist = Math.hypot(targetPos.x - currentRoomAvatar.position.x, targetPos.z - currentRoomAvatar.position.z);
 
-                 if (dist > INTERACTION_DIST) {
-                     showToast("Trop loin ! Rapproche-toi pour interagir.", "discreet");
-                     break; // On stoppe le clic
-                 }
+                if (dist > INTERACTION_DIST) {
+                    showToast("Trop loin ! Rapproche-toi pour interagir.", "discreet");
+                    break; // On stoppe le clic
+                }
 
                 // Actions si on est assez proche
                 if (objName === 'pc_mesh') { enterPC(); break; }
