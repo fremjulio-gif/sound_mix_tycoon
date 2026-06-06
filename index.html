@@ -1455,6 +1455,11 @@ window.addEventListener('load', simulateLoading);
     let time = 0;
     let walkTime = 0;
     let stoppedMovingAt = 0;
+    // Variables globales pour l'animation de sommeil agité
+    let restlessSleepInterval = null;
+    let restlessTargetOffsetX = 0;
+    let restlessTargetOffsetY = 0;
+    let restlessTargetOffsetZ = 0;
     let wasMovingLastFrame = false;
     const GRID_SIZE = 1.0; 
 
@@ -2933,6 +2938,23 @@ function rotateAvatarToward(target, smooth = 0.12) {
 }
 
 
+    // Fonction pour démarrer l'animation de sommeil agité
+    function startRestlessSleepAnimation() {
+        if (restlessSleepInterval) clearInterval(restlessSleepInterval);
+
+        restlessSleepInterval = setInterval(() => {
+            // Rotation aléatoire sur Y (45 à 180 degrés)
+            restlessTargetOffsetY = (Math.random() * (Math.PI - Math.PI / 4)) + Math.PI / 4;
+            if (Math.random() < 0.5) restlessTargetOffsetY *= -1; // Permet la rotation dans les deux sens
+
+            // Rotations aléatoires sur X et Z (-15 à 15 degrés)
+            restlessTargetOffsetX = (Math.random() * (Math.PI / 6)) - (Math.PI / 12);
+            restlessTargetOffsetZ = (Math.random() * (Math.PI / 6)) - (Math.PI / 12);
+
+        }, (Math.random() * 4000) + 3000); // Toutes les 3 à 7 secondes
+    }
+
+
    // ==========================================
     // SYSTÈME DE PROXIMITÉ (SURLIGNAGE NÉON) - V5
     // ==========================================
@@ -3146,8 +3168,6 @@ function rotateAvatarToward(target, smooth = 0.12) {
             }
 
             // --- 2. ANIMATION INTERNE ---
-if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
-
     if (isMoving) {
         // --- PERTE D'ÉNERGIE LORS DU DÉPLACEMENT ---
         if (state.energy > 0) {
@@ -3158,126 +3178,137 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
             }
         }
 
-        // --- PARTICULES DE SUEUR AMÉLIORÉES (ÉNERGIE < 10%) ---
-if (state.energy < 10 && Math.random() < 0.20) { // Fréquence légèrement augmentée
-    if (!window.fatigueParticles) window.fatigueParticles = [];
-
-    // Création d'une forme de goutte (Fusion d'une sphère et d'un cône)
-    const sweatGroup = new THREE.Group();
-    
-    const sweatMaterial = new THREE.MeshStandardMaterial({ 
-        color: '#38bdf8', 
-        transparent: true, 
-        opacity: 0.85, 
-        roughness: 0.1,
-        metalness: 0.1,
-        emissive: '#0ea5e9', 
-        emissiveIntensity: 0.6 
-    });
-
-    const topCone = new THREE.Mesh(new THREE.ConeGeometry(0.02, 0.05, 6), sweatMaterial);
-    topCone.position.y = 0.025;
-    
-    const bottomSphere = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), sweatMaterial);
-    
-    sweatGroup.add(topCone);
-    sweatGroup.add(bottomSphere);
-
-    // Positionnement de départ autour de la tête de l'avatar
-    sweatGroup.position.copy(currentRoomAvatar.position);
-    sweatGroup.position.y += 2.1; // Hauteur ajustable selon l'avatar
-    sweatGroup.position.x += (Math.random() - 0.5) * 0.5;
-    sweatGroup.position.z += (Math.random() - 0.5) * 0.5;
-
-    scene.add(sweatGroup);
-
-    // Stockage avec physique de chute personnalisée
-    window.fatigueParticles.push({
-        mesh: sweatGroup,
-        life: 1.0,                                      // Durée de vie de 100% à 0%
-        decay: 0.015 + Math.random() * 0.01,            // Vitesse de disparition
-        velY: -0.01,                                    // Vitesse verticale initiale (vers le bas)
-        gravity: -0.003,                                // Accélération de la chute
-        wobbleSpeed: 5 + Math.random() * 5,             // Vitesse de l'oscillation
-        wobbleInt: 0.005 + Math.random() * 0.005,       // Intensité du mouvement latéral
-        seed: Math.random() * 100                       // Décalage pour l'oscillation
-    });
-}
-        // --- PARTICULES DE SUEUR SI ÉNERGIE < 10% (même à 0%) ---
-        if (state.energy < 10 && Math.random() < 0.15) {
+        // --- PARTICULES DE SUEUR (SI ÉNERGIE < 10%) ---
+        if (state.energy < 10 && Math.random() < 0.20) {
             if (!window.fatigueParticles) window.fatigueParticles = [];
-            const sweat = new THREE.Mesh(
-                new THREE.BoxGeometry(0.04, 0.08, 0.04),
-                new THREE.MeshStandardMaterial({ color: '#7dd3fc', transparent: true, opacity: 0.8, emissive: '#7dd3fc', emissiveIntensity: 0.5 })
-            );
-            sweat.position.copy(currentRoomAvatar.position);
-            sweat.position.y += 2.0; 
-            sweat.position.x += (Math.random() - 0.5) * 0.4;
-            sweat.position.z += (Math.random() - 0.5) * 0.4;
-            scene.add(sweat);
-            window.fatigueParticles.push({ mesh: sweat, life: 1.0, velY: 0.01 + Math.random() * 0.02 });
+            
+            const sweatGroup = new THREE.Group();
+            const sweatMat = new THREE.MeshStandardMaterial({ 
+                color: '#38bdf8', transparent: true, opacity: 0.85, emissive: '#0ea5e9', emissiveIntensity: 0.6 
+            });
+            const top = new THREE.Mesh(new THREE.ConeGeometry(0.02, 0.05, 6), sweatMat);
+            top.position.y = 0.025;
+            const bottom = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), sweatMat);
+            sweatGroup.add(top, bottom);
+
+            sweatGroup.position.copy(currentRoomAvatar.position);
+            sweatGroup.position.y += 2.1;
+            sweatGroup.position.x += (Math.random() - 0.5) * 0.5;
+            sweatGroup.position.z += (Math.random() - 0.5) * 0.5;
+            scene.add(sweatGroup);
+
+            window.fatigueParticles.push({
+                mesh: sweatGroup, life: 1.0, decay: 0.015 + Math.random() * 0.01,
+                velY: -0.01, gravity: -0.003, wobbleSpeed: 5 + Math.random() * 5,
+                wobbleInt: 0.005 + Math.random() * 0.005, seed: Math.random() * 100
+            });
         }
     }
-    const innerModel = currentRoomAvatar.getObjectByName("AvatarVisual");
-    if (!innerModel) return;
 
-    const legL = innerModel.getObjectByName("Leg_L");
-    const legR = innerModel.getObjectByName("Leg_R");
+    // --- 2. ANIMATION INTERNE (MARCHE) ---
+    if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
+        const innerModel = currentRoomAvatar.getObjectByName("AvatarVisual");
+        if (innerModel) {
+            const legL = innerModel.getObjectByName("Leg_L");
+            const legR = innerModel.getObjectByName("Leg_R");
+            const now = performance.now();
 
+            if (isMoving) {
+                stoppedMovingAt = now;
+                wasMovingLastFrame = true;
+            } else if (wasMovingLastFrame) {
+                stoppedMovingAt = now;
+                wasMovingLastFrame = false;
+            }
 
-
-    const now = performance.now();
-
-    if (isMoving) {
-        stoppedMovingAt = now;
-        wasMovingLastFrame = true;
-    } else if (wasMovingLastFrame) {
-        stoppedMovingAt = now;
-        wasMovingLastFrame = false;
+            const keepAnimatingAfterStop = !isMoving && (now - stoppedMovingAt < 1000);
+            if (isMoving || keepAnimatingAfterStop) {
+                const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 1000));
+                walkTime += isMoving ? (0.10 * energySpeedMult) : 0.05;
+                innerModel.rotation.z = Math.sin(walkTime) * 0.012 * fade;
+                innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012 * fade;
+                if (legL && legR) {
+                    const legSwing = Math.sin(walkTime * 1.2) * 0.12 * fade;
+                    legL.rotation.x = legSwing;
+                    legR.rotation.x = -legSwing;
+                }
+            } else {
+                walkTime = 0;
+                innerModel.rotation.z *= 0.6;
+                innerModel.position.y += (0 - innerModel.position.y) * 0.25;
+                if (legL && legR) {
+                    legL.rotation.x *= 0.6;
+                    legR.rotation.x *= 0.6;
+                }
+            }
+        }
     }
 
-    const keepAnimatingAfterStop = !isMoving && (now - stoppedMovingAt < 1000);
-    const shouldWalkAnimate = isMoving || keepAnimatingAfterStop;
-
-    if (shouldWalkAnimate) {
-        const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 1000));
-
-        walkTime += isMoving ? (0.10 * energySpeedMult) : 0.05;
-
-        innerModel.rotation.z = Math.sin(walkTime) * 0.012 * fade;
-        innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012 * fade;
-
-
-
-        if (legL && legR) {
-            const legSwing = Math.sin(walkTime * 1.2) * 0.12 * fade;
-            legL.rotation.x = legSwing;
-            legR.rotation.x = -legSwing;
-        }
-    } else {
-        walkTime = 0;
-
-        innerModel.rotation.z *= 0.6;
-        innerModel.position.y += (0 - innerModel.position.y) * 0.25;
-
-
-
-        if (legL && legR) {
-            legL.rotation.x *= 0.6;
-            legR.rotation.x *= 0.6;
-
-            if (Math.abs(legL.rotation.x) < 0.001) legL.rotation.x = 0;
-            if (Math.abs(legR.rotation.x) < 0.001) legR.rotation.x = 0;
-        }
-
-        if (Math.abs(innerModel.rotation.z) < 0.001) {
-            innerModel.rotation.z = 0;
-            innerModel.position.y = 0;
+    // --- 3. SUIVI DE CAMÉRA ---
+    // ... (Reste de la logique caméra inchangée) ...
+    
+    // Animation de sommeil agité
+    if (state.isSleeping) {
+        const sleepVisual = currentRoomAvatar.getObjectByName("AvatarVisual");
+        if (sleepVisual) {
+            sleepVisual.rotation.order = 'YXZ';
+            sleepVisual.rotation.x += (Math.PI / 2 + restlessTargetOffsetX - sleepVisual.rotation.x) * 0.05;
+            sleepVisual.rotation.y += (restlessTargetOffsetY - sleepVisual.rotation.y) * 0.05;
+            sleepVisual.rotation.z += (restlessTargetOffsetZ - sleepVisual.rotation.z) * 0.05;
         }
     }
 }
 
+// ... (Logic Pixar Lamp, Zoom, Surlignage, Ripples) ...
 
+        // --- MISE À JOUR DES PARTICULES DE FATIGUE ---
+        if (window.fatigueParticles && window.fatigueParticles.length > 0) {
+            for (let i = window.fatigueParticles.length - 1; i >= 0; i--) {
+                const p = window.fatigueParticles[i];
+                p.velY += (p.gravity || 0);
+                p.mesh.position.y += p.velY;
+                
+                if (p.wobbleSpeed) {
+                    const t = Date.now() * 0.001;
+                    p.mesh.position.x += Math.sin(t * p.wobbleSpeed + p.seed) * p.wobbleInt;
+                    p.mesh.position.z += Math.cos(t * p.wobbleSpeed + p.seed) * p.wobbleInt;
+                }
+
+                p.life -= (p.decay || 0.02);
+                p.mesh.traverse(c => { if(c.material) c.material.opacity = p.life * 0.85; });
+
+                if (p.life <= 0 || p.mesh.position.y < 0) {
+                    scene.remove(p.mesh);
+                    p.mesh.traverse(c => {
+                        if (c.geometry) c.geometry.dispose();
+                        if (c.material) {
+                            if (Array.isArray(c.material)) c.material.forEach(m => m.dispose());
+                            else c.material.dispose();
+                        }
+                    });
+                    window.fatigueParticles.splice(i, 1);
+                }
+            }
+        }
+
+        // --- MISE À JOUR DES RIPPLES DE DISTORSION TEMPORELLE ---
+        if (window.timeRipples && window.timeRipples.length > 0) {
+            for (let i = window.timeRipples.length - 1; i >= 0; i--) {
+                const r = window.timeRipples[i];
+                r.life -= 0.04;
+                r.mesh.scale.addScalar(r.growth);
+                r.mesh.material.opacity = r.life * 0.4;
+                if (r.life <= 0) {
+                    scene.remove(r.mesh);
+                    r.mesh.geometry.dispose();
+                    r.mesh.material.dispose();
+                    window.timeRipples.splice(i, 1);
+                }
+            }
+        }
+
+        renderer.render(scene, camera);
+    }
 
 
             // --- 3. SUIVI DE CAMÉRA ---
@@ -3302,6 +3333,20 @@ if (state.energy < 10 && Math.random() < 0.20) { // Fréquence légèrement augm
             cameraLookTarget.z += (targetLookZ - cameraLookTarget.z) * 0.05;
             
             camera.lookAt(cameraLookTarget);
+
+            // Animation de sommeil agité
+            if (state.isSleeping) {
+                const visual = currentRoomAvatar.getObjectByName("AvatarVisual");
+                if (visual) {
+                    // S'assure que l'ordre de rotation est défini pour l'interpolation
+                    visual.rotation.order = 'YXZ';
+
+                    // Interpole en douceur vers la rotation de base (Math.PI / 2 sur X) plus les offsets agités
+                    visual.rotation.x += (Math.PI / 2 + restlessTargetOffsetX - visual.rotation.x) * 0.05;
+                    visual.rotation.y += (restlessTargetOffsetY - visual.rotation.y) * 0.05;
+                    visual.rotation.z += (restlessTargetOffsetZ - visual.rotation.z) * 0.05;
+                }
+            }
         }
 
        // --- SUIVI DYNAMIQUE DE LA LAMPE PIXAR ---
@@ -4858,6 +4903,20 @@ function createAvatarGroup(styleIndex) {
                 visual.position.set(0, 0.35, -0.25);
                 visual.rotation.set(Math.PI / 2, 0, 0);
 }
+    // Initialise les cibles de rotation pour le sommeil agité
+    restlessTargetOffsetX = 0;
+    restlessTargetOffsetY = 0;
+    restlessTargetOffsetZ = 0;
+
+    // Démarre l'animation de sommeil agité
+    startRestlessSleepAnimation();
+
+    // S'assure que l'ordre de rotation est défini pour l'interpolation
+    const visual = currentRoomAvatar.getObjectByName("AvatarVisual");
+    if (visual) {
+        visual.rotation.order = 'YXZ';
+    }
+
 
 
     currentRoomAvatar.traverse(child => {
@@ -4909,6 +4968,16 @@ function createAvatarGroup(styleIndex) {
             visual.position.set(0, 0, 0);
             visual.rotation.set(0, 0, 0);
         }
+
+         // Arrête l'animation de sommeil agité et réinitialise les cibles
+        if (restlessSleepInterval) {
+            clearInterval(restlessSleepInterval);
+            restlessSleepInterval = null;
+        }
+        restlessTargetOffsetX = 0;
+        restlessTargetOffsetY = 0;
+        restlessTargetOffsetZ = 0;
+    }
 
         currentRoomAvatar.traverse(child => {
             if (child.isMesh && child.material) {
