@@ -4779,11 +4779,6 @@ function createAvatarGroup(styleIndex) {
     function goSit() {
         if (state.isExporting || state.isSleeping || state.isSitting) return;
 
-        if (state.energy >= 100) {
-            showToast("Tu es déjà rechargé à bloc, va plutôt faire un banger !", "info");
-            return;
-        }
-
         state.isSitting = true;
         targetPosition = null; // Annule tout déplacement en cours (freeze l'avatar)
 
@@ -4792,7 +4787,11 @@ function createAvatarGroup(styleIndex) {
         const durationSec = Math.floor(Math.random() * (15 - 3 + 1)) + 3; // Entre 3s et 15s
         const durationMs = durationSec * 1000;
 
-        showToast(`Petite pause chill... (${durationSec}s)`, "info");
+        if (state.energy >= 100) {
+            showToast("Pause détente... (NRJ déjà au max)", "info");
+        } else {
+            showToast(`Petite pause chill... (${durationSec}s)`, "info");
+        }
         playTone(480, 'sine', 0.1, 0.04); // Petit son de validation
 
         if (currentRoomAvatar) {
