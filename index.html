@@ -3158,6 +3158,51 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
             }
         }
 
+        // --- PARTICULES DE SUEUR AMÉLIORÉES (ÉNERGIE < 10%) ---
+if (state.energy < 10 && Math.random() < 0.20) { // Fréquence légèrement augmentée
+    if (!window.fatigueParticles) window.fatigueParticles = [];
+
+    // Création d'une forme de goutte (Fusion d'une sphère et d'un cône)
+    const sweatGroup = new THREE.Group();
+    
+    const sweatMaterial = new THREE.MeshStandardMaterial({ 
+        color: '#38bdf8', 
+        transparent: true, 
+        opacity: 0.85, 
+        roughness: 0.1,
+        metalness: 0.1,
+        emissive: '#0ea5e9', 
+        emissiveIntensity: 0.6 
+    });
+
+    const topCone = new THREE.Mesh(new THREE.ConeGeometry(0.02, 0.05, 6), sweatMaterial);
+    topCone.position.y = 0.025;
+    
+    const bottomSphere = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), sweatMaterial);
+    
+    sweatGroup.add(topCone);
+    sweatGroup.add(bottomSphere);
+
+    // Positionnement de départ autour de la tête de l'avatar
+    sweatGroup.position.copy(currentRoomAvatar.position);
+    sweatGroup.position.y += 2.1; // Hauteur ajustable selon l'avatar
+    sweatGroup.position.x += (Math.random() - 0.5) * 0.5;
+    sweatGroup.position.z += (Math.random() - 0.5) * 0.5;
+
+    scene.add(sweatGroup);
+
+    // Stockage avec physique de chute personnalisée
+    window.fatigueParticles.push({
+        mesh: sweatGroup,
+        life: 1.0,                                      // Durée de vie de 100% à 0%
+        decay: 0.015 + Math.random() * 0.01,            // Vitesse de disparition
+        velY: -0.01,                                    // Vitesse verticale initiale (vers le bas)
+        gravity: -0.003,                                // Accélération de la chute
+        wobbleSpeed: 5 + Math.random() * 5,             // Vitesse de l'oscillation
+        wobbleInt: 0.005 + Math.random() * 0.005,       // Intensité du mouvement latéral
+        seed: Math.random() * 100                       // Décalage pour l'oscillation
+    });
+}
         // --- PARTICULES DE SUEUR SI ÉNERGIE < 10% (même à 0%) ---
         if (state.energy < 10 && Math.random() < 0.15) {
             if (!window.fatigueParticles) window.fatigueParticles = [];
@@ -3431,7 +3476,29 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
             });
         }
 
+
+        // --- NOUVEAU : EFFET DE DISTORSION VISUELLE (SOMMEIL/REPOS) ---
+        if (currentRoomAvatar && (state.isSleeping || state.isSitting) && Math.random() < 0.25) {
+            if (!window.timeRipples) window.timeRipples = [];
+            const rippleGeo = new THREE.RingGeometry(0.2, 0.25, 32);
+            const rippleMat = new THREE.MeshBasicMaterial({ 
+                color: '#e0e7ff', 
+                transparent: true, 
+                opacity: 0.4, 
+                side: THREE.DoubleSide 
+            });
+            const ripple = new THREE.Mesh(rippleGeo, rippleMat);
+            const p = currentRoomAvatar.position;
+            ripple.position.set(p.x, p.y + 0.5, p.z);
+            ripple.rotation.x = Math.PI / 2;
+            scene.add(ripple);
+            window.timeRipples.push({ mesh: ripple, life: 1.0, growth: 0.1 });
+        }
+
          // --- MISE À JOUR DES PARTICULES DE FATIGUE ---
+if (window.fatigueParticles && window.fatigueParticles.length > 0) {
+    for (let i = window.fatigueParticles.length - 1; i >= 0; i--) {
+        const p = window.fatigueParticles[i];
         if (window.fatigueParticles) {
             for (let i = window.fatigueParticles.length - 1; i >= 0; i--) {
                 const p = window.fatigueParticles[i];
@@ -3448,6 +3515,50 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
             }
         }
         
+        // 1. Application de la gravité (accélération de la chute)
+        p.velY += p.gravity;
+        p.mesh.position.y += p.velY;
+        
+        // 2. Léger mouvement d'oscillation fluide sur les axes X et Z
+        const time = Date.now() * 0.001;
+        p.mesh.position.x += Math.sin(time * p.wobbleSpeed + p.seed) * p.wobbleInt;
+        p.mesh.position.z += Math.cos(time * p.wobbleSpeed + p.seed) * p.wobbleInt;
+        
+        // 3. Réduction de la durée de vie et opacité (Fade-out)
+        p.life -= p.decay;
+        p.mesh.children.forEach(child => {
+            if (child.material) child.material.opacity = p.life * 0.85;
+        });
+
+        // 4. Nettoyage de la scène et de la mémoire si la particule est morte
+        if (p.life <= 0 || p.mesh.position.y < 0) {
+            scene.remove(p.mesh);
+            
+            // Libération des géométries et matériaux pour éviter les fuites de mémoire
+            p.mesh.children.forEach(child => {
+                child.geometry.dispose();
+                if (Array.isArray(child.material)) {
+                    child.material.forEach(mat => mat.dispose());
+                } else {
+                    child.material.dispose();
+
+
+                    
+        // --- MISE À JOUR DES RIPPLES DE DISTORSION TEMPORELLE ---
+        if (window.timeRipples && window.timeRipples.length > 0) {
+            for (let i = window.timeRipples.length - 1; i >= 0; i--) {
+                const r = window.timeRipples[i];
+                r.life -= 0.04; // Vitesse de disparition (rapide)
+                r.mesh.scale.addScalar(r.growth);
+                r.mesh.material.opacity = r.life * 0.4;
+                if (r.life <= 0) {
+                    scene.remove(r.mesh);
+                    r.mesh.geometry.dispose();
+                    r.mesh.material.dispose();
+                    window.timeRipples.splice(i, 1);
+                }
+            }
+        }
 
         renderer.render(scene, camera);
     }
@@ -5088,6 +5199,9 @@ function createAvatarGroup(styleIndex) {
         // Applique le multiplicateur de temps si le personnage dort ou est assis
         if (state.isSleeping || state.isSitting) {
             state.timeMins += 2.5; // 5 minutes * 0.5 (pour un total de 1.5x la vitesse normale)
+            // Petit effet sonore de tic-tac accéléré pour marquer le passage du temps
+            playTone(900, 'sine', 0.02, 0.01); // Tic
+            setTimeout(() => playTone(700, 'sine', 0.02, 0.01), 250); // Tac
         }
 
         if (state.timeMins % 60 === 0) saveGame();
