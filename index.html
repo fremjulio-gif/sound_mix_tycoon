@@ -3052,7 +3052,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
             window.velZ += (targetDirZ - window.velZ) * acceleration;
 
             // --- VITESSE MAXIMALE ---
-            const energySpeedMult = Math.max(0.2, state.energy / 100);
+            const energySpeedMult = 0.7 + (state.energy / 100) * 0.3;
             
             const maxSpeed = 0.025 * energySpeedMult;
             
@@ -3148,19 +3148,31 @@ function rotateAvatarToward(target, smooth = 0.12) {
             // --- 2. ANIMATION INTERNE ---
 if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
 
+    if (isMoving) {
+        // --- PERTE D'ÉNERGIE LORS DU DÉPLACEMENT ---
+        if (state.energy > 0) {
+            const oldEnergyFloor = Math.floor(state.energy);
+            state.energy = Math.max(0, state.energy - 0.004); 
+            if (Math.floor(state.energy) !== oldEnergyFloor) {
+                updateHUD();
+            }
+        }
 
-    // --- NOUVEAU : PERTE D'ÉNERGIE LORS DU DÉPLACEMENT ---
-                if (isMoving && state.energy > 0) {
-                    const oldEnergyFloor = Math.floor(state.energy);
-                    
-                    // On retire environ 0.004 par frame (ce qui fait une perte de ~0.25% d'énergie par seconde de marche)
-                    state.energy = Math.max(0, state.energy - 0.004); 
-                    
-                    // On actualise l'UI uniquement si le chiffre affiché baisse de 1%
-                    if (Math.floor(state.energy) !== oldEnergyFloor) {
-                        updateHUD();
-                    }
-                }
+        // --- PARTICULES DE SUEUR SI ÉNERGIE < 10% (même à 0%) ---
+        if (state.energy < 10 && Math.random() < 0.15) {
+            if (!window.fatigueParticles) window.fatigueParticles = [];
+            const sweat = new THREE.Mesh(
+                new THREE.BoxGeometry(0.04, 0.08, 0.04),
+                new THREE.MeshStandardMaterial({ color: '#7dd3fc', transparent: true, opacity: 0.8, emissive: '#7dd3fc', emissiveIntensity: 0.5 })
+            );
+            sweat.position.copy(currentRoomAvatar.position);
+            sweat.position.y += 2.0; 
+            sweat.position.x += (Math.random() - 0.5) * 0.4;
+            sweat.position.z += (Math.random() - 0.5) * 0.4;
+            scene.add(sweat);
+            window.fatigueParticles.push({ mesh: sweat, life: 1.0, velY: 0.01 + Math.random() * 0.02 });
+        }
+    }
     const innerModel = currentRoomAvatar.getObjectByName("AvatarVisual");
     if (!innerModel) return;
 
@@ -3356,6 +3368,14 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
 
                 camera.position.lerp(finalCamPosition, 0.1); 
                 camera.lookAt(finalLookTarget);
+
+                // --- NOUVEAU : SCREEN SHAKE SI ÉPUISÉ (0% NRJ) ET EN MOUVEMENT ---
+                if (isMoving && state.energy <= 0) {
+                    const s = 0.025; // Intensité du tremblement (très léger pour rester jouable)
+                    camera.position.x += (Math.random() - 0.5) * s;
+                    camera.position.y += (Math.random() - 0.5) * s;
+                    camera.position.z += (Math.random() - 0.5) * s;
+                }
             }
         }
 
@@ -3409,6 +3429,23 @@ if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
                     item.edges.material.color.lerp(targetLineColor, 0.15);
                 }
             });
+        }
+
+         // --- MISE À JOUR DES PARTICULES DE FATIGUE ---
+        if (window.fatigueParticles) {
+            for (let i = window.fatigueParticles.length - 1; i >= 0; i--) {
+                const p = window.fatigueParticles[i];
+                p.life -= 0.02; // Vitesse de disparition
+                p.mesh.position.y += p.velY;
+                p.mesh.material.opacity = p.life;
+                p.mesh.scale.setScalar(p.life);
+                if (p.life <= 0) {
+                    scene.remove(p.mesh);
+                    p.mesh.geometry.dispose();
+                    p.mesh.material.dispose();
+                    window.fatigueParticles.splice(i, 1);
+                }
+            }
         }
         
 
