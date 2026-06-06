@@ -4252,6 +4252,7 @@ function createAvatarGroup(styleIndex) {
         history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
         isExporting: false, isSleeping: false, isEventActive: false,
         isSitting: false,
+        isReviewActive: false, // Ajout de l'état pour les revues
         trackList: [] // <-- AJOUTE CETTE LIGNE
     };
 
@@ -5073,7 +5074,7 @@ function createAvatarGroup(styleIndex) {
     // 13. GAME TICK
     // ==========================================
     function gameTick() {
-        if (state.isSleeping || state.isEventActive || state.isSitting) return; 
+        if (state.isEventActive || state.isReviewActive) return; // Le temps s'arrête seulement pour les événements et les revues
 
         state.timeMins = (parseInt(state.timeMins, 10) || 0) + 5;
         state.day      =  parseInt(state.day, 10) || 1;
@@ -5081,7 +5082,12 @@ function createAvatarGroup(styleIndex) {
         if (state.timeMins >= 1440) {
             state.timeMins -= 1440;
             state.day += 1;
-            dailyReset();
+            dailyReset(); // Le dailyReset est appelé une fois par jour, peu importe la vitesse
+        }
+
+        // Applique le multiplicateur de temps si le personnage dort ou est assis
+        if (state.isSleeping || state.isSitting) {
+            state.timeMins += 2.5; // 5 minutes * 0.5 (pour un total de 1.5x la vitesse normale)
         }
 
         if (state.timeMins % 60 === 0) saveGame();
@@ -5274,6 +5280,11 @@ function createAvatarGroup(styleIndex) {
         playBleep();
         if (id === 'app-stats')  refreshStats();
         if (id === 'app-social') refreshSocial();
+        if (id === 'app-browser') {
+            // Rafraîchit le store dès l'ouverture pour refléter les données de la sauvegarde (argent/plugins)
+            const isAudioTab = document.getElementById('tab-audio').classList.contains('text-white');
+            renderStore(isAudioTab ? 'audio' : 'crackz');
+        }
     }
     function closeApp(id) {
         document.getElementById(id).style.display = 'none';
@@ -5878,6 +5889,7 @@ function renderStore(tab) {
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
 
+    state.isReviewActive = false; // Désactive l'état de revue
     setTimeout(() => {
         overlay.classList.add('hidden');
         overlay.style.display = 'none';
@@ -6138,6 +6150,7 @@ desc.innerHTML = textesCollab[Math.floor(Math.random() * textesCollab.length)];
         const suspenseTitle = document.getElementById('suspense-title');
         const suspenseGenre = document.getElementById('suspense-genre');
         const suspenseText = document.getElementById('suspense-text');
+        state.isReviewActive = true; // Active l'état de revue
         if (!overlay || !phaseSuspense || !phaseResults || !reviewList || !avgEl || !trackNameEl || !suspenseTitle || !suspenseGenre || !suspenseText) {
         console.warn('Review overlay missing DOM nodes');
         return;
