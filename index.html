@@ -974,7 +974,7 @@
     </div>
 
     <!-- Audio Settings Overlay -->
-    <div id="audio-settings-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden">
+    <div id="audio-settings-gear" class="fixed top-3 md:top-6 right-3 md:right-6 z-50 liquid-glass-heavy p-3 rounded-full cursor-pointer transition-all hover:scale-105 active:scale-95" onclick="openAudioSettings()">
         <div class="liquid-glass-heavy p-6 md:p-10 rounded-2xl w-[90%] max-w-lg border border-[var(--accent)] text-center shadow-[0_0_60px_rgba(0,0,0,0.8)] max-h-[90dvh] overflow-y-auto flex flex-col">
             <h2 class="text-2xl font-retro text-white mb-6 tracking-widest uppercase drop-shadow-lg shrink-0">Paramètres Audio</h2>
 
@@ -3691,10 +3691,12 @@ function rotateAvatarToward(target, smooth = 0.12) {
         document.getElementById('sfx-volume-slider').value = window.sfxVolume;
         document.getElementById('sfx-volume-value').innerText = `${Math.round(window.sfxVolume * 100)}%`;
 
-        overlay.classList.remove('hidden'); // On retire la classe 'hidden' pour afficher
+        // Retire toutes les classes qui masquent l'overlay pour le rendre visible et interactif
+        overlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
         setTimeout(() => {
-            overlay.style.opacity = '1';
-            overlay.style.pointerEvents = 'all';
+            // Les transitions d'opacité et de pointer-events sont gérées par les classes Tailwind
+            // overlay.style.opacity = '1';
+            // overlay.style.pointerEvents = 'all';
         }, 10);
         playBleep();
     }
@@ -3703,12 +3705,12 @@ function rotateAvatarToward(target, smooth = 0.12) {
         const overlay = document.getElementById('audio-settings-overlay');
         if (!overlay) return;
 
-        overlay.style.opacity = '0';
-        overlay.style.pointerEvents = 'none';
+        // Ajoute les classes pour déclencher la transition de fermeture (opacité et non-interactivité)
+        overlay.classList.add('opacity-0', 'pointer-events-none');
         setTimeout(() => {
-            overlay.classList.add('hidden'); // On rajoute la classe 'hidden' pour masquer
+            // Ajoute la classe 'hidden' après la transition pour masquer complètement l'élément
+            overlay.classList.add('hidden');
         }, 300);
-        overlay.style.display = 'none'; // Assure que l'élément est complètement caché
         playBleep();
     }
 
