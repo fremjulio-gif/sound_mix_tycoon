@@ -973,6 +973,29 @@
         </div>
     </div>
 
+    <!-- Audio Settings Overlay -->
+    <div id="audio-settings-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl" style="display: none;">
+    <div id="audio-settings-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden">
+        <div class="liquid-glass-heavy p-6 md:p-10 rounded-2xl w-[90%] max-w-lg border border-[var(--accent)] text-center shadow-[0_0_60px_rgba(0,0,0,0.8)] max-h-[90dvh] overflow-y-auto flex flex-col">
+            <h2 class="text-2xl font-retro text-white mb-6 tracking-widest uppercase drop-shadow-lg shrink-0">Paramètres Audio</h2>
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-col items-start gap-2">
+                    <label for="master-volume" class="text-sm text-[var(--text-muted)] font-retro uppercase tracking-widest">Volume Maître</label>
+                    <input type="range" id="master-volume" min="0" max="1" step="0.01" value="1" class="w-full">
+                </div>
+                <div class="flex flex-col items-start gap-2">
+                    <label for="music-volume" class="text-sm text-[var(--text-muted)] font-retro uppercase tracking-widest">Volume Musique</label>
+                    <input type="range" id="music-volume" min="0" max="1" step="0.01" value="1" class="w-full">
+                </div>
+                <div class="flex flex-col items-start gap-2">
+                    <label for="sfx-volume" class="text-sm text-[var(--text-muted)] font-retro uppercase tracking-widest">Volume Effets Sonores</label>
+                    <input type="range" id="sfx-volume" min="0" max="1" step="0.01" value="1" class="w-full">
+                </div>
+                <button id="audio-settings-close" class="btn-action py-3 px-8 rounded-lg text-sm font-retro tracking-widest uppercase mt-4 self-end">Fermer</button>
+            </div>
+        </div>
+    </div>
+
     <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
         <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
             <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it</h1>
@@ -1308,15 +1331,6 @@
         <div class="w-48 h-[1px] bg-gray-800 mt-6 rounded-full overflow-hidden">
             <div id="loader-progress" class="h-full bg-[var(--accent)] w-0 transition-all duration-300 shadow-[0_0_10px_rgba(129,140,248,0.8)]"></div>
         </div>
-    </div>
-
-    <!-- Audio Settings Gear Icon -->
-    <!-- Added explicit display: block and opacity: 1 to ensure visibility -->
-    <div id="audio-settings-gear" class="fixed top-3 md:top-6 right-3 md:right-6 z-50 liquid-glass-heavy p-3 rounded-full cursor-pointer transition-all hover:scale-105 active:scale-95" onclick="openAudioSettings()" style="display: block !important; opacity: 1 !important;">
-        <svg class="w-6 h-6 text-white drop-shadow-lg animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-        </svg>
     </div>
 
 <script type="module">
@@ -3656,7 +3670,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
     window.musicVolume = 0.8;
     window.sfxVolume = 0.5;
 
-    function openAudioSettings() {
+    function openAudioSettings() { // La fonction est déjà exportée globalement
         const overlay = document.getElementById('audio-settings-overlay');
         if (!overlay) return;
 
@@ -3668,8 +3682,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
         document.getElementById('sfx-volume-slider').value = window.sfxVolume;
         document.getElementById('sfx-volume-value').innerText = `${Math.round(window.sfxVolume * 100)}%`;
 
-        overlay.classList.remove('hidden');
-        overlay.style.display = 'flex';
+        overlay.classList.remove('hidden'); // On retire la classe 'hidden' pour afficher
         setTimeout(() => {
             overlay.style.opacity = '1';
             overlay.style.pointerEvents = 'all';
@@ -3684,8 +3697,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
         overlay.style.opacity = '0';
         overlay.style.pointerEvents = 'none';
         setTimeout(() => {
-            overlay.classList.add('hidden');
-            overlay.style.display = 'none';
+            overlay.classList.add('hidden'); // On rajoute la classe 'hidden' pour masquer
         }, 300);
         playBleep();
     }
