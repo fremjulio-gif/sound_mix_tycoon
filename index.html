@@ -1666,8 +1666,8 @@ const portMat = new THREE.MeshStandardMaterial({ color: '#050505', roughness: 0.
 function buildSpeaker(xPos, rotY) {
     const spkGroup = new THREE.Group();
     spkGroup.position.set(xPos, 1.05, -0.4);
-    spkGroup.rotation.y = rotY;
-    spkGroup.name = 'pc_mesh';
+    spkGroup.rotation.y = rotY; // Rotation pour orienter le haut-parleur
+    spkGroup.name = 'speaker_mesh'; // Nom unique pour l'interaction
 
     // Corps principal — plus grand
     const bodyGeo = new THREE.BoxGeometry(0.55, 0.82, 0.52);
@@ -2973,9 +2973,9 @@ function rotateAvatarToward(target, smooth = 0.12) {
     // SYSTÈME DE PROXIMITÉ (SURLIGNAGE NÉON) - V5
     // ==========================================
     const INTERACTION_DIST = 2; 
-    const HIGHLIGHT_LINE_COLOR = new THREE.Color('#ffffff'); 
+    const HIGHLIGHT_LINE_COLOR = new THREE.Color('#ffffff');
     const DEFAULT_LINE_COLOR = new THREE.Color(0x000000); 
-    const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp'];
+    const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp', 'speaker_mesh']; // Ajout de 'speaker_mesh'
     const highlightItems = [];
 
     function initProximityHighlight() {
@@ -3302,8 +3302,8 @@ function rotateAvatarToward(target, smooth = 0.12) {
                 const dx = targetPos.x - head.position.x;
                 const dy = targetPos.y - head.position.y;
                 const dz = targetPos.z - head.position.z;
-                
-                head.rotation.y = Math.atan2(dx, dz) + Math.PI;
+
+                head.rotation.y = Math.atan2(dx, dz);
                 
                 const distanceH = Math.sqrt(dx * dx + dz * dz);
                 head.rotation.x = Math.atan2(dy, distanceH); 
@@ -3562,6 +3562,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
                 }
                 if (objName === 'sofa_mesh') { goSit(); break; }
                 if (objName === 'interactiveLamp') { togglePixarLamp(); break; }
+                if (objName === 'speaker_mesh') { openAudioSettings(); break; } // Nouvelle interaction pour les paramètres audio
             }
 
             // --- DÉPLACEMENT (Reste inchangé) ---
@@ -3636,6 +3637,48 @@ function rotateAvatarToward(target, smooth = 0.12) {
         document.body.classList.add('os-active');
         document.body.classList.remove('os-active');
         playTone(300, 'sawtooth', 0.1, 0.05);
+    }
+
+      // ==========================================
+    // GESTION DU MENU PARAMÈTRES AUDIO
+    // ==========================================
+    // Variables globales pour les volumes
+    window.masterVolume = 1.0;
+    window.musicVolume = 0.8;
+    window.sfxVolume = 0.5;
+
+    function openAudioSettings() {
+        const overlay = document.getElementById('audio-settings-overlay');
+        if (!overlay) return;
+
+        // Met à jour les sliders avec les valeurs actuelles
+        document.getElementById('master-volume-slider').value = window.masterVolume;
+        document.getElementById('master-volume-value').innerText = `${Math.round(window.masterVolume * 100)}%`;
+        document.getElementById('music-volume-slider').value = window.musicVolume;
+        document.getElementById('music-volume-value').innerText = `${Math.round(window.musicVolume * 100)}%`;
+        document.getElementById('sfx-volume-slider').value = window.sfxVolume;
+        document.getElementById('sfx-volume-value').innerText = `${Math.round(window.sfxVolume * 100)}%`;
+
+        overlay.classList.remove('hidden');
+        overlay.style.display = 'flex';
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'all';
+        }, 10);
+        playBleep();
+    }
+
+    function closeAudioSettings() {
+        const overlay = document.getElementById('audio-settings-overlay');
+        if (!overlay) return;
+
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+            overlay.style.display = 'none';
+        }, 300);
+        playBleep();
     }
 
 
@@ -3834,6 +3877,8 @@ function drawSysGraphUI(timestamp) {
     // ==========================================
     // SYSTÈME DE MIXAGE VERTICAL (BGM)
     // ==========================================
+    // Ajout d'une variable pour suivre la piste musicale active
+    let currentActiveTrackKey = 'room'; // Initialisé à 'room' par défaut
     const MusicSystem = (() => {
         let audioCtx = null;
         let masterGain = null;
@@ -3892,30 +3937,46 @@ function drawSysGraphUI(timestamp) {
             Object.keys(tracks).forEach(key => {
                 const track = tracks[key];
                 
-                track.gainNode = audioCtx.createGain();
-                track.gainNode.gain.value = (key === 'menu') ? track.targetVol : 0;
+                track.gainNode = audioCtx.createGain(); // Crée un gainNode pour chaque piste
+                // Initialise le volume en fonction de la piste active et du volume global de la musique
+                track.gainNode.gain.value = (key === currentActiveTrackKey) ? track.targetVol * window.musicVolume : 0;
                 track.gainNode.connect(masterGain);
 
                 track.source = audioCtx.createBufferSource();
                 track.source.buffer = track.buffer;
-                track.source.loop = true;
+                track.source.loop = true; // Boucle la musique
                 track.source.connect(track.gainNode);
                 
                 track.source.start(startTime);
             });
         }
 
-        function crossfadeTo(targetKey, fadeDuration = 2.0) {
+        function crossfadeTo(targetKey, fadeDuration = 3.0) {
             if (!isInitialized) return;
             const now = audioCtx.currentTime;
 
+            currentActiveTrackKey = targetKey; // Met à jour la piste active
+
             Object.keys(tracks).forEach(key => {
                 const gainParam = tracks[key].gainNode.gain;
-                gainParam.cancelScheduledValues(now);
-                gainParam.setValueAtTime(gainParam.value, now);
-                const finalVol = (key === targetKey) ? tracks[key].targetVol : 0;
-                gainParam.linearRampToValueAtTime(finalVol, now + fadeDuration);
+                gainParam.cancelScheduledValues(now); // Annule les changements de volume précédents
+                gainParam.setValueAtTime(gainParam.value, now); // Définit la valeur actuelle comme point de départ
+                // Applique le volume cible (avec le volume global de la musique)
+                const finalVol = (key === targetKey) ? tracks[key].targetVol * window.musicVolume : 0;
+                gainParam.linearRampToValueAtTime(finalVol, now + fadeDuration); // Transition linéaire
             });
+        }
+
+        function setMasterVolume(volume) {
+            if (masterGain) {
+                masterGain.gain.setValueAtTime(volume, audioCtx.currentTime);
+            }
+        }
+
+        function setMusicVolume(volume) {
+            if (tracks[currentActiveTrackKey] && tracks[currentActiveTrackKey].gainNode) {
+                tracks[currentActiveTrackKey].gainNode.gain.setValueAtTime(tracks[currentActiveTrackKey].targetVol * volume, audioCtx.currentTime);
+            }
         }
 
         function muteForGameplay(fadeDuration = 0.5) {
@@ -3939,7 +4000,9 @@ function drawSysGraphUI(timestamp) {
             startAllTracks,
             crossfadeTo,
             muteForGameplay,
-            unmuteAfterGameplay
+            unmuteAfterGameplay,
+            setMasterVolume, // Expose la fonction de contrôle du volume master
+            setMusicVolume   // Expose la fonction de contrôle du volume de la musique
         };
     })();
 
@@ -3981,11 +4044,11 @@ function drawSysGraphUI(timestamp) {
             if (!audioCtxUI) initAudio();
             if (!audioCtxUI) return;
             if (audioCtxUI.state === 'suspended') audioCtxUI.resume();
-            const osc = audioCtxUI.createOscillator();
-            const gain = audioCtxUI.createGain();
+            const osc = audioCtxUI.createOscillator(); // Crée un oscillateur
+            const gain = audioCtxUI.createGain();     // Crée un nœud de gain
             osc.type = type; osc.frequency.setValueAtTime(freq, audioCtxUI.currentTime);
-            gain.gain.setValueAtTime(vol, audioCtxUI.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtxUI.currentTime + duration);
+            gain.gain.setValueAtTime(vol * window.sfxVolume, audioCtxUI.currentTime); // Applique le volume des FX
+            gain.gain.exponentialRampToValueAtTime(0.01 * window.sfxVolume, audioCtxUI.currentTime + duration); // Applique le volume des FX
             osc.connect(gain); gain.connect(audioCtxUI.destination);
             osc.start(); osc.stop(audioCtxUI.currentTime + duration);
         } catch(e) {}
@@ -4785,6 +4848,35 @@ function createAvatarGroup(styleIndex) {
             document.addEventListener('touchmove', doDrag, { passive: false });
             document.addEventListener('touchend', stopDrag);
         });
+
+        // Initialisation des écouteurs pour les sliders audio
+        function initAudioSettingsListeners() {
+            const masterSlider = document.getElementById('master-volume-slider');
+            const musicSlider = document.getElementById('music-volume-slider');
+            const sfxSlider = document.getElementById('sfx-volume-slider');
+
+            if (masterSlider) {
+                masterSlider.addEventListener('input', (e) => {
+                    window.masterVolume = parseFloat(e.target.value);
+                    MusicSystem.setMasterVolume(window.masterVolume);
+                    document.getElementById('master-volume-value').innerText = `${Math.round(window.masterVolume * 100)}%`;
+                });
+            }
+            if (musicSlider) {
+                musicSlider.addEventListener('input', (e) => {
+                    window.musicVolume = parseFloat(e.target.value);
+                    MusicSystem.setMusicVolume(window.musicVolume);
+                    document.getElementById('music-volume-value').innerText = `${Math.round(window.musicVolume * 100)}%`;
+                });
+            }
+            if (sfxSlider) {
+                sfxSlider.addEventListener('input', (e) => {
+                    window.sfxVolume = parseFloat(e.target.value);
+                    document.getElementById('sfx-volume-value').innerText = `${Math.round(window.sfxVolume * 100)}%`;
+                });
+            }
+        }
+        initAudioSettingsListeners(); // Appel de la fonction d'initialisation des écouteurs
         initPianoRollUI(); // Initialise le DOM du Piano Roll au boot
         initPianoRollEvents();
         initInteractiveStudio();
@@ -4796,7 +4888,7 @@ function createAvatarGroup(styleIndex) {
             
             await MusicSystem.init();
             MusicSystem.startAllTracks();
-            MusicSystem.crossfadeTo('room', 2.0); // Déclenche la musique de la room
+            MusicSystem.crossfadeTo('room', 3.0); // Déclenche la musique de la room
             
             attemptLogin(); // Lance ton jeu
             btn.innerText = originalText;
@@ -4951,7 +5043,7 @@ function createAvatarGroup(styleIndex) {
 
     function wakeUp() {
             state.isSleeping = false;
-                MusicSystem.crossfadeTo('room', 2.0); // <-- AJOUT ICI (Fondu de retour de 2s)
+                MusicSystem.crossfadeTo('room', 3.0); // <-- AJOUT ICI (Fondu de retour de 2s)
             document.getElementById('sleep-overlay').classList.remove('active');
             if (currentRoomAvatar) {
                 if (currentRoomAvatar.userData.preSleepPos) {
@@ -5038,7 +5130,7 @@ function createAvatarGroup(styleIndex) {
 
     function standUp(energyGain) {
         state.isSitting = false;
-         MusicSystem.crossfadeTo('room', 2.0); // <-- AJOUT ICI (Retour à la room)
+         MusicSystem.crossfadeTo('room', 3.0); // <-- AJOUT ICI (Retour à la room)
 
         if (currentRoomAvatar) {
             // Restauration de la position debout d'origine
@@ -6646,6 +6738,7 @@ window.smoothCamTarget = new THREE.Vector3(0, 0, 0);
     window.selectAvatar     = selectAvatar;
     window.attemptLogin     = attemptLogin;
     window.goSleep          = goSleep; // Export du sommeil
+    window.openAudioSettings = openAudioSettings; // Export du menu audio
     window.goSit            = goSit;
     window.closeReview      = closeReview; // Export de la fermeture review
     window.toggleSecretTape = toggleSecretTape;
