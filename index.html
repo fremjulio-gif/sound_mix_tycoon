@@ -3701,12 +3701,11 @@ function rotateAvatarToward(target, smooth = 0.12) {
         document.getElementById('sfx-volume-slider').value = window.sfxVolume;
         document.getElementById('sfx-volume-value').innerText = `${Math.round(window.sfxVolume * 100)}%`;
 
-        // Retire les classes qui masquent l'overlay pour le rendre visible et interactif
-        overlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none'); // Retire 'hidden' en premier
+        // 1. Rendre l'overlay visible (display: flex) sans changer l'opacité ni l'interactivité pour l'instant
+        overlay.classList.remove('hidden');
         setTimeout(() => {
-            // Les transitions d'opacité et de pointer-events sont gérées par les classes Tailwind
-            // overlay.style.opacity = '1';
-            // overlay.style.pointerEvents = 'all';
+            // 2. Après un court délai, retirer les classes d'opacité et de pointer-events pour déclencher la transition
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
         }, 10);
         playBleep();
     }
@@ -3720,7 +3719,6 @@ function rotateAvatarToward(target, smooth = 0.12) {
         setTimeout(() => {
             // Ajoute la classe 'hidden' après la transition pour masquer complètement l'élément
             overlay.classList.add('hidden');
-            overlay.style.display = 'none'; // S'assure que l'élément est complètement caché
         }, 300);
         playBleep();
     }
