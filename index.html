@@ -2077,6 +2077,15 @@ for (let i = 0; i < 4; i++) {
     window.pixarLamp = lampGroup;
     scene.add(rackGroup);
 
+    // --- OPTIMISATION : OBJETS RÉUTILISABLES (ÉVITE LES FUITES MÉMOIRE) ---
+    const rippleGeoShared = new THREE.RingGeometry(0.2, 0.25, 32);
+    const rippleMatShared = new THREE.MeshBasicMaterial({ 
+        color: '#e0e7ff', 
+        transparent: true, 
+        opacity: 0.4, 
+        side: THREE.DoubleSide 
+    });
+
     // =========================================================
     // L'ASTUCE POUR ALIGNER PARFAITEMENT LA LUMIÈRE
     // =========================================================
@@ -3005,267 +3014,270 @@ function rotateAvatarToward(target, smooth = 0.12) {
     
     
     function animate3D() {
-        requestAnimationFrame(animate3D);
-        time += 0.02;
-        // --- ANIMATION DES LEDS DU RACK ---
+    requestAnimationFrame(animate3D);
+
+    // --- SÉCURITÉ GLOBALE ---
+    // Vérification de la présence des éléments vitaux avant de lancer les calculs
+    if (typeof scene === 'undefined' || typeof camera === 'undefined' || typeof renderer === 'undefined') return;
+    const currentState = typeof state !== 'undefined' && state ? state : { energy: 100, isSitting: false, isSleeping: false, isEventActive: false };
+    
+    window.time = (window.time || 0) + 0.02;
+
+    // --- OPTIMISATION : CACHE MÉMOIRE POUR ÉVITER LE GARBAGE COLLECTION ---
+    // Les vecteurs sont réutilisés à chaque frame plutôt que d'être instanciés (évite les freezes)
+    window._v2a = window._v2a || new THREE.Vector2();
+    window._v2b = window._v2b || new THREE.Vector2();
+    window._v3a = window._v3a || new THREE.Vector3();
+    window._v3b = window._v3b || new THREE.Vector3();
+
+    // --- ANIMATION DES LEDS DU RACK ---
+    if (typeof rackLeds !== 'undefined' && Array.isArray(rackLeds)) {
         rackLeds.forEach(led => {
-            // 2% de chance par frame qu'une LED "saute" (baisse d'intensité)
+            if (!led || !led.material) return;
+            // 2% de chance par frame qu'une LED "saute"
             if (Math.random() < 0.02) {
-                led.material.emissiveIntensity = 0.1; // Presque éteint
+                led.material.emissiveIntensity = 0.1;
             } else {
-                // Revient doucement à son intensité max (1.0)
                 led.material.emissiveIntensity += (1.0 - led.material.emissiveIntensity) * 0.1;
             }
         });
-        
-        let isMoving = false; // Déclaration globale à la frame pour éviter le crash
-        if (currentRoomAvatar) {
-            // ==========================================
-            // --- LOGIQUE DE LA TÉLÉVISION ---
-            // ==========================================
-            // Ajout de "currentRoomAvatar" dans la condition pour garantir que le jeu est bien initialisé
-            if (window.tvScreenMat && window.tvLight) { // currentRoomAvatar is already checked
-                const isLampOn = window.pixarLamp && window.pixarLamp.userData && window.pixarLamp.userData.isOn;
-                const isSitting = state.isSitting;
+    }
 
-                if (isSitting && isLampOn) {
-                    // TV ALLUMÉE : Effet de scintillement dynamique (flicker)
-                    const flicker = 0.7 + Math.random() * 0.3; 
-                    
-                    window.tvScreenMat.emissive.setHex(0x0ea5e9); 
-                    window.tvScreenMat.emissiveIntensity = flicker;
-                    
-                    // La lumière éclaire l'avatar sur le canapé
-                    window.tvLight.intensity = flicker * 4; 
+    let isMoving = false; 
+
+    // Vérification de l'avatar principal
+    if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar) {
+        
+        // ==========================================
+        // --- LOGIQUE DE LA TÉLÉVISION ---
+        // ==========================================
+        if (window.tvScreenMat && window.tvLight) {
+            const isLampOn = window.pixarLamp && window.pixarLamp.userData && window.pixarLamp.userData.isOn;
+            const isSitting = currentState.isSitting;
+
+            if (isSitting && isLampOn) {
+                const flicker = 0.7 + Math.random() * 0.3; 
+                window.tvScreenMat.emissive.setHex(0x0ea5e9); 
+                window.tvScreenMat.emissiveIntensity = flicker;
+                window.tvLight.intensity = flicker * 4; 
+            } else {
+                window.tvScreenMat.emissive.setHex(0x000000);
+                window.tvScreenMat.emissiveIntensity = 0;
+                window.tvLight.intensity = 0;
+            }
+        }
+        
+        // ==========================================
+        // --- 1A. GESTION DU CLAVIER (SMOOTH ZQSD) ---
+        // ==========================================
+        window.velX = window.velX || 0;
+        window.velZ = window.velZ || 0;
+        window.kbdState = window.kbdState || {};
+        
+        let targetDirX = 0;
+        let targetDirZ = 0;
+        
+        if (!currentState.isSleeping && !currentState.isEventActive) {
+            if (window.kbdState.up) targetDirZ -= 1;
+            if (window.kbdState.down) targetDirZ += 1;
+            if (window.kbdState.left) targetDirX -= 1;
+            if (window.kbdState.right) targetDirX += 1;
+        }
+
+        if (targetDirX !== 0 || targetDirZ !== 0) {
+            const length = Math.sqrt(targetDirX * targetDirX + targetDirZ * targetDirZ);
+            targetDirX /= length;
+            targetDirZ /= length;
+        }
+
+        const acceleration = 0.15; 
+        window.velX += (targetDirX - window.velX) * acceleration;
+        window.velZ += (targetDirZ - window.velZ) * acceleration;
+
+        const energySpeedMult = 0.7 + (Math.max(0, currentState.energy) / 100) * 0.3;
+        const maxSpeed = 0.025 * energySpeedMult;
+        
+        if (Math.abs(window.velX) > 0.005 || Math.abs(window.velZ) > 0.005) {
+            if (typeof targetPosition !== 'undefined') targetPosition = null; 
+
+            const nextX = currentRoomAvatar.position.x + (window.velX * maxSpeed);
+            const nextZ = currentRoomAvatar.position.z + (window.velZ * maxSpeed);
+
+            const targetYaw = Math.atan2(window.velX, window.velZ);
+            const currentYaw = currentRoomAvatar.rotation.y;
+            
+            // Protection sur la fonction externe normalizeAngle
+            if (typeof normalizeAngle === 'function') {
+                currentRoomAvatar.rotation.y = currentYaw + normalizeAngle(targetYaw - currentYaw) * 0.15;
+            }
+
+            let displacementX = 0;
+            let displacementZ = 0;
+            const canCheckCollision = typeof checkCollision === 'function';
+
+            if (!canCheckCollision || !checkCollision(nextX, currentRoomAvatar.position.z)) {
+                displacementX = nextX - currentRoomAvatar.position.x;
+                currentRoomAvatar.position.x = nextX;
+            } else {
+                window.velX = 0; 
+            }
+            
+            if (!canCheckCollision || !checkCollision(currentRoomAvatar.position.x, nextZ)) {
+                displacementZ = nextZ - currentRoomAvatar.position.z;
+                currentRoomAvatar.position.z = nextZ;
+            } else {
+                window.velZ = 0; 
+            }
+
+            isMoving = (Math.abs(displacementX) > 0.001 || Math.abs(displacementZ) > 0.001);
+        } else {
+            window.velX = 0;
+            window.velZ = 0;
+        }
+
+        // ==========================================
+        // --- 1B. DÉPLACEMENT À LA SOURIS (Clic) ---
+        // ==========================================
+        if (typeof targetPosition !== 'undefined' && targetPosition && !currentState.isSleeping && !currentState.isSitting) {
+            const currentFlatPos = window._v2a.set(currentRoomAvatar.position.x, currentRoomAvatar.position.z);
+            const targetFlatPos = window._v2b.set(targetPosition.x, targetPosition.z);
+            const distance = currentFlatPos.distanceTo(targetFlatPos);
+
+            if (distance > 0.02) { 
+                if (typeof rotateAvatarToward === 'function') rotateAvatarToward(targetPosition, 0.12);
+
+                const baseSpeed = 0.03 * energySpeedMult;
+                const easing = Math.min(1, distance * 4); 
+                const currentSpeed = baseSpeed * easing;
+
+                const dir = window._v3a.subVectors(targetPosition, currentRoomAvatar.position).normalize();
+                const nextX = currentRoomAvatar.position.x + dir.x * currentSpeed;
+                const nextZ = currentRoomAvatar.position.z + dir.z * currentSpeed;
+
+                let moved = false;
+                const canCheckCollision = typeof checkCollision === 'function';
+                
+                if (!canCheckCollision || !checkCollision(nextX, currentRoomAvatar.position.z)) {
+                    currentRoomAvatar.position.x = nextX;
+                    moved = true;
+                }
+                if (!canCheckCollision || !checkCollision(currentRoomAvatar.position.x, nextZ)) {
+                    currentRoomAvatar.position.z = nextZ;
+                    moved = true;
+                }
+
+                if (!moved) {
+                    targetPosition = null;
                 } else {
-                    // TV ÉTEINTE
-                    window.tvScreenMat.emissive.setHex(0x000000);
-                    window.tvScreenMat.emissiveIntensity = 0;
-                    window.tvLight.intensity = 0;
+                    isMoving = true; 
+                }
+            } else {
+                currentRoomAvatar.position.x = targetPosition.x;
+                currentRoomAvatar.position.z = targetPosition.z;
+                targetPosition = null;
+            }
+        }
+
+        // --- 2. ANIMATION INTERNE (Mouvement et Fatigue) ---
+        if (isMoving) {
+            if (currentState.energy > 0) {
+                const oldEnergyFloor = Math.floor(currentState.energy);
+                currentState.energy = Math.max(0, currentState.energy - 0.004); 
+                if (Math.floor(currentState.energy) !== oldEnergyFloor && typeof updateHUD === 'function') {
+                    updateHUD();
                 }
             }
-            
-            
-            // ==========================================
-            // --- 1A. GESTION DU CLAVIER (SMOOTH ZQSD) ---
-            // ==========================================
-            window.velX = window.velX || 0;
-            window.velZ = window.velZ || 0;
-            
-            let targetDirX = 0;
-            let targetDirZ = 0;
-            
-            if (!state.isSleeping && !state.isEventActive) {
-                if (window.kbdState.up) targetDirZ -= 1;
-                if (window.kbdState.down) targetDirZ += 1;
-                if (window.kbdState.left) targetDirX -= 1;
-                if (window.kbdState.right) targetDirX += 1;
-            }
 
-            // Normalisation pour ne pas courir en diagonale
-            if (targetDirX !== 0 || targetDirZ !== 0) {
-                const length = Math.sqrt(targetDirX * targetDirX + targetDirZ * targetDirZ);
-                targetDirX /= length;
-                targetDirZ /= length;
-            }
-
-            // --- LA MAGIE DU SMOOTH (Accélération & Freinage) ---
-            const acceleration = 0.15; 
-            window.velX += (targetDirX - window.velX) * acceleration;
-            window.velZ += (targetDirZ - window.velZ) * acceleration;
-
-            // --- VITESSE MAXIMALE ---
-            const energySpeedMult = 0.7 + (state.energy / 100) * 0.3;
-            
-            const maxSpeed = 0.025 * energySpeedMult;
-            
-            if (Math.abs(window.velX) > 0.005 || Math.abs(window.velZ) > 0.005) {
-                targetPosition = null; // Annule le clic souris
-
-                const nextX = currentRoomAvatar.position.x + (window.velX * maxSpeed);
-                const nextZ = currentRoomAvatar.position.z + (window.velZ * maxSpeed);
-
-                // L'avatar tourne le regard vers sa vélocité
-                const targetYaw = Math.atan2(window.velX, window.velZ);
-                const currentYaw = currentRoomAvatar.rotation.y;
-                currentRoomAvatar.rotation.y = currentYaw + normalizeAngle(targetYaw - currentYaw) * 0.15;
-
-                // Variables témoins pour mesurer le mouvement réel de ce frame
-                let displacementX = 0;
-                let displacementZ = 0;
-
-                // Application des collisions et calcul du mouvement réel
-                if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
-                    displacementX = nextX - currentRoomAvatar.position.x;
-                    currentRoomAvatar.position.x = nextX;
-                } else {
-                    window.velX = 0; // Arrêt de la vélocité sur X si impact
+            // --- PARTICULES DE SUEUR SÉCURISÉES ---
+            if (currentState.energy < 10 && Math.random() < 0.20) {
+                if (!window.fatigueParticles) window.fatigueParticles = [];
+                
+                // Création des géométries en cache pour éviter le crash mémoire
+                if (!window._sweatMat) {
+                    window._sweatMat = new THREE.MeshStandardMaterial({ 
+                        color: '#38bdf8', transparent: true, opacity: 0.85, emissive: '#0ea5e9', emissiveIntensity: 0.6 
+                    });
+                    window._sweatTopGeo = new THREE.ConeGeometry(0.02, 0.05, 6);
+                    window._sweatBotGeo = new THREE.SphereGeometry(0.02, 6, 6);
                 }
                 
-                if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
-                    displacementZ = nextZ - currentRoomAvatar.position.z;
-                    currentRoomAvatar.position.z = nextZ;
-                } else {
-                    window.velZ = 0; // Arrêt de la vélocité sur Z si impact
-                }
+                const sweatGroup = new THREE.Group();
+                const top = new THREE.Mesh(window._sweatTopGeo, window._sweatMat);
+                top.position.y = 0.025;
+                const bottom = new THREE.Mesh(window._sweatBotGeo, window._sweatMat);
+                sweatGroup.add(top, bottom);
 
-                // === CORRECTION CRITIQUE ===
-                // L'animation de marche s'active UNIQUEMENT si l'avatar a bougé physiquement dans l'espace
-                if (Math.abs(displacementX) > 0.001 || Math.abs(displacementZ) > 0.001) {
-                    isMoving = true;
-                } else {
-                    isMoving = false;
-                }
-            } else {
-                window.velX = 0;
-                window.velZ = 0;
+                sweatGroup.position.copy(currentRoomAvatar.position);
+                sweatGroup.position.y += 2.1;
+                sweatGroup.position.x += (Math.random() - 0.5) * 0.5;
+                sweatGroup.position.z += (Math.random() - 0.5) * 0.5;
+                scene.add(sweatGroup);
+
+                window.fatigueParticles.push({
+                    mesh: sweatGroup, life: 1.0, decay: 0.015 + Math.random() * 0.01,
+                    velY: -0.01, gravity: -0.003, wobbleSpeed: 5 + Math.random() * 5,
+                    wobbleInt: 0.005 + Math.random() * 0.005, seed: Math.random() * 100
+                });
             }
-            // ==========================================
-            // --- 1B. DÉPLACEMENT À LA SOURIS (Clic) ---
-            // ==========================================
-            if (targetPosition && !state.isSleeping && !state.isSitting) {
-                const currentFlatPos = new THREE.Vector2(currentRoomAvatar.position.x, currentRoomAvatar.position.z);
-                const targetFlatPos = new THREE.Vector2(targetPosition.x, targetPosition.z);
-                const distance = currentFlatPos.distanceTo(targetFlatPos);
+        }
 
-                // On vérifie la distance AVANT de faire un lookAt pour éviter le bug d'invisibilité
-                if (distance > 0.02) { // Seuil réduit pour plus de précision
-                    rotateAvatarToward(targetPosition, 0.12);
+        // --- ANIMATION INTERNE (MARCHE DU MODÈLE) ---
+        window.walkTime = window.walkTime || 0;
+        window.stoppedMovingAt = window.stoppedMovingAt || 0;
+        window.wasMovingLastFrame = window.wasMovingLastFrame || false;
 
+        if (!currentState.isSleeping && !currentState.isSitting) {
+            const innerModel = currentRoomAvatar.getObjectByName("AvatarVisual");
+            if (innerModel) {
+                const legL = innerModel.getObjectByName("Leg_L");
+                const legR = innerModel.getObjectByName("Leg_R");
+                const now = performance.now();
 
-                    // VITESSE DYNAMIQUE (Effet magnétique smooth)
-                    // Plus on est loin, plus on va vite. Plus on approche de la grille, plus on ralentit.
-                    const baseSpeed = 0.03 * energySpeedMult;
-                    const easing = Math.min(1, distance * 4); // Ralentissement progressif à l'arrivée
-                    const currentSpeed = baseSpeed * easing;
+                if (isMoving) {
+                    window.stoppedMovingAt = now;
+                    window.wasMovingLastFrame = true;
+                } else if (window.wasMovingLastFrame) {
+                    window.stoppedMovingAt = now;
+                    window.wasMovingLastFrame = false;
+                }
 
-                    const dir = new THREE.Vector3().subVectors(targetPosition, currentRoomAvatar.position).normalize();
-    
-                    const nextX = currentRoomAvatar.position.x + dir.x * currentSpeed;
-                    const nextZ = currentRoomAvatar.position.z + dir.z * currentSpeed;
-    
-                    let moved = false;
-                    // Vérification collision simplifiée pour la fluidité
-                    if (!checkCollision(nextX, currentRoomAvatar.position.z)) {
-                        currentRoomAvatar.position.x = nextX;
-                        moved = true;
-                    }
-                    if (!checkCollision(currentRoomAvatar.position.x, nextZ)) {
-                        currentRoomAvatar.position.z = nextZ;
-                        moved = true;
-                    }
-    
-                    if (!moved) {
-                        targetPosition = null;
-                    } else {
-                        isMoving = true; 
+                const keepAnimatingAfterStop = !isMoving && (now - window.stoppedMovingAt < 1000);
+                if (isMoving || keepAnimatingAfterStop) {
+                    const fade = isMoving ? 1 : Math.max(0, 1 - ((now - window.stoppedMovingAt) / 1000));
+                    window.walkTime += isMoving ? (0.10 * energySpeedMult) : 0.05;
+                    innerModel.rotation.z = Math.sin(window.walkTime) * 0.012 * fade;
+                    innerModel.position.y = Math.abs(Math.sin(window.walkTime)) * 0.012 * fade;
+                    if (legL && legR) {
+                        const legSwing = Math.sin(window.walkTime * 1.2) * 0.12 * fade;
+                        legL.rotation.x = legSwing;
+                        legR.rotation.x = -legSwing;
                     }
                 } else {
-                    // AUTO-ALIGNE : Une fois arrivé très près, on "lock" sur la grille
-                    currentRoomAvatar.position.x = targetPosition.x;
-                    currentRoomAvatar.position.z = targetPosition.z;
-                    targetPosition = null;
-                }
-            }
-
-            // --- 2. ANIMATION INTERNE ---
-    if (isMoving) {
-        // --- PERTE D'ÉNERGIE LORS DU DÉPLACEMENT ---
-        if (state.energy > 0) {
-            const oldEnergyFloor = Math.floor(state.energy);
-            state.energy = Math.max(0, state.energy - 0.004); 
-            if (Math.floor(state.energy) !== oldEnergyFloor) {
-                updateHUD();
-            }
-        }
-
-        // --- PARTICULES DE SUEUR (SI ÉNERGIE < 10%) ---
-        if (state.energy < 10 && Math.random() < 0.20) {
-            if (!window.fatigueParticles) window.fatigueParticles = [];
-            
-            const sweatGroup = new THREE.Group();
-            const sweatMat = new THREE.MeshStandardMaterial({ 
-                color: '#38bdf8', transparent: true, opacity: 0.85, emissive: '#0ea5e9', emissiveIntensity: 0.6 
-            });
-            const top = new THREE.Mesh(new THREE.ConeGeometry(0.02, 0.05, 6), sweatMat);
-            top.position.y = 0.025;
-            const bottom = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), sweatMat);
-            sweatGroup.add(top, bottom);
-
-            sweatGroup.position.copy(currentRoomAvatar.position);
-            sweatGroup.position.y += 2.1;
-            sweatGroup.position.x += (Math.random() - 0.5) * 0.5;
-            sweatGroup.position.z += (Math.random() - 0.5) * 0.5;
-            scene.add(sweatGroup);
-
-            window.fatigueParticles.push({
-                mesh: sweatGroup, life: 1.0, decay: 0.015 + Math.random() * 0.01,
-                velY: -0.01, gravity: -0.003, wobbleSpeed: 5 + Math.random() * 5,
-                wobbleInt: 0.005 + Math.random() * 0.005, seed: Math.random() * 100
-            });
-        }
-    }
-
-    // --- 2. ANIMATION INTERNE (MARCHE) ---
-    if (!state.isSleeping && !state.isSitting && currentRoomAvatar) {
-        const innerModel = currentRoomAvatar.getObjectByName("AvatarVisual");
-        if (innerModel) {
-            const legL = innerModel.getObjectByName("Leg_L");
-            const legR = innerModel.getObjectByName("Leg_R");
-            const now = performance.now();
-
-            if (isMoving) {
-                stoppedMovingAt = now;
-                wasMovingLastFrame = true;
-            } else if (wasMovingLastFrame) {
-                stoppedMovingAt = now;
-                wasMovingLastFrame = false;
-            }
-
-            const keepAnimatingAfterStop = !isMoving && (now - stoppedMovingAt < 1000);
-            if (isMoving || keepAnimatingAfterStop) {
-                const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 1000));
-                walkTime += isMoving ? (0.10 * energySpeedMult) : 0.05;
-                innerModel.rotation.z = Math.sin(walkTime) * 0.012 * fade;
-                innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012 * fade;
-                if (legL && legR) {
-                    const legSwing = Math.sin(walkTime * 1.2) * 0.12 * fade;
-                    legL.rotation.x = legSwing;
-                    legR.rotation.x = -legSwing;
-                }
-            } else {
-                walkTime = 0;
-                innerModel.rotation.z *= 0.6;
-                innerModel.position.y += (0 - innerModel.position.y) * 0.25;
-                if (legL && legR) {
-                    legL.rotation.x *= 0.6;
-                    legR.rotation.x *= 0.6;
+                    window.walkTime = 0;
+                    innerModel.rotation.z *= 0.6;
+                    innerModel.position.y += (0 - innerModel.position.y) * 0.25;
+                    if (legL && legR) {
+                        legL.rotation.x *= 0.6;
+                        legR.rotation.x *= 0.6;
+                    }
                 }
             }
         }
-    }
-        if (sleepVisual) {
-            sleepVisual.rotation.order = 'YXZ';
-            sleepVisual.rotation.x += (Math.PI / 2 + restlessTargetOffsetX - sleepVisual.rotation.x) * 0.05;
-            sleepVisual.rotation.y += (restlessTargetOffsetY - sleepVisual.rotation.y) * 0.05;
-            sleepVisual.rotation.z += (restlessTargetOffsetZ - sleepVisual.rotation.z) * 0.05;
-        }
-    }
-}
 
-            // --- 3. SUIVI DE CAMÉRA ---
-            const followIntensity = 0.2;
-            // On décale la caméra vers le haut de +3 sur PC pour "tasser" la pièce vers le bas
-            const yPan = isMobile ? 0 : 1.5; 
-            
-            const targetCamX = 20 + (currentRoomAvatar.position.x * followIntensity);
-            const targetCamY = 20 + yPan;
-            const targetCamZ = 20 + (currentRoomAvatar.position.z * followIntensity);
-            
-            camera.position.x += (targetCamX - camera.position.x) * 0.05;
-            camera.position.y += (targetCamY - camera.position.y) * 0.05;
-            camera.position.z += (targetCamZ - camera.position.z) * 0.05;
+        // --- 3. SUIVI DE CAMÉRA ---
+        const isMob = typeof isMobile !== 'undefined' ? isMobile : false;
+        const yPan = isMob ? 0 : 1.5; 
+        const followIntensity = 0.2;
+        
+        const targetCamX = 20 + (currentRoomAvatar.position.x * followIntensity);
+        const targetCamY = 20 + yPan;
+        const targetCamZ = 20 + (currentRoomAvatar.position.z * followIntensity);
+        
+        camera.position.x += (targetCamX - camera.position.x) * 0.05;
+        camera.position.y += (targetCamY - camera.position.y) * 0.05;
+        camera.position.z += (targetCamZ - camera.position.z) * 0.05;
 
+        if (typeof cameraLookTarget !== 'undefined' && cameraLookTarget) {
             const targetLookX = currentRoomAvatar.position.x * followIntensity;
             const targetLookY = 0 + yPan;
             const targetLookZ = currentRoomAvatar.position.z * followIntensity;
@@ -3275,87 +3287,81 @@ function rotateAvatarToward(target, smooth = 0.12) {
             cameraLookTarget.z += (targetLookZ - cameraLookTarget.z) * 0.05;
             
             camera.lookAt(cameraLookTarget);
+        }
 
-            // --- 4. ANIMATION DE SOMMEIL AGITÉ ---
-            if (state.isSleeping) {
-                const sleepVisual = currentRoomAvatar.getObjectByName("AvatarVisual");
-                if (sleepVisual) {
-                    // S'assure que l'ordre de rotation est défini pour l'interpolation
-                    sleepVisual.rotation.order = 'YXZ';
+        // --- 4. ANIMATION DE SOMMEIL AGITÉ ---
+        if (currentState.isSleeping) {
+            const sleepVisual = currentRoomAvatar.getObjectByName("AvatarVisual");
+            if (sleepVisual) {
+                // Protection des variables globales potentielles
+                const rOffsetX = window.restlessTargetOffsetX || 0;
+                const rOffsetY = window.restlessTargetOffsetY || 0;
+                const rOffsetZ = window.restlessTargetOffsetZ || 0;
+                const rPosX = window.restlessTargetPosX || 0;
+                const rPosZ = window.restlessTargetPosZ || 0;
 
-                    // Interpolation des rotations (Roll sur l'axe Pied-Tête Y)
-                    sleepVisual.rotation.y += (restlessTargetOffsetY - sleepVisual.rotation.y) * 0.05; // Roulis
-                    sleepVisual.rotation.x += (Math.PI / 2 + restlessTargetOffsetX - sleepVisual.rotation.x) * 0.05; // Pitch
-                    sleepVisual.rotation.z += (restlessTargetOffsetZ - sleepVisual.rotation.z) * 0.05; // Yaw
+                sleepVisual.rotation.order = 'YXZ';
+                sleepVisual.rotation.y += (rOffsetY - sleepVisual.rotation.y) * 0.05; 
+                sleepVisual.rotation.x += (Math.PI / 2 + rOffsetX - sleepVisual.rotation.x) * 0.05; 
+                sleepVisual.rotation.z += (rOffsetZ - sleepVisual.rotation.z) * 0.05; 
 
-                    // Interpolation des positions (Rester sur le matelas)
-                    sleepVisual.position.x += (restlessTargetPosX - sleepVisual.position.x) * 0.05;
-                    // Z base est -0.25 pour être bien placé sous l'oreiller
-                    sleepVisual.position.z += (-0.25 + restlessTargetPosZ - sleepVisual.position.z) * 0.05;
-                }
+                sleepVisual.position.x += (rPosX - sleepVisual.position.x) * 0.05;
+                sleepVisual.position.z += (-0.25 + rPosZ - sleepVisual.position.z) * 0.05;
             }
+        }
 
-       // --- SUIVI DYNAMIQUE DE LA LAMPE PIXAR ---
+        // --- SUIVI DYNAMIQUE DE LA LAMPE PIXAR ---
         if (window.pixarLamp && window.pixarLamp.userData.isOn) {
-            
             const head = scene.getObjectByName("pixar_head_group");
             const spot = scene.getObjectByName("pixar_spotlight");
 
-            if (head && spot) {
-                
-                // 1. Le spot vise l'avatar
+            if (head && spot && spot.target) {
                 spot.target.position.copy(currentRoomAvatar.position);
                 spot.target.position.y += 1.0; 
                 
-                // 2. Calcul des coordonnées locales
-                const targetPos = new THREE.Vector3();
+                const targetPos = window._v3b;
                 currentRoomAvatar.getWorldPosition(targetPos);
                 targetPos.y += 1.0; 
-                head.parent.worldToLocal(targetPos);
+                
+                if (head.parent) head.parent.worldToLocal(targetPos);
 
-                // --- LE FIX MAGIQUE : ORDRE DES AXES ---
-                // On tourne horizontalement D'ABORD, on s'incline ENSUITE
                 head.rotation.order = "YXZ"; 
-                // ---------------------------------------
 
                 const dx = targetPos.x - head.position.x;
                 const dy = targetPos.y - head.position.y;
                 const dz = targetPos.z - head.position.z;
                 
-                 // 3. Rotation Y (Pan : Gauche/Droite) avec compensation du mesh    
                 head.rotation.y = Math.atan2(dx, dz) + Math.PI;
                 
-                // 4. Rotation X (Tilt : Haut/Bas)
                 const distanceH = Math.sqrt(dx * dx + dz * dz);
-    
-               
+                // CORRECTION : L'axe X est désormais correctement incliné
+                head.rotation.x = Math.atan2(dy, distanceH); 
             }
         }
       
         // =========================================================
-        // --- 5. APPLICATION DU ZOOM FLUIDE & CINÉMATIQUE D'INTRO ---
+        // --- 5. APPLICATION DU ZOOM FLUIDE & CINÉMATIQUE ---
         // =========================================================
-        if (window.targetCamZoom) {
-            
-            // 1. Calcul de l'ancre de base (Mix Centre de pièce / Avatar)
-            const ZOOM_THRESHOLD = isMobile ? 1.05 : 1.1; 
+        if (window.targetCamZoom && window.smoothCamTarget) {
+            const ZOOM_THRESHOLD = isMob ? 1.05 : 1.1; 
             let focusStrength = 0; 
             
             if (window.targetCamZoom > ZOOM_THRESHOLD) {
                 focusStrength = (window.targetCamZoom - ZOOM_THRESHOLD) / (3.0 - ZOOM_THRESHOLD);
-                const maxFocus = isMobile ? 1.0 : 0.7;
+                const maxFocus = isMob ? 1.0 : 0.7;
                 focusStrength = Math.min(focusStrength, maxFocus); 
             }
 
-            const avatarFocusPoint = new THREE.Vector3();
+            const avatarFocusPoint = window._v3a;
             currentRoomAvatar.getWorldPosition(avatarFocusPoint);
-            const roomCenter = new THREE.Vector3(0, 0, 0); 
-            const idealTarget = roomCenter.clone().lerp(avatarFocusPoint, focusStrength);
+            const roomCenter = window._v3b.set(0, 0, 0); 
+            
+            // Calcul propre sans instanciation via Lerp Vectors
+            const idealTarget = new THREE.Vector3().copy(roomCenter).lerp(avatarFocusPoint, focusStrength);
             window.smoothCamTarget.lerp(idealTarget, 0.1); 
 
             const offsetEcran = 1.7; 
 
-            // 2. Positions "Finales" de la vue isométrique classique
             const finalCamPosition = new THREE.Vector3(
                 20 + window.smoothCamTarget.x, 
                 20 + offsetEcran,              
@@ -3368,26 +3374,21 @@ function rotateAvatarToward(target, smooth = 0.12) {
                 window.smoothCamTarget.z
             );
 
-            // 3. LOGIQUE D'AFFICHAGE : Intro vs Gameplay
             if (window.isIntroAnimating) {
-                // Progression fluide de 0 à 1 (sur environ 2 secondes)
-                window.introProgress += 0.008; 
+                window.introProgress = (window.introProgress || 0) + 0.008; 
                 
                 if (window.introProgress >= 1) {
                     window.introProgress = 1;
-                    window.isIntroAnimating = false; // Fin de la cinématique
+                    window.isIntroAnimating = false; 
                 }
 
-                // Easing (Accélération douce puis freinage doux)
                 const t = window.introProgress;
                 const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-                // Configuration de départ (Vue très basse depuis le coin invisible)
                 const startPos = new THREE.Vector3(15, 0.5, 15);
-                const startLook = new THREE.Vector3(0, 0, 0); // Regarde le centre
-                const startZoom = 2.2; // Très zoomé pour l'immersion
+                const startLook = new THREE.Vector3(0, 0, 0); 
+                const startZoom = 2.2; 
 
-                // Interpolation globale Position + Regard + Zoom
                 const currentPos = new THREE.Vector3().lerpVectors(startPos, finalCamPosition, ease);
                 camera.position.copy(currentPos);
                 
@@ -3396,18 +3397,16 @@ function rotateAvatarToward(target, smooth = 0.12) {
 
                 camera.zoom = startZoom + (window.targetCamZoom - startZoom) * ease;
                 camera.updateProjectionMatrix();
-
             } else {
-                // Comportement standard (Le joueur contrôle le zoom)
                 camera.zoom += (window.targetCamZoom - camera.zoom) * 0.1;
                 camera.updateProjectionMatrix();
 
                 camera.position.lerp(finalCamPosition, 0.1); 
                 camera.lookAt(finalLookTarget);
 
-                // --- NOUVEAU : SCREEN SHAKE SI ÉPUISÉ (0% NRJ) ET EN MOUVEMENT ---
-                if (isMoving && state.energy <= 0) {
-                    const s = 0.025; // Intensité du tremblement (très léger pour rester jouable)
+                // ÉPUISÉ + MOUVEMENT = SCREEN SHAKE
+                if (isMoving && currentState.energy <= 0) {
+                    const s = 0.025; 
                     camera.position.x += (Math.random() - 0.5) * s;
                     camera.position.y += (Math.random() - 0.5) * s;
                     camera.position.z += (Math.random() - 0.5) * s;
@@ -3415,130 +3414,126 @@ function rotateAvatarToward(target, smooth = 0.12) {
             }
         }
 
-       // --- SURLIGNAGE SMOOTH PAR PROXIMITÉ ---
+        // --- SURLIGNAGE SMOOTH PAR PROXIMITÉ ---
+        if (typeof highlightItems !== 'undefined' && Array.isArray(highlightItems)) {
             const avatarPos = currentRoomAvatar.position;
-            const targetPos = new THREE.Vector3();
+            const targetPos = window._v3a;
+            
+            const defaultInteractionDist = typeof INTERACTION_DIST !== 'undefined' ? INTERACTION_DIST : 2.0;
+            const hlColor = typeof HIGHLIGHT_LINE_COLOR !== 'undefined' ? HIGHLIGHT_LINE_COLOR : new THREE.Color(0xffffff);
+            const defColor = typeof DEFAULT_LINE_COLOR !== 'undefined' ? DEFAULT_LINE_COLOR : new THREE.Color(0x000000);
 
             highlightItems.forEach(item => {
+                if (!item || !item.mesh) return;
+                
                 item.mesh.getWorldPosition(targetPos);
                 const dist = Math.hypot(targetPos.x - avatarPos.x, targetPos.z - avatarPos.z);
                 
-                // 1. Rayons d'action sur-mesure pour les gros objets (Lit et Bureau)
-                let customDist = INTERACTION_DIST;
+                let customDist = defaultInteractionDist;
                 if (item.mesh.name === 'bed_mesh') customDist = 2.8; 
                 if (item.mesh.name === 'pc_mesh') customDist = 2.4;  
                 if (item.mesh.name === 'sofa_mesh') customDist = 3.0; 
                 
-                // 2. ÉCRAN PC : Le glow réagit à l'approche de l'avatar !
-                if (item.mesh.geometry.type === "PlaneGeometry" && item.mesh.name === 'pc_mesh') {
-                    // On calcule un "facteur d'approche" (0 si on est loin, 1 si on est tout près)
-                    // Le + 1.5 permet de commencer à allumer l'écran un peu avant d'arriver dans la zone de clic
+                // Prévention crash si userData n'est pas initialisé
+                item.mesh.userData = item.mesh.userData || { baseEmissiveIntensity: 0 };
+
+                if (item.mesh.geometry && item.mesh.geometry.type === "PlaneGeometry" && item.mesh.name === 'pc_mesh') {
                     let proximityFocus = Math.max(0, 1 - (dist / (customDist + 1.5))); 
-                    
-                    // Intensité : Faible de base (0.1) + Boost selon la distance (0.8 max) + Pulsation légère
-                    item.mesh.userData.baseEmissiveIntensity = 0.1 + (proximityFocus * 0.8) + (Math.sin(time) * 0.1);
+                    item.mesh.userData.baseEmissiveIntensity = 0.1 + (proximityFocus * 0.8) + (Math.sin(window.time) * 0.1);
                 }
 
-                let targetEmissive = item.mesh.userData.baseEmissiveIntensity;
+                let targetEmissive = item.mesh.userData.baseEmissiveIntensity || 0;
                 let targetLineOp = 0.4; 
-                let targetLineColor = DEFAULT_LINE_COLOR;
+                let targetLineColor = defColor;
 
                 if (dist < customDist) {
-                    // On ajoute le surlignage +0.25 sur tous les objets SAUF l'écran (qui gère déjà sa lumière)
-                    if (!(item.mesh.geometry.type === "PlaneGeometry" && item.mesh.name === 'pc_mesh')) {
+                    if (!(item.mesh.geometry && item.mesh.geometry.type === "PlaneGeometry" && item.mesh.name === 'pc_mesh')) {
                         targetEmissive += 0.25; 
                     }
                     targetLineOp = 0.6;    
-                    targetLineColor = HIGHLIGHT_LINE_COLOR; 
+                    targetLineColor = hlColor; 
                 }
 
-                // Application des transitions fluides (Lerp)
                 if (item.mesh.material) {
-                    item.mesh.material.emissiveIntensity += (targetEmissive - item.mesh.material.emissiveIntensity) * 0.15;
+                    item.mesh.material.emissiveIntensity += (targetEmissive - (item.mesh.material.emissiveIntensity || 0)) * 0.15;
                 }
 
                 if (item.edges && item.edges.material) {
-                    item.edges.material.opacity += (targetLineOp - item.edges.material.opacity) * 0.15;
+                    item.edges.material.opacity += (targetLineOp - (item.edges.material.opacity || 0)) * 0.15;
                     item.edges.material.color.lerp(targetLineColor, 0.15);
                 }
             });
-        } // FIN DU BLOC if (currentRoomAvatar)
+        }
+    } // FIN DU BLOC if (currentRoomAvatar)
 
-        // --- LOGIQUE GLOBALE (SANS BESOIN D'AVATAR) ---
+    // ==================================================
+    // --- LOGIQUE GLOBALE (SANS BESOIN D'AVATAR) ---
+    // ==================================================
 
-        // --- NOUVEAU : EFFET DE DISTORSION VISUELLE (SOMMEIL/REPOS) ---
-        if (currentRoomAvatar && (state.isSleeping || state.isSitting) && Math.random() < 0.25) {
-            if (!window.timeRipples) window.timeRipples = [];
-            const rippleGeo = new THREE.RingGeometry(0.2, 0.25, 32);
-            const rippleMat = new THREE.MeshBasicMaterial({ 
-                color: '#e0e7ff', 
-                transparent: true, 
-                opacity: 0.4, 
-                side: THREE.DoubleSide 
-            });
-            const ripple = new THREE.Mesh(rippleGeo, rippleMat);
+    // --- EFFET DE DISTORSION VISUELLE (CORRIGÉ SYNTAXE FATALE) ---
+    if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar && (currentState.isSleeping || currentState.isSitting) && Math.random() < 0.25) {
+        if (!window.timeRipples) window.timeRipples = [];
+        // Utilisation propre des géométries avec fallback
+        const rGeo = typeof rippleGeoShared !== 'undefined' ? rippleGeoShared : null;
+        const rMat = typeof rippleMatShared !== 'undefined' ? rippleMatShared.clone() : null;
+        
+        if (rGeo && rMat) {
+            const ripple = new THREE.Mesh(rGeo, rMat);
             const p = currentRoomAvatar.position;
             ripple.position.set(p.x, p.y + 0.5, p.z);
             ripple.rotation.x = Math.PI / 2;
             scene.add(ripple);
             window.timeRipples.push({ mesh: ripple, life: 1.0, growth: 0.1 });
         }
+    }
 
-        // --- MISE À JOUR DES PARTICULES DE FATIGUE ---
-        if (window.fatigueParticles && window.fatigueParticles.length > 0) {
-            const currentTimeForWobble = Date.now() * 0.001; // Utilise un temps local pour le wobble
-            for (let i = window.fatigueParticles.length - 1; i >= 0; i--) {
-                const p = window.fatigueParticles[i];
-                
-                // 1. Application de la gravité (accélération de la chute)
-                p.velY += (p.gravity || -0.001);
-                p.mesh.position.y += p.velY;
-                
-                // 2. Léger mouvement d'oscillation fluide sur les axes X et Z
-                if (p.wobbleSpeed) {
-                    p.mesh.position.x += Math.sin(currentTimeForWobble * p.wobbleSpeed + p.seed) * p.wobbleInt;
-                    p.mesh.position.z += Math.cos(currentTimeForWobble * p.wobbleSpeed + p.seed) * p.wobbleInt;
-                }
-                
-                // 3. Réduction de la durée de vie et opacité (Fade-out)
-                p.life -= (p.decay || 0.02);
-                p.mesh.traverse(child => {
-                    if (child.material) child.material.opacity = Math.max(0, p.life * 0.85);
-                });
+    // --- MISE À JOUR DES PARTICULES DE FATIGUE ---
+    if (window.fatigueParticles && window.fatigueParticles.length > 0) {
+        const currentTimeForWobble = Date.now() * 0.001;
+        for (let i = window.fatigueParticles.length - 1; i >= 0; i--) {
+            const p = window.fatigueParticles[i];
+            
+            p.velY += (p.gravity || -0.001);
+            p.mesh.position.y += p.velY;
+            
+            if (p.wobbleSpeed) {
+                p.mesh.position.x += Math.sin(currentTimeForWobble * p.wobbleSpeed + p.seed) * p.wobbleInt;
+                p.mesh.position.z += Math.cos(currentTimeForWobble * p.wobbleSpeed + p.seed) * p.wobbleInt;
+            }
+            
+            p.life -= (p.decay || 0.02);
+            p.mesh.traverse(child => {
+                if (child.material) child.material.opacity = Math.max(0, p.life * 0.85);
+            });
 
-                // 4. Nettoyage de la scène et de la mémoire si la particule est morte
-                if (p.life <= 0 || p.mesh.position.y < -1) { // Supprime si la vie est finie ou si elle tombe sous le sol
-                    scene.remove(p.mesh);
-                    p.mesh.traverse(child => {
-                        if (child.geometry) child.geometry.dispose();
-                        if (child.material) {
-                            if (Array.isArray(child.material)) child.material.forEach(mat => mat.dispose());
-                            else child.material.dispose();
-                        }
-                    });
-                    window.fatigueParticles.splice(i, 1);
-                }
+            if (p.life <= 0 || p.mesh.position.y < -1) { 
+                scene.remove(p.mesh);
+                // Seuls les objets parents sont nettoyés, la géo stockée globalement reste intacte
+                window.fatigueParticles.splice(i, 1);
             }
         }
+    }
 
-        // --- MISE À JOUR DES RIPPLES DE DISTORSION TEMPORELLE ---
-        if (window.timeRipples && window.timeRipples.length > 0) {
-            for (let i = window.timeRipples.length - 1; i >= 0; i--) {
-                const r = window.timeRipples[i];
-                r.life -= 0.04; // Vitesse de disparition (rapide)
-                r.mesh.scale.addScalar(r.growth);
-                r.mesh.material.opacity = r.life * 0.4;
-                if (r.life <= 0) {
-                    scene.remove(r.mesh);
-                    r.mesh.geometry.dispose();
-                    r.mesh.material.dispose();
-                    window.timeRipples.splice(i, 1);
-                }
+    // --- MISE À JOUR DES RIPPLES DE DISTORSION TEMPORELLE ---
+    if (window.timeRipples && window.timeRipples.length > 0) {
+        for (let i = window.timeRipples.length - 1; i >= 0; i--) {
+            const r = window.timeRipples[i];
+            r.life -= 0.04; 
+            r.mesh.scale.addScalar(r.growth);
+            if (r.mesh.material) r.mesh.material.opacity = r.life * 0.4;
+            
+            if (r.life <= 0) {
+                scene.remove(r.mesh);
+                if (r.mesh.material) r.mesh.material.dispose();
+                window.timeRipples.splice(i, 1);
             }
         }
+    }
 
+    if (typeof renderer !== 'undefined' && renderer) {
         renderer.render(scene, camera);
     }
+}
 
     animate3D();
 
