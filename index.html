@@ -3501,6 +3501,12 @@ function rotateAvatarToward(target, smooth = 0.12) {
         }
     }
 
+    // --- 👇 AJOUTER CE BLOC POUR RÉPARER LE CRASH 👇 ---
+    if (typeof renderer !== 'undefined' && typeof scene !== 'undefined' && typeof camera !== 'undefined') {
+        renderer.render(scene, camera);
+    }
+} // <--- C'EST CETTE ACCOLADE QUI MANQUAIT !
+
     
 
 
