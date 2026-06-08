@@ -3829,6 +3829,120 @@ function drawSysGraphUI(timestamp) {
             }
         }, 80);
     }
+// ==========================================
+// SYSTÈME DE MIXAGE VERTICAL (BGM)
+// ==========================================
+const MusicSystem = (() => {
+    let audioCtx = null;
+    let masterGain = null;
+    
+    // Configuration des pistes
+    const tracks = {
+        menu:  { url: 'mus_menu.mp3',  buffer: null, source: null, gainNode: null, targetVol: 0.8 },
+        room:  { url: 'mus_room.mp3',  buffer: null, source: null, gainNode: null, targetVol: 0.8 },
+        sleep: { url: 'mus_sleep.mp3', buffer: null, source: null, gainNode: null, targetVol: 0.8 }
+    };
+
+    let isInitialized = false;
+
+    // 1. Initialisation et Chargement
+    async function init() {
+        if (isInitialized) return;
+        
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+        
+        // Création du Bus Master (pour gérer les coupures globales)
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = 1.0;
+        masterGain.connect(audioCtx.destination);
+
+        // Chargement asynchrone des 3 fichiers .wav
+        const loadPromises = Object.keys(tracks).map(async (key) => {
+            const response = await fetch(tracks[key].url);
+            const arrayBuffer = await response.arrayBuffer();
+            tracks[key].buffer = await audioCtx.decodeAudioData(arrayBuffer);
+        });
+
+        await Promise.all(loadPromises);
+        isInitialized = true;
+    }
+
+    // 2. Lancement synchronisé
+    function startAllTracks() {
+        if (!isInitialized || audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+
+        // On ajoute un délai de 100ms pour s'assurer que les 3 buffers partent EXACTEMENT en même temps
+        const startTime = audioCtx.currentTime + 0.1;
+
+        Object.keys(tracks).forEach(key => {
+            const track = tracks[key];
+            
+            // Création du contrôle de volume individuel
+            track.gainNode = audioCtx.createGain();
+            // Par défaut, seul le menu est audible au lancement
+            track.gainNode.gain.value = (key === 'menu') ? track.targetVol : 0;
+            track.gainNode.connect(masterGain);
+
+            // Création du lecteur
+            track.source = audioCtx.createBufferSource();
+            track.source.buffer = track.buffer;
+            track.source.loop = true;
+            track.source.connect(track.gainNode);
+            
+            // Démarrage
+            track.source.start(startTime);
+        });
+    }
+
+    // 3. Moteur de Crossfade (Transition Verticale)
+    function crossfadeTo(targetKey, fadeDuration = 2.0) {
+        if (!isInitialized) return;
+        
+        const now = audioCtx.currentTime;
+
+        Object.keys(tracks).forEach(key => {
+            const gainParam = tracks[key].gainNode.gain;
+            
+            // Nettoie les anciennes automations pour éviter les clics audio
+            gainParam.cancelScheduledValues(now);
+            gainParam.setValueAtTime(gainParam.value, now);
+
+            // Applique le nouveau volume (Montée ou Descente)
+            const finalVol = (key === targetKey) ? tracks[key].targetVol : 0;
+            
+            // linearRampToValueAtTime est plus stable que setTargetAtTime pour des fondus précis
+            gainParam.linearRampToValueAtTime(finalVol, now + fadeDuration);
+        });
+    }
+
+    // 4. Gestion des Interruptions (DAW, Piano Roll, etc.)
+    function muteForGameplay(fadeDuration = 0.5) {
+        if (!isInitialized || !masterGain) return;
+        const now = audioCtx.currentTime;
+        masterGain.gain.cancelScheduledValues(now);
+        masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+        masterGain.gain.linearRampToValueAtTime(0, now + fadeDuration);
+    }
+
+    function unmuteAfterGameplay(fadeDuration = 1.0) {
+        if (!isInitialized || !masterGain) return;
+        const now = audioCtx.currentTime;
+        masterGain.gain.cancelScheduledValues(now);
+        masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+        masterGain.gain.linearRampToValueAtTime(1.0, now + fadeDuration);
+    }
+
+    return {
+        init,
+        startAllTracks,
+        crossfadeTo,
+        muteForGameplay,
+        unmuteAfterGameplay
+    };
+})();
 
     // ==========================================
     // 7. AUDIO
@@ -4675,14 +4789,23 @@ function createAvatarGroup(styleIndex) {
         initPianoRollUI(); // Initialise le DOM du Piano Roll au boot
         initPianoRollEvents();
         initInteractiveStudio();
-        document.getElementById('btn-login').addEventListener('click', attemptLogin);
-        document.getElementById('btn-login').addEventListener('click', async () => {
-        // 1. Initialise et télécharge les .wav en mémoire
-        await MusicSystem.init(); 
-    
-        // 2. Lance la lecture silencieuse + Menu à 0.8
-        MusicSystem.startAllTracks();
-        document.getElementById('login-username').addEventListener('keypress', (e) => { if (e.key === 'Enter') attemptLogin(); });
+        const startAudioAndLogin = async () => {
+        const btn = document.getElementById('btn-login');
+        const originalText = btn.innerText;
+            btn.innerText = "LOADING AUDIO..."; // Feedback visuel pendant le DL des fichiers
+            btn.disabled = true;
+            
+            await MusicSystem.init();
+            MusicSystem.startAllTracks();
+            MusicSystem.crossfadeTo('room', 2.0); // Déclenche la musique de la room
+            
+            attemptLogin(); // Lance ton jeu
+            btn.innerText = originalText;
+            btn.disabled = false;
+        };
+
+        document.getElementById('btn-login').addEventListener('click', startAudioAndLogin);
+        document.getElementById('login-username').addEventListener('keypress', (e) => { if (e.key === 'Enter') startAudioAndLogin(); });
         switchBrowserTab('crackz');
         updateTaskbar();
     }
@@ -5314,7 +5437,10 @@ function createAvatarGroup(styleIndex) {
             } else {
                 win.style.left = '0px'; win.style.top = '0px';
             }
-            if (id === 'app-daw') updateDawPlugins();
+                        if (id === 'app-daw') {
+                updateDawPlugins();
+                MusicSystem.muteForGameplay(0.5); // <-- AJOUT ICI
+            }
         }
         bringToFront(id);
         if (!isMobile) updateTaskbar();
@@ -5327,7 +5453,8 @@ function createAvatarGroup(styleIndex) {
             renderStore(isAudioTab ? 'audio' : 'crackz');
         }
     }
-    function closeApp(id) {
+        function closeApp(id) {
+        if (id === 'app-daw') MusicSystem.unmuteAfterGameplay(1.5); // <-- AJOUT ICI
         document.getElementById(id).style.display = 'none';
         if (!isMobile) updateTaskbar();
         playBleep();
@@ -6486,120 +6613,7 @@ window.smoothCamTarget = new THREE.Vector3(0, 0, 0);
     }
 
 
-    // ==========================================
-// SYSTÈME DE MIXAGE VERTICAL (BGM)
-// ==========================================
-const MusicSystem = (() => {
-    let audioCtx = null;
-    let masterGain = null;
     
-    // Configuration des pistes
-    const tracks = {
-        menu:  { url: 'mus_menu.mp3',  buffer: null, source: null, gainNode: null, targetVol: 0.8 },
-        room:  { url: 'mus_room.mp3',  buffer: null, source: null, gainNode: null, targetVol: 0.8 },
-        sleep: { url: 'mus_sleep.mp3', buffer: null, source: null, gainNode: null, targetVol: 0.8 }
-    };
-
-    let isInitialized = false;
-
-    // 1. Initialisation et Chargement
-    async function init() {
-        if (isInitialized) return;
-        
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioContext();
-        
-        // Création du Bus Master (pour gérer les coupures globales)
-        masterGain = audioCtx.createGain();
-        masterGain.gain.value = 1.0;
-        masterGain.connect(audioCtx.destination);
-
-        // Chargement asynchrone des 3 fichiers .wav
-        const loadPromises = Object.keys(tracks).map(async (key) => {
-            const response = await fetch(tracks[key].url);
-            const arrayBuffer = await response.arrayBuffer();
-            tracks[key].buffer = await audioCtx.decodeAudioData(arrayBuffer);
-        });
-
-        await Promise.all(loadPromises);
-        isInitialized = true;
-    }
-
-    // 2. Lancement synchronisé
-    function startAllTracks() {
-        if (!isInitialized || audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-
-        // On ajoute un délai de 100ms pour s'assurer que les 3 buffers partent EXACTEMENT en même temps
-        const startTime = audioCtx.currentTime + 0.1;
-
-        Object.keys(tracks).forEach(key => {
-            const track = tracks[key];
-            
-            // Création du contrôle de volume individuel
-            track.gainNode = audioCtx.createGain();
-            // Par défaut, seul le menu est audible au lancement
-            track.gainNode.gain.value = (key === 'menu') ? track.targetVol : 0;
-            track.gainNode.connect(masterGain);
-
-            // Création du lecteur
-            track.source = audioCtx.createBufferSource();
-            track.source.buffer = track.buffer;
-            track.source.loop = true;
-            track.source.connect(track.gainNode);
-            
-            // Démarrage
-            track.source.start(startTime);
-        });
-    }
-
-    // 3. Moteur de Crossfade (Transition Verticale)
-    function crossfadeTo(targetKey, fadeDuration = 2.0) {
-        if (!isInitialized) return;
-        
-        const now = audioCtx.currentTime;
-
-        Object.keys(tracks).forEach(key => {
-            const gainParam = tracks[key].gainNode.gain;
-            
-            // Nettoie les anciennes automations pour éviter les clics audio
-            gainParam.cancelScheduledValues(now);
-            gainParam.setValueAtTime(gainParam.value, now);
-
-            // Applique le nouveau volume (Montée ou Descente)
-            const finalVol = (key === targetKey) ? tracks[key].targetVol : 0;
-            
-            // linearRampToValueAtTime est plus stable que setTargetAtTime pour des fondus précis
-            gainParam.linearRampToValueAtTime(finalVol, now + fadeDuration);
-        });
-    }
-
-    // 4. Gestion des Interruptions (DAW, Piano Roll, etc.)
-    function muteForGameplay(fadeDuration = 0.5) {
-        if (!isInitialized || !masterGain) return;
-        const now = audioCtx.currentTime;
-        masterGain.gain.cancelScheduledValues(now);
-        masterGain.gain.setValueAtTime(masterGain.gain.value, now);
-        masterGain.gain.linearRampToValueAtTime(0, now + fadeDuration);
-    }
-
-    function unmuteAfterGameplay(fadeDuration = 1.0) {
-        if (!isInitialized || !masterGain) return;
-        const now = audioCtx.currentTime;
-        masterGain.gain.cancelScheduledValues(now);
-        masterGain.gain.setValueAtTime(masterGain.gain.value, now);
-        masterGain.gain.linearRampToValueAtTime(1.0, now + fadeDuration);
-    }
-
-    return {
-        init,
-        startAllTracks,
-        crossfadeTo,
-        muteForGameplay,
-        unmuteAfterGameplay
-    };
-})();
 
 
 
