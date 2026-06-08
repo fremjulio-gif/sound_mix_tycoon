@@ -4676,6 +4676,12 @@ function createAvatarGroup(styleIndex) {
         initPianoRollEvents();
         initInteractiveStudio();
         document.getElementById('btn-login').addEventListener('click', attemptLogin);
+        document.getElementById('btn-login').addEventListener('click', async () => {
+        // 1. Initialise et télécharge les .wav en mémoire
+        await MusicSystem.init(); 
+    
+        // 2. Lance la lecture silencieuse + Menu à 0.8
+        MusicSystem.startAllTracks();
         document.getElementById('login-username').addEventListener('keypress', (e) => { if (e.key === 'Enter') attemptLogin(); });
         switchBrowserTab('crackz');
         updateTaskbar();
@@ -6478,6 +6484,149 @@ window.smoothCamTarget = new THREE.Vector3(0, 0, 0);
             gridContainer.scrollLeft = 0; // Retour au début
         }
     }
+
+
+    // ==========================================
+// SYSTÈME DE MIXAGE VERTICAL (BGM)
+// ==========================================
+const MusicSystem = (() => {
+    let audioCtx = null;
+    let masterGain = null;
+    
+    // Configuration des pistes
+    const tracks = {
+        menu:  { url: 'mus_menu.mp3',  buffer: null, source: null, gainNode: null, targetVol: 0.8 },
+        room:  { url: 'mus_room.mp3',  buffer: null, source: null, gainNode: null, targetVol: 0.8 },
+        sleep: { url: 'mus_sleep.mp3', buffer: null, source: null, gainNode: null, targetVol: 0.8 }
+    };
+
+    let isInitialized = false;
+
+    // 1. Initialisation et Chargement
+    async function init() {
+        if (isInitialized) return;
+        
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+        
+        // Création du Bus Master (pour gérer les coupures globales)
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = 1.0;
+        masterGain.connect(audioCtx.destination);
+
+        // Chargement asynchrone des 3 fichiers .wav
+        const loadPromises = Object.keys(tracks).map(async (key) => {
+            const response = await fetch(tracks[key].url);
+            const arrayBuffer = await response.arrayBuffer();
+            tracks[key].buffer = await audioCtx.decodeAudioData(arrayBuffer);
+        });
+
+        await Promise.all(loadPromises);
+        isInitialized = true;
+    }
+
+    // 2. Lancement synchronisé
+    function startAllTracks() {
+        if (!isInitialized || audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+
+        // On ajoute un délai de 100ms pour s'assurer que les 3 buffers partent EXACTEMENT en même temps
+        const startTime = audioCtx.currentTime + 0.1;
+
+        Object.keys(tracks).forEach(key => {
+            const track = tracks[key];
+            
+            // Création du contrôle de volume individuel
+            track.gainNode = audioCtx.createGain();
+            // Par défaut, seul le menu est audible au lancement
+            track.gainNode.gain.value = (key === 'menu') ? track.targetVol : 0;
+            track.gainNode.connect(masterGain);
+
+            // Création du lecteur
+            track.source = audioCtx.createBufferSource();
+            track.source.buffer = track.buffer;
+            track.source.loop = true;
+            track.source.connect(track.gainNode);
+            
+            // Démarrage
+            track.source.start(startTime);
+        });
+    }
+
+    // 3. Moteur de Crossfade (Transition Verticale)
+    function crossfadeTo(targetKey, fadeDuration = 2.0) {
+        if (!isInitialized) return;
+        
+        const now = audioCtx.currentTime;
+
+        Object.keys(tracks).forEach(key => {
+            const gainParam = tracks[key].gainNode.gain;
+            
+            // Nettoie les anciennes automations pour éviter les clics audio
+            gainParam.cancelScheduledValues(now);
+            gainParam.setValueAtTime(gainParam.value, now);
+
+            // Applique le nouveau volume (Montée ou Descente)
+            const finalVol = (key === targetKey) ? tracks[key].targetVol : 0;
+            
+            // linearRampToValueAtTime est plus stable que setTargetAtTime pour des fondus précis
+            gainParam.linearRampToValueAtTime(finalVol, now + fadeDuration);
+        });
+    }
+
+    // 4. Gestion des Interruptions (DAW, Piano Roll, etc.)
+    function muteForGameplay(fadeDuration = 0.5) {
+        if (!isInitialized || !masterGain) return;
+        const now = audioCtx.currentTime;
+        masterGain.gain.cancelScheduledValues(now);
+        masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+        masterGain.gain.linearRampToValueAtTime(0, now + fadeDuration);
+    }
+
+    function unmuteAfterGameplay(fadeDuration = 1.0) {
+        if (!isInitialized || !masterGain) return;
+        const now = audioCtx.currentTime;
+        masterGain.gain.cancelScheduledValues(now);
+        masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+        masterGain.gain.linearRampToValueAtTime(1.0, now + fadeDuration);
+    }
+
+    return {
+        init,
+        startAllTracks,
+        crossfadeTo,
+        muteForGameplay,
+        unmuteAfterGameplay
+    };
+})();
+
+
+
+        function switchToRoom() {
+    MusicSystem.crossfadeTo('room', 2.0); // Fondu de 2 secondes
+}
+
+function switchToSleep() {
+    MusicSystem.crossfadeTo('sleep', 3.0); // Fondu plus long pour le dodo
+}
+
+function switchToMenu() {
+    MusicSystem.crossfadeTo('menu', 1.5);
+}
+
+
+        // Quand le joueur ouvre AbleStudio ou le Piano Roll :
+function openPianoRoll() {
+    MusicSystem.muteForGameplay(0.5); // Baisse le mix vertical rapidement (0.5s)
+    // ... le reste du code d'ouverture
+}
+
+// Quand il quitte le DAW :
+function closePianoRoll() {
+    MusicSystem.unmuteAfterGameplay(1.5); // Remonte le volume doucement (1.5s)
+    // ... le reste du code de fermeture
+}
 
 
     
