@@ -166,7 +166,16 @@
             0% { transform: translate(0, 0) scale(1); }
             50% { transform: translate(8%, 12%) scale(1.05); }
             100% { transform: translate(-8%, -6%) scale(0.95); }
+    }
+    #hud-avatar img {
+        transform: scale(1.5); /* Ajustez cette valeur pour plus ou moins de zoom */
         }
+
+    @keyframes spinSlow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .animate-spin-slow { animation: spinSlow 15s linear infinite; }
 
         /* TAPE SPIN FIX */
         @keyframes tapeSpin {
@@ -3562,7 +3571,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
                 }
                 if (objName === 'sofa_mesh') { goSit(); break; }
                 if (objName === 'interactiveLamp') { togglePixarLamp(); break; }
-                // if (objName === 'speaker_mesh') { openAudioSettings(); break; } // Interaction déplacée vers l'icône d'engrenage
+                if (objName === 'speaker_mesh') { openAudioSettings(); break; } // Nouvelle interaction pour les paramètres audio
             }
 
             // --- DÉPLACEMENT (Reste inchangé) ---
