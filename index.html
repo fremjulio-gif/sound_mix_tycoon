@@ -3591,6 +3591,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
     // GESTION DU PIANO ROLL INDÉPENDANT
     // ==========================================
     function openPianoRoll() {
+        MusicSystem.muteForGameplay(0.5); // <-- AJOUT ICI
         // Cache l'UI de la chambre (bulle d'aide, etc)
         document.getElementById('room-ui').style.display = 'none'; 
         
@@ -3608,6 +3609,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
     }
 
     function closePianoRoll() {
+        MusicSystem.unmuteAfterGameplay(1.5); // <-- AJOUT ICI
         const prWindow = document.getElementById('standalone-pianoroll');
         prWindow.style.opacity = '0';
         prWindow.style.pointerEvents = 'none';
@@ -4910,6 +4912,7 @@ function createAvatarGroup(styleIndex) {
     function goSleep() {
         if (state.isExporting) { showToast("Tu peux pas dormir en plein mix, frérot !", "error"); playError(); return; }
         state.isSleeping = true;
+         MusicSystem.crossfadeTo('sleep', 3.0); // <-- AJOUT ICI (Fondu lent de 3s)
         const overlay = document.getElementById('sleep-overlay'), progText = document.getElementById('sleep-progress-text');
         overlay.classList.add('active');
         
@@ -4951,6 +4954,7 @@ function createAvatarGroup(styleIndex) {
 
     function wakeUp() {
             state.isSleeping = false;
+                MusicSystem.crossfadeTo('room', 2.0); // <-- AJOUT ICI (Fondu de retour de 2s)
             document.getElementById('sleep-overlay').classList.remove('active');
             if (currentRoomAvatar) {
                 if (currentRoomAvatar.userData.preSleepPos) {
@@ -4980,8 +4984,11 @@ function createAvatarGroup(styleIndex) {
     function goSit() {
         if (state.isExporting || state.isSleeping || state.isSitting) return;
 
+
         state.isSitting = true;
+        MusicSystem.crossfadeTo('sleep', 3.0); // <-- AJOUT ICI (Fondu lent de 3s)
         targetPosition = null; // Annule tout déplacement en cours (freeze l'avatar)
+        
 
         // Calculs aléatoires demandés
         const energyGain = Math.floor(Math.random() * (20 - 5 + 1)) + 5; // Entre 5 et 20
@@ -5034,6 +5041,7 @@ function createAvatarGroup(styleIndex) {
 
     function standUp(energyGain) {
         state.isSitting = false;
+         MusicSystem.crossfadeTo('room', 2.0); // <-- AJOUT ICI (Retour à la room)
 
         if (currentRoomAvatar) {
             // Restauration de la position debout d'origine
@@ -6616,33 +6624,6 @@ window.smoothCamTarget = new THREE.Vector3(0, 0, 0);
     
 
 
-
-        function switchToRoom() {
-    MusicSystem.crossfadeTo('room', 2.0); // Fondu de 2 secondes
-}
-
-function switchToSleep() {
-    MusicSystem.crossfadeTo('sleep', 3.0); // Fondu plus long pour le dodo
-}
-
-function switchToMenu() {
-    MusicSystem.crossfadeTo('menu', 1.5);
-}
-
-
-        // Quand le joueur ouvre AbleStudio ou le Piano Roll :
-function openPianoRoll() {
-    MusicSystem.muteForGameplay(0.5); // Baisse le mix vertical rapidement (0.5s)
-    // ... le reste du code d'ouverture
-}
-
-// Quand il quitte le DAW :
-function closePianoRoll() {
-    MusicSystem.unmuteAfterGameplay(1.5); // Remonte le volume doucement (1.5s)
-    // ... le reste du code de fermeture
-}
-
-
     
 // ====================================================
     
@@ -6685,3 +6666,4 @@ function closePianoRoll() {
 </script>
     </body>
         </html>
+    
