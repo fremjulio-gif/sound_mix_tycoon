@@ -3244,13 +3244,6 @@ function rotateAvatarToward(target, smooth = 0.12) {
             }
         }
     }
-
-    // --- 3. SUIVI DE CAMÉRA ---
-    // ... (Reste de la logique caméra inchangée) ...
-    
-    // Animation de sommeil agité
-    if (state.isSleeping) {
-        const sleepVisual = currentRoomAvatar.getObjectByName("AvatarVisual");
         if (sleepVisual) {
             sleepVisual.rotation.order = 'YXZ';
             sleepVisual.rotation.x += (Math.PI / 2 + restlessTargetOffsetX - sleepVisual.rotation.x) * 0.05;
@@ -3283,12 +3276,12 @@ function rotateAvatarToward(target, smooth = 0.12) {
             
             camera.lookAt(cameraLookTarget);
 
-            // Animation de sommeil agité
+            // --- 4. ANIMATION DE SOMMEIL AGITÉ ---
             if (state.isSleeping) {
-                const visual = currentRoomAvatar.getObjectByName("AvatarVisual");
-                if (visual) {
+                const sleepVisual = currentRoomAvatar.getObjectByName("AvatarVisual");
+                if (sleepVisual) {
                     // S'assure que l'ordre de rotation est défini pour l'interpolation
-                    visual.rotation.order = 'YXZ';
+                    sleepVisual.rotation.order = 'YXZ';
 
                     // Interpolation des rotations (Roll sur l'axe Pied-Tête Y)
                     sleepVisual.rotation.y += (restlessTargetOffsetY - sleepVisual.rotation.y) * 0.05; // Roulis
@@ -3308,7 +3301,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
             const head = scene.getObjectByName("pixar_head_group");
             const spot = scene.getObjectByName("pixar_spotlight");
 
-            if (currentRoomAvatar && head && spot) {
+            if (head && spot) {
                 
                 // 1. Le spot vise l'avatar
                 spot.target.position.copy(currentRoomAvatar.position);
@@ -3339,10 +3332,10 @@ function rotateAvatarToward(target, smooth = 0.12) {
             }
         }
       
-         // =========================================================
-        // --- APPLICATION DU ZOOM FLUIDE & CINÉMATIQUE D'INTRO ---
         // =========================================================
-        if (window.targetCamZoom && currentRoomAvatar) {
+        // --- 5. APPLICATION DU ZOOM FLUIDE & CINÉMATIQUE D'INTRO ---
+        // =========================================================
+        if (window.targetCamZoom) {
             
             // 1. Calcul de l'ancre de base (Mix Centre de pièce / Avatar)
             const ZOOM_THRESHOLD = isMobile ? 1.05 : 1.1; 
@@ -3422,10 +3415,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
             }
         }
 
-
-
        // --- SURLIGNAGE SMOOTH PAR PROXIMITÉ ---
-        if (currentRoomAvatar) {
             const avatarPos = currentRoomAvatar.position;
             const targetPos = new THREE.Vector3();
 
@@ -3472,8 +3462,9 @@ function rotateAvatarToward(target, smooth = 0.12) {
                     item.edges.material.color.lerp(targetLineColor, 0.15);
                 }
             });
-        }
+        } // FIN DU BLOC if (currentRoomAvatar)
 
+        // --- LOGIQUE GLOBALE (SANS BESOIN D'AVATAR) ---
 
         // --- NOUVEAU : EFFET DE DISTORSION VISUELLE (SOMMEIL/REPOS) ---
         if (currentRoomAvatar && (state.isSleeping || state.isSitting) && Math.random() < 0.25) {
