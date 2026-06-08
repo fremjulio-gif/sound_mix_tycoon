@@ -974,25 +974,34 @@
     </div>
 
     <!-- Audio Settings Overlay -->
-    <div id="audio-settings-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl" style="display: none;">
     <div id="audio-settings-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden">
         <div class="liquid-glass-heavy p-6 md:p-10 rounded-2xl w-[90%] max-w-lg border border-[var(--accent)] text-center shadow-[0_0_60px_rgba(0,0,0,0.8)] max-h-[90dvh] overflow-y-auto flex flex-col">
             <h2 class="text-2xl font-retro text-white mb-6 tracking-widest uppercase drop-shadow-lg shrink-0">Paramètres Audio</h2>
-            <div class="flex flex-col gap-4">
+
+            <div class="flex flex-col gap-6 w-full">
+                <!-- Master Volume -->
                 <div class="flex flex-col items-start gap-2">
-                    <label for="master-volume" class="text-sm text-[var(--text-muted)] font-retro uppercase tracking-widest">Volume Maître</label>
-                    <input type="range" id="master-volume" min="0" max="1" step="0.01" value="1" class="w-full">
+                    <label for="master-volume-slider" class="font-retro text-sm text-[var(--text-muted)] uppercase tracking-widest">Master Volume</label>
+                    <input type="range" id="master-volume-slider" min="0" max="1" step="0.01" value="1" class="w-full accent-[var(--accent)] cursor-pointer">
+                    <span id="master-volume-value" class="font-retro text-xs text-white">100%</span>
                 </div>
+
+                <!-- Music Volume -->
                 <div class="flex flex-col items-start gap-2">
-                    <label for="music-volume" class="text-sm text-[var(--text-muted)] font-retro uppercase tracking-widest">Volume Musique</label>
-                    <input type="range" id="music-volume" min="0" max="1" step="0.01" value="1" class="w-full">
+                    <label for="music-volume-slider" class="font-retro text-sm text-[var(--text-muted)] uppercase tracking-widest">Musique</label>
+                    <input type="range" id="music-volume-slider" min="0" max="1" step="0.01" value="0.8" class="w-full accent-[var(--accent)] cursor-pointer">
+                    <span id="music-volume-value" class="font-retro text-xs text-white">80%</span>
                 </div>
+
+                <!-- FX/UI Volume -->
                 <div class="flex flex-col items-start gap-2">
-                    <label for="sfx-volume" class="text-sm text-[var(--text-muted)] font-retro uppercase tracking-widest">Volume Effets Sonores</label>
-                    <input type="range" id="sfx-volume" min="0" max="1" step="0.01" value="1" class="w-full">
+                    <label for="sfx-volume-slider" class="font-retro text-sm text-[var(--text-muted)] uppercase tracking-widest">Effets Sonores / UI</label>
+                    <input type="range" id="sfx-volume-slider" min="0" max="1" step="0.01" value="0.5" class="w-full accent-[var(--accent)] cursor-pointer">
+                    <span id="sfx-volume-value" class="font-retro text-xs text-white">50%</span>
                 </div>
-                <button id="audio-settings-close" class="btn-action py-3 px-8 rounded-lg text-sm font-retro tracking-widest uppercase mt-4 self-end">Fermer</button>
             </div>
+
+            <button onclick="closeAudioSettings()" class="btn-action py-3 px-8 rounded-lg text-xs font-retro tracking-widest mt-8 shrink-0">FERMER</button>
         </div>
     </div>
 
@@ -3699,6 +3708,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
         setTimeout(() => {
             overlay.classList.add('hidden'); // On rajoute la classe 'hidden' pour masquer
         }, 300);
+        overlay.style.display = 'none'; // Assure que l'élément est complètement caché
         playBleep();
     }
 
