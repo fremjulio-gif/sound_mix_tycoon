@@ -2938,6 +2938,7 @@ function togglePixarLamp() {
         if (typeof hemiLight !== 'undefined') { hemiLight.userData.savedIntensity = hemiLight.intensity; hemiLight.intensity = 0.1; }
 
         // === ALLUMER LES NÉONS ACOUSTIQUES ===
+        MusicSystem.setLowPassFrequency(1500, 1.0); // Applique le filtre passe-bas
         // === ALLUMER LES NÉONS ACOUSTIQUES ===
         if (window.acousticNeons) {
             window.acousticNeons.forEach(neon => {
@@ -2953,6 +2954,7 @@ function togglePixarLamp() {
         if (bulb) { bulb.material.emissiveIntensity = 0; bulb.material.needsUpdate = true; }
         if (ceiling) { ceiling.intensity = ceiling.userData.savedIntensity ?? 35; }
         if (mainLight) { mainLight.intensity = mainLight.userData.savedIntensity ?? 0.8; }
+        MusicSystem.setLowPassFrequency(20000, 1.0); // Désactive le filtre passe-bas
         if (typeof hemiLight !== 'undefined') { hemiLight.intensity = hemiLight.userData.savedIntensity ?? 0.55; }
 
         // === ÉTEINDRE LES NÉONS ACOUSTIQUES ===
@@ -3699,8 +3701,8 @@ function rotateAvatarToward(target, smooth = 0.12) {
         document.getElementById('sfx-volume-slider').value = window.sfxVolume;
         document.getElementById('sfx-volume-value').innerText = `${Math.round(window.sfxVolume * 100)}%`;
 
-        // Retire toutes les classes qui masquent l'overlay pour le rendre visible et interactif
-        overlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+        // Retire les classes qui masquent l'overlay pour le rendre visible et interactif
+        overlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none'); // Retire 'hidden' en premier
         setTimeout(() => {
             // Les transitions d'opacité et de pointer-events sont gérées par les classes Tailwind
             // overlay.style.opacity = '1';
@@ -3718,6 +3720,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
         setTimeout(() => {
             // Ajoute la classe 'hidden' après la transition pour masquer complètement l'élément
             overlay.classList.add('hidden');
+            overlay.style.display = 'none'; // S'assure que l'élément est complètement caché
         }, 300);
         playBleep();
     }
@@ -3922,6 +3925,7 @@ function drawSysGraphUI(timestamp) {
     let currentActiveTrackKey = 'room'; // Initialisé à 'room' par défaut
     const MusicSystem = (() => {
         let audioCtx = null;
+        let biquadFilter = null; // Ajout du filtre Biquad
         let masterGain = null;
         
         const tracks = {
@@ -3954,8 +3958,16 @@ function drawSysGraphUI(timestamp) {
 
             // Création du bus principal
             masterGain = audioCtx.createGain();
-            masterGain.gain.value = 1.0;
-            masterGain.connect(audioCtx.destination);
+            masterGain.gain.value = 1.0; // Volume initial
+
+            // Création du filtre passe-bas
+            biquadFilter = audioCtx.createBiquadFilter();
+            biquadFilter.type = "lowpass";
+            biquadFilter.frequency.setValueAtTime(20000, audioCtx.currentTime); // Fréquence de coupure très haute par défaut (pas d'effet)
+            biquadFilter.Q.setValueAtTime(1, audioCtx.currentTime); // Q factor par défaut
+
+            masterGain.connect(biquadFilter); // Connecte le masterGain au filtre
+            biquadFilter.connect(audioCtx.destination); // Connecte le filtre à la destination
 
             // Maintenant, on peut télécharger les fichiers en prenant tout le temps nécessaire
             const loadPromises = Object.keys(tracks).map(async (key) => {
@@ -4036,6 +4048,15 @@ function drawSysGraphUI(timestamp) {
             masterGain.gain.linearRampToValueAtTime(1.0, now + fadeDuration);
         }
 
+        function setLowPassFrequency(frequency, fadeDuration = 1.0) {
+            if (!isInitialized || !biquadFilter) return;
+            const now = audioCtx.currentTime;
+            biquadFilter.frequency.cancelScheduledValues(now);
+            biquadFilter.frequency.setValueAtTime(biquadFilter.frequency.value, now);
+            biquadFilter.frequency.linearRampToValueAtTime(frequency, now + fadeDuration);
+        }
+
+
         return {
             init,
             startAllTracks,
@@ -4043,7 +4064,8 @@ function drawSysGraphUI(timestamp) {
             muteForGameplay,
             unmuteAfterGameplay,
             setMasterVolume, // Expose la fonction de contrôle du volume master
-            setMusicVolume   // Expose la fonction de contrôle du volume de la musique
+            setMusicVolume,   // Expose la fonction de contrôle du volume de la musique
+            setLowPassFrequency // Expose la fonction de contrôle du filtre passe-bas
         };
     })();
 
@@ -5772,6 +5794,17 @@ function createAvatarGroup(styleIndex) {
 
         logMoney(moneyGain, 'Track Royalties');
         state.rep = Math.max(0, state.rep + repGain);
+        // --- ÉQUILIBRAGE TYCOON : EFFET BOULE DE NEIGE ---
+        // Les fans existants ramènent du monde (1% de la commu)
+        let snowballBonus = Math.floor(state.followers * 0.01);
+        
+        // Soft-cap pour éviter de casser le late-game (si le bonus dépasse 2000, il ralentit)
+        if (snowballBonus > 2000) {
+            snowballBonus = 2000 + Math.floor(Math.sqrt(snowballBonus - 2000)); 
+        }
+        
+        follGain += snowballBonus;
+        // -------------------------------------------------
         logFollower(follGain);
         state.stats.tracks++;
 
@@ -6063,9 +6096,12 @@ function renderStore(tab) {
         
         state.cooldowns.storyTimeReady = total + 120;
         
-        // Calcul des gains
-        const followerGain = Math.floor((state.rep * 0.5) + 10);
-        const repGain = Math.floor(Math.random() * 3) + 1; // Gain aléatoire de 1 à 3 REP
+        // Calcul des gains (Version Grind)
+        // Gain de base fixe + un micro-pourcentage des fans (0.1%) pour que le bouton reste utile en late-game
+        const followerGain = Math.floor((state.rep * 1.5) + 15 + (state.followers * 0.001));
+        
+        // Le grind de la réputation doit être lent mais constant (1 à 2 points max par story)
+        const repGain = Math.floor(Math.random() * 2) + 1; 
         
         // Application
         logFollower(followerGain);
@@ -6322,8 +6358,10 @@ desc.innerHTML = textesCollab[Math.floor(Math.random() * textesCollab.length)];
             btn1.className = "btn-action py-3 px-4 rounded-lg font-retro text-xs text-white bg-[var(--retro-red)] border-[var(--retro-red)]";
             btn1.innerText = "La honte... (Fermer)";
             btn1.onclick = () => {
-                const repLost = 30;
-                const follLost = Math.floor(500 + Math.random() * 1500);
+                // Au lieu d'une sanction fixe, on retire 15% de la REP et 5% des followers.
+            // Le Math.max garantit qu'on perd au minimum 2 points en early-game.
+            const repLost = Math.max(2, Math.floor(state.rep * 0.15));
+            const follLost = Math.floor(state.followers * 0.05);
                 state.rep = Math.max(0, state.rep - repLost);
                 state.followers = Math.max(0, state.followers - follLost);
                 showToast(`Bad Buzz avec ${cancelled} : -${repLost} REP | -${follLost} Followers`, "error");
@@ -6356,7 +6394,7 @@ desc.innerHTML = textesCollab[Math.floor(Math.random() * textesCollab.length)];
 
     function resolveTheftEvent(action, voleur) {
         if (action === 'plainte') {
-            state.rep = Math.max(0, state.rep - 20);
+            state.rep = Math.floor(state.rep * 0.10);
             if (Math.random() > 0.5) {
                 const winAmt = Math.floor(1000 + Math.random() * 1000);
                 logMoney(winAmt, `Procès gagné contre ${voleur}`);
