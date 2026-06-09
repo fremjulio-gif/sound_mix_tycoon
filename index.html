@@ -6293,6 +6293,11 @@
             document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="pixelated w-full h-full object-cover object-center scale-[1.6] origin-center" />`;
             document.getElementById('hud-name').innerText = state.username;
             
+            // Sync initial values to prevent counting from 0 on login
+            hudDisplayValues.money = state.money;
+            hudDisplayValues.rep = state.rep;
+            hudDisplayValues.foll = state.followers;
+
             selectDawGenre();
             selectDawVoice();
             updateDawPlugins();
@@ -6367,9 +6372,10 @@
         // 14. HUD UPDATE
         // ==========================================
         function updateHUD() {
-            document.getElementById('hud-money').innerText = formatNum(state.money);
-            document.getElementById('hud-rep').innerText   = formatNum(state.rep);
-            document.getElementById('hud-foll').innerText  = formatNum(state.followers);
+            animateHUDNumber('hud-money', state.money, 'money');
+            animateHUDNumber('hud-rep', state.rep, 'rep');
+            animateHUDNumber('hud-foll', state.followers, 'foll');
+
             document.getElementById('hud-day').innerText   = `JOUR ${state.day}`;
 
             const energyVal = Math.floor(state.energy);
