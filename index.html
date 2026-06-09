@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -4381,7 +4382,7 @@ function drawSysGraphUI(timestamp) {
     function getAchievementUnlockLabel(achievement) {
         if (!achievement.unlocked) return 'LOCKED';
         if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant v16';
-        if (achievement.unlockedDay) return `JOUR ${achievement.unlockedDay}${achievement.unlockedTime ? ' · ' + achievement.unlockedTime : ''}`;
+         if (achievement.unlockedDay) return `JOUR ${achievement.unlockedDay}${achievement.unlockedTime ? ' · ' + achievement.unlockedTime : ''}`;
         return 'Débloqué avant v16';
     }
 
@@ -4403,6 +4404,8 @@ function drawSysGraphUI(timestamp) {
 
         renderAchievementsPanel();
     }
+
+
 
     function switchSettingsPanel(panel = 'audio', shouldPlay = true) {
         activeSettingsPanel = panel === 'achievements' ? 'achievements' : 'audio';
@@ -4471,59 +4474,71 @@ function drawSysGraphUI(timestamp) {
             if (btn) btn.classList.toggle('active', filter.id === activeAchievementFilter);
         });
 
-        const visible = entries
-            .filter(a => (a.category || 'studio') === activeAchievementCategory)
-            .filter(a => {
-                if (activeAchievementFilter === 'unlocked') return a.unlocked;
-                if (activeAchievementFilter === 'locked') return !a.unlocked;
-                if (activeAchievementFilter === 'secret') return Boolean(a.secret);
-                return true;
-            });
+        // Render categories as horizontal carousels. Use existing entries and filter logic.
+        grid.innerHTML = '';
 
-        if (visible.length === 0) {
-            grid.innerHTML = `<div class="col-span-full min-h-[180px] flex items-center justify-center text-center font-retro text-[var(--text-muted)] tracking-widest uppercase text-xs">Aucun achievement ici.</div>`;
-            return;
-        }
+        ACHIEVEMENT_CATEGORIES.forEach(cat => {
+            const catEntries = entries
+                .filter(a => (a.category || 'studio') === cat.id)
+                .filter(a => {
+                    if (activeAchievementFilter === 'unlocked') return a.unlocked;
+                    if (activeAchievementFilter === 'locked') return !a.unlocked;
+                    if (activeAchievementFilter === 'secret') return Boolean(a.secret);
+                    return true;
+                });
 
-        grid.innerHTML = visible.map(achievement => {
-            const isSecretLocked = achievement.secret && !achievement.unlocked;
-            const progress = getAchievementProgress(achievement.id, achievement);
-            const title = isSecretLocked ? '???' : achievement.name;
-            const desc = isSecretLocked ? 'Achievement secret' : achievement.description;
-            const icon = isSecretLocked ? '❔' : (achievement.icon || '🏆');
-            const stateClass = achievement.unlocked ? 'unlocked' : 'locked';
-            const secretClass = isSecretLocked ? 'secret-locked' : '';
-            const badge = achievement.unlocked
-                ? '<span class="text-[var(--retro-green)] drop-shadow-[0_0_8px_var(--retro-green)]">✓ UNLOCKED</span>'
-                : '<span class="text-[var(--text-muted)]">LOCKED</span>';
-            const progressHTML = progress.progressive && !isSecretLocked ? `
-                <div class="mt-4">
-                    <div class="flex justify-between items-center mb-1.5 font-retro text-[9px] tracking-widest text-[var(--text-muted)]">
-                        <span>${formatNum(progress.current)}/${formatNum(progress.target)} ${escapeHTML(progress.unit)}</span>
-                        <span>${progress.percent}%</span>
-                    </div>
-                    <div class="achievement-progress-track">
-                        <div class="achievement-progress-fill" style="width:${progress.percent}%;"></div>
-                    </div>
-                </div>
-            ` : '';
+            if (!catEntries || catEntries.length === 0) return;
 
-            return `
-                <article class="achievement-card ${stateClass} ${secretClass} p-4 flex flex-col">
-                    <div class="flex items-start justify-between gap-3 mb-3">
-                        <div class="achievement-icon-wrap w-12 h-12 rounded-lg border border-white/10 bg-black/40 flex items-center justify-center text-3xl shrink-0">${escapeHTML(icon)}</div>
-                        <div class="font-retro text-[9px] tracking-widest uppercase">${badge}</div>
+            const sectionHTML = `
+                <section class="w-full mb-4">
+                    <div class="mb-2 flex items-center justify-between w-full">
+                        <h4 class="font-retro text-[12px] text-[var(--text-muted)] uppercase tracking-widest">${escapeHTML(cat.label)}</h4>
+                        <div class="font-retro text-sm text-[var(--accent)] tracking-widest">${catEntries.filter(e => e.unlocked).length}/${catEntries.length}</div>
                     </div>
-                    <h4 class="font-retro text-sm text-white tracking-widest uppercase leading-snug mb-2">${escapeHTML(title)}</h4>
-                    <p class="text-xs text-[var(--text-muted)] leading-relaxed flex-1 ${isSecretLocked ? 'blur-[1px]' : ''}">${escapeHTML(desc)}</p>
-                    ${progressHTML}
-                    <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-3 font-retro text-[9px] tracking-widest uppercase text-[var(--text-muted)]">
-                        <span>${escapeHTML(ACHIEVEMENT_CATEGORIES.find(c => c.id === (achievement.category || 'studio'))?.label || 'STUDIO')}</span>
-                        <span>${escapeHTML(getAchievementUnlockLabel(achievement))}</span>
+                    <div class="flex flex-row overflow-x-auto snap-x snap-mandatory gap-4 pb-4 custom-scrollbar" role="list">
+                        ${catEntries.map(achievement => {
+                            const isSecretLocked = achievement.secret && !achievement.unlocked;
+                            const progress = getAchievementProgress(achievement.id, achievement);
+                            const title = isSecretLocked ? '???' : (achievement.name || achievement.id);
+                            const desc = isSecretLocked ? '??? - Succès secret' : (achievement.description || '');
+                            const icon = isSecretLocked ? '🔒' : (achievement.icon || '🏆');
+                            const stateClass = achievement.unlocked ? 'unlocked border-[var(--accent)]' : 'locked border-gray-700 grayscale opacity-50';
+
+                            const progressHTML = progress.progressive && !isSecretLocked ? `
+                                <div class="mt-3 w-full">
+                                    <div class="flex justify-between items-center mb-1.5 font-retro text-[9px] tracking-widest text-[var(--text-muted)]">
+                                        <span>${formatNum(progress.current)}/${formatNum(progress.target)} ${escapeHTML(progress.unit)}</span>
+                                        <span>${progress.percent}%</span>
+                                    </div>
+                                    <div class="achievement-progress-track">
+                                        <div class="achievement-progress-fill" style="width:${progress.percent}%;"></div>
+                                    </div>
+                                </div>
+                            ` : '';
+
+                            return `
+                                <article class="achievement-card ${stateClass} p-3 flex-shrink-0 w-4/5 md:w-64 rounded-lg liquid-glass-heavy flex flex-col" role="listitem">
+                                    <div class="flex items-start gap-3 mb-2">
+                                        <div class="achievement-icon-wrap w-12 h-12 rounded-lg border border-white/10 bg-black/40 flex items-center justify-center text-2xl shrink-0">${escapeHTML(icon)}</div>
+                                        <div class="flex-1">
+                                            <div class="font-retro text-sm text-white tracking-widest uppercase leading-tight">${escapeHTML(title)}</div>
+                                            <div class="text-xs text-[var(--text-muted)] mt-1 leading-snug ${isSecretLocked ? 'blur-[1px]' : ''}">${escapeHTML(desc)}</div>
+                                        </div>
+                                    </div>
+                                    ${progressHTML}
+                                    <div class="mt-3 pt-2 border-t border-white/10 flex items-center justify-between gap-3 font-retro text-[9px] tracking-widest uppercase text-[var(--text-muted)]">
+                                        <span>${escapeHTML(cat.label)}</span>
+                                        <span>${escapeHTML(getAchievementUnlockLabel(achievement))}</span>
+                                    </div>
+                                </article>
+                            `;
+                        }).join('')}
                     </div>
-                </article>
+                </section>
             `;
-        }).join('');
+
+            grid.insertAdjacentHTML('beforeend', sectionHTML);
+        });
     }
 
     let achievementQueue = [];
