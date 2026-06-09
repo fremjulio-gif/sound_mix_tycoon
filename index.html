@@ -1274,11 +1274,6 @@
                     <button onclick="closeAudioSettings()" class="btn-minimal w-12 h-12 !p-0 rounded-lg text-xl leading-none flex items-center justify-center" aria-label="Fermer les paramètres">✕</button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 shrink-0 mb-4 font-retro text-[10px] md:text-xs uppercase tracking-widest">
-                    <button id="settings-tab-audio" class="settings-nav-btn active rounded-lg px-3 py-3" onclick="switchSettingsPanel('audio')">Audio</button>
-                    <button id="settings-tab-achievements" class="settings-nav-btn rounded-lg px-3 py-3" onclick="switchSettingsPanel('achievements')">Achievements</button>
-                </div>
-
                 <div id="settings-audio-panel" class="flex-1 min-h-0 overflow-y-auto pr-1">
                     <div class="flex flex-col gap-6 w-full rounded-xl border border-white/10 bg-black/25 p-4 md:p-6">
                         <div class="flex flex-col items-start gap-2">
@@ -1298,28 +1293,12 @@
                         <input type="range" id="sfx-volume-slider" min="0" max="1" step="0.01" value="0.5" class="w-full accent-[var(--accent)] cursor-pointer">
                         <span id="sfx-volume-value" class="font-retro text-xs text-white">50%</span>
                     </div>
-                </div> </div> <div id="settings-achievements-panel" class="hidden flex-1 min-h-0 flex-col overflow-hidden">
-                    
-                    <div class="flex items-center gap-4 mb-4 shrink-0 bg-black/40 p-4 rounded-xl border border-white/10">
-                        <div class="text-4xl drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">🏆</div>
-                        <div class="flex-1">
-                            <div class="flex justify-between font-retro text-[10px] text-[var(--text-muted)] mb-1 tracking-widest uppercase">
-                                <span>Progression Globale</span>
-                                <span id="achievements-global-percent" class="text-white">0%</span>
-                            </div>
-                            <div class="h-2 bg-black/80 rounded-full overflow-hidden border border-white/10 shadow-inner">
-                                <div id="achievements-global-bar" class="h-full bg-gradient-to-r from-[var(--accent)] to-[var(--retro-green)] transition-all duration-500 w-0 shadow-[0_0_10px_var(--accent)]"></div>
-                            </div>
-                            <div class="text-[9px] font-retro text-[var(--text-muted)] mt-1.5 tracking-widest">
-                                <span id="achievements-unlocked-count" class="text-white">0</span> / <span id="achievements-total-count">0</span> SUCCÈS DÉBLOQUÉS
-                            </div>
-                        </div>
-                    </div>
+                </div> 
+            </div> 
+         </div> 
+    </div> 
 
-                                    <div id="achievement-filter-tabs" class="flex gap-2 mb-4 shrink-0 overflow-x-auto pb-2 custom-scrollbar font-retro text-[10px] uppercase tracking-widest"></div>
-                <div id="achievements-grid" class="flex-1 overflow-y-auto pr-2 custom-scrollbar flex flex-col gap-6"></div>
-                
-            </div> </div> </div> <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
+</div> <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
             <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
                 <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it</h1>
                 <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">v16</p>
@@ -1342,7 +1321,34 @@
         </div>
     </div>
 
+<div id="achievements-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden px-4">
+        <div class="settings-shell liquid-glass-heavy p-5 md:p-7 rounded-2xl border-2 border-[var(--retro-orange)] shadow-[0_0_60px_rgba(251,191,36,0.15)] flex flex-col relative">
+            
+            <button onclick="closeAchievementsBoard()" class="absolute top-4 right-4 btn-minimal w-10 h-10 !p-0 rounded-lg text-lg leading-none flex items-center justify-center z-50">✕</button>
 
+            <div id="settings-achievements-panel" class="flex flex-1 min-h-0 flex-col overflow-hidden w-full h-full pt-2">
+                <div class="flex items-center gap-4 mb-4 shrink-0 bg-black/40 p-4 rounded-xl border border-white/10">
+                    <div class="text-4xl drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">🏆</div>
+                    <div class="flex-1">
+                        <div class="flex justify-between font-retro text-[10px] text-[var(--text-muted)] mb-1 tracking-widest uppercase">
+                            <span>Progression Globale</span>
+                            <span id="achievements-global-percent" class="text-white">0%</span>
+                        </div>
+                        <div class="h-2 bg-black/80 rounded-full overflow-hidden border border-white/10 shadow-inner">
+                            <div id="achievements-global-bar" class="h-full bg-gradient-to-r from-[var(--accent)] to-[var(--retro-green)] transition-all duration-500 w-0 shadow-[0_0_10px_var(--accent)]"></div>
+                        </div>
+                        <div class="text-[9px] font-retro text-[var(--text-muted)] mt-1.5 tracking-widest">
+                            <span id="achievements-unlocked-count" class="text-white">0</span> / <span id="achievements-total-count">0</span> SUCCÈS DÉBLOQUÉS
+                        </div>
+                    </div>
+                </div>
+
+                <div id="achievement-filter-tabs" class="flex gap-2 mb-4 shrink-0 overflow-x-auto pb-2 custom-scrollbar font-retro text-[10px] uppercase tracking-widest"></div>
+
+                <div id="achievements-grid" class="flex-1 overflow-y-auto pr-2 custom-scrollbar flex flex-col gap-6"></div>
+            </div>
+            </div>
+    </div>
 
         <div id="standalone-pianoroll" class="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 hidden px-4">
             <div class="liquid-glass-heavy rounded-2xl w-full max-w-4xl border border-[#8b5cf6] shadow-[0_0_40px_rgba(139,92,246,0.2)] flex flex-col overflow-hidden" style="height: 85dvh;">
@@ -1551,8 +1557,10 @@
                                placeholder="[UNTITLED_TRACK]..." />
                     </div>
 
-                    <div class="flex flex-col md:flex-row gap-3 mb-3">
-                        <div class="flex-1 bg-[#18181b] border border-[#27272a] rounded p-3 shadow-inner flex flex-col">
+                    <div id="daw-genres-container" class="flex flex-wrap gap-2 max-h-[100px] overflow-y-auto custom-scrollbar pr-1 pb-1 mb-3"></div>
+
+                    <div class="flex flex-col md:flex-row gap-3 mb-3 md:mb-0">
+                        <div class="flex-1 bg-[#18181b] border border-[#27272a] rounded md:rounded-b-none md:border-b-0 p-3 shadow-inner flex flex-col">
                             <div class="flex justify-between items-end mb-2 border-b border-[#3f3f46] pb-1">
                                 <label class="text-[9px] text-gray-500 font-mono uppercase tracking-widest font-bold">Arrangement View</label>
                                 <span class="text-[9px] font-mono text-gray-600">4/4 Sig.</span>
@@ -1593,7 +1601,7 @@
                             </div>
                         </div>
 
-                        <div class="md:w-[85px] w-full p-3 flex flex-row md:flex-col items-center justify-between md:justify-start flex-shrink-0 bg-[#18181b] border border-[#27272a] rounded shadow-[0_4px_15px_rgba(0,0,0,0.5)] z-10">
+                        <div class="md:w-[85px] w-full p-3 flex flex-row md:flex-col items-center justify-between md:justify-start flex-shrink-0 bg-[#18181b] border border-[#27272a] rounded md:rounded-b-none md:border-b-0 shadow-[0_4px_15px_rgba(0,0,0,0.5)] z-10">
                             <label class="text-[9px] text-gray-500 font-mono uppercase tracking-widest font-bold border-b border-[#3f3f46] pb-1 w-full text-center hidden md:block mb-4">Master</label>
                             
                             <div class="flex flex-row md:flex-col gap-4 md:gap-5 w-full items-center justify-around h-full">
@@ -1622,14 +1630,9 @@
                                     </div>
                             </div>
                             </div>
-                        </div>
                     </div>
 
-                    <div class="flex flex-col gap-3">
-                        
-                        <div id="daw-genres-container" class="flex flex-wrap gap-2 max-h-[100px] overflow-y-auto custom-scrollbar pr-1 pb-1"></div>
-                        
-                        <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-stretch bg-[#18181b] p-5 rounded-xl border border-[#27272a] shadow-inner">
+                    <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-stretch bg-[#18181b] p-5 rounded-xl md:rounded-t-none border border-[#27272a] shadow-inner">
                             
                             <div class="flex gap-2 flex-1">
                                 <button class="btn-voice btn-daw-pad flex-1 py-2 text-[9px] rounded" data-val="m" onclick="selectDawVoice('m')">Male Voc</button>
@@ -2260,6 +2263,52 @@
         
         bedGroup.add(pillow1, pillow2);
         scene.add(bedGroup);
+
+
+
+        // ==========================================
+        // TABLEAU DES SUCCÈS (Disque d'Or au-dessus du lit)
+        // ==========================================
+        const boardGroup = new THREE.Group();
+        // Positionné sur le mur de droite, centré au-dessus des oreillers
+        boardGroup.position.set(4.95, 1.8, -2.9);
+        boardGroup.rotation.y = -Math.PI / 2; // Fait face à la pièce
+
+        // Le Cadre
+        const frameBoardGeo = new THREE.BoxGeometry(1.6, 1.2, 0.05);
+        const frameBoardMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.8 });
+        const frameBoard = new THREE.Mesh(frameBoardGeo, frameBoardMat);
+        
+        // Le Fond (Passe-partout sombre)
+        const canvasGeo = new THREE.PlaneGeometry(1.5, 1.1);
+        const canvasMat = new THREE.MeshStandardMaterial({ color: '#1f2937', roughness: 0.5 });
+        const canvasMesh = new THREE.Mesh(canvasGeo, canvasMat);
+        canvasMesh.position.set(0, 0, 0.026);
+
+        // Le Disque d'or (Cylindre aplati)
+        const recordGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.02, 32);
+        recordGeo.rotateX(Math.PI / 2);
+        const recordMat = new THREE.MeshStandardMaterial({ color: '#fbbf24', metalness: 0.9, roughness: 0.1 });
+        const recordMesh = new THREE.Mesh(recordGeo, recordMat);
+        recordMesh.position.set(0, 0.1, 0.04);
+
+        // Petite plaque dorée sous le disque
+        const plaqueGeo = new THREE.BoxGeometry(0.4, 0.15, 0.02);
+        const plaqueMesh = new THREE.Mesh(plaqueGeo, recordMat);
+        plaqueMesh.position.set(0, -0.35, 0.04);
+
+        boardGroup.add(frameBoard, canvasMesh, recordMesh, plaqueMesh);
+
+        // Assignation pour le clic et le surlignage
+        boardGroup.traverse(child => {
+            if (child.isMesh) {
+                child.name = 'achievements_board_mesh';
+                const edges = new THREE.EdgesGeometry(child.geometry);
+                child.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.5 })));
+            }
+        });
+
+        scene.add(boardGroup);
 
 
     // ==========================================
@@ -3474,7 +3523,7 @@
         const INTERACTION_DIST = 2; 
         const HIGHLIGHT_LINE_COLOR = new THREE.Color('#ffffff');
         const DEFAULT_LINE_COLOR = new THREE.Color(0x000000); 
-        const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp', 'speaker_mesh']; // Ajout de 'speaker_mesh'
+        const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp', 'speaker_mesh', 'achievements_board_mesh']; // Ajout de 'speaker_mesh'
         const highlightItems = [];
 
         function initProximityHighlight() {
@@ -4059,6 +4108,7 @@
                     let interactDist = INTERACTION_DIST;
                     if (objName === 'bed_mesh') interactDist = 2.8;
                     if (objName === 'pc_mesh') interactDist = 2.4;
+                    if (item.mesh.name === 'achievements_board_mesh') customDist = 4.0; 
                     if (objName === 'sofa_mesh') interactDist = 3.0;
 
                     if (dist > interactDist) {
@@ -4068,6 +4118,7 @@
 
                     // Actions si on est assez proche
                     if (objName === 'pc_mesh') { enterPC(); break; }
+                    if (objName === 'achievements_board_mesh') { openAchievementsBoard(); break; }
                 if (objName === 'synth_mesh') { openPianoRoll(); break; }
                     if (objName === 'bed_mesh') {
                         if (state.energy < 50) goSleep();
@@ -4235,6 +4286,34 @@
     }
 
         
+                // ==========================================
+        // GESTION DU TABLEAU DES SUCCÈS IN-GAME
+        // ==========================================
+        function openAchievementsBoard() {
+            const overlay = document.getElementById('achievements-overlay');
+            if (!overlay) return;
+            
+            normalizeAchievementState();
+            renderAchievementsPanel(); // Met à jour les succès
+            
+            overlay.classList.remove('hidden');
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+            }, 10);
+            playSuccess();
+        }
+
+        function closeAchievementsBoard() {
+            const overlay = document.getElementById('achievements-overlay');
+            if (!overlay) return;
+            
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 300);
+            playBleep();
+        }
+
         // ==========================================
         // 4. TOOLTIP
         // ==========================================
@@ -7896,6 +7975,8 @@
         window.toggleSecretTape = toggleSecretTape;
         window.closePianoRoll   = closePianoRoll;
         window.claimAchievementReward = claimAchievementReward;
+        window.openAchievementsBoard = openAchievementsBoard;
+        window.closeAchievementsBoard = closeAchievementsBoard;
         
         // Boot
         initUI();
@@ -7909,3 +7990,4 @@
     </script>
         </body>
             </html>
+
