@@ -6447,6 +6447,11 @@
             hudLastTargetValues.rep = state.rep;
             hudLastTargetValues.foll = state.followers;
 
+            // Force l'affichage immédiat des valeurs chargées pour éviter le blocage à zéro
+            document.getElementById('hud-money').innerText = formatNum(state.money);
+            document.getElementById('hud-rep').innerText   = formatNum(state.rep);
+            document.getElementById('hud-foll').innerText  = formatNum(state.followers);
+
             selectDawGenre();
             selectDawVoice();
             updateDawPlugins();
