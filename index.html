@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -260,6 +261,13 @@
             animation: moneyFloat 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
+        @keyframes hudShake {
+            0%, 100% { transform: translateX(-50%); }
+            20%, 60% { transform: translateX(calc(-50% - 3px)); }
+            40%, 80% { transform: translateX(calc(-50% + 3px)); }
+        }
+        .animate-hud-shake { animation: hudShake 0.3s ease-in-out; }
+
         @keyframes achievementGlow {
             0%, 100% { box-shadow: 0 0 20px rgba(129, 140, 248, 0.4), inset 0 0 10px rgba(129, 140, 248, 0.2); border-color: var(--accent); }
             50% { box-shadow: 0 0 40px rgba(129, 140, 248, 0.8), inset 0 0 20px rgba(129, 140, 248, 0.4); border-color: #fff; }
@@ -268,14 +276,9 @@
             animation: achievementGlow 1.5s ease-in-out infinite;
         }
 
-        @keyframes hudShake {
-            0%, 100% { transform: translateX(-50%); }
-            20%, 60% { transform: translateX(calc(-50% - 3px)); }
-            40%, 80% { transform: translateX(calc(-50% + 3px)); }
-        }
-        .animate-hud-shake { animation: hudShake 0.3s ease-in-out; }
-
         .animate-wave {
+
+        
         height: 20%;
         animation: soundWave 1.2s ease-in-out infinite;
     }
@@ -901,6 +904,131 @@
                 height: auto !important;
                 min-height: 0 !important; /* Empêche le bug de débordement du texte interne */
             }
+
+        /* =========================================
+           10. SETTINGS / ACHIEVEMENTS
+           ========================================= */
+        .settings-shell {
+            width: min(94vw, 980px);
+            height: min(90dvh, 760px);
+            max-height: 90dvh;
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .settings-nav-btn,
+        .achievement-filter-btn,
+        .achievement-category-btn {
+            min-height: 44px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+        }
+
+        .settings-nav-btn:hover,
+        .achievement-filter-btn:hover,
+        .achievement-category-btn:hover {
+            border-color: rgba(255,255,255,0.28);
+            color: #fff;
+            background: rgba(255,255,255,0.09);
+        }
+
+        .settings-nav-btn.active,
+        .achievement-filter-btn.active,
+        .achievement-category-btn.active {
+            border-color: var(--accent);
+            color: #fff;
+            background: rgba(129, 140, 248, 0.18);
+            box-shadow: 0 0 18px rgba(129, 140, 248, 0.22), inset 0 1px 1px rgba(255,255,255,0.16);
+        }
+
+        .achievement-map-grid {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 14px;
+            padding: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            background:
+                linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px),
+                rgba(0,0,0,0.28);
+            background-size: 32px 32px;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .achievement-card {
+            position: relative;
+            min-height: 176px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(12, 14, 24, 0.76);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.12), 0 12px 30px rgba(0,0,0,0.35);
+            overflow: hidden;
+        }
+
+        .achievement-card::before {
+            content: '';
+            position: absolute;
+            left: -14px;
+            top: 34px;
+            width: 14px;
+            height: 1px;
+            background: rgba(129, 140, 248, 0.32);
+        }
+
+        .achievement-card.unlocked {
+            border-color: rgba(129, 140, 248, 0.75);
+            background: linear-gradient(145deg, rgba(129,140,248,0.18), rgba(12,14,24,0.82));
+            box-shadow: 0 0 24px rgba(129,140,248,0.22), inset 0 1px 1px rgba(255,255,255,0.22);
+        }
+
+        .achievement-card.locked {
+            filter: grayscale(0.85);
+            opacity: 0.72;
+        }
+
+        .achievement-card.secret-locked .achievement-icon-wrap {
+            filter: blur(3px) grayscale(1);
+        }
+
+        .achievement-progress-track {
+            height: 7px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .achievement-progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent), var(--retro-green));
+            box-shadow: 0 0 12px rgba(129,140,248,0.42);
+            transition: width 0.35s ease;
+        }
+
+        @media (max-width: 767px) {
+            .settings-shell {
+                width: 100vw;
+                height: 100dvh;
+                max-height: 100dvh;
+                border-radius: 0 !important;
+                padding: calc(16px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom)) 14px !important;
+            }
+
+            .achievement-map-grid {
+                grid-template-columns: 1fr;
+                padding: 10px;
+                gap: 10px;
+            }
+        }
     
     </style>
 </head>
@@ -1013,42 +1141,71 @@
         </svg>
     </div>
 
-    <!-- Audio Settings Overlay -->
+    <!-- Settings Overlay -->
     <div id="audio-settings-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden">
-        <div class="liquid-glass-heavy p-6 md:p-10 rounded-2xl w-[90%] max-w-lg border border-[var(--accent)] text-center shadow-[0_0_60px_rgba(0,0,0,0.8)] max-h-[90dvh] overflow-y-auto flex flex-col">
-            <h2 class="text-2xl font-retro text-white mb-6 tracking-widest uppercase drop-shadow-lg shrink-0">Paramètres Audio</h2>
-
-            <div class="flex flex-col gap-6 w-full">
-                <!-- Master Volume -->
-                <div class="flex flex-col items-start gap-2">
-                    <label for="master-volume-slider" class="font-retro text-sm text-[var(--text-muted)] uppercase tracking-widest">Master Volume</label>
-                    <input type="range" id="master-volume-slider" min="0" max="1" step="0.01" value="1" class="w-full accent-[var(--accent)] cursor-pointer">
-                    <span id="master-volume-value" class="font-retro text-xs text-white">100%</span>
+        <div class="settings-shell liquid-glass-heavy p-5 md:p-7 rounded-2xl border border-[var(--accent)] shadow-[0_0_60px_rgba(0,0,0,0.8)] flex flex-col">
+            <div class="flex items-center justify-between gap-3 shrink-0 mb-4">
+                <div>
+                    <p class="text-[10px] font-retro text-[var(--accent)] tracking-widest uppercase mb-1">bounce_it v16</p>
+                    <h2 class="text-xl md:text-2xl font-retro text-white tracking-widest uppercase drop-shadow-lg">Paramètres</h2>
                 </div>
+                <button onclick="closeAudioSettings()" class="btn-minimal w-12 h-12 !p-0 rounded-lg text-xl leading-none flex items-center justify-center" aria-label="Fermer les paramètres">✕</button>
+            </div>
 
-                <!-- Music Volume -->
-                <div class="flex flex-col items-start gap-2">
-                    <label for="music-volume-slider" class="font-retro text-sm text-[var(--text-muted)] uppercase tracking-widest">Musique</label>
-                    <input type="range" id="music-volume-slider" min="0" max="1" step="0.01" value="0.8" class="w-full accent-[var(--accent)] cursor-pointer">
-                    <span id="music-volume-value" class="font-retro text-xs text-white">80%</span>
-                </div>
+            <div class="grid grid-cols-2 gap-2 shrink-0 mb-4 font-retro text-[10px] md:text-xs uppercase tracking-widest">
+                <button id="settings-tab-audio" class="settings-nav-btn active rounded-lg px-3 py-3" onclick="switchSettingsPanel('audio')">Audio</button>
+                <button id="settings-tab-achievements" class="settings-nav-btn rounded-lg px-3 py-3" onclick="switchSettingsPanel('achievements')">Achievements</button>
+            </div>
 
-                <!-- FX/UI Volume -->
-                <div class="flex flex-col items-start gap-2">
-                    <label for="sfx-volume-slider" class="font-retro text-sm text-[var(--text-muted)] uppercase tracking-widest">Effets Sonores / UI</label>
-                    <input type="range" id="sfx-volume-slider" min="0" max="1" step="0.01" value="0.5" class="w-full accent-[var(--accent)] cursor-pointer">
-                    <span id="sfx-volume-value" class="font-retro text-xs text-white">50%</span>
+            <div id="settings-audio-panel" class="flex-1 min-h-0 overflow-y-auto pr-1">
+                <div class="flex flex-col gap-6 w-full rounded-xl border border-white/10 bg-black/25 p-4 md:p-6">
+                    <div class="flex flex-col items-start gap-2">
+                        <label for="master-volume-slider" class="font-retro text-sm text-[var(--text-muted)] uppercase tracking-widest">Master Volume</label>
+                        <input type="range" id="master-volume-slider" min="0" max="1" step="0.01" value="1" class="w-full accent-[var(--accent)] cursor-pointer">
+                        <span id="master-volume-value" class="font-retro text-xs text-white">100%</span>
+                    </div>
+
+                    <div class="flex flex-col items-start gap-2">
+                        <label for="music-volume-slider" class="font-retro text-sm text-[var(--text-muted)] uppercase tracking-widest">Musique</label>
+                        <input type="range" id="music-volume-slider" min="0" max="1" step="0.01" value="0.8" class="w-full accent-[var(--accent)] cursor-pointer">
+                        <span id="music-volume-value" class="font-retro text-xs text-white">80%</span>
+                    </div>
+
+                    <div class="flex flex-col items-start gap-2">
+                        <label for="sfx-volume-slider" class="font-retro text-sm text-[var(--text-muted)] uppercase tracking-widest">Effets Sonores / UI</label>
+                        <input type="range" id="sfx-volume-slider" min="0" max="1" step="0.01" value="0.5" class="w-full accent-[var(--accent)] cursor-pointer">
+                        <span id="sfx-volume-value" class="font-retro text-xs text-white">50%</span>
+                    </div>
                 </div>
             </div>
 
-            <button onclick="closeAudioSettings()" class="btn-action py-3 px-8 rounded-lg text-xs font-retro tracking-widest mt-8 shrink-0">FERMER</button>
+            <div id="settings-achievements-panel" class="hidden flex-1 min-h-0 overflow-hidden flex-col gap-4">
+                <div class="rounded-xl border border-white/10 bg-white/[0.04] p-4 shrink-0">
+                    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-3">
+                        <div>
+                            <p class="font-retro text-[10px] text-[var(--text-muted)] tracking-widest uppercase mb-1">Career Milestones</p>
+                            <h3 class="font-retro text-xl text-white tracking-widest"><span id="achievements-unlocked-count">0</span>/<span id="achievements-total-count">0</span> achievements</h3>
+                        </div>
+                        <div id="achievements-global-percent" class="font-retro text-sm text-[var(--accent)] tracking-widest">0%</div>
+                    </div>
+                    <div class="achievement-progress-track h-2">
+                        <div id="achievements-global-bar" class="achievement-progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div id="achievement-category-tabs" class="grid grid-cols-2 md:grid-cols-4 gap-2 shrink-0 font-retro text-[10px] uppercase tracking-widest"></div>
+                <div id="achievement-filter-tabs" class="grid grid-cols-4 gap-2 shrink-0 font-retro text-[10px] uppercase tracking-widest"></div>
+                <div id="achievements-grid" class="achievement-map-grid flex-1"></div>
+            </div>
+
+            <button onclick="closeAudioSettings()" class="btn-action py-3 px-8 rounded-lg text-xs font-retro tracking-widest mt-4 shrink-0">FERMER</button>
         </div>
     </div>
 
     <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
         <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
             <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it</h1>
-            <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">v15</p>
+            <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">v16</p>
              <div class="mb-6 flex justify-center">
                 <img src="logo.jpeg" alt="Logo bounce_it" 
                      class="w-32 h-32 md:w-40 md:h-40 object-cover rounded-2xl border border-white/10 shadow-[0_0_25px_rgba(129,140,248,0.2)] pixelated" />
@@ -1380,6 +1537,15 @@
         <div class="w-48 h-[1px] bg-gray-800 mt-6 rounded-full overflow-hidden">
             <div id="loader-progress" class="h-full bg-[var(--accent)] w-0 transition-all duration-300 shadow-[0_0_10px_rgba(129,140,248,0.8)]"></div>
         </div>
+        <!-- Achievement Popup (Z-INDEX MAXIMUM) -->
+    <div id="achievement-popup" class="fixed top-[-150px] left-1/2 -translate-x-1/2 z-[1000000] w-[90%] max-w-md liquid-glass-heavy border-2 border-[var(--accent)] rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(129,140,248,0.5)] transition-all duration-500 pointer-events-none">
+        <div id="achievement-icon" class="text-4xl shrink-0 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">🏆</div>
+        <div class="flex flex-col">
+            <div class="text-[var(--accent)] font-retro text-[10px] tracking-widest uppercase mb-1">Success Unlocked</div>
+            <div id="achievement-title" class="text-white font-retro text-sm font-bold tracking-widest uppercase mb-1 drop-shadow-sm">Achievement Title</div>
+            <div id="achievement-desc" class="text-[var(--text-muted)] text-[10px] leading-relaxed">Achievement description goes here...</div>
+        </div>
+        <div class="absolute inset-0 rounded-2xl border-2 border-white/10 animate-pulse pointer-events-none"></div>
     </div>
 
 <script type="module">
@@ -2959,7 +3125,7 @@ function togglePixarLamp() {
 
     // Achievement: Lumière Divine
     state.stats.lampToggles = (state.stats.lampToggles || 0) + 1;
-    checkAchievement('lumiere_divine', () => state.stats.lampToggles === 20);
+    checkAchievement('lumiere_divine', () => state.stats.lampToggles >= 20);
 
     const spot    = lamp.userData.spot;
     const bulb    = lamp.userData.bulb;
@@ -3744,6 +3910,8 @@ function rotateAvatarToward(target, smooth = 0.12) {
         const overlay = document.getElementById('audio-settings-overlay');
         if (!overlay) return;
 
+        normalizeAchievementState();
+
         // Met à jour les sliders avec les valeurs actuelles
         document.getElementById('master-volume-slider').value = window.masterVolume;
         document.getElementById('master-volume-value').innerText = `${Math.round(window.masterVolume * 100)}%`;
@@ -3751,6 +3919,7 @@ function rotateAvatarToward(target, smooth = 0.12) {
         document.getElementById('music-volume-value').innerText = `${Math.round(window.musicVolume * 100)}%`;
         document.getElementById('sfx-volume-slider').value = window.sfxVolume;
         document.getElementById('sfx-volume-value').innerText = `${Math.round(window.sfxVolume * 100)}%`;
+        switchSettingsPanel(activeSettingsPanel, false);
 
         // 1. Rendre l'overlay visible (display: flex) sans changer l'opacité ni l'interactivité pour l'instant
         overlay.classList.remove('hidden');
@@ -3972,8 +4141,260 @@ function drawSysGraphUI(timestamp) {
     // SYSTÈME D'ACHIEVEMENTS
     // ==========================================
     // ==========================================
-    // SYSTÈME D'ACHIEVEMENTS PRO (WITH QUEUE)
+    // SYSTÈME D'ACHIEVEMENTS PRO (VISIBLE PARTOUT)
     // ==========================================
+    function normalizeAchievementState() {
+        const existing = state && state.achievements && typeof state.achievements === 'object' ? state.achievements : {};
+        const normalized = {};
+
+        Object.keys(DEFAULT_STATE.achievements).forEach(id => {
+            const base = DEFAULT_STATE.achievements[id] || {};
+            const saved = existing[id] || {};
+            const detail = ACHIEVEMENT_DETAILS[id] || {};
+            const unlocked = Boolean(saved.unlocked);
+            normalized[id] = {
+                ...saved,
+                ...base,
+                ...detail,
+                unlocked
+            };
+        });
+
+        Object.keys(existing).forEach(id => {
+            if (normalized[id]) return;
+            normalized[id] = {
+                category: 'studio',
+                secret: false,
+                target: 1,
+                unit: 'step',
+                ...existing[id]
+            };
+        });
+
+        state.achievements = normalized;
+    }
+
+    function getAchievementOrder() {
+        const baseIds = Object.keys(DEFAULT_STATE.achievements);
+        const extraIds = Object.keys(state.achievements || {}).filter(id => !baseIds.includes(id));
+        return [...baseIds, ...extraIds];
+    }
+
+    function getNestedStateValue(path) {
+        if (!path) return 0;
+        return path.split('.').reduce((obj, key) => (obj && obj[key] !== undefined ? obj[key] : undefined), state);
+    }
+
+    function escapeHTML(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[char]);
+    }
+
+    function getInGameTimeLabel(mins = state.timeMins) {
+        const total = parseInt(mins, 10) || 0;
+        const h = Math.floor(total / 60);
+        const m = total % 60;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    function stampAchievementUnlock(achievement) {
+        if (!achievement.unlockedDay) achievement.unlockedDay = parseInt(state.day, 10) || 1;
+        if (!achievement.unlockedTime) achievement.unlockedTime = getInGameTimeLabel();
+    }
+
+    function getAchievementProgress(id, achievement) {
+        const detail = ACHIEVEMENT_DETAILS[id] || achievement || {};
+        const target = Math.max(1, parseInt(detail.target || achievement.target || 1, 10));
+        let current = detail.progressPath ? Number(getNestedStateValue(detail.progressPath)) || 0 : (achievement.unlocked ? target : 0);
+
+        if (achievement.unlocked) current = Math.max(current, target);
+        const capped = Math.max(0, Math.min(current, target));
+
+        return {
+            current: capped,
+            target,
+            unit: detail.unit || achievement.unit || 'step',
+            percent: Math.round((capped / target) * 100),
+            progressive: Boolean(detail.progressPath && target > 1)
+        };
+    }
+
+    function getAchievementEntries() {
+        normalizeAchievementState();
+        return getAchievementOrder().map(id => ({
+            id,
+            ...(state.achievements[id] || {}),
+            detail: ACHIEVEMENT_DETAILS[id] || {}
+        }));
+    }
+
+    function migrateCompletedAchievementProgress() {
+        normalizeAchievementState();
+        Object.keys(state.achievements || {}).forEach(id => {
+            const achievement = state.achievements[id];
+            const detail = ACHIEVEMENT_DETAILS[id] || {};
+            if (!achievement || achievement.unlocked || !detail.progressPath) return;
+
+            const progress = getAchievementProgress(id, achievement);
+            if (progress.current >= progress.target) {
+                achievement.unlocked = true;
+                achievement.legacyUnlocked = true;
+            }
+        });
+    }
+
+    function getAchievementUnlockLabel(achievement) {
+        if (!achievement.unlocked) return 'LOCKED';
+        if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant v16';
+        if (achievement.unlockedDay) return `JOUR ${achievement.unlockedDay}${achievement.unlockedTime ? ' · ' + achievement.unlockedTime : ''}`;
+        return 'Débloqué avant v16';
+    }
+
+    function initAchievementsUI() {
+        const categoryHost = document.getElementById('achievement-category-tabs');
+        const filterHost = document.getElementById('achievement-filter-tabs');
+
+        if (categoryHost) {
+            categoryHost.innerHTML = ACHIEVEMENT_CATEGORIES.map(cat => `
+                <button id="achievement-category-${cat.id}" class="achievement-category-btn rounded-lg px-2 py-3" onclick="setAchievementCategory('${cat.id}')">${cat.label}</button>
+            `).join('');
+        }
+
+        if (filterHost) {
+            filterHost.innerHTML = ACHIEVEMENT_FILTERS.map(filter => `
+                <button id="achievement-filter-${filter.id}" class="achievement-filter-btn rounded-lg px-2 py-3" onclick="setAchievementFilter('${filter.id}')">${filter.label}</button>
+            `).join('');
+        }
+
+        renderAchievementsPanel();
+    }
+
+    function switchSettingsPanel(panel = 'audio', shouldPlay = true) {
+        activeSettingsPanel = panel === 'achievements' ? 'achievements' : 'audio';
+
+        const audioPanel = document.getElementById('settings-audio-panel');
+        const achievementsPanel = document.getElementById('settings-achievements-panel');
+        const audioTab = document.getElementById('settings-tab-audio');
+        const achievementsTab = document.getElementById('settings-tab-achievements');
+
+        if (audioPanel) audioPanel.classList.toggle('hidden', activeSettingsPanel !== 'audio');
+        if (achievementsPanel) {
+            achievementsPanel.classList.toggle('hidden', activeSettingsPanel !== 'achievements');
+            achievementsPanel.classList.toggle('flex', activeSettingsPanel === 'achievements');
+        }
+        if (audioTab) audioTab.classList.toggle('active', activeSettingsPanel === 'audio');
+        if (achievementsTab) achievementsTab.classList.toggle('active', activeSettingsPanel === 'achievements');
+
+        if (activeSettingsPanel === 'achievements') renderAchievementsPanel();
+        if (shouldPlay) playBleep();
+    }
+
+    function setAchievementCategory(category) {
+        activeAchievementCategory = ACHIEVEMENT_CATEGORIES.some(c => c.id === category) ? category : 'music';
+        renderAchievementsPanel();
+        playBleep();
+    }
+
+    function setAchievementFilter(filter) {
+        activeAchievementFilter = ACHIEVEMENT_FILTERS.some(f => f.id === filter) ? filter : 'all';
+        renderAchievementsPanel();
+        playBleep();
+    }
+
+    function refreshAchievementsPanel() {
+        const panel = document.getElementById('settings-achievements-panel');
+        if (panel && !panel.classList.contains('hidden')) renderAchievementsPanel();
+    }
+
+    function renderAchievementsPanel() {
+        const grid = document.getElementById('achievements-grid');
+        if (!grid) return;
+
+        const entries = getAchievementEntries();
+        const unlockedCount = entries.filter(a => a.unlocked).length;
+        const totalCount = entries.length;
+        const globalPercent = totalCount ? Math.round((unlockedCount / totalCount) * 100) : 0;
+
+        const unlockedEl = document.getElementById('achievements-unlocked-count');
+        const totalEl = document.getElementById('achievements-total-count');
+        const percentEl = document.getElementById('achievements-global-percent');
+        const barEl = document.getElementById('achievements-global-bar');
+
+        if (unlockedEl) unlockedEl.innerText = unlockedCount;
+        if (totalEl) totalEl.innerText = totalCount;
+        if (percentEl) percentEl.innerText = `${globalPercent}%`;
+        if (barEl) barEl.style.width = `${globalPercent}%`;
+
+        ACHIEVEMENT_CATEGORIES.forEach(cat => {
+            const btn = document.getElementById(`achievement-category-${cat.id}`);
+            if (btn) btn.classList.toggle('active', cat.id === activeAchievementCategory);
+        });
+
+        ACHIEVEMENT_FILTERS.forEach(filter => {
+            const btn = document.getElementById(`achievement-filter-${filter.id}`);
+            if (btn) btn.classList.toggle('active', filter.id === activeAchievementFilter);
+        });
+
+        const visible = entries
+            .filter(a => (a.category || 'studio') === activeAchievementCategory)
+            .filter(a => {
+                if (activeAchievementFilter === 'unlocked') return a.unlocked;
+                if (activeAchievementFilter === 'locked') return !a.unlocked;
+                if (activeAchievementFilter === 'secret') return Boolean(a.secret);
+                return true;
+            });
+
+        if (visible.length === 0) {
+            grid.innerHTML = `<div class="col-span-full min-h-[180px] flex items-center justify-center text-center font-retro text-[var(--text-muted)] tracking-widest uppercase text-xs">Aucun achievement ici.</div>`;
+            return;
+        }
+
+        grid.innerHTML = visible.map(achievement => {
+            const isSecretLocked = achievement.secret && !achievement.unlocked;
+            const progress = getAchievementProgress(achievement.id, achievement);
+            const title = isSecretLocked ? '???' : achievement.name;
+            const desc = isSecretLocked ? 'Achievement secret' : achievement.description;
+            const icon = isSecretLocked ? '❔' : (achievement.icon || '🏆');
+            const stateClass = achievement.unlocked ? 'unlocked' : 'locked';
+            const secretClass = isSecretLocked ? 'secret-locked' : '';
+            const badge = achievement.unlocked
+                ? '<span class="text-[var(--retro-green)] drop-shadow-[0_0_8px_var(--retro-green)]">✓ UNLOCKED</span>'
+                : '<span class="text-[var(--text-muted)]">LOCKED</span>';
+            const progressHTML = progress.progressive && !isSecretLocked ? `
+                <div class="mt-4">
+                    <div class="flex justify-between items-center mb-1.5 font-retro text-[9px] tracking-widest text-[var(--text-muted)]">
+                        <span>${formatNum(progress.current)}/${formatNum(progress.target)} ${escapeHTML(progress.unit)}</span>
+                        <span>${progress.percent}%</span>
+                    </div>
+                    <div class="achievement-progress-track">
+                        <div class="achievement-progress-fill" style="width:${progress.percent}%;"></div>
+                    </div>
+                </div>
+            ` : '';
+
+            return `
+                <article class="achievement-card ${stateClass} ${secretClass} p-4 flex flex-col">
+                    <div class="flex items-start justify-between gap-3 mb-3">
+                        <div class="achievement-icon-wrap w-12 h-12 rounded-lg border border-white/10 bg-black/40 flex items-center justify-center text-3xl shrink-0">${escapeHTML(icon)}</div>
+                        <div class="font-retro text-[9px] tracking-widest uppercase">${badge}</div>
+                    </div>
+                    <h4 class="font-retro text-sm text-white tracking-widest uppercase leading-snug mb-2">${escapeHTML(title)}</h4>
+                    <p class="text-xs text-[var(--text-muted)] leading-relaxed flex-1 ${isSecretLocked ? 'blur-[1px]' : ''}">${escapeHTML(desc)}</p>
+                    ${progressHTML}
+                    <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-3 font-retro text-[9px] tracking-widest uppercase text-[var(--text-muted)]">
+                        <span>${escapeHTML(ACHIEVEMENT_CATEGORIES.find(c => c.id === (achievement.category || 'studio'))?.label || 'STUDIO')}</span>
+                        <span>${escapeHTML(getAchievementUnlockLabel(achievement))}</span>
+                    </div>
+                </article>
+            `;
+        }).join('');
+    }
+
     let achievementQueue = [];
     let isAchievementShowing = false;
 
@@ -3987,25 +4408,25 @@ function drawSysGraphUI(timestamp) {
         isAchievementShowing = true;
         const data = achievementQueue.shift();
         const popup = document.getElementById('achievement-popup');
-        if (!popup) return;
+        if (!popup) { isAchievementShowing = false; return; }
         
         document.getElementById('achievement-icon').innerText = data.icon;
         document.getElementById('achievement-title').innerText = data.title;
         document.getElementById('achievement-desc').innerText = data.desc;
 
-        // Slide down
+        // Apparition (Slide down)
         popup.style.top = '24px';
         popup.classList.add('animate-achievement');
         playSuccess();
 
         setTimeout(() => {
-            // Slide up
+            // Disparition (Slide up)
             popup.style.top = '-150px';
             popup.classList.remove('animate-achievement');
             setTimeout(() => {
                 isAchievementShowing = false;
                 processAchievementQueue();
-            }, 600);
+            }, 600); // Délai de transition
         }, 5000);
     }
 
@@ -4014,7 +4435,9 @@ function drawSysGraphUI(timestamp) {
         if (condition()) {
             state.achievements[id].unlocked = true;
             const a = state.achievements[id];
+            stampAchievementUnlock(a);
             unlockAchievement(a.name || id, a.description, a.icon || '🏆');
+            refreshAchievementsPanel();
             saveGame();
         }
     }
@@ -4671,10 +5094,47 @@ function createAvatarGroup(styleIndex) {
         }
     };
 
+    const ACHIEVEMENT_CATEGORIES = [
+        { id: 'music', label: '💿 MUSIQUE' },
+        { id: 'dark', label: '🏴‍☠️ DARK SIDE' },
+        { id: 'studio', label: '🛋️ STUDIO' },
+        { id: 'business', label: '💼 BUSINESS' }
+    ];
+
+    const ACHIEVEMENT_FILTERS = [
+        { id: 'all', label: 'All' },
+        { id: 'unlocked', label: 'Unlocked' },
+        { id: 'locked', label: 'Locked' },
+        { id: 'secret', label: 'Secret' }
+    ];
+
+    const ACHIEVEMENT_DETAILS = {
+        first_blood: { category: 'music', progressPath: 'stats.tracks', target: 1, unit: 'track' },
+        certifie_classique: { category: 'music', target: 1, unit: 'review' },
+        dans_la_sauce: { category: 'business', progressPath: 'followers', target: 100000, unit: 'followers' },
+        productivite_toxique: { category: 'music', progressPath: 'stats.consecutiveFlops', target: 5, unit: 'flops' },
+        alerte_rouge: { category: 'dark', progressPath: 'stats.viruses', target: 1, unit: 'virus' },
+        hacker_man: { category: 'dark', progressPath: 'stats.crackDownloads', target: 5, unit: 'downloads' },
+        cancel_culture: { category: 'business', target: 1, unit: 'event' },
+        avocat_du_diable: { category: 'business', target: 1, unit: 'case' },
+        let_him_cook: { category: 'studio', progressPath: 'stats.sofaChills', target: 10, unit: 'chills' },
+        sellout: { category: 'business', target: 1, unit: 'deal' },
+        inge_son_certifie: { category: 'business', progressPath: 'plugins', target: 1, unit: 'plugin' },
+        prix_de_la_paix: { category: 'business', target: 1, unit: 'deal' },
+        toujours_dans_le_rouge: { category: 'studio', target: 1, unit: 'export', secret: true },
+        lumiere_divine: { category: 'studio', progressPath: 'stats.lampToggles', target: 20, unit: 'switches', secret: true },
+        vrai_rat_de_studio: { category: 'studio', progressPath: 'stats.awakeDays', target: 3, unit: 'days', secret: true }
+    };
+
     let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    normalizeAchievementState();
+
     let selectedAvatarIndex = 0;
     let currentDawGenre = 'drill';
     let currentDawVoice = 'm';
+    let activeSettingsPanel = 'audio';
+    let activeAchievementCategory = 'music';
+    let activeAchievementFilter = 'all';
 
     // ==========================================
     // 9. STORAGE
@@ -4761,6 +5221,8 @@ function createAvatarGroup(styleIndex) {
             state.followers = (parseInt(state.followers, 10) || 0) + amount;
             state.history.followers.unshift(generateFanName());
             if (state.history.followers.length > 4) state.history.followers.pop();
+            checkAchievement('dans_la_sauce', () => state.followers >= 100000);
+            refreshAchievementsPanel();
         }
     }
     function getVpnCooldown() {
@@ -5094,6 +5556,7 @@ function createAvatarGroup(styleIndex) {
             }
         }
         initAudioSettingsListeners(); // Appel de la fonction d'initialisation des écouteurs
+        initAchievementsUI();
         initPianoRollUI(); // Initialise le DOM du Piano Roll au boot
         initPianoRollEvents();
         initInteractiveStudio();
@@ -5296,7 +5759,7 @@ function createAvatarGroup(styleIndex) {
 
         // Achievement: Let Him Cook
         state.stats.sofaChills = (state.stats.sofaChills || 0) + 1;
-        checkAchievement('let_him_cook', () => state.stats.sofaChills === 10);
+        checkAchievement('let_him_cook', () => state.stats.sofaChills >= 10);
 
         MusicSystem.crossfadeTo('sleep', 3.0); // <-- AJOUT ICI (Fondu lent de 3s)
         targetPosition = null; // Annule tout déplacement en cours (freeze l'avatar)
@@ -5452,7 +5915,7 @@ function createAvatarGroup(styleIndex) {
                 state.stats.awakeDays        = parseInt(state.stats.awakeDays, 10) || 0;
                 state.history                = state.history || { money: [], followers: [] };
                 state.trackList = state.trackList || [];
-                state.achievements = state.achievements || DEFAULT_STATE.achievements; // Charge les achievements existants
+                state.achievements = state.achievements || {}; // Charge les achievements existants
 
                 // --- DÉBUT MIGRATION RÉTROCOMPATIBILITÉ TOP CHARTS ---
     if (state.trackList.length === 0 && state.stats.tracks > 0) {
@@ -5516,6 +5979,10 @@ function createAvatarGroup(styleIndex) {
             state.activeCharacter = selectedAvatarIndex;
             showToast("New Profile Registered.", "info");
         }
+
+        normalizeAchievementState();
+        migrateCompletedAchievementProgress();
+        refreshAchievementsPanel();
 
         spawnRoomAvatar(state.activeCharacter);
 
@@ -5698,6 +6165,7 @@ function createAvatarGroup(styleIndex) {
         function saveGame() {
         if (!state || !state.username) return;
         SafeStorage.set(getSaveKey(state.username), JSON.stringify(state));
+        refreshAchievementsPanel();
     }
 
     function dailyReset() {
@@ -5988,7 +6456,7 @@ function createAvatarGroup(styleIndex) {
 
         state.stats.tracks++;
         // Déclencheur pour l'achievement "First Blood"
-        checkAchievement('first_blood', () => state.stats.tracks === 1);
+        checkAchievement('first_blood', () => state.stats.tracks >= 1);
 
         const trackScore = result.score === 3 ? Math.floor(7 + Math.random() * 3) :
                    result.score === 1 ? Math.floor(4 + Math.random() * 3) :
@@ -6172,7 +6640,7 @@ function renderStore(tab) {
         if (!crack) return;
         
         state.stats.crackDownloads = (parseInt(state.stats.crackDownloads, 10) || 0) + 1;
-        checkAchievement('hacker_man', () => state.stats.crackDownloads === 5);
+        checkAchievement('hacker_man', () => state.stats.crackDownloads >= 5);
         state.cooldowns.crackzTimeReady = getTotalMins() + getVpnCooldown();
         
         // Si on tombe dans le pourcentage de risque : ÉCHEC
@@ -6204,7 +6672,7 @@ function renderStore(tab) {
             logMoney(-price, 'AudioStore: Plugin');
             state.multiplier = (parseFloat(state.multiplier) || 1.0) + mult;
             state.plugins = (parseInt(state.plugins, 10) || 0) + 1;
-            checkAchievement('inge_son_certifie', () => state.plugins === 1);
+            checkAchievement('inge_son_certifie', () => state.plugins >= 1);
             showToast(`Purchase Confirmed! Multiplier +${mult}`, "success");
             playSuccess(); saveGame(); updateHUD();
         } else {
@@ -6215,7 +6683,7 @@ function renderStore(tab) {
     function triggerBSOD() {
         state.stats.viruses++;
         const loss = Math.floor(state.money * 0.2);
-        checkAchievement('alerte_rouge', () => state.stats.viruses === 1);
+        checkAchievement('alerte_rouge', () => state.stats.viruses >= 1);
         logMoney(-loss, 'System Virus Purge');
         saveGame(); updateHUD(); playError();
         const bsod = document.getElementById('bsod');
@@ -7022,6 +7490,9 @@ window.smoothCamTarget = new THREE.Vector3(0, 0, 0);
     window.goSleep          = goSleep; // Export du sommeil
     window.openAudioSettings = openAudioSettings; // Export du menu audio
     window.closeAudioSettings = closeAudioSettings; // Export de la fermeture audio
+    window.switchSettingsPanel = switchSettingsPanel;
+    window.setAchievementCategory = setAchievementCategory;
+    window.setAchievementFilter = setAchievementFilter;
     window.goSit            = goSit;
     window.closeReview      = closeReview; // Export de la fermeture review
     window.toggleSecretTape = toggleSecretTape;
