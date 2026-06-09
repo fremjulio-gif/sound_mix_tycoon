@@ -2274,30 +2274,53 @@
         boardGroup.position.set(3.8, 1.8, -4.95);
         boardGroup.rotation.y = 0; // Fait face à la pièce
 
-        // Le Cadre
-        const frameBoardGeo = new THREE.BoxGeometry(1.6, 1.2, 0.05);
-        const frameBoardMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.8 });
+        // Le Cadre (plus grand, plus épais, avec un matériau plus distinct)
+        const frameBoardGeo = new THREE.BoxGeometry(1.8, 1.4, 0.1); // Augmenté
+        const frameBoardMat = new THREE.MeshStandardMaterial({ color: '#2c2c2c', roughness: 0.6, metalness: 0.3 }); // Plus sombre, légèrement métallique
         const frameBoard = new THREE.Mesh(frameBoardGeo, frameBoardMat);
+        frameBoard.position.set(0, 0, 0.02); // Légèrement avancé
         
-        // Le Fond (Passe-partout sombre)
-        const canvasGeo = new THREE.PlaneGeometry(1.5, 1.1);
+        // Le Fond (Passe-partout sombre, ajusté à la nouvelle taille du cadre)
+        const canvasGeo = new THREE.PlaneGeometry(1.6, 1.2); // Ajusté
         const canvasMat = new THREE.MeshStandardMaterial({ color: '#1f2937', roughness: 0.5 });
         const canvasMesh = new THREE.Mesh(canvasGeo, canvasMat);
-        canvasMesh.position.set(0, 0, 0.026);
+        canvasMesh.position.set(0, 0, 0.001); // Légèrement en retrait du cadre
 
-        // Le Disque d'or (Cylindre aplati)
-        const recordGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.02, 32);
+        // Le Disque d'or (Cylindre aplati - plus grand, plus épais, plus de segments)
+        const recordGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.03, 64); // Rayon 0.4, épaisseur 0.03, 64 segments
         recordGeo.rotateX(Math.PI / 2);
-        const recordMat = new THREE.MeshStandardMaterial({ color: '#fbbf24', metalness: 0.9, roughness: 0.1 });
+        const recordMat = new THREE.MeshStandardMaterial({ color: '#fbbf24', metalness: 0.9, roughness: 0.1, emissive: '#fbbf24', emissiveIntensity: 0.1 }); // Ajout d'un léger emissive
         const recordMesh = new THREE.Mesh(recordGeo, recordMat);
-        recordMesh.position.set(0, 0.1, 0.04);
+        recordMesh.position.set(0, 0.15, 0.06); // Remonté et avancé
 
-        // Petite plaque dorée sous le disque
-        const plaqueGeo = new THREE.BoxGeometry(0.4, 0.15, 0.02);
+        // Le Label central du disque
+        const labelGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.008, 32); // Petit cylindre fin
+        labelGeo.rotateX(Math.PI / 2);
+        const recordLabelMat = new THREE.MeshStandardMaterial({ color: '#818cf8', roughness: 0.7, emissive: '#818cf8', emissiveIntensity: 0.05 }); // Couleur accent du jeu
+        const labelMesh = new THREE.Mesh(labelGeo, recordLabelMat);
+        labelMesh.position.set(0, 0, 0.005); // Positionné par rapport au recordMesh
+        recordMesh.add(labelMesh);
+
+        // Le Trou central du disque
+        const holeGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.01, 16);
+        holeGeo.rotateX(Math.PI / 2);
+        const holeMat = new THREE.MeshStandardMaterial({ color: '#050505', roughness: 0.9 });
+        const holeMesh = new THREE.Mesh(holeGeo, holeMat);
+        holeMesh.position.set(0, 0, 0.01); // Positionné par rapport au recordMesh
+        recordMesh.add(holeMesh);
+
+        // Petite plaque dorée sous le disque (plus grande et plus épaisse)
+        const plaqueGeo = new THREE.BoxGeometry(0.6, 0.2, 0.03); // Augmenté
         const plaqueMesh = new THREE.Mesh(plaqueGeo, recordMat);
-        plaqueMesh.position.set(0, -0.35, 0.04);
+        plaqueMesh.position.set(0, -0.35, 0.06); // Déplacé vers le bas et avancé
 
-        boardGroup.add(frameBoard, canvasMesh, recordMesh, plaqueMesh);
+        // Détail sur la plaque (simule un texte gravé ou une petite étiquette)
+        const plaqueDetailGeo = new THREE.BoxGeometry(0.5, 0.1, 0.005);
+        const plaqueDetailMat = new THREE.MeshStandardMaterial({ color: '#a1a1aa', roughness: 0.8 }); // Couleur gris clair
+        const plaqueDetailMesh = new THREE.Mesh(plaqueDetailGeo, plaqueDetailMat);
+        plaqueDetailMesh.position.set(0, -0.35, 0.065); // Légèrement devant la plaque
+
+        boardGroup.add(frameBoard, canvasMesh, recordMesh, plaqueMesh, plaqueDetailMesh);
 
         // Assignation pour le clic et le surlignage
         boardGroup.traverse(child => {
@@ -6330,7 +6353,8 @@
                     state.cooldowns = state.cooldowns || {};
                     state.cooldowns.dawTimeReady   = parseInt(state.cooldowns.dawTimeReady, 10)   || 0;
                     state.cooldowns.crackzTimeReady= parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
-                    state.cooldowns.storyTimeReady = parseInt(state.cooldowns.storyTimeReady, 10)  || 0;
+                    // Bonus QoL : On réinitialise la story à chaque boot pour récompenser la connexion
+                    state.cooldowns.storyTimeReady = 0;
                     state.cooldowns.sponsors       = state.cooldowns.sponsors || {};
 
                     
