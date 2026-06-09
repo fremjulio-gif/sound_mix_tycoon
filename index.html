@@ -4405,35 +4405,63 @@
                     const stateClass = achievement.unlocked ? 'unlocked' : (isSecretLocked ? 'locked secret-locked' : 'locked');
                     const unlockLabel = getAchievementUnlockLabel(achievement);
 
-                    const card = document.createElement('div');
-                    card.className = `achievement-card ${stateClass}`;
+                                    const card = document.createElement('div');
+                card.className = `achievement-card ${stateClass}`;
 
-                    const progressHTML = progress.progressive && !isSecretLocked ? `
-                        <div class="mt-2">
-                            <div class="flex justify-between font-retro text-[9px] text-[var(--text-muted)] mb-1 tracking-widest">
-                                <span>${formatNum(progress.current)}/${formatNum(progress.target)} ${escapeHTML(progress.unit)}</span>
-                                <span>${progress.percent}%</span>
-                            </div>
-                            <div class="achievement-progress-track">
-                                <div class="achievement-progress-fill" style="width:${progress.percent}%;"></div>
-                            </div>
-                        </div>` : '';
-
-                    card.innerHTML = `
-                        <div class="flex items-start gap-3 mb-2">
-                            <div class="achievement-icon-wrap">${escapeHTML(icon)}</div>
-                            <div class="flex-1 min-w-0">
-                                <div class="font-retro text-[11px] text-white font-bold tracking-wide leading-tight truncate">${escapeHTML(title)}</div>
-                                <div class="text-[10px] text-[var(--text-muted)] mt-0.5 leading-snug line-clamp-2 ${isSecretLocked ? 'blur-[2px]' : ''}">${escapeHTML(desc)}</div>
-                            </div>
+                const progressHTML = progress.progressive && !isSecretLocked ? `
+                    <div class="mt-2">
+                        <div class="flex justify-between font-retro text-[9px] text-[var(--text-muted)] mb-1 tracking-widest">
+                            <span>${formatNum(progress.current)}/${formatNum(progress.target)} ${escapeHTML(progress.unit)}</span>
+                            <span>${progress.percent}%</span>
                         </div>
-                        ${progressHTML}
-                        <div class="mt-auto pt-2 border-t border-white/[0.06] flex items-center justify-between font-retro text-[9px] text-[var(--text-muted)] tracking-wider">
-                            <span class="${achievement.unlocked ? 'text-[var(--accent)]' : ''}">${achievement.unlocked ? '✓ UNLOCKED' : 'LOCKED'}</span>
-                            <span class="truncate ml-2 text-right opacity-60">${escapeHTML(unlockLabel)}</span>
-                        </div>`;
+                        <div class="achievement-progress-track">
+                            <div class="achievement-progress-fill" style="width:${progress.percent}%;"></div>
+                        </div>
+                    </div>` : '';
 
-                    strip.appendChild(card);
+                // --- GÉNÉRATION DU BOUTON DE RÉCOMPENSE ---
+                const rewardInfo = achievement.detail.reward || {};
+                let rewardText = [];
+                if (rewardInfo.money) rewardText.push(`+$${formatNum(rewardInfo.money)}`);
+                if (rewardInfo.rep) rewardText.push(`+${rewardInfo.rep} REP`);
+                if (rewardInfo.followers) rewardText.push(`+${formatNum(rewardInfo.followers)} FOL`);
+                const rewardString = rewardText.join(' | ');
+
+                let rewardUI = '';
+                if (achievement.unlocked) {
+                    if (!achievement.rewardClaimed) {
+                        // Bouton pour récupérer le loot
+                        rewardUI = `
+                        <button class="mt-3 w-full bg-[var(--accent)] text-white hover:bg-[var(--retro-green)] hover:text-black transition-colors py-2 rounded font-retro text-[9px] font-bold tracking-widest" 
+                                onclick="claimAchievementReward('${achievement.id}')">
+                            CLAIM: ${rewardString}
+                        </button>`;
+                    } else {
+                        // Déjà récupéré
+                        rewardUI = `<div class="mt-3 w-full text-center py-2 text-[var(--retro-green)] font-retro font-bold text-[9px] tracking-widest border border-[var(--retro-green)]/30 rounded">CLAIMED ✓</div>`;
+                    }
+                } else if (!isSecretLocked && rewardString) {
+                    // Montre la récompense pour motiver le joueur
+                    rewardUI = `<div class="mt-3 w-full text-center py-2 text-gray-500 font-retro text-[8px] tracking-widest border border-white/5 rounded">REWARD: ${rewardString}</div>`;
+                }
+                // ------------------------------------------
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-3 mb-2">
+                        <div class="achievement-icon-wrap">${escapeHTML(icon)}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-retro text-[11px] text-white font-bold tracking-wide leading-tight truncate">${escapeHTML(title)}</div>
+                            <div class="text-[10px] text-[var(--text-muted)] mt-0.5 leading-snug line-clamp-2 ${isSecretLocked ? 'blur-[2px]' : ''}">${escapeHTML(desc)}</div>
+                        </div>
+                    </div>
+                    ${progressHTML}
+                    ${rewardUI}
+                    <div class="mt-auto pt-2 border-t border-white/[0.06] flex items-center justify-between font-retro text-[9px] text-[var(--text-muted)] tracking-wider">
+                        <span class="${achievement.unlocked ? 'text-[var(--accent)]' : ''}">${achievement.unlocked ? '✓ UNLOCKED' : 'LOCKED'}</span>
+                        <span class="truncate ml-2 text-right opacity-60">${escapeHTML(unlockLabel)}</span>
+                    </div>`;
+
+                strip.appendChild(card);
                 });
 
                 section.appendChild(strip);
@@ -4487,6 +4515,41 @@
                 saveGame();
             }
         }
+
+            // === FONCTION DE RÉCUPÉRATION DES RÉCOMPENSES ===
+    function claimAchievementReward(id) {
+        if (!state.achievements[id] || !state.achievements[id].unlocked || state.achievements[id].rewardClaimed) return;
+        
+        const detail = ACHIEVEMENT_DETAILS[id];
+        if (!detail || !detail.reward) return;
+
+        const r = detail.reward;
+        let toastMsg = "Récompense obtenue :";
+        
+        if (r.money) {
+            logMoney(r.money, `Reward: ${state.achievements[id].name || id}`);
+            toastMsg += `\n+$${r.money}`;
+            if (typeof playCashSound === 'function') playCashSound();
+        }
+        if (r.rep) {
+            state.rep += r.rep;
+            toastMsg += `\n+${r.rep} REP`;
+            if (!r.money) playSuccess();
+        }
+        if (r.followers) {
+            logFollower(r.followers);
+            toastMsg += `\n+${r.followers} Fans`;
+            if (!r.money && !r.rep) playSuccess();
+        }
+
+        // Marque le succès comme réclamé
+        state.achievements[id].rewardClaimed = true;
+        
+        showToast(toastMsg, "success");
+        updateHUD();
+        refreshAchievementsPanel(); // Rafraîchit l'UI pour changer le bouton en "CLAIMED ✓"
+        saveGame();
+    }
 
 
         // ==========================================
@@ -5155,23 +5218,22 @@
         ];
 
         const ACHIEVEMENT_DETAILS = {
-            first_blood: { category: 'music', progressPath: 'stats.tracks', target: 1, unit: 'track' },
-            certifie_classique: { category: 'music', target: 1, unit: 'review' },
-            dans_la_sauce: { category: 'business', progressPath: 'followers', target: 100000, unit: 'followers' },
-            productivite_toxique: { category: 'music', progressPath: 'stats.consecutiveFlops', target: 5, unit: 'flops' },
-            alerte_rouge: { category: 'dark', progressPath: 'stats.viruses', target: 1, unit: 'virus' },
-            hacker_man: { category: 'dark', progressPath: 'stats.crackDownloads', target: 5, unit: 'downloads' },
-            cancel_culture: { category: 'business', target: 1, unit: 'event' },
-            avocat_du_diable: { category: 'business', target: 1, unit: 'case' },
-            let_him_cook: { category: 'studio', progressPath: 'stats.sofaChills', target: 10, unit: 'chills' },
-            sellout: { category: 'business', target: 1, unit: 'deal' },
-            inge_son_certifie: { category: 'business', progressPath: 'plugins', target: 1, unit: 'plugin' },
-            prix_de_la_paix: { category: 'business', target: 1, unit: 'deal' },
-            toujours_dans_le_rouge: { category: 'studio', target: 1, unit: 'export', secret: true },
-            lumiere_divine: { category: 'studio', progressPath: 'stats.lampToggles', target: 20, unit: 'switches', secret: true },
-            vrai_rat_de_studio: { category: 'studio', progressPath: 'stats.awakeDays', target: 3, unit: 'days', secret: true }
-        };
-
+        first_blood: { category: 'music', progressPath: 'stats.tracks', target: 1, unit: 'track', reward: { money: 500, rep: 10 } },
+        certifie_classique: { category: 'music', target: 1, unit: 'review', reward: { money: 2000, rep: 50, followers: 1000 } },
+        dans_la_sauce: { category: 'business', progressPath: 'followers', target: 100000, unit: 'followers', reward: { rep: 100, followers: 5000 } },
+        productivite_toxique: { category: 'music', progressPath: 'stats.consecutiveFlops', target: 5, unit: 'flops', reward: { money: 100 } },
+        alerte_rouge: { category: 'dark', progressPath: 'stats.viruses', target: 1, unit: 'virus', reward: { money: 500 } },
+        hacker_man: { category: 'dark', progressPath: 'stats.crackDownloads', target: 5, unit: 'downloads', reward: { money: 1000 } },
+        cancel_culture: { category: 'business', target: 1, unit: 'event', reward: { rep: 50 } },
+        avocat_du_diable: { category: 'business', target: 1, unit: 'case', reward: { money: 2500, rep: 30 } },
+        let_him_cook: { category: 'studio', progressPath: 'stats.sofaChills', target: 10, unit: 'chills', reward: { rep: 15 } },
+        sellout: { category: 'business', target: 1, unit: 'deal', reward: { money: 5000 } },
+        inge_son_certifie: { category: 'business', progressPath: 'plugins', target: 1, unit: 'plugin', reward: { rep: 20, followers: 500 } },
+        prix_de_la_paix: { category: 'business', target: 1, unit: 'deal', reward: { rep: 40 } },
+        toujours_dans_le_rouge: { category: 'studio', target: 1, unit: 'export', secret: true, reward: { money: 300, rep: 5 } },
+        lumiere_divine: { category: 'studio', progressPath: 'stats.lampToggles', target: 20, unit: 'switches', secret: true, reward: { money: 50 } },
+        vrai_rat_de_studio: { category: 'studio', progressPath: 'stats.awakeDays', target: 3, unit: 'days', secret: true, reward: { money: 1000, rep: 20 } }
+    };
         let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
         normalizeAchievementState();
 
@@ -7559,6 +7621,7 @@
         window.closeReview      = closeReview; // Export de la fermeture review
         window.toggleSecretTape = toggleSecretTape;
         window.closePianoRoll   = closePianoRoll;
+        window.claimAchievementReward = claimAchievementReward;
         
         // Boot
         initUI();
