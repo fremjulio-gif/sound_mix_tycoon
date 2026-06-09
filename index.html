@@ -4375,17 +4375,17 @@
             // === SYSTÈME DE LIGUES (CARRIÈRE) ===
     const PLAYER_RANKS = [
         { id: 1, name: "Type-Beat Rookie",  minFol: 0,      icon: "🎧", color: "from-[#292524] to-[#1c1917]", borderColor: "from-[#78716c] to-[#57534e]", glowColor: "#a8a29e" }, // Bronze/Gris
-        { id: 2, name: "SoundNet Hustler",  minFol: 5000,   icon: "💿", color: "from-[#1e3a8a] to-[#172554]", borderColor: "from-[#60a5fa] to-[#3b82f6]", glowColor: "#3b82f6" }, // Argent/Bleu
-        { id: 3, name: "Street Certified",  minFol: 25000,  icon: "🔥", color: "from-[#78350f] to-[#451a03]", borderColor: "from-[#fbbf24] to-[#f59e0b]", glowColor: "#fbbf24" }, // Or/Feu
-        { id: 4, name: "Industry Hitmaker", minFol: 100000, icon: "🔮", color: "from-[#4a044e] to-[#280137]", borderColor: "from-[#c084fc] to-[#a855f7]", glowColor: "#a855f7" }, // Platine/Violet
-        { id: 5, name: "Diamond Architect", minFol: 500000, icon: "💎", color: "from-[#083344] to-[#022c22]", borderColor: "from-[#22d3ee] to-[#06b6d4]", glowColor: "#22d3ee" }  // Diamant/Cyan
+        { id: 2, name: "SoundNet Hustler",  minFol: 500,   icon: "💿", color: "from-[#1e3a8a] to-[#172554]", borderColor: "from-[#60a5fa] to-[#3b82f6]", glowColor: "#3b82f6" }, // Argent/Bleu
+        { id: 3, name: "Street Certified",  minFol: 1000,  icon: "🔥", color: "from-[#78350f] to-[#451a03]", borderColor: "from-[#fbbf24] to-[#f59e0b]", glowColor: "#fbbf24" }, // Or/Feu
+        { id: 4, name: "Industry Hitmaker", minFol: 2000, icon: "🔮", color: "from-[#4a044e] to-[#280137]", borderColor: "from-[#c084fc] to-[#a855f7]", glowColor: "#a855f7" }, // Platine/Violet
+        { id: 5, name: "Diamond Architect", minFol: 5000, icon: "💎", color: "from-[#083344] to-[#022c22]", borderColor: "from-[#22d3ee] to-[#06b6d4]", glowColor: "#22d3ee" }  // Diamant/Cyan
     ];
 
     function calculateLevelData() {
         // Normalisation des stats pour le calcul du niveau (Moyenne pondérée)
-        const moneyScore = Math.min(100, (state.money / 25000) * 100);    // $25k = Max Mastery
-        const repScore   = Math.min(100, (state.rep / 2000) * 100);      // 2k Rep = Max Mastery
-        const follScore  = Math.min(100, (state.followers / 250000) * 100); // 250k Fans = Max Mastery
+        const moneyScore = Math.min(100, (state.money / 10000) * 100);    // $25k = Max Mastery
+        const repScore   = Math.min(100, (state.rep / 1000) * 100);      // 2k Rep = Max Mastery
+        const follScore  = Math.min(100, (state.followers / 20000) * 100); // 250k Fans = Max Mastery
         
         const avgMastery = (moneyScore + repScore + follScore) / 3;
         const level = Math.floor(avgMastery / 1.5) + 1; // Échelle de niveau ~1 à 67
