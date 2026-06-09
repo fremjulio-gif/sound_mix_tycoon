@@ -4343,8 +4343,12 @@
         // ==========================================
         function openAchievementsBoard() {
             const overlay = document.getElementById('achievements-overlay');
+            const panel = document.getElementById('settings-achievements-panel');
             if (!overlay) return;
             
+            // Force la visibilité du panneau interne (au cas où il a été caché par le menu Audio)
+            if (panel) { panel.classList.remove('hidden'); panel.classList.add('flex'); }
+
             normalizeAchievementState();
             renderAchievementsPanel(); // Met à jour les succès
             
@@ -4623,33 +4627,23 @@
         // SYSTÈME D'ACHIEVEMENTS PRO (VISIBLE PARTOUT)
         // ==========================================
         function normalizeAchievementState() {
-            const existing = state && state.achievements && typeof state.achievements === 'object' ? state.achievements : {};
+            if (!state) return;
+            const existing = (state.achievements && typeof state.achievements === 'object') ? state.achievements : {};
             const normalized = {};
 
+            // Synchroniser avec les définitions actuelles du code
             Object.keys(DEFAULT_STATE.achievements).forEach(id => {
-                const base = DEFAULT_STATE.achievements[id] || {};
+                const template = DEFAULT_STATE.achievements[id] || {};
+                const technical = ACHIEVEMENT_DETAILS[id] || {};
                 const saved = existing[id] || {};
-                const detail = ACHIEVEMENT_DETAILS[id] || {};
-                const unlocked = Boolean(saved.unlocked);
-                normalized[id] = {
-                    ...saved,
-                    ...base,
-                    ...detail,
-                    unlocked
+
+                normalized[id] = { 
+                    ...template, 
+                    ...technical, 
+                    ...(typeof saved === 'object' ? saved : {}), 
+                    unlocked: Boolean(saved.unlocked || saved === true) 
                 };
             });
-
-            Object.keys(existing).forEach(id => {
-                if (normalized[id]) return;
-                normalized[id] = {
-                    category: 'studio',
-                    secret: false,
-                    target: 1,
-                    unit: 'step',
-                    ...existing[id]
-                };
-            });
-
             state.achievements = normalized;
         }
 
@@ -4864,7 +4858,7 @@
                     </div>` : '';
 
                 // --- GÉNÉRATION DU BOUTON DE RÉCOMPENSE ---
-                const rewardInfo = achievement.detail.reward || {};
+                const rewardInfo = achievement.reward || {};
                 let rewardText = [];
                 if (rewardInfo.money) rewardText.push(`+$${formatNum(rewardInfo.money)}`);
                 if (rewardInfo.rep) rewardText.push(`+${rewardInfo.rep} REP`);
