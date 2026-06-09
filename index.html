@@ -4383,9 +4383,9 @@
 
     function calculateLevelData() {
         // Normalisation des stats pour le calcul du niveau (Moyenne pondérée)
-        const moneyScore = Math.min(100, (state.money / 10000) * 100);    // $25k = Max Mastery
-        const repScore   = Math.min(100, (state.rep / 1000) * 100);      // 2k Rep = Max Mastery
-        const follScore  = Math.min(100, (state.followers / 20000) * 100); // 250k Fans = Max Mastery
+        const moneyScore = Math.min(100, (state.money / 20000) * 100);    // $25k = Max Mastery
+        const repScore   = Math.min(100, (state.rep / 1000) * 250);      // 2k Rep = Max Mastery
+        const follScore  = Math.min(100, (state.followers / 20000) * 600); // 250k Fans = Max Mastery
         
         const avgMastery = (moneyScore + repScore + follScore) / 3;
         const level = Math.floor(avgMastery / 1.5) + 1; // Échelle de niveau ~1 à 67
