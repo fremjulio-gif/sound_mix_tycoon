@@ -1180,7 +1180,14 @@
             animation: dmVibrate 0.1s linear infinite;
             color: white !important;
         }
-
+    /* Animation d'apparition des messages du Live Chat */
+        @keyframes chatPop {
+            from { transform: translateX(10px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .animate-chat-pop {
+            animation: chatPop 0.2s ease-out forwards;
+        }   
         </style>
     </head>
 
@@ -1737,6 +1744,17 @@
                         <button id="btn-story" class="btn-action px-10 py-4 text-xs rounded-lg tracking-widest font-bold w-full md:w-auto" onclick="postStory()">POSTER UNE STORY</button>
                         <p id="story-status" class="text-xs text-[var(--retro-green)] mt-5 font-retro tracking-widest drop-shadow-[0_0_5px_var(--retro-green)]">STATUS: READY</p>
                     </div>
+                    <div id="live-chat-section" class="border border-[var(--accent)]/30 bg-black/40 p-4 md:p-6 rounded-xl text-left mb-8 shadow-inner hidden transition-opacity duration-500">
+                    <div class="flex justify-between items-center border-b border-white/10 pb-3 mb-3">
+                        <h4 class="text-xs text-[var(--accent)] uppercase tracking-widest font-retro font-bold">💬 Last Drop Chat</h4>
+                        <span id="live-chat-status" class="text-[9px] font-retro text-[var(--retro-red)] animate-pulse tracking-widest">● LIVE</span>
+                    </div>
+                    <div id="live-chat-messages" class="h-32 md:h-40 overflow-y-auto flex flex-col gap-2 custom-scrollbar text-[10px] md:text-xs font-sans pr-2">
+                        </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs text-white mb-5 uppercase tracking-widest font-retro border-b border-[var(--accent)]/30 pb-3 font-bold">Brand Deals (Sellout)</h4>
                     <div>
                         <h4 class="text-xs text-white mb-5 uppercase tracking-widest font-retro border-b border-[var(--accent)]/30 pb-3 font-bold">Brand Deals (Sellout)</h4>
                         <div id="sponsor-list" class="space-y-4"></div>
@@ -5779,6 +5797,121 @@
         saveGame();
     }
 
+
+        // ==========================================
+    // SYSTÈME DE LIVE CHAT (RÉACTIONS POST-EXPORT)
+    // ==========================================
+    let liveChatTimeout = null;
+
+    function startLiveChat(track) {
+        const chatSection = document.getElementById('live-chat-section');
+        const chatBox = document.getElementById('live-chat-messages');
+        const status = document.getElementById('live-chat-status');
+        if (!chatSection || !chatBox) return;
+
+        // Reset et affichage
+        chatSection.classList.remove('hidden');
+        chatBox.innerHTML = '';
+        status.innerText = "● LIVE";
+        status.className = "text-[9px] font-retro text-[var(--retro-red)] animate-pulse tracking-widest";
+        clearTimeout(liveChatTimeout);
+
+        const isBanger = track.score >= 7;
+        const isMid = track.score >= 4 && track.score < 7;
+        const isFlop = track.score < 4;
+        
+        // Générateur de vocabulaire basé sur la data
+        const getMessage = () => {
+            let pool = [];
+            const rCancel = rappersCancel[Math.floor(Math.random() * rappersCancel.length)];
+            
+            // 1. Base selon le SCORE
+            if (isBanger) {
+                pool.push(
+                    "méchant c'est quel plugin ?",
+                    "Bcp trop sous coté",
+                    "808 insane bro 🔥",
+                    "Le mix est tellement clean",
+                    `Ce banger de ${track.genre} !`,
+                    "Masterclass absolue.",
+                    "Je viens de le découvrir, pépite."
+                );
+                if(track.voice !== 'instru') pool.push(`La voix colle trop bien à la prod`);
+                if(track.voice === 'instru') pool.push(`Donnez un micro à quelqu'un là-dessus !`);
+            } else if (isMid) {
+                pool.push(
+                    "Sympa mais sans plus",
+                    "Ça passe en fond pendant que je game",
+                    "Un peu répétitif non ?",
+                    `Classique ${track.genre}, pas ouf mais ok`,
+                    "C'est cool mais j'ai déjà oublié le refrain",
+                    "Mix un peu brouillon au niveau des basses"
+                );
+            } else { // Nul
+                pool.push(
+                    "mix éclaté par terre mdr",
+                    "ça sent le preset gratuit",
+                    "C'est une blague ce son ?",
+                    "Ratio",
+                    `Je l'ai aperçu avec ${rCancel} hier, ça m'étonne pas 💀`,
+                    "Mes oreilles saignent",
+                    "Arrête la musique frérot trouve un vrai taff",
+                    `"${track.title}" mdrrr on dirait un mot de passe wifi`
+                );
+            }
+            
+            // 2. Base selon les FOLLOWERS / REP (Contexte de carrière)
+            if (state.followers > 50000) {
+                if (isFlop) pool.push("Il est fini le goat 😭", "Il a vendu son âme aux labels", "Il fait plus d'effort depuis qu'il a percé");
+                if (isBanger) pool.push("Il rate JAMAIS 👑", "Le patron a encore frappé", "Streamé 100 fois aujourd'hui");
+            } else if (state.followers < 1000) {
+                if (isBanger) pool.push("Faut qu'il perce lui", "Pourquoi il a que 100 abonnés ??");
+                if (isFlop) pool.push("C'est pour ça qu'il reste dans sa chambre", "Gardez le underground. Vraiment sous terre.");
+            }
+
+            if (state.rep < 0) {
+                pool.push("Cancel direct.", "Supprime ton compte.");
+            }
+
+            return pool[Math.floor(Math.random() * pool.length)];
+        };
+
+        const startTime = Date.now();
+        const maxDuration = 20000; // 20 secondes de live
+
+        const postMessage = () => {
+            if (Date.now() - startTime > maxDuration) {
+                status.innerText = "OFFLINE";
+                status.className = "text-[9px] font-retro text-gray-500 tracking-widest";
+                const endMsg = document.createElement('div');
+                endMsg.className = "text-[9px] font-retro text-gray-500 italic mt-3 text-center border-t border-white/10 pt-2";
+                endMsg.innerText = "Le chat s'est calmé...";
+                chatBox.appendChild(endMsg);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                return;
+            }
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = "bg-white/5 px-2 py-1.5 rounded animate-chat-pop opacity-90 border-l-2 " + (isBanger ? 'border-[var(--retro-green)]' : (isFlop ? 'border-[var(--retro-red)]' : 'border-gray-500'));
+            msgDiv.innerHTML = `<span class="font-bold text-gray-400">@${generateFanName()}</span> <span class="text-gray-200 ml-1">${getMessage()}</span>`;
+            
+            chatBox.appendChild(msgDiv);
+            
+            // Auto-clean pour ne pas faire lagger le DOM (Garde max 15 messages)
+            if (chatBox.children.length > 15) chatBox.firstChild.remove();
+            
+            // Scroll automatique vers le bas
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Délai aléatoire avant le prochain message (mitraillette si banger, lent si mid)
+            const speedBase = isBanger ? 300 : (isFlop ? 400 : 800);
+            liveChatTimeout = setTimeout(postMessage, speedBase + Math.random() * 1200);
+        };
+
+        // Lancement du premier message
+        postMessage();
+    }
+
         const sponsors = [
             { id: 'sp1', name: "Enerji Drink",  reqFollowers: 1000,  reward: 500,  repCost: 15, cooldownDays: 1 },
             { id: 'sp2', name: "CryptoCoinZ",   reqFollowers: 5000,  reward: 2500, repCost: 20, cooldownDays: 1 },
@@ -7749,6 +7882,11 @@
             window.pendingReviewData = null; // Nettoyage
             updateHUD();
             saveGame();
+             // --- NOUVEAU : DÉCLENCHEMENT DU LIVE CHAT ---
+            if (state.trackList && state.trackList.length > 0) {
+                // On passe le tout dernier son exporté au générateur
+                startLiveChat(state.trackList[0]);
+            }
         }
 
         setTimeout(() => {
