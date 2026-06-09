@@ -1450,11 +1450,7 @@
                             <div id="playhead" class="absolute top-0 bottom-0 w-px bg-white left-[110px] shadow-[0_0_10px_#fff] z-10 pointer-events-none"><div class="w-2.5 h-2.5 bg-white rounded-sm -ml-[1px] -mt-[0px]"></div></div>
                         </div>
                         <div class="flex flex-col gap-3 mt-auto">
-                            <div class="flex flex-wrap gap-2">
-                                <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="drill" onclick="selectDawGenre('drill')">UK Drill</button>
-                                <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="afropop" onclick="selectDawGenre('afropop')">Afro-Pop</button>
-                                <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="technohouse" onclick="selectDawGenre('technohouse')">Techno House</button>
-                                <button class="btn-minimal btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="amapiano" onclick="selectDawGenre('amapiano')">Amapiano</button>
+                                                    <div id="daw-genres-container" class="flex flex-wrap gap-2 max-h-[110px] overflow-y-auto custom-scrollbar pr-1">
                             </div>
                             <div class="flex flex-col md:flex-row gap-3 items-stretch">
                                 <div class="flex gap-2 flex-1">
@@ -5745,18 +5741,44 @@
             tlContainer.addEventListener('touchstart', (e) => onTlClick(e.touches[0].clientX), { passive: true });
         }
 
-        function selectDawGenre(val = 'drill') {
+        // --- DICTIONNAIRE DES STYLES MUSICAUX ---
+    const DAW_GENRES = [
+        { id: 'drill',      name: 'UK Drill',      unlockAt: 0,  targetBpm: 140, tol: 5, targetVoice: 'm',      reward: 'money' },
+        { id: 'afropop',    name: 'Afro-Pop',      unlockAt: 0,  targetBpm: 110, tol: 5, targetVoice: 'f',      reward: 'followers' },
+        { id: '2step',      name: '2 Step',        unlockAt: 5,  targetBpm: 135, tol: 2, targetVoice: 'instru', reward: 'stable' },
+        { id: 'amapiano',   name: 'Amapiano',      unlockAt: 10, targetBpm: 113, tol: 1, targetVoice: 'm',      reward: 'rep' },
+        { id: 'oldschool',  name: 'Old School',    unlockAt: 15, targetBpm: 90,  tol: 3, targetVoice: 'm',      reward: 'money' },
+        { id: 'trap808',    name: 'Trap 808',      unlockAt: 20, targetBpm: 130, tol: 2, targetVoice: 'instru', reward: 'followers' },
+        { id: 'plug',       name: 'Plug',          unlockAt: 25, targetBpm: 125, tol: 3, targetVoice: 'f',      reward: 'money' },
+        { id: 'dnb',        name: 'Drum & Bass',   unlockAt: 30, targetBpm: 160, tol: 2, targetVoice: 'instru', reward: 'stable' },
+        { id: 'phonk',      name: 'Phonk',         unlockAt: 35, targetBpm: 60,  tol: 2, targetVoice: 'instru', reward: 'rep' },
+        { id: 'newjazz',    name: 'New Jazz',      unlockAt: 40, targetBpm: 137, tol: 2, targetVoice: 'm',      reward: 'followers' },
+        { id: 'bossalofi',  name: 'Bossa Lo-Fi',   unlockAt: 50, targetBpm: 88,  tol: 2, targetVoice: 'f',      reward: 'rep' }
+    ];
+
+    function updateDawGenres() {
+        const container = document.getElementById('daw-genres-container');
+        if (!container) return;
+        
+        const currentTracks = state.stats.tracks || 0;
+        
+        container.innerHTML = DAW_GENRES.map(g => {
+            const isUnlocked = currentTracks >= g.unlockAt;
+            
+            if (!isUnlocked) {
+                return `<button class="btn-minimal flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%] opacity-30 cursor-not-allowed border-dashed" disabled title="Débloqué à ${g.unlockAt} tracks">🔒 ??? (${g.unlockAt} TRK)</button>`;
+            }
+            
+            const isActive = currentDawGenre === g.id;
+            const btnClass = isActive ? 'btn-action active text-white drop-shadow-[0_0_5px_var(--accent)]' : 'btn-minimal';
+            return `<button class="${btnClass} btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="${g.id}" onclick="selectDawGenre('${g.id}')">${g.name}</button>`;
+        }).join('');
+    }
+
+        
+        function selectDawGenre(val) {
         currentDawGenre = val || 'drill';
-
-        document.querySelectorAll('.btn-genre').forEach(btn => {
-            const isSelected = btn.dataset.val === currentDawGenre;
-
-            btn.classList.toggle('active', isSelected);
-            btn.classList.toggle('btn-action', isSelected);
-            btn.classList.toggle('btn-minimal', !isSelected);
-            btn.classList.toggle('text-white', isSelected);
-        });
-
+        updateDawGenres();
         playBleep();
     }
         function selectDawVoice(val = 'm') {
@@ -6115,7 +6137,7 @@
             document.getElementById('room-ui').style.display = 'flex';
             document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="pixelated w-full h-full object-cover object-center scale-[1.6] origin-center" />`;
             document.getElementById('hud-name').innerText = state.username;
-
+            
             selectDawGenre();
             selectDawVoice();
             updateDawPlugins();
@@ -6340,6 +6362,11 @@
         let zIndexCounter = 50;
 
         function openApp(id) {
+                        if (id === 'app-daw') {
+                updateDawPlugins();
+                updateDawGenres(); // <-- AJOUTER ICI
+                MusicSystem.muteForGameplay(0.5); 
+            }
             if (isMobile) document.querySelectorAll('.os-window').forEach(w => { if (w.id !== id) w.style.display = 'none'; });
             const win = document.getElementById(id);
             if (win.style.display === 'none' || win.style.display === '') {
@@ -6413,16 +6440,18 @@
             if (pad.classList.contains('active')) { playKick(); simulateVuMeter(12); }
         }
 
-        function calculateSuccess(genre, bpm, voice) {
-            let targetVoice, rewardType, isPerfectBpm = false, diff = 0;
-            if (genre === 'drill')      { targetVoice = 'm';      rewardType = 'money';     diff = Math.min(Math.abs(bpm-140),Math.abs(bpm-145)); if(bpm>=140&&bpm<=145){isPerfectBpm=true;diff=0;} }
-            if (genre === 'afropop')    { targetVoice = 'f';      rewardType = 'followers'; diff = Math.min(Math.abs(bpm-100),Math.abs(bpm-110)); if(bpm>=100&&bpm<=110){isPerfectBpm=true;diff=0;} }
-            if (genre === 'technohouse'){ targetVoice = 'instru'; rewardType = 'stable';    diff = Math.min(Math.abs(bpm-124),Math.abs(bpm-128)); if(bpm>=124&&bpm<=128){isPerfectBpm=true;diff=0;} }
-            if (genre === 'amapiano')   { targetVoice = 'f';      rewardType = 'rep';       diff = Math.abs(bpm-113);                              if(bpm===113){isPerfectBpm=true;diff=0;} }
-            if (voice !== targetVoice || diff > 10) return { score: 0, rewardType, wrongVoice: (voice !== targetVoice) };
-            if (isPerfectBpm) return { score: 3, rewardType };
-            return { score: 1, rewardType };
-        }
+        function calculateSuccess(genreId, bpm, voice) {
+        const g = DAW_GENRES.find(x => x.id === genreId);
+        if (!g) return { score: 1, rewardType: 'money' }; // Failsafe
+        
+        let diff = Math.abs(bpm - g.targetBpm);
+        let isPerfectBpm = diff <= g.tol; // Tolérance d'erreur intégrée au dico
+        
+        if (voice !== g.targetVoice || diff > 10) return { score: 0, rewardType: g.reward, wrongVoice: (voice !== g.targetVoice) };
+        if (isPerfectBpm) return { score: 3, rewardType: g.reward };
+        
+        return { score: 1, rewardType: g.reward };
+    }
 
         function exportTrack() {
             if (getTotalMins() < (parseInt(state.cooldowns.dawTimeReady, 10) || 0) || state.isExporting) return;
@@ -6606,6 +6635,7 @@
 
     // Mise à jour de l'affichage
     updateTopChartsWidget();
+    updateDawGenres();
     // ---------------------------------------------
 
     showTrackReview(trackScore, trackTitle, null);
