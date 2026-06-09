@@ -1169,6 +1169,18 @@
             animation: confettiFall linear forwards;
         }
 
+        /* Vibration pour les notifications DM */
+        @keyframes dmVibrate {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-1px, 1px); }
+            50% { transform: translate(1px, -1px); }
+            75% { transform: translate(-1px, -1px); }
+        }
+        .animate-dm-shake {
+            animation: dmVibrate 0.1s linear infinite;
+            color: white !important;
+        }
+
         </style>
     </head>
 
@@ -5659,9 +5671,10 @@
             contentDMs.classList.remove('hidden');
             contentDMs.classList.add('flex');
             
-            // Masque la pastille rouge
+            // Masque la pastille rouge et arrête la vibration
             const notif = document.getElementById('dm-notif');
             if(notif) notif.classList.add('hidden');
+            btnDMs.classList.remove('animate-dm-shake');
             renderDMs();
         }
         playBleep();
@@ -5747,9 +5760,12 @@
             choiceIdx: -1
         });
 
-        // Affiche la pastille rouge
+        // Affiche la pastille rouge et active la vibration
         const notif = document.getElementById('dm-notif');
         if (notif) notif.classList.remove('hidden');
+
+        const btnDMs = document.getElementById('tab-social-dms');
+        if (btnDMs) btnDMs.classList.add('animate-dm-shake');
 
         // Notification visuelle et sonore
         showToast(`💬 Nouveau message privé de ${template.sender} !`, "info");
@@ -7564,6 +7580,16 @@
                     <div>${btnHtml}</div>
                 </div>`;
             }).join('');
+
+            // État persistant des DMs (Vibration si non lus)
+            const hasUnread = (state.dms || []).some(dm => !dm.resolved);
+            const btnDMs = document.getElementById('tab-social-dms');
+            const isDmTabActive = btnDMs && btnDMs.classList.contains('bg-[#27272a]');
+
+            if (hasUnread && !isDmTabActive) {
+                if (btnDMs) btnDMs.classList.add('animate-dm-shake');
+                document.getElementById('dm-notif')?.classList.remove('hidden');
+            }
         }
 
         function postStory() {
