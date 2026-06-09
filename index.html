@@ -1486,7 +1486,7 @@
 
 
             
-            <div id="app-daw" class="os-window flex-col font-sans" style="display:none;">
+                    <div id="app-daw" class="os-window flex-col font-sans" style="display:none;">
             
             <div class="window-header bg-[#18181b] border-b border-[#27272a] px-3 py-2 flex justify-between items-center cursor-grab">
                 <div class="flex items-center gap-3">
@@ -1495,58 +1495,70 @@
                         <div class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
                         <div class="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50"></div>
                     </div>
-                    <span class="text-[10px] text-gray-400 font-mono font-bold tracking-widest uppercase">AbleStudio Pro 11 - Session</span>
+                    <span class="text-[10px] text-gray-400 font-mono font-bold tracking-widest uppercase">AbleStudio Pro 11</span>
                 </div>
                 <button class="text-gray-500 hover:text-white transition-colors px-2 text-lg" onclick="closeApp('app-daw')">✕</button>
             </div>
 
-            <div class="window-content daw-grid-container bg-[#121214] p-3 gap-3">
-                <div class="flex-1 flex flex-col relative md:min-w-[620px] bg-[#18181b] border border-[#27272a] rounded p-3 shadow-inner">
+            <div class="window-content daw-grid-container bg-[#121214] p-3 gap-3 md:gap-4 flex flex-col md:flex-row">
+                
+                <div class="flex-1 flex flex-col relative md:min-w-[620px]">
                     
-                    <div class="flex justify-between items-end mb-2 border-b border-[#3f3f46] pb-1">
-                        <label class="text-[9px] text-gray-500 font-mono uppercase tracking-widest font-bold">Arrangement View</label>
-                        <span class="text-[9px] font-mono text-gray-600">4/4 Sig.</span>
+                    <div class="mb-3 relative group">
+                        <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                            <span class="text-[#52525b] font-mono text-[10px] tracking-widest">SESSION:</span>
+                        </div>
+                        <input type="text" id="track-title-input" maxlength="30" 
+                               class="w-full bg-[#09090b] border-2 border-[#27272a] rounded-lg pl-16 pr-4 py-3 text-[#10b981] font-mono text-sm focus:outline-none focus:border-[#10b981] transition-colors uppercase tracking-widest shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)] placeholder-[#3f3f46]" 
+                               placeholder="[UNTITLED_TRACK]..." />
                     </div>
 
-                    <div class="h-36 border border-[#27272a] rounded flex flex-col overflow-x-auto overflow-y-hidden relative bg-[#09090b] cursor-crosshair mb-4 shadow-[inset_0_2px_8px_rgba(0,0,0,0.8)]" id="timeline-container">
-                        
-                        <div class="h-5 bg-[#18181b] border-b border-[#27272a] flex items-center font-mono text-[8px] text-gray-500 tracking-widest min-w-[700px] select-none sticky top-0 z-20">
-                            <div class="flex-1 flex justify-between px-2" style="background-image: linear-gradient(90deg, #3f3f46 1px, transparent 1px); background-size: 50px 100%;">
-                                <span>1</span><span>5</span><span>9</span><span>13</span><span>17</span><span>21</span><span>25</span><span>29</span><span>33</span>
+                    <div class="bg-[#18181b] border border-[#27272a] rounded p-3 shadow-inner flex flex-col mb-3">
+                        <div class="flex justify-between items-end mb-2 border-b border-[#3f3f46] pb-1">
+                            <label class="text-[9px] text-gray-500 font-mono uppercase tracking-widest font-bold">Arrangement View</label>
+                            <span class="text-[9px] font-mono text-gray-600">4/4 Sig.</span>
+                        </div>
+
+                        <div class="h-36 border border-[#27272a] rounded flex flex-col overflow-x-auto overflow-y-hidden relative bg-[#09090b] cursor-crosshair shadow-[inset_0_2px_8px_rgba(0,0,0,0.8)]" id="timeline-container">
+                            
+                            <div class="h-5 bg-[#18181b] border-b border-[#27272a] flex items-center font-mono text-[8px] text-gray-500 tracking-widest min-w-[700px] select-none sticky top-0 z-20">
+                                <div class="flex-1 flex justify-between px-2" style="background-image: linear-gradient(90deg, #3f3f46 1px, transparent 1px); background-size: 50px 100%;">
+                                    <span>1</span><span>5</span><span>9</span><span>13</span><span>17</span><span>21</span><span>25</span><span>29</span><span>33</span>
+                                </div>
+                            </div>
+                            
+                            <div class="absolute inset-0 top-5 pointer-events-none z-0 min-w-[700px]" style="background-image: linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 50px 100%;"></div>
+
+                            <div class="tl-track min-w-[700px] border-b border-[#1f1f22] bg-[#121214] h-8 relative z-10">
+                                <div class="tl-header bg-[#18181b] border-r border-[#27272a] text-gray-400 font-mono text-[9px] w-[90px] absolute left-0 z-20 sticky">Kick/Bass</div>
+                                <div class="tl-clip bg-[#ef4444] border-t border-b border-[#fca5a5] rounded-sm opacity-90 shadow-[inset_0_-3px_5px_rgba(0,0,0,0.4)]" style="left: 110px; width: 140px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);"></div>
+                                <div class="tl-clip bg-[#ef4444] border-t border-b border-[#fca5a5] rounded-sm opacity-90 shadow-[inset_0_-3px_5px_rgba(0,0,0,0.4)]" style="left: 300px; width: 80px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);"></div>
+                            </div>
+                            <div class="tl-track min-w-[700px] border-b border-[#1f1f22] bg-[#18181b] h-8 relative z-10">
+                                <div class="tl-header bg-[#18181b] border-r border-[#27272a] text-gray-400 font-mono text-[9px] w-[90px] absolute left-0 z-20 sticky">Snare/Clap</div>
+                                <div class="tl-clip bg-[#3b82f6] border-t border-b border-[#93c5fd] rounded-sm opacity-90 shadow-[inset_0_-3px_5px_rgba(0,0,0,0.4)]" style="left: 140px; width: 40px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);"></div>
+                                <div class="tl-clip bg-[#3b82f6] border-t border-b border-[#93c5fd] rounded-sm opacity-90 shadow-[inset_0_-3px_5px_rgba(0,0,0,0.4)]" style="left: 330px; width: 40px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);"></div>
+                            </div>
+                            <div class="tl-track min-w-[700px] border-b border-[#1f1f22] bg-[#121214] h-8 relative z-10">
+                                <div class="tl-header bg-[#18181b] border-r border-[#27272a] text-gray-400 font-mono text-[9px] w-[90px] absolute left-0 z-20 sticky">Melody</div>
+                                <div class="tl-clip bg-[#10b981] border-t border-b border-[#6ee7b7] rounded-sm opacity-90 shadow-[inset_0_-3px_5px_rgba(0,0,0,0.4)]" style="left: 110px; width: 250px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);"></div>
+                            </div>
+                            <div class="tl-track min-w-[700px] border-b border-[#1f1f22] bg-[#18181b] h-8 relative z-10">
+                                <div class="tl-header bg-[#18181b] border-r border-[#27272a] text-gray-400 font-mono text-[9px] w-[90px] absolute left-0 z-20 sticky">Vocals</div>
+                                <div class="tl-clip bg-[#a855f7] border-t border-b border-[#d8b4fe] rounded-sm opacity-90 shadow-[inset_0_-3px_5px_rgba(0,0,0,0.4)]" style="left: 190px; width: 150px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);"></div>
+                            </div>
+                            
+                            <div id="playhead" class="absolute top-0 bottom-0 w-[1px] bg-red-500 left-[110px] z-30 pointer-events-none">
+                                <div class="absolute -top-0 -left-1.5 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-red-500"></div>
                             </div>
                         </div>
-                        
-                        <div class="absolute inset-0 top-5 pointer-events-none z-0 min-w-[700px]" style="background-image: linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 50px 100%;"></div>
-
-                        <div class="tl-track min-w-[700px] border-b border-[#1f1f22] bg-[#121214] h-8 relative z-10">
-                            <div class="tl-header bg-[#18181b] border-r border-[#27272a] text-gray-400 font-mono text-[9px] w-[90px] absolute left-0 z-20 sticky">Kick/Bass</div>
-                            <div class="tl-clip bg-[#ef4444] border-t border-b border-[#fca5a5] rounded-sm opacity-90 shadow-[inset_0_-3px_5px_rgba(0,0,0,0.4)]" style="left: 110px; width: 140px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);"></div>
-                            <div class="tl-clip bg-[#ef4444] border-t border-b border-[#fca5a5] rounded-sm opacity-90 shadow-[inset_0_-3px_5px_rgba(0,0,0,0.4)]" style="left: 300px; width: 80px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);"></div>
-                        </div>
-                        <div class="tl-track min-w-[700px] border-b border-[#1f1f22] bg-[#18181b] h-8 relative z-10">
-                            <div class="tl-header bg-[#18181b] border-r border-[#27272a] text-gray-400 font-mono text-[9px] w-[90px] absolute left-0 z-20 sticky">Snare/Clap</div>
-                            <div class="tl-clip bg-[#3b82f6] border-t border-b border-[#93c5fd] rounded-sm opacity-90 shadow-[inset_0_-3px_5px_rgba(0,0,0,0.4)]" style="left: 140px; width: 40px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);"></div>
-                            <div class="tl-clip bg-[#3b82f6] border-t border-b border-[#93c5fd] rounded-sm opacity-90 shadow-[inset_0_-3px_5px_rgba(0,0,0,0.4)]" style="left: 330px; width: 40px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);"></div>
-                        </div>
-                        <div class="tl-track min-w-[700px] border-b border-[#1f1f22] bg-[#121214] h-8 relative z-10">
-                            <div class="tl-header bg-[#18181b] border-r border-[#27272a] text-gray-400 font-mono text-[9px] w-[90px] absolute left-0 z-20 sticky">Melody</div>
-                            <div class="tl-clip bg-[#10b981] border-t border-b border-[#6ee7b7] rounded-sm opacity-90 shadow-[inset_0_-3px_5px_rgba(0,0,0,0.4)]" style="left: 110px; width: 250px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);"></div>
-                        </div>
-                        <div class="tl-track min-w-[700px] border-b border-[#1f1f22] bg-[#18181b] h-8 relative z-10">
-                            <div class="tl-header bg-[#18181b] border-r border-[#27272a] text-gray-400 font-mono text-[9px] w-[90px] absolute left-0 z-20 sticky">Vocals</div>
-                            <div class="tl-clip bg-[#a855f7] border-t border-b border-[#d8b4fe] rounded-sm opacity-90 shadow-[inset_0_-3px_5px_rgba(0,0,0,0.4)]" style="left: 190px; width: 150px; background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 3px);"></div>
-                        </div>
-                        
-                        <div id="playhead" class="absolute top-0 bottom-0 w-[1px] bg-red-500 left-[110px] z-30 pointer-events-none">
-                            <div class="absolute -top-0 -left-1.5 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-red-500"></div>
-                        </div>
                     </div>
 
-                    <div class="flex flex-col gap-3 mt-auto">
+                    <div class="flex flex-col gap-3">
                         
                         <div id="daw-genres-container" class="flex flex-wrap gap-2 max-h-[100px] overflow-y-auto custom-scrollbar pr-1 pb-1"></div>
                         
-                        <div class="flex flex-col md:flex-row gap-3 items-stretch bg-[#121214] p-2 rounded border border-[#27272a] shadow-inner">
+                        <div class="flex flex-col md:flex-row gap-3 items-stretch bg-[#18181b] p-3 rounded border border-[#27272a] shadow-inner">
                             
                             <div class="flex gap-2 flex-1">
                                 <button class="btn-voice btn-minimal flex-1 py-2 text-[9px]" data-val="m" onclick="selectDawVoice('m')">Male Voc</button>
@@ -1554,42 +1566,43 @@
                                 <button class="btn-voice btn-minimal flex-1 py-2 text-[9px]" data-val="instru" onclick="selectDawVoice('instru')">Instru</button>
                             </div>
                             
-                            <div class="w-full md:w-[150px] flex-shrink-0 h-[36px] relative">
-                                <div class="absolute inset-y-0 left-2 flex items-center pointer-events-none text-[#52525b] text-[9px] font-bold font-mono">FX</div>
-                                <select id="daw-plugin" class="w-full h-full bg-[#09090b] border border-[#3f3f46] rounded pl-7 pr-2 outline-none text-[#d1d5db] text-[9px] font-mono cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] appearance-none hover:border-[#10b981] transition-colors">
-                                    <option value="">- Clean Mix (No Plugin) -</option>
+                            <div class="w-full md:w-[160px] flex-shrink-0 h-[42px] relative group">
+                                <div class="absolute inset-y-0 left-0 bg-[#27272a] w-8 flex items-center justify-center rounded-l border border-[#3f3f46] pointer-events-none group-hover:border-[#10b981] transition-colors z-10">
+                                    <span class="text-[#a1a1aa] text-[10px] font-bold font-mono">FX</span>
+                                </div>
+                                <select id="daw-plugin" class="w-full h-full bg-[#09090b] border border-[#3f3f46] rounded pl-10 pr-6 outline-none text-[#d1d5db] text-[9px] font-mono cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] appearance-none group-hover:border-[#10b981] group-hover:shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all">
+                                    <option value="">- Clean Mix -</option>
                                 </select>
-                                <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none text-[#52525b] text-[8px]">▼</div>
+                                <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none text-[#10b981] text-[10px] opacity-70 group-hover:opacity-100">▼</div>
                             </div>
 
-                            <div class="w-full md:w-[160px] bg-[#050505] border border-[#27272a] rounded flex items-center px-3 py-1 gap-3 flex-shrink-0 shadow-[inset_0_0_8px_rgba(0,0,0,1)]">
-                                <div class="flex flex-col justify-center">
-                                    <span class="text-[7px] text-[#52525b] font-mono font-bold tracking-widest leading-none">TEMPO</span>
-                                    <span id="bpm-val" class="text-sm text-[#10b981] font-mono font-bold leading-none drop-shadow-[0_0_4px_rgba(16,185,129,0.5)]">120</span>
+                            <div class="w-full md:w-[170px] bg-[#09090b] border border-[#27272a] rounded flex items-center px-3 py-2 gap-3 flex-shrink-0 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
+                                <div class="flex flex-col justify-center min-w-[35px]">
+                                    <span class="text-[7px] text-[#52525b] font-mono font-bold tracking-widest leading-none mb-0.5">TEMPO</span>
+                                    <span id="bpm-val" class="text-base text-[#10b981] font-mono font-bold leading-none drop-shadow-[0_0_4px_rgba(16,185,129,0.5)]">120</span>
                                 </div>
-                                <input type="range" id="daw-bpm" min="60" max="200" value="120" class="flex-1 h-1.5 bg-[#27272a] rounded-lg appearance-none cursor-pointer outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-gray-300 [&::-webkit-slider-thumb]:rounded-sm" oninput="document.getElementById('bpm-val').innerHTML = this.value">
+                                <input type="range" id="daw-bpm" min="60" max="200" value="120" 
+                                       class="flex-1 h-[6px] bg-[#18181b] border border-[#3f3f46] rounded-full appearance-none cursor-pointer outline-none shadow-inner [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:bg-[#a1a1aa] [&::-webkit-slider-thumb]:rounded-sm [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-[#27272a] hover:[&::-webkit-slider-thumb]:bg-white transition-all" 
+                                       oninput="document.getElementById('bpm-val').innerHTML = this.value">
                             </div>
-                        </div>
-                        
-                        <div class="flex flex-col md:flex-row gap-2 mt-1">
-                            <input type="text" id="track-title-input" maxlength="30" class="flex-1 bg-[#09090b] border border-[#3f3f46] rounded px-3 py-2 text-gray-200 font-mono text-[10px] focus:outline-none focus:border-[#10b981] transition-colors uppercase tracking-widest shadow-inner placeholder-[#3f3f46]" placeholder="[UNTITLED_SESSION]..." />
-                            
-                            <div class="relative w-full md:w-[200px] h-[36px] flex-shrink-0">
-                                <button id="btn-export" class="w-full h-full bg-gradient-to-b from-[#dc2626] to-[#991b1b] border-t border-[#f87171] border-b-[3px] border-b-[#4c0519] rounded text-[10px] font-bold text-white tracking-widest uppercase shadow-[0_2px_5px_rgba(0,0,0,0.5)] active:translate-y-[2px] active:border-b hover:brightness-110" onclick="exportTrack()">Render Mixdown</button>
+
+                            <div class="relative w-full md:w-[150px] h-[42px] flex-shrink-0">
+                                <button id="btn-export" class="w-full h-full bg-gradient-to-b from-[#dc2626] to-[#991b1b] border-t border-[#f87171] border-b-[3px] border-b-[#4c0519] rounded text-[10px] font-bold text-white tracking-widest uppercase shadow-[0_2px_5px_rgba(0,0,0,0.5)] active:translate-y-[2px] active:border-b-0 hover:brightness-110 transition-all" onclick="exportTrack()">Render Mixdown</button>
                                 
                                 <div id="export-progress-container" class="hidden absolute left-1 right-1 bottom-1 h-1 bg-black/50 rounded overflow-hidden pointer-events-none">
                                     <div id="export-progress" class="h-full bg-white w-0 transition-all duration-100 shadow-[0_0_5px_#fff]"></div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
-                <div class="md:w-[90px] w-full p-3 flex flex-row md:flex-col items-center justify-between md:justify-start flex-shrink-0 bg-[#18181b] border border-[#27272a] rounded shadow-inner">
+                <div class="md:w-[85px] w-full p-3 flex flex-row md:flex-col items-center justify-between md:justify-start flex-shrink-0 bg-[#18181b] border border-[#27272a] rounded shadow-[0_4px_15px_rgba(0,0,0,0.5)] z-10">
                     <label class="text-[9px] text-gray-500 font-mono uppercase tracking-widest font-bold border-b border-[#3f3f46] pb-1 w-full text-center hidden md:block mb-4">Master</label>
                     
-                    <div class="flex flex-row md:flex-col gap-4 md:gap-6 w-full items-center justify-around h-full">
-                        <div class="flex flex-row md:flex-col gap-3 md:gap-5">
+                    <div class="flex flex-row md:flex-col gap-4 md:gap-5 w-full items-center justify-around h-full">
+                        <div class="flex flex-row md:flex-col gap-3 md:gap-4">
                             <div class="knob-container flex flex-col items-center gap-1">
                                 <div class="knob w-8 h-8 rounded-full bg-gradient-to-br from-[#3f3f46] to-[#18181b] border-2 border-[#09090b] shadow-[0_2px_4px_rgba(0,0,0,0.5)] relative cursor-grab active:cursor-grabbing" id="knob-1" data-rot="-45" style="transform: rotate(-45deg)">
                                     <div class="absolute w-[2px] h-3 bg-white top-1 left-[13px] rounded-full shadow-[0_0_3px_#fff] pointer-events-none"></div>
