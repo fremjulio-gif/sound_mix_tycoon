@@ -4432,8 +4432,8 @@
                     if (!achievement.rewardClaimed) {
                         // Bouton pour récupérer le loot
                         rewardUI = `
-                        <button class="mt-3 w-full bg-[var(--accent)] text-white hover:bg-[var(--retro-green)] hover:text-black transition-colors py-2 rounded font-retro text-[9px] font-bold tracking-widest" 
-                                onclick="claimAchievementReward('${achievement.id}')">
+                                                <button class="mt-3 w-full bg-[var(--accent)] text-white hover:bg-[var(--retro-green)] hover:text-black transition-colors py-2 rounded font-retro text-[9px] font-bold tracking-widest" 
+                                onclick="claimAchievementReward('${achievement.id}', event)">
                             CLAIM: ${rewardString}
                         </button>`;
                     } else {
@@ -4517,7 +4517,8 @@
         }
 
             // === FONCTION DE RÉCUPÉRATION DES RÉCOMPENSES ===
-    function claimAchievementReward(id) {
+        // === FONCTION DE RÉCUPÉRATION DES RÉCOMPENSES ===
+    function claimAchievementReward(id, event) {
         if (!state.achievements[id] || !state.achievements[id].unlocked || state.achievements[id].rewardClaimed) return;
         
         const detail = ACHIEVEMENT_DETAILS[id];
@@ -4526,8 +4527,12 @@
         const r = detail.reward;
         let toastMsg = "Récompense obtenue :";
         
+        // On récupère la boîte (coordonnées écran) du bouton qui a été cliqué
+        const clickRect = (event && event.target) ? event.target.getBoundingClientRect() : null;
+        
         if (r.money) {
-            logMoney(r.money, `Reward: ${state.achievements[id].name || id}`);
+            // On balance les coordonnées à logMoney pour forcer l'animation sur le bouton
+            logMoney(r.money, `Reward: ${state.achievements[id].name || id}`, clickRect);
             toastMsg += `\n+$${r.money}`;
             if (typeof playCashSound === 'function') playCashSound();
         }
@@ -5279,46 +5284,52 @@
             return m > 0 ? `${h}H ${m}M` : `${h}H`;
         }
 
-        function logMoney(amount, reason) {
-            state.money = (parseInt(state.money, 10) || 0) + amount;
-            if (state.money < 0) state.money = 0;
-            state.history.money.unshift({ amt: amount, txt: reason });
-            if (state.history.money.length > 5) state.history.money.pop();
+            function logMoney(amount, reason, customRect = null) {
+        state.money = (parseInt(state.money, 10) || 0) + amount;
+        if (state.money < 0) state.money = 0;
+        state.history.money.unshift({ amt: amount, txt: reason });
+        if (state.history.money.length > 5) state.history.money.pop();
 
-            // Ajoute une animation à l'avatar du HUD quand de l'argent est gagné
-            if (amount > 0) {
-                spawnMoneyParticles();
-                const hudAvatar = document.getElementById('hud-avatar');
-                if (hudAvatar) {
-                    hudAvatar.classList.add('animate-money-pulse');
-                    setTimeout(() => hudAvatar.classList.remove('animate-money-pulse'), 300); // Durée de l'animation
-                }
-            } else if (amount < 0) {
-                // Ajoute un effet de secousse au HUD quand de l'argent est perdu
-                const hud = document.getElementById('hud');
-                if (hud) {
-                    hud.classList.add('animate-hud-shake');
-                    setTimeout(() => hud.classList.remove('animate-hud-shake'), 300);
-                }
+        // Ajoute une animation quand de l'argent est gagné
+        if (amount > 0) {
+            spawnMoneyParticles(customRect); // On passe la position perso ici
+            const hudAvatar = document.getElementById('hud-avatar');
+            if (hudAvatar) {
+                hudAvatar.classList.add('animate-money-pulse');
+                setTimeout(() => hudAvatar.classList.remove('animate-money-pulse'), 300);
+            }
+        } else if (amount < 0) {
+            const hud = document.getElementById('hud');
+            if (hud) {
+                hud.classList.add('animate-hud-shake');
+                setTimeout(() => hud.classList.remove('animate-hud-shake'), 300);
             }
         }
+    }
 
-        function spawnMoneyParticles() {
+    function spawnMoneyParticles(customRect = null) {
+        let rect;
+        // Si un bouton a été cliqué, on pop dessus. Sinon, on pop sur le HUD.
+        if (customRect) {
+            rect = customRect;
+        } else {
             const target = document.getElementById('hud-money');
             if (!target) return;
-            const rect = target.getBoundingClientRect();
-            for (let i = 0; i < 6; i++) {
-                const p = document.createElement('div');
-                p.innerText = '$';
-                p.className = 'money-particle';
-                p.style.left = `${rect.left + rect.width / 2}px`;
-                p.style.top = `${rect.top + rect.height / 2}px`;
-                p.style.setProperty('--tx', `${(Math.random() - 0.5) * 80}px`);
-                p.style.setProperty('--ty', `${-40 - Math.random() * 60}px`);
-                document.body.appendChild(p);
-                setTimeout(() => p.remove(), 800);
-            }
+            rect = target.getBoundingClientRect();
         }
+        
+        for (let i = 0; i < 6; i++) {
+            const p = document.createElement('div');
+            p.innerText = '$';
+            p.className = 'money-particle';
+            p.style.left = `${rect.left + rect.width / 2}px`;
+            p.style.top = `${rect.top + rect.height / 2}px`;
+            p.style.setProperty('--tx', `${(Math.random() - 0.5) * 80}px`);
+            p.style.setProperty('--ty', `${-40 - Math.random() * 60}px`);
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 800);
+        }
+    }
         function generateFanName() {
             const p = ['Lil_','DJ_','MC_','Prod_','User','Fan_'];
             const s = ['_Beat','Vibe','Master','99','2026','Z'];
