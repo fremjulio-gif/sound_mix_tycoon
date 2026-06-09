@@ -1130,7 +1130,28 @@
         }
         .btn-daw-pad:disabled::after { display: none; }
 
-        
+        /* --- JUICY HUD ANIMATIONS --- */
+        @keyframes juicyPop {
+            0% { transform: scale(1); }
+            35% { transform: scale(1.35); filter: brightness(1.5); }
+            60% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+        .juicy-pop {
+            animation: juicyPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #hud-money, #hud-rep, #hud-foll {
+            display: inline-block;
+            will-change: transform;
+            transition: color 0.3s ease;
+        }
+        @keyframes moneyPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        .animate-money-pulse { animation: moneyPulse 0.3s ease-out; }
+
         </style>
     </head>
 
@@ -2806,7 +2827,51 @@
         scene.add(sideTableGroup);
 
 
-        
+        // --- JUICY HUD COUNTER LOGIC ---
+        let hudDisplayValues = { money: 0, rep: 0, foll: 0 };
+        let hudActiveAnims = {};
+
+        function animateHUDNumber(id, target, key) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            
+            const targetVal = Math.floor(Number(target));
+            const startVal = hudDisplayValues[key] || 0;
+            
+            if (startVal === targetVal) {
+                el.innerText = formatNum(targetVal);
+                return;
+            }
+
+            // Punch effect
+            el.classList.remove('juicy-pop');
+            void el.offsetWidth; // Force reflow
+            el.classList.add('juicy-pop');
+
+            if (hudActiveAnims[key]) cancelAnimationFrame(hudActiveAnims[key]);
+
+            const duration = 1000;
+            const startTime = performance.now();
+
+            function update(now) {
+                const progress = Math.min((now - startTime) / duration, 1);
+                const ease = 1 - Math.pow(1 - progress, 4); // easeOutQuart
+                const currentVal = Math.floor(startVal + (targetVal - startVal) * ease);
+                
+                hudDisplayValues[key] = currentVal;
+                el.innerText = formatNum(currentVal);
+
+                if (progress < 1) {
+                    hudActiveAnims[key] = requestAnimationFrame(update);
+                } else {
+                    hudDisplayValues[key] = targetVal;
+                    el.innerText = formatNum(targetVal);
+                    delete hudActiveAnims[key];
+                }
+            }
+            hudActiveAnims[key] = requestAnimationFrame(update);
+        }
+
         // ==========================================
     // SYNTHÉTISEUR SUR PIED X-STAND
     // ==========================================
@@ -6164,6 +6229,7 @@
                 try {
                     const parsed = JSON.parse(savedData);
                     state = { ...JSON.parse(JSON.stringify(DEFAULT_STATE)), ...parsed };
+                    state.username = username; // Sécurité : on s'assure que le pseudo est bien celui saisi
 
                     state.timeMins        = parseInt(state.timeMins, 10);
                     state.day             = parseInt(state.day, 10);
