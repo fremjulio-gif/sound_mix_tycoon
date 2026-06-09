@@ -4117,6 +4117,7 @@
             raycaster.setFromCamera(mousePos, camera);
 
             const intersects = raycaster.intersectObjects(scene.children, true);
+            let hasWarned = false; // <-- LE CADENAS ICI
             for (let i = 0; i < intersects.length; i++) {
                 const objName = intersects[i].object.name;
 
@@ -4137,6 +4138,7 @@
 
                     if (dist > interactDist) {
                         showToast("Trop loin ! Rapproche-toi pour interagir.", "discreet");
+                        hasWarned = true; // On ferme le cadenas pour ce clic
                         continue; // On continue pour permettre de cliquer sur le sol derrière l'objet
                     }
 
@@ -6423,8 +6425,9 @@
         }
         }
     // --- FIN MIGRATION ---
-                    state.isExporting            = false;
-                    state.isSleeping             = false;
+                    state.isExporting = false;
+                    state.isSleeping  = false;
+                    state.isSitting   = false;
                     state.activeCharacter = parseInt(state.activeCharacter ?? state.avatar, 10) || 0;
                     
                     if (avatarChanged) {
