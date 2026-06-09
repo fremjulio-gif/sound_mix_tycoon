@@ -5908,12 +5908,12 @@
             const isUnlocked = currentTracks >= g.unlockAt;
             
             if (!isUnlocked) {
-                return `<button class="btn-minimal flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%] opacity-30 cursor-not-allowed border-dashed" disabled title="Débloqué à ${g.unlockAt} tracks">🔒 ??? (${g.unlockAt} TRK)</button>`;
+                return `<button class="btn-daw-pad flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest min-w-[40%]" disabled title="Débloqué à ${g.unlockAt} tracks">🔒 ??? (${g.unlockAt} TRK)</button>`;
             }
             
             const isActive = currentDawGenre === g.id;
-            const btnClass = isActive ? 'btn-action active text-white drop-shadow-[0_0_5px_var(--accent)]' : 'btn-minimal';
-            return `<button class="${btnClass} btn-genre flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded font-retro tracking-widest min-w-[40%]" data-val="${g.id}" onclick="selectDawGenre('${g.id}')">${g.name}</button>`;
+            const btnClass = isActive ? 'btn-daw-pad selected' : 'btn-daw-pad';
+            return `<button class="${btnClass} flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest min-w-[40%]" data-val="${g.id}" onclick="selectDawGenre('${g.id}')">${g.name}</button>`;
         }).join('');
     }
 
@@ -5928,11 +5928,7 @@
 
         document.querySelectorAll('.btn-voice').forEach(btn => {
             const isSelected = btn.dataset.val === currentDawVoice;
-
-            btn.classList.toggle('active', isSelected);
-            btn.classList.toggle('btn-action', isSelected);
-            btn.classList.toggle('btn-minimal', !isSelected);
-            btn.classList.toggle('text-white', isSelected);
+            btn.className = `btn-daw-pad flex-1 py-2 text-[9px] btn-voice ${isSelected ? 'selected' : ''}`;
         });
 
         playBleep();
@@ -6506,8 +6502,9 @@
         function openApp(id) {
                         if (id === 'app-daw') {
                 updateDawPlugins();
-                updateDawGenres(); // <-- AJOUTER ICI
-                MusicSystem.muteForGameplay(0.5); 
+                updateDawGenres();
+                MusicSystem.muteForGameplay(0.5);
+                document.getElementById('playhead').classList.add('playhead-animated');
             }
             if (isMobile) document.querySelectorAll('.os-window').forEach(w => { if (w.id !== id) w.style.display = 'none'; });
             const win = document.getElementById(id);
@@ -6539,7 +6536,10 @@
             }
         }
             function closeApp(id) {
-            if (id === 'app-daw') MusicSystem.unmuteAfterGameplay(1.5); // <-- AJOUT ICI
+            if (id === 'app-daw') {
+                MusicSystem.unmuteAfterGameplay(1.5);
+                document.getElementById('playhead').classList.remove('playhead-animated');
+            }
             document.getElementById(id).style.display = 'none';
             if (!isMobile) updateTaskbar();
             playBleep();
@@ -6638,6 +6638,7 @@
             const dawWindow = document.getElementById('app-daw');
 
             btn.innerText = "RENDERING..."; btn.disabled = true;
+            document.getElementById('playhead').classList.remove('playhead-animated');
             progCont.classList.remove('hidden'); prog.style.width = '0%';
             playhead.style.left = '110px';
             playTone(400, 'square', 0.1);
@@ -6670,6 +6671,7 @@
                     state.isExporting = false;
                     state.cooldowns.dawTimeReady = getTotalMins() + getDawCooldown();
                     progCont.classList.add('hidden');
+                    document.getElementById('playhead').classList.add('playhead-animated');
                     finishExport(genre, bpm, voice, activePads, consumedPluginId, trackTitle);
                 }
             }, 60);
@@ -7818,3 +7820,4 @@
     </script>
         </body>
             </html>
+
