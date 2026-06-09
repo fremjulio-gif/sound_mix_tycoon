@@ -1239,6 +1239,43 @@
                 </div>
             </div>
 
+            <style>
+                /* Local adjustments to make the Achievements grid more readable */
+                #settings-achievements-panel {
+                    min-height: 44vh;
+                    gap: 12px;
+                }
+
+                #settings-achievements-panel .rounded-xl { padding: 14px; }
+
+                #achievements-grid.achievement-map-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                    gap: 12px;
+                    padding: 10px;
+                    min-height: 0; /* allow flex children to scroll */
+                    overflow: auto;
+                }
+
+                /* Card and icon sizing inside the achievements grid */
+                #settings-achievements-panel .achievement-card {
+                    min-height: 200px;
+                    padding: 14px;
+                    font-size: 14px;
+                }
+
+                #settings-achievements-panel .achievement-icon-wrap {
+                    width: 72px;
+                    height: 72px;
+                }
+
+                @media (min-width: 768px) {
+                    #achievements-grid.achievement-map-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+                    #settings-achievements-panel .achievement-card { min-height: 230px; }
+                    #settings-achievements-panel .achievement-icon-wrap { width: 88px; height: 88px; }
+                }
+            </style>
+
             <div id="settings-achievements-panel" class="hidden flex-1 min-h-0 overflow-hidden flex-col gap-4">
                 <div class="rounded-xl border border-white/10 bg-white/[0.04] p-4 shrink-0">
                     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-3">
