@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -914,6 +913,42 @@
             max-height: 90dvh;
             overflow: hidden;
             text-align: left;
+        }
+
+        /* Agrandir uniquement quand on affiche le panneau Achievements */
+        .settings-shell.achievements-active {
+            width: min(98vw, 1200px) !important;
+            height: min(95dvh, 880px) !important;
+            max-height: 95dvh !important;
+            padding: 28px !important;
+        }
+
+        /* Spécifique au panneau achievements : laisser défiler son contenu et donner plus d'espace au grid */
+        #settings-achievements-panel {
+            overflow-y: auto !important;
+            padding-right: 6px;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Make the achievements grid take remaining space inside the panel */
+        #achievements-grid {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        /* Reduce prominence of the unlocked/total counter */
+        #settings-achievements-panel h3, #settings-achievements-panel p > #achievements-global-percent {
+            font-size: 0.95rem !important;
+            color: #cbd5e1;
+        }
+
+        /* Slightly smaller category/filter buttons to avoid visual competition */
+        .achievement-category-btn, .achievement-filter-btn {
+            font-size: 11px !important;
+            padding: 8px 10px !important;
         }
 
         .settings-nav-btn,
@@ -4356,6 +4391,9 @@ function drawSysGraphUI(timestamp) {
             achievementsPanel.classList.toggle('hidden', activeSettingsPanel !== 'achievements');
             achievementsPanel.classList.toggle('flex', activeSettingsPanel === 'achievements');
         }
+        // Toggle a class on the shell so we can enlarge only for achievements
+        const shell = document.querySelector('.settings-shell');
+        if (shell) shell.classList.toggle('achievements-active', activeSettingsPanel === 'achievements');
         if (audioTab) audioTab.classList.toggle('active', activeSettingsPanel === 'audio');
         if (achievementsTab) achievementsTab.classList.toggle('active', activeSettingsPanel === 'achievements');
 
