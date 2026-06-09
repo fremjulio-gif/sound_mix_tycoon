@@ -1152,6 +1152,23 @@
         }
         .animate-money-pulse { animation: moneyPulse 0.3s ease-out; }
 
+
+
+        /* =========================================
+           DIGITAL CONFETTI SYSTEM
+           ========================================= */
+        @keyframes confettiFall {
+            0% { transform: translateY(-20px) rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg) scale(0.5); opacity: 0; }
+        }
+        .digital-confetti {
+            position: fixed;
+            z-index: 9999999; /* Par-dessus tout, même les modales */
+            pointer-events: none; /* Pour ne pas bloquer les clics */
+            border-radius: 1px;
+            animation: confettiFall linear forwards;
+        }
+
         </style>
     </head>
 
@@ -4878,6 +4895,7 @@
         showToast(toastMsg, "success");
         updateHUD();
         refreshAchievementsPanel(); // Rafraîchit l'UI pour changer le bouton en "CLAIMED ✓"
+        fireConfetti('achievement');
         saveGame();
     }
 
@@ -7171,6 +7189,7 @@
                 state.plugins = (parseInt(state.plugins, 10) || 0) + 1;
                 checkAchievement('inge_son_certifie', () => state.plugins >= 1);
                 showToast(`Purchase Confirmed! Multiplier +${mult}`, "success");
+                fireConfetti('store'); // <-- DÉCLENCHEUR ICI
                 playSuccess(); saveGame(); updateHUD();
             } else {
                 showToast("Insufficient Funds.", "error"); playError();
@@ -7765,6 +7784,9 @@
         avgEl.className = `text-5xl font-bold font-retro ${avgColor}`;
         avgEl.innerText = `${avg}/10`;
         playSuccess();
+    
+        if (avg >= 7.0) fireConfetti('banger'); // <-- DÉCLENCHEUR ICI
+        
 
         if (toastData) {
             showToast(toastData.msg, toastData.type);
@@ -7971,6 +7993,61 @@
                 gridContainer.scrollLeft = 0; // Retour au début
             }
         }
+
+
+            // ==========================================
+    // GÉNÉRATEUR DE CONFETTIS DIGITAUX
+    // ==========================================
+    function fireConfetti(type = 'banger') {
+        // Paramétrage selon le type d'événement
+        let count = 0;
+        let colors = [];
+        
+        if (type === 'banger') {
+            count = 100; // Grosse explosion
+            colors = ['#10b981', '#fbbf24', '#ffffff', '#34d399']; // Vert émeraude, Or, Blanc
+        } else if (type === 'achievement') {
+            count = 50; // Jolie récompense
+            colors = ['#818cf8', '#fbbf24', '#d8b4fe']; // Accent (violet/bleu), Or, Lilas
+        } else if (type === 'store') {
+            count = 30; // Petit achat stylé
+            colors = ['#3b82f6', '#10b981', '#ffffff']; // Bleu, Vert, Blanc
+        }
+
+        for (let i = 0; i < count; i++) {
+            const conf = document.createElement('div');
+            conf.className = 'digital-confetti';
+            
+            // Randomisation de la couleur
+            conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+            
+            // Départ aléatoire sur la largeur de l'écran
+            conf.style.left = Math.random() * 100 + 'vw';
+            conf.style.top = -10 - (Math.random() * 50) + 'px';
+            
+            // Randomisation de la forme (carrés ou rectangles)
+            if (Math.random() > 0.5) {
+                conf.style.width = (4 + Math.random() * 4) + 'px';
+                conf.style.height = (8 + Math.random() * 8) + 'px';
+            } else {
+                conf.style.width = (6 + Math.random() * 4) + 'px';
+                conf.style.height = conf.style.width;
+            }
+
+            // Durée de chute et délai aléatoires pour faire "nuage"
+            const duration = 1.5 + Math.random() * 2;
+            const delay = Math.random() * 0.5;
+            // On utilise cubic-bezier pour un départ rapide qui ralentit (comme une vraie explosion)
+            conf.style.animationDuration = duration + 's';
+            conf.style.animationDelay = delay + 's';
+            conf.style.animationTimingFunction = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+            document.body.appendChild(conf);
+            
+            // Auto-destruction propre pour ne pas faire lagger le jeu
+            setTimeout(() => { if (conf.parentElement) conf.remove(); }, (duration + delay) * 1000);
+        }
+    }
 
 
         
