@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1240,43 +1239,62 @@
             </div>
 
             <style>
-                /* Local adjustments to make the Achievements grid more readable */
+                /* Horizontal, scrollable Achievements panel (local scope) */
                 #settings-achievements-panel {
-                    min-height: 44vh;
-                    gap: 12px;
+                    min-height: 34vh;
+                    gap: 10px;
                 }
 
-                #settings-achievements-panel .rounded-xl { padding: 14px; }
+                /* Header compacting */
+                #settings-achievements-panel .rounded-xl { padding: 10px; }
+                #settings-achievements-panel .rounded-xl h3 { font-size: 1.25rem; }
 
+                /* Horizontal scrolling strip for achievements */
                 #achievements-grid.achievement-map-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-                    gap: 12px;
-                    padding: 10px;
-                    min-height: 0; /* allow flex children to scroll */
-                    /* Increase only the overall section height so the grid is more visible */
-                    flex: 0 0 58vh;
-                    height: 58vh;
-                    max-height: 80vh;
-                    overflow: auto;
+                    display: flex;
+                    flex-direction: row;
+                    gap: 14px;
+                    padding: 12px;
+                    align-items: flex-start;
+                    min-height: 0;
+                    flex: 0 0 42vh;
+                    height: 42vh;
+                    max-height: 66vh;
+                    overflow-x: auto;
+                    overflow-y: hidden;
+                    -webkit-overflow-scrolling: touch;
+                    scroll-snap-type: x proximity;
                 }
 
-                /* Card and icon sizing inside the achievements grid */
+                /* Individual achievement cards become fixed-width horizontal cards */
                 #settings-achievements-panel .achievement-card {
-                    min-height: 200px;
-                    padding: 14px;
-                    font-size: 14px;
+                    flex: 0 0 280px;
+                    width: 280px;
+                    min-height: 170px;
+                    padding: 12px;
+                    box-sizing: border-box;
+                    scroll-snap-align: start;
                 }
 
+                /* Smaller icon sizing to fit horizontal layout */
                 #settings-achievements-panel .achievement-icon-wrap {
-                    width: 72px;
-                    height: 72px;
+                    width: 64px;
+                    height: 64px;
                 }
+
+                /* Compact controls */
+                .achievement-category-btn, .achievement-filter-btn {
+                    font-size: 11px !important;
+                    padding: 6px 8px !important;
+                }
+
+                .achievement-progress-track { height: 8px; }
+                .achievement-progress-fill { height: 8px; }
 
                 @media (min-width: 768px) {
-                    #achievements-grid.achievement-map-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
-                    #settings-achievements-panel .achievement-card { min-height: 230px; }
-                    #settings-achievements-panel .achievement-icon-wrap { width: 88px; height: 88px; }
+                    #achievements-grid.achievement-map-grid { gap: 18px; padding: 16px; height: 46vh; }
+                    #settings-achievements-panel .achievement-card { flex: 0 0 320px; width: 320px; min-height: 190px; }
+                    #settings-achievements-panel .achievement-icon-wrap { width: 80px; height: 80px; }
                 }
             </style>
 
