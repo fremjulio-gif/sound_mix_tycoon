@@ -1113,6 +1113,67 @@
         #vu-meter-container .vu-led.on-yellow { background: #f59e0b; box-shadow: 0 0 4px #f59e0b; }
         #vu-meter-container .vu-led.on-red { background: #ef4444; box-shadow: 0 0 4px #ef4444; }
 
+
+        /* --- DAW PRO HARDWARE LOOK (FIXED) --- */
+        .btn-daw-pad {
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-bottom: 3px solid #09090b;
+            color: #a1a1aa;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .btn-daw-pad::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #3f3f46;
+            transition: all 0.2s ease;
+        }
+        .btn-daw-pad:hover:not(:disabled) {
+            background: #27272a;
+            color: #f4f4f5;
+            border-color: #3f3f46;
+        }
+        .btn-daw-pad.selected {
+            background: #27272a;
+            border-color: #10b981;
+            color: #10b981;
+            border-bottom: 1px solid #064e3b;
+            transform: translateY(2px);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+            text-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+        }
+        .btn-daw-pad.selected::after {
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+        .btn-daw-pad:active:not(:disabled) {
+            transform: translateY(2px);
+            border-bottom-width: 1px;
+        }
+        .btn-daw-pad:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-style: dashed;
+            background: #09090b;
+        }
+        .btn-daw-pad:disabled::after { display: none; }
+
         
         </style>
     </head>
@@ -1591,12 +1652,12 @@
                         
                         <div id="daw-genres-container" class="flex flex-wrap gap-2 max-h-[100px] overflow-y-auto custom-scrollbar pr-1 pb-1"></div>
                         
-                        <div class="flex flex-col md:flex-row gap-5 items-stretch bg-[#18181b] p-4 rounded-xl border border-[#27272a] shadow-inner">
+                        <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-stretch bg-[#18181b] p-5 rounded-xl border border-[#27272a] shadow-inner">
                             
                             <div class="flex gap-2 flex-1">
-                                <button class="btn-voice btn-minimal flex-1 py-2 text-[9px]" data-val="m" onclick="selectDawVoice('m')">Male Voc</button>
-                                <button class="btn-voice btn-minimal flex-1 py-2 text-[9px]" data-val="f" onclick="selectDawVoice('f')">Fem Voc</button>
-                                <button class="btn-voice btn-minimal flex-1 py-2 text-[9px]" data-val="instru" onclick="selectDawVoice('instru')">Instru</button>
+                                <button class="btn-voice btn-daw-pad flex-1 py-2 text-[9px] rounded" data-val="m" onclick="selectDawVoice('m')">Male Voc</button>
+                                <button class="btn-voice btn-daw-pad flex-1 py-2 text-[9px] rounded" data-val="f" onclick="selectDawVoice('f')">Fem Voc</button>
+                                <button class="btn-voice btn-daw-pad flex-1 py-2 text-[9px] rounded" data-val="instru" onclick="selectDawVoice('instru')">Instru</button>
                             </div>
                             
                             <div class="w-full md:w-[160px] flex-shrink-0 h-[48px] relative group">
@@ -5927,8 +5988,7 @@
         currentDawVoice = val || 'm';
 
         document.querySelectorAll('.btn-voice').forEach(btn => {
-            const isSelected = btn.dataset.val === currentDawVoice;
-            btn.className = `btn-daw-pad flex-1 py-2 text-[9px] btn-voice ${isSelected ? 'selected' : ''}`;
+            btn.classList.toggle('selected', btn.dataset.val === currentDawVoice);
         });
 
         playBleep();
@@ -7820,4 +7880,3 @@
     </script>
         </body>
             </html>
-
