@@ -3962,17 +3962,25 @@
                     camera.zoom += (window.targetCamZoom - camera.zoom) * 0.1;
                     camera.updateProjectionMatrix();
 
-                    camera.position.lerp(finalCamPosition, 0.1); 
-                    camera.lookAt(finalLookTarget);
+                                    camera.position.lerp(finalCamPosition, 0.1); 
+                camera.lookAt(finalLookTarget);
 
-                    if (isMoving && safeEnergy <= 0) {
-                        const s = 0.025; 
-                        camera.position.x += (Math.random() - 0.5) * s;
-                        camera.position.y += (Math.random() - 0.5) * s;
-                        camera.position.z += (Math.random() - 0.5) * s;
-                    }
+                if (isMoving && safeEnergy <= 0) {
+                    const s = 0.025; 
+                    camera.position.x += (Math.random() - 0.5) * s;
+                    camera.position.y += (Math.random() - 0.5) * s;
+                    camera.position.z += (Math.random() - 0.5) * s;
+                }
+
+                // --- EFFET SMOOTH : SHAKE CAMÉRA POST-EXPORT ---
+                if (window.camShakeIntensity > 0.001) {
+                    camera.position.x += (Math.random() - 0.5) * window.camShakeIntensity;
+                    camera.position.y += (Math.random() - 0.5) * window.camShakeIntensity;
+                    camera.position.z += (Math.random() - 0.5) * window.camShakeIntensity;
+                    window.camShakeIntensity *= 0.85; // Easing : le shake diminue de 15% à chaque frame
                 }
             }
+        }
 
             // --- SURLIGNAGE SMOOTH PAR PROXIMITÉ ---
             if (typeof highlightItems !== 'undefined' && Array.isArray(highlightItems)) {
@@ -6817,6 +6825,37 @@
         return { score: 1, rewardType: g.reward };
     }
 
+            // === EFFET VISUEL : FLASH DU DAW ===
+    function triggerDawFlash(bpm) {
+        const daw = document.getElementById('app-daw');
+        if (!daw) return;
+
+        // Calcul du temps d'un battement en millisecondes (ex: 120 bpm = 500ms)
+        const beatMs = (60 / bpm) * 1000;
+        
+        // Sauvegarde des styles d'origine pour ne pas casser le CSS existant
+        const originalBoxShadow = daw.style.boxShadow;
+        const originalBorderColor = daw.style.borderColor;
+        const originalTransition = daw.style.transition;
+
+        // 1. Impact instantané (0.05s)
+        daw.style.transition = 'box-shadow 0.05s ease-out, border-color 0.05s ease-out';
+        daw.style.boxShadow = '0 0 50px rgba(255, 255, 255, 0.12), inset 0 0 20px rgba(255, 255, 255, 0.08)';
+        daw.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+
+        // 2. Relâchement calé très précisément sur la durée d'un temps (beatMs)
+        setTimeout(() => {
+            daw.style.transition = `box-shadow ${beatMs}ms ease-out, border-color ${beatMs}ms ease-out`;
+            daw.style.boxShadow = originalBoxShadow;
+            daw.style.borderColor = originalBorderColor;
+            
+            // 3. Nettoyage de la transition une fois l'effet terminé
+            setTimeout(() => {
+                daw.style.transition = originalTransition;
+            }, beatMs);
+        }, 50); // Le temps de laisser l'impact visuel à l'écran
+    }
+
         function exportTrack() {
             if (getTotalMins() < (parseInt(state.cooldowns.dawTimeReady, 10) || 0) || state.isExporting) return;
 
@@ -6885,17 +6924,22 @@
                 prog.style.width = Math.min(100, p) + '%';
                 playhead.style.left = `${110 + (Math.min(100, p) * 6)}px`;
                 
-                if (p >= 100) {
-                    clearInterval(interval);
-                    clearInterval(vuInterval);
-                    dawWindow.style.transform = 'none'; 
-                    playhead.style.left = '110px';
-                    state.isExporting = false;
-                    state.cooldowns.dawTimeReady = getTotalMins() + getDawCooldown();
-                    progCont.classList.add('hidden');
-                    document.getElementById('playhead').classList.add('playhead-animated');
-                    finishExport(genre, bpm, voice, activePads, consumedPluginId, trackTitle);
-                }
+            if (p >= 100) {
+                clearInterval(interval);
+                clearInterval(vuInterval);
+                dawWindow.style.transform = 'none'; 
+                playhead.style.left = '110px';
+                state.isExporting = false;
+                state.cooldowns.dawTimeReady = getTotalMins() + getDawCooldown();
+                progCont.classList.add('hidden');
+                
+                // --- EFFETS SMOOTH DE FIN D'EXPORT ---
+                window.camShakeIntensity = 0.4; // Shake de la caméra 3D (Léger et élégant)
+                triggerDawFlash(bpm);           // Illumination du logiciel
+                // -------------------------------------
+
+                finishExport(genre, bpm, voice, activePads, consumedPluginId, trackTitle);
+            }
             }, 60);
         }
 
@@ -6979,9 +7023,7 @@
             // const toastData = {
             //    msg: toastMsg,
             //   type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error')
-            //};
-
-            // --- AJOUTE CECI À LA FIN DE finishExport ---
+            //}
     state.trackList.push({
         title: trackTitle,
         genre: genre.toUpperCase(),
