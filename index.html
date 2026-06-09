@@ -909,169 +909,143 @@
            10. SETTINGS / ACHIEVEMENTS
            ========================================= */
         .settings-shell {
-            width: min(94vw, 980px);
-            height: min(90dvh, 760px);
+            width: min(94vw, 700px);
+            height: min(90dvh, 680px);
             max-height: 90dvh;
             overflow: hidden;
             text-align: left;
         }
 
-        
-
         .settings-nav-btn,
         .achievement-filter-btn,
         .achievement-category-btn {
-            min-height: 44px;
-            border: 1px solid rgba(255,255,255,0.12);
-            background: rgba(255,255,255,0.05);
+            min-height: 40px;
+            border: 1px solid rgba(255,255,255,0.10);
+            background: rgba(255,255,255,0.04);
             color: var(--text-muted);
-            transition: all 0.2s ease;
+            transition: all 0.18s ease;
             touch-action: manipulation;
+            font-size: 11px;
         }
-
         .settings-nav-btn:hover,
         .achievement-filter-btn:hover,
         .achievement-category-btn:hover {
-            border-color: rgba(255,255,255,0.28);
+            border-color: rgba(255,255,255,0.22);
             color: #fff;
-            background: rgba(255,255,255,0.09);
+            background: rgba(255,255,255,0.08);
         }
-
         .settings-nav-btn.active,
         .achievement-filter-btn.active,
         .achievement-category-btn.active {
             border-color: var(--accent);
             color: #fff;
-            background: rgba(129, 140, 248, 0.18);
-            box-shadow: 0 0 18px rgba(129, 140, 248, 0.22), inset 0 1px 1px rgba(255,255,255,0.16);
+            background: rgba(129, 140, 248, 0.16);
+            box-shadow: 0 0 14px rgba(129,140,248,0.18), inset 0 1px 1px rgba(255,255,255,0.12);
         }
 
-        .achievement-map-grid {
-            position: relative;
-            display: grid;
-            /* Augmente la taille minimale des tuiles pour mieux afficher icônes/desc */
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 18px;
-            padding: 18px;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            background:
-                linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px),
-                rgba(0,0,0,0.28);
-            background-size: 32px 32px;
+        /* --- CARROUSEL ACHIEVEMENTS --- */
+        #achievements-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
             overflow-y: auto;
-            min-height: 0;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 4px 2px 16px 2px;
         }
+
+        .achievement-category-strip {
+            display: flex;
+            flex-direction: row;
+            gap: 12px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x proximity;
+            padding-bottom: 6px;
+        }
+        .achievement-category-strip::-webkit-scrollbar { height: 3px; }
+        .achievement-category-strip::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
 
         .achievement-card {
+            flex: 0 0 220px;
+            width: 220px;
+            min-height: 148px;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.09);
+            background: rgba(12, 14, 24, 0.72);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.32), inset 0 1px 1px rgba(255,255,255,0.08);
+            padding: 14px;
+            box-sizing: border-box;
+            scroll-snap-align: start;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             position: relative;
-            /* Augmenter la hauteur minimale pour laisser respirer le contenu */
-            min-height: 220px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.12);
-            background: rgba(12, 14, 24, 0.76);
-            backdrop-filter: blur(28px) saturate(180%);
-            -webkit-backdrop-filter: blur(28px) saturate(180%);
-            box-shadow: inset 0 1px 1px rgba(255,255,255,0.12), 0 12px 30px rgba(0,0,0,0.35);
             overflow: hidden;
         }
-
-        /* Override pour agrandir l'icône et le texte dans chaque carte */
-        .achievement-icon-wrap {
-            width: 64px !important;
-            height: 64px !important;
-            font-size: 1.6rem !important; /* équivalent à text-4xl-ish */
-            border-radius: 10px !important;
-        }
-
-        .achievement-card h4 {
-            font-size: 1.05rem; /* un peu plus gros que text-sm */
-        }
-
-        /* Desktop enhancements: meilleure lisibilité et contraste */
-        @media (min-width: 768px) {
-            .achievement-map-grid {
-                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-                gap: 20px;
-                padding: 22px;
-                background: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px), rgba(0,0,0,0.38);
-            }
-
-            .achievement-card {
-                min-height: 240px;
-                padding: 18px !important;
-                background: rgba(8,10,14,0.94) !important;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.04) !important;
-                border: 1px solid rgba(255,255,255,0.06) !important;
-            }
-
-            .achievement-icon-wrap {
-                width: 80px !important;
-                height: 80px !important;
-                font-size: 2rem !important;
-                border-radius: 12px !important;
-            }
-
-            .achievement-card h4 {
-                font-size: 1.15rem;
-                letter-spacing: 0.04em;
-            }
-
-            .achievement-card p {
-                font-size: 0.95rem;
-                color: #cbd5e1;
-            }
-
-            .achievement-progress-track { height: 10px; }
-            .achievement-progress-fill { box-shadow: 0 0 16px rgba(129,140,248,0.55); }
-
-            .achievement-card.unlocked {
-                border-color: rgba(129,140,248,0.9) !important;
-                box-shadow: 0 20px 50px rgba(129,140,248,0.12), 0 6px 18px rgba(0,0,0,0.6) !important;
-                background: linear-gradient(145deg, rgba(129,140,248,0.14), rgba(12,14,24,0.9));
-            }
-        }
-
-        .achievement-card::before {
-            content: '';
-            position: absolute;
-            left: -14px;
-            top: 34px;
-            width: 14px;
-            height: 1px;
-            background: rgba(129, 140, 248, 0.32);
-        }
+        .achievement-card:active { transform: scale(0.97); }
 
         .achievement-card.unlocked {
-            border-color: rgba(129, 140, 248, 0.75);
-            background: linear-gradient(145deg, rgba(129,140,248,0.18), rgba(12,14,24,0.82));
-            box-shadow: 0 0 24px rgba(129,140,248,0.22), inset 0 1px 1px rgba(255,255,255,0.22);
+            border-color: rgba(129,140,248,0.55);
+            background: linear-gradient(145deg, rgba(129,140,248,0.13), rgba(12,14,24,0.80));
+            box-shadow: 0 0 20px rgba(129,140,248,0.14), 0 8px 24px rgba(0,0,0,0.4);
         }
-
         .achievement-card.locked {
-            filter: grayscale(0.85);
-            opacity: 0.72;
+            filter: grayscale(0.6);
+            opacity: 0.60;
+        }
+        .achievement-card.secret-locked .achievement-icon-wrap {
+            filter: blur(4px) grayscale(1);
         }
 
-        .achievement-card.secret-locked .achievement-icon-wrap {
-            filter: blur(3px) grayscale(1);
+        .achievement-icon-wrap {
+            width: 44px;
+            height: 44px;
+            font-size: 1.4rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.10);
+            background: rgba(0,0,0,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
         .achievement-progress-track {
-            height: 7px;
+            height: 5px;
             border-radius: 999px;
             overflow: hidden;
-            background: rgba(0,0,0,0.55);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0,0,0,0.45);
+            border: 1px solid rgba(255,255,255,0.06);
         }
-
         .achievement-progress-fill {
             height: 100%;
             border-radius: 999px;
             background: linear-gradient(90deg, var(--accent), var(--retro-green));
-            box-shadow: 0 0 12px rgba(129,140,248,0.42);
-            transition: width 0.35s ease;
+            box-shadow: 0 0 8px rgba(129,140,248,0.35);
+            transition: width 0.3s ease;
+        }
+
+        /* Glow chip décoratif sur les cartes unlocked */
+        .achievement-card.unlocked::after {
+            content: '';
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: rgba(129,140,248,0.12);
+            filter: blur(18px);
+            pointer-events: none;
+        }
+
+        @media (min-width: 768px) {
+            .settings-shell {
+                width: min(92vw, 780px);
+                height: min(88dvh, 700px);
+            }
+            .achievement-card { flex: 0 0 240px; width: 240px; min-height: 158px; }
+            .achievement-icon-wrap { width: 50px; height: 50px; font-size: 1.6rem; }
         }
 
         @media (max-width: 767px) {
@@ -1080,14 +1054,9 @@
                 height: 100dvh;
                 max-height: 100dvh;
                 border-radius: 0 !important;
-                padding: calc(16px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom)) 14px !important;
+                padding: calc(14px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom)) 12px !important;
             }
-
-            .achievement-map-grid {
-                grid-template-columns: 1fr;
-                padding: 10px;
-                gap: 10px;
-            }
+            .achievement-card { flex: 0 0 200px; width: 200px; min-height: 140px; }
         }
     
     </style>
@@ -1239,88 +1208,6 @@
                 </div>
             </div>
 
-            <style>
-                /* Horizontal, scrollable Achievements panel (local scope) */
-                #settings-achievements-panel {
-                    min-height: 34vh;
-                    gap: 10px;
-                }
-
-                /* Header compacting */
-                #settings-achievements-panel .rounded-xl { padding: 10px; }
-                #settings-achievements-panel .rounded-xl h3 { font-size: 1.25rem; }
-
-                /* Horizontal scrolling strip for achievements */
-                #achievements-grid.achievement-map-grid {
-                    display: flex;
-                    flex-direction: row;
-                    gap: 14px;
-                    padding: 12px;
-                    align-items: flex-start;
-                    min-height: 0;
-                    flex: 0 0 42vh;
-                    height: 42vh;
-                    max-height: 66vh;
-                    overflow-x: auto;
-                    overflow-y: hidden;
-                    -webkit-overflow-scrolling: touch;
-                    scroll-snap-type: x proximity;
-                }
-
-                /* Individual achievement cards become fixed-width horizontal cards */
-                #settings-achievements-panel .achievement-card {
-                    flex: 0 0 280px;
-                    width: 280px;
-                    min-height: 170px;
-                    padding: 12px;
-                    box-sizing: border-box;
-                    scroll-snap-align: start;
-                }
-
-                /* Smaller icon sizing to fit horizontal layout */
-                #settings-achievements-panel .achievement-icon-wrap {
-                    width: 64px;
-                    height: 64px;
-                }
-
-                /* Compact controls */
-                .achievement-category-btn, .achievement-filter-btn {
-                    font-size: 11px !important;
-                    padding: 6px 8px !important;
-                }
-
-                .achievement-progress-track { height: 8px; }
-                .achievement-progress-fill { height: 8px; }
-
-                @media (min-width: 768px) {
-                    #achievements-grid.achievement-map-grid { gap: 18px; padding: 16px; height: 46vh; }
-                    #settings-achievements-panel .achievement-card { flex: 0 0 320px; width: 320px; min-height: 190px; }
-                    #settings-achievements-panel .achievement-icon-wrap { width: 80px; height: 80px; }
-                }
-            </style>
-
-            <div id="settings-achievements-panel" class="hidden flex-1 min-h-0 overflow-hidden flex-col gap-4">
-                <div class="rounded-xl border border-white/10 bg-white/[0.04] p-4 shrink-0">
-                    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-3">
-                        <div>
-                            <p class="font-retro text-[10px] text-[var(--text-muted)] tracking-widest uppercase mb-1">Career Milestones</p>
-                            <h3 class="font-retro text-xl text-white tracking-widest"><span id="achievements-unlocked-count">0</span>/<span id="achievements-total-count">0</span> achievements</h3>
-                        </div>
-                        <div id="achievements-global-percent" class="font-retro text-sm text-[var(--accent)] tracking-widest">0%</div>
-                    </div>
-                    <div class="achievement-progress-track h-2">
-                        <div id="achievements-global-bar" class="achievement-progress-fill" style="width: 0%;"></div>
-                    </div>
-                </div>
-
-                <div id="achievement-category-tabs" class="grid grid-cols-2 md:grid-cols-4 gap-2 shrink-0 font-retro text-[10px] uppercase tracking-widest"></div>
-                <div id="achievement-filter-tabs" class="grid grid-cols-4 gap-2 shrink-0 font-retro text-[10px] uppercase tracking-widest"></div>
-                <div id="achievements-grid" class="achievement-map-grid flex-1"></div>
-            </div>
-
-            <button onclick="closeAudioSettings()" class="btn-action py-3 px-8 rounded-lg text-xs font-retro tracking-widest mt-4 shrink-0">FERMER</button>
-        </div>
-    </div>
 
     <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
         <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
@@ -4390,12 +4277,6 @@ function drawSysGraphUI(timestamp) {
         const categoryHost = document.getElementById('achievement-category-tabs');
         const filterHost = document.getElementById('achievement-filter-tabs');
 
-        if (categoryHost) {
-            categoryHost.innerHTML = ACHIEVEMENT_CATEGORIES.map(cat => `
-                <button id="achievement-category-${cat.id}" class="achievement-category-btn rounded-lg px-2 py-3" onclick="setAchievementCategory('${cat.id}')">${cat.label}</button>
-            `).join('');
-        }
-
         if (filterHost) {
             filterHost.innerHTML = ACHIEVEMENT_FILTERS.map(filter => `
                 <button id="achievement-filter-${filter.id}" class="achievement-filter-btn rounded-lg px-2 py-3" onclick="setAchievementFilter('${filter.id}')">${filter.label}</button>
@@ -4455,89 +4336,91 @@ function drawSysGraphUI(timestamp) {
         const globalPercent = totalCount ? Math.round((unlockedCount / totalCount) * 100) : 0;
 
         const unlockedEl = document.getElementById('achievements-unlocked-count');
-        const totalEl = document.getElementById('achievements-total-count');
-        const percentEl = document.getElementById('achievements-global-percent');
-        const barEl = document.getElementById('achievements-global-bar');
+        const totalEl    = document.getElementById('achievements-total-count');
+        const percentEl  = document.getElementById('achievements-global-percent');
+        const barEl      = document.getElementById('achievements-global-bar');
 
         if (unlockedEl) unlockedEl.innerText = unlockedCount;
-        if (totalEl) totalEl.innerText = totalCount;
-        if (percentEl) percentEl.innerText = `${globalPercent}%`;
-        if (barEl) barEl.style.width = `${globalPercent}%`;
+        if (totalEl)    totalEl.innerText    = totalCount;
+        if (percentEl)  percentEl.innerText  = `${globalPercent}%`;
+        if (barEl)      barEl.style.width    = `${globalPercent}%`;
 
-        ACHIEVEMENT_CATEGORIES.forEach(cat => {
-            const btn = document.getElementById(`achievement-category-${cat.id}`);
-            if (btn) btn.classList.toggle('active', cat.id === activeAchievementCategory);
-        });
-
+        // Met à jour les boutons filtres
         ACHIEVEMENT_FILTERS.forEach(filter => {
             const btn = document.getElementById(`achievement-filter-${filter.id}`);
             if (btn) btn.classList.toggle('active', filter.id === activeAchievementFilter);
         });
 
-        // Render categories as horizontal carousels. Use existing entries and filter logic.
         grid.innerHTML = '';
 
         ACHIEVEMENT_CATEGORIES.forEach(cat => {
-            const catEntries = entries
-                .filter(a => (a.category || 'studio') === cat.id)
-                .filter(a => {
-                    if (activeAchievementFilter === 'unlocked') return a.unlocked;
-                    if (activeAchievementFilter === 'locked') return !a.unlocked;
-                    if (activeAchievementFilter === 'secret') return Boolean(a.secret);
-                    return true;
-                });
+            let catEntries = entries.filter(a => (a.category || 'studio') === cat.id);
 
-            if (!catEntries || catEntries.length === 0) return;
+            // Applique le filtre actif
+            if (activeAchievementFilter === 'unlocked') catEntries = catEntries.filter(a => a.unlocked);
+            else if (activeAchievementFilter === 'locked') catEntries = catEntries.filter(a => !a.unlocked);
+            else if (activeAchievementFilter === 'secret') catEntries = catEntries.filter(a => Boolean(a.secret));
 
-            const sectionHTML = `
-                <section class="w-full mb-4">
-                    <div class="mb-2 flex items-center justify-between w-full">
-                        <h4 class="font-retro text-[12px] text-[var(--text-muted)] uppercase tracking-widest">${escapeHTML(cat.label)}</h4>
-                        <div class="font-retro text-sm text-[var(--accent)] tracking-widest">${catEntries.filter(e => e.unlocked).length}/${catEntries.length}</div>
+            if (!catEntries.length) return;
+
+            const unlockedInCat = catEntries.filter(a => a.unlocked).length;
+
+            const section = document.createElement('div');
+            section.className = 'flex flex-col gap-2';
+
+            // En-tête de catégorie
+            section.innerHTML = `
+                <div class="flex items-center justify-between px-1">
+                    <span class="font-retro text-[11px] text-[var(--text-muted)] uppercase tracking-widest">${escapeHTML(cat.label)}</span>
+                    <span class="font-retro text-[11px] text-[var(--accent)]">${unlockedInCat}/${catEntries.length}</span>
+                </div>`;
+
+            // Carrousel horizontal
+            const strip = document.createElement('div');
+            strip.className = 'achievement-category-strip';
+
+            catEntries.forEach(achievement => {
+                const isSecretLocked = achievement.secret && !achievement.unlocked;
+                const progress = getAchievementProgress(achievement.id, achievement);
+                const title    = isSecretLocked ? '???' : (achievement.name || achievement.id);
+                const desc     = isSecretLocked ? 'Succès secret — continue à jouer' : (achievement.description || '');
+                const icon     = isSecretLocked ? '🔒' : (achievement.icon || '🏆');
+                const stateClass = achievement.unlocked ? 'unlocked' : (isSecretLocked ? 'locked secret-locked' : 'locked');
+                const unlockLabel = getAchievementUnlockLabel(achievement);
+
+                const card = document.createElement('div');
+                card.className = `achievement-card ${stateClass}`;
+
+                const progressHTML = progress.progressive && !isSecretLocked ? `
+                    <div class="mt-2">
+                        <div class="flex justify-between font-retro text-[9px] text-[var(--text-muted)] mb-1 tracking-widest">
+                            <span>${formatNum(progress.current)}/${formatNum(progress.target)} ${escapeHTML(progress.unit)}</span>
+                            <span>${progress.percent}%</span>
+                        </div>
+                        <div class="achievement-progress-track">
+                            <div class="achievement-progress-fill" style="width:${progress.percent}%;"></div>
+                        </div>
+                    </div>` : '';
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-3 mb-2">
+                        <div class="achievement-icon-wrap">${escapeHTML(icon)}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-retro text-[11px] text-white font-bold tracking-wide leading-tight truncate">${escapeHTML(title)}</div>
+                            <div class="text-[10px] text-[var(--text-muted)] mt-0.5 leading-snug line-clamp-2 ${isSecretLocked ? 'blur-[2px]' : ''}">${escapeHTML(desc)}</div>
+                        </div>
                     </div>
-                    <div class="flex flex-row overflow-x-auto snap-x snap-mandatory gap-4 pb-4 custom-scrollbar" role="list">
-                        ${catEntries.map(achievement => {
-                            const isSecretLocked = achievement.secret && !achievement.unlocked;
-                            const progress = getAchievementProgress(achievement.id, achievement);
-                            const title = isSecretLocked ? '???' : (achievement.name || achievement.id);
-                            const desc = isSecretLocked ? '??? - Succès secret' : (achievement.description || '');
-                            const icon = isSecretLocked ? '🔒' : (achievement.icon || '🏆');
-                            const stateClass = achievement.unlocked ? 'unlocked border-[var(--accent)]' : 'locked border-gray-700 grayscale opacity-50';
+                    ${progressHTML}
+                    <div class="mt-auto pt-2 border-t border-white/[0.06] flex items-center justify-between font-retro text-[9px] text-[var(--text-muted)] tracking-wider">
+                        <span class="${achievement.unlocked ? 'text-[var(--accent)]' : ''}">${achievement.unlocked ? '✓ UNLOCKED' : 'LOCKED'}</span>
+                        <span class="truncate ml-2 text-right opacity-60">${escapeHTML(unlockLabel)}</span>
+                    </div>`;
 
-                            const progressHTML = progress.progressive && !isSecretLocked ? `
-                                <div class="mt-3 w-full">
-                                    <div class="flex justify-between items-center mb-1.5 font-retro text-[9px] tracking-widest text-[var(--text-muted)]">
-                                        <span>${formatNum(progress.current)}/${formatNum(progress.target)} ${escapeHTML(progress.unit)}</span>
-                                        <span>${progress.percent}%</span>
-                                    </div>
-                                    <div class="achievement-progress-track">
-                                        <div class="achievement-progress-fill" style="width:${progress.percent}%;"></div>
-                                    </div>
-                                </div>
-                            ` : '';
+                strip.appendChild(card);
+            });
 
-                            return `
-                                <article class="achievement-card ${stateClass} p-3 flex-shrink-0 w-4/5 md:w-64 rounded-lg liquid-glass-heavy flex flex-col" role="listitem">
-                                    <div class="flex items-start gap-3 mb-2">
-                                        <div class="achievement-icon-wrap w-12 h-12 rounded-lg border border-white/10 bg-black/40 flex items-center justify-center text-2xl shrink-0">${escapeHTML(icon)}</div>
-                                        <div class="flex-1">
-                                            <div class="font-retro text-sm text-white tracking-widest uppercase leading-tight">${escapeHTML(title)}</div>
-                                            <div class="text-xs text-[var(--text-muted)] mt-1 leading-snug ${isSecretLocked ? 'blur-[1px]' : ''}">${escapeHTML(desc)}</div>
-                                        </div>
-                                    </div>
-                                    ${progressHTML}
-                                    <div class="mt-3 pt-2 border-t border-white/10 flex items-center justify-between gap-3 font-retro text-[9px] tracking-widest uppercase text-[var(--text-muted)]">
-                                        <span>${escapeHTML(cat.label)}</span>
-                                        <span>${escapeHTML(getAchievementUnlockLabel(achievement))}</span>
-                                    </div>
-                                </article>
-                            `;
-                        }).join('')}
-                    </div>
-                </section>
-            `;
-
-            grid.insertAdjacentHTML('beforeend', sectionHTML);
+            section.appendChild(strip);
+            grid.appendChild(section);
         });
     }
 
