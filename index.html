@@ -248,6 +248,26 @@
             50% { transform: scale(1.08); }
             100% { transform: scale(1.0); }
         }
+
+        @keyframes moneyFloat {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            20% { opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--tx)), var(--ty)) scale(1.2); opacity: 0; }
+        }
+        .money-particle {
+            position: fixed; pointer-events: none; z-index: 1000000;
+            color: #34d399; font-weight: bold; font-family: 'Outfit', sans-serif;
+            text-shadow: 0 0 8px rgba(52, 211, 153, 0.8);
+            animation: moneyFloat 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes hudShake {
+            0%, 100% { transform: translateX(-50%); }
+            20%, 60% { transform: translateX(calc(-50% - 3px)); }
+            40%, 80% { transform: translateX(calc(-50% + 3px)); }
+        }
+        .animate-hud-shake { animation: hudShake 0.3s ease-in-out; }
+
         .animate-wave {
         height: 20%;
         animation: soundWave 1.2s ease-in-out infinite;
@@ -3535,21 +3555,33 @@ function rotateAvatarToward(target, smooth = 0.12) {
     if (window.timeRipples && window.timeRipples.length > 0) {
         for (let i = window.timeRipples.length - 1; i >= 0; i--) {
             const r = window.timeRipples[i];
-            r.life -= 0.04; 
-            r.mesh.scale.addScalar(r.growth);
-            if (r.mesh.material) r.mesh.material.opacity = r.life * 0.4;
             
+            // Disparition beaucoup plus lente pour un effet fluide
+            r.life -= 0.012; 
+            
+            // 1. L'anneau s'élargit
+            r.mesh.scale.x += r.scaleSpeed;
+            r.mesh.scale.y += r.scaleSpeed; // Sur un Torus tourné, l'axe Y gère l'expansion à plat
+            
+            // 2. L'anneau flotte vers le haut
+            r.mesh.position.y += r.driftSpeed;
+            
+            // 3. L'anneau tourne subtilement
+            r.mesh.rotation.z += r.rotZ;
+
+            // 4. Easing dynamique : reste visible un peu, puis fade-out en douceur (courbe quadratique)
+            if (r.mesh.material) {
+                r.mesh.material.opacity = Math.max(0, Math.pow(r.life, 2) * 0.6);
+            }
+            
+            // Nettoyage propre de la mémoire
             if (r.life <= 0) {
                 if (typeof scene !== 'undefined') scene.remove(r.mesh);
+                if (r.mesh.geometry) r.mesh.geometry.dispose();
                 if (r.mesh.material) r.mesh.material.dispose();
                 window.timeRipples.splice(i, 1);
             }
         }
-    }
-
-    // --- 👇 AJOUTER CE BLOC POUR RÉPARER LE CRASH 👇 ---
-    if (typeof renderer !== 'undefined' && typeof scene !== 'undefined' && typeof camera !== 'undefined') {
-        renderer.render(scene, camera);
     }
 } // <--- C'EST CETTE ACCOLADE QUI MANQUAIT !
 
@@ -4168,7 +4200,8 @@ function drawSysGraphUI(timestamp) {
     const playSuccess = () => { playTone(600, 'square', 0.1, 0.03); setTimeout(() => playTone(800, 'square', 0.15, 0.03), 100); };
     const playError   = () => { playTone(200, 'sawtooth', 0.2, 0.05); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); };
     const playKick    = () => { playTone(60, 'sine', 0.2, 0.2); playTone(120, 'square', 0.05, 0.1); };
-
+    const playCashSound = () => { playTone(600, 'sine', 0.1, 0.08); setTimeout(() => playTone(1200, 'sine', 0.2, 0.08), 100); };
+    
 // ==========================================
 // CRÉATION DES AVATARS (Style Funko Pop Blocky / Flat 3D)
 // ==========================================
@@ -4602,11 +4635,36 @@ function createAvatarGroup(styleIndex) {
 
         // Ajoute une animation à l'avatar du HUD quand de l'argent est gagné
         if (amount > 0) {
+            spawnMoneyParticles();
             const hudAvatar = document.getElementById('hud-avatar');
             if (hudAvatar) {
                 hudAvatar.classList.add('animate-money-pulse');
                 setTimeout(() => hudAvatar.classList.remove('animate-money-pulse'), 300); // Durée de l'animation
             }
+        } else if (amount < 0) {
+            // Ajoute un effet de secousse au HUD quand de l'argent est perdu
+            const hud = document.getElementById('hud');
+            if (hud) {
+                hud.classList.add('animate-hud-shake');
+                setTimeout(() => hud.classList.remove('animate-hud-shake'), 300);
+            }
+        }
+    }
+
+    function spawnMoneyParticles() {
+        const target = document.getElementById('hud-money');
+        if (!target) return;
+        const rect = target.getBoundingClientRect();
+        for (let i = 0; i < 6; i++) {
+            const p = document.createElement('div');
+            p.innerText = '$';
+            p.className = 'money-particle';
+            p.style.left = `${rect.left + rect.width / 2}px`;
+            p.style.top = `${rect.top + rect.height / 2}px`;
+            p.style.setProperty('--tx', `${(Math.random() - 0.5) * 80}px`);
+            p.style.setProperty('--ty', `${-40 - Math.random() * 60}px`);
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 800);
         }
     }
     function generateFanName() {
@@ -5803,35 +5861,34 @@ function createAvatarGroup(styleIndex) {
             
             // Le plugin n'est plus supprimé ici, il reste actif à vie dans le menu déroulant !
         }
-
-        logMoney(moneyGain, 'Track Royalties');
-        state.rep = Math.max(0, state.rep + repGain);
-        // --- ÉQUILIBRAGE TYCOON : EFFET BOULE DE NEIGE ---
-        // Les fans existants ramènent du monde (1% de la commu)
-        let snowballBonus = Math.floor(state.followers * 0.01);
         
-        // Soft-cap pour éviter de casser le late-game (si le bonus dépasse 2000, il ralentit)
+        let snowballBonus = Math.floor(state.followers * 0.01);
         if (snowballBonus > 2000) {
             snowballBonus = 2000 + Math.floor(Math.sqrt(snowballBonus - 2000)); 
         }
-        
         follGain += snowballBonus;
-        // -------------------------------------------------
-        logFollower(follGain);
-        state.stats.tracks++;
 
         let toastMsg = `${resultTxt}${critique}\n+$${moneyGain}`;
         if (follGain > 0) toastMsg += ` | +${follGain} Fans`;
         if (repGain !== 0) toastMsg += ` | ${repGain > 0 ? '+' : ''}${repGain} Rep`;
 
+        // Stockage des gains pour application à la fermeture de la review
+        window.pendingReviewData = {
+            money: moneyGain,
+            rep: repGain,
+            fans: follGain,
+            toast: { msg: toastMsg, type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error') }
+        };
+
+        state.stats.tracks++;
         const trackScore = result.score === 3 ? Math.floor(7 + Math.random() * 3) :
                    result.score === 1 ? Math.floor(4 + Math.random() * 3) :
                                         Math.floor(1 + Math.random() * 3);
         
-        const toastData = {
-            msg: toastMsg,
-            type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error')
-        };
+        // const toastData = {
+        //    msg: toastMsg,
+         //   type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error')
+        //};
 
         // --- AJOUTE CECI À LA FIN DE finishExport ---
 state.trackList.push({
@@ -5855,7 +5912,7 @@ if (state.trackList.length > 15) {
 updateTopChartsWidget();
 // ---------------------------------------------
 
-showTrackReview(trackScore, trackTitle, toastData);
+showTrackReview(trackScore, trackTitle, null);
 saveGame(); updateHUD(); updateCooldownUIs();
 }
 
@@ -6244,6 +6301,20 @@ function renderStore(tab) {
     overlay.style.pointerEvents = 'none';
 
     state.isReviewActive = false; // Désactive l'état de revue
+
+    // Application des récompenses différées
+    if (window.pendingReviewData) {
+        const d = window.pendingReviewData;
+        logMoney(d.money, 'Track Royalties');
+        state.rep = Math.max(0, state.rep + d.rep);
+        logFollower(d.fans);
+        if (d.money > 0) playCashSound();
+        showToast(d.toast.msg, d.toast.type);
+        window.pendingReviewData = null; // Nettoyage
+        updateHUD();
+        saveGame();
+    }
+
     setTimeout(() => {
         overlay.classList.add('hidden');
         overlay.style.display = 'none';
