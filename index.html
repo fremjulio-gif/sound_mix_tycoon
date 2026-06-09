@@ -1705,13 +1705,22 @@
                 <div class="window-content" id="browser-content"></div>
             </div>
 
-            <div id="app-social" class="os-window liquid-glass flex-col" style="display:none;">
-                <div class="window-header">
-                    <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></span> SoundNet App</span>
-                    <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-social')">✕</button>
-                </div>
-                <div class="window-content p-6 md:p-8">
-                    <div class="border border-[var(--accent)]/30 bg-black/40 p-6 md:p-8 rounded-xl text-center mb-8 shadow-inner">
+                    <div id="app-social" class="os-window liquid-glass flex-col" style="display:none;">
+            <div class="window-header">
+                <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></span> SoundNet</span>
+                <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-social')">✕</button>
+            </div>
+            
+            <div class="flex border-b border-[#27272a] text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-[#18181b] font-bold">
+                <button class="flex-1 py-4 transition-colors border-r border-[#27272a] bg-[#27272a] text-white shadow-inner" id="tab-social-feed" onclick="switchSocialTab('feed')">Feed & Sponsors</button>
+                <button class="flex-1 py-4 transition-colors text-gray-500 hover:bg-white/5 hover:text-white relative" id="tab-social-dms" onclick="switchSocialTab('dms')">
+                    Messagerie (DM)
+                    <span id="dm-notif" class="hidden absolute top-3 right-4 w-2 h-2 bg-[var(--retro-red)] rounded-full animate-pulse shadow-[0_0_5px_var(--retro-red)]"></span>
+                </button>
+            </div>
+
+            <div class="window-content p-6 md:p-8" id="social-content-feed">
+                <div class="border border-[var(--accent)]/30 bg-black/40 p-6 md:p-8 rounded-xl text-center mb-8 shadow-inner">
                         <p class="text-sm text-[var(--text-muted)] mb-6">Poste pour trouver ta commu</p>
                         <button id="btn-story" class="btn-action px-10 py-4 text-xs rounded-lg tracking-widest font-bold w-full md:w-auto" onclick="postStory()">POSTER UNE STORY</button>
                         <p id="story-status" class="text-xs text-[var(--retro-green)] mt-5 font-retro tracking-widest drop-shadow-[0_0_5px_var(--retro-green)]">STATUS: READY</p>
@@ -1719,6 +1728,8 @@
                     <div>
                         <h4 class="text-xs text-white mb-5 uppercase tracking-widest font-retro border-b border-[var(--accent)]/30 pb-3 font-bold">Brand Deals (Sellout)</h4>
                         <div id="sponsor-list" class="space-y-4"></div>
+                        </div> <div class="window-content hidden flex-col p-4 md:p-6 bg-[#121214]" id="social-content-dms">
+                    <div id="dm-list-container" class="flex flex-col gap-4"></div>
                     </div>
                 </div>
             </div>
@@ -5580,7 +5591,176 @@
         currentRoomAvatar = root;
     }
 
+        // ==========================================
+    // SYSTÈME DE MESSAGERIE PRIVÉE (DM)
+    // ==========================================
+    const DM_TEMPLATES = [
+        {
+            id: 'scam_playlist',
+            sender: '@A&R_Mike',
+            avatarColor: 'bg-blue-600',
+            text: "Yo bro, tes prods sont insane. Envoie $200 par PayPal et je te mets dans notre grosse playlist Spotify 'Rap Caviar FR'. 50k streams garantis.",
+            choices: [
+                { text: "Payer $200", effect: () => { logMoney(-200, "Scam Playlist"); showToast("Tu t'es fait scam. 0 stream ajouté.", "error"); playError(); } },
+                { text: "L'insulter", effect: () => { state.rep += 5; showToast("T'as gardé ton intégrité face à un rat (+5 REP).", "success"); playBleep(); } },
+                { text: "Ignorer", effect: () => { playBleep(); } }
+            ]
+        },
+        {
+            id: 'local_rapper',
+            sender: '@Lil_Kevdu44',
+            avatarColor: 'bg-green-600',
+            text: "Wesh le s, il me faut une prod bien sombre pour mon freestyle Planète Rap la semaine pro. J'ai 150 balles de budget direct, chaud ?",
+            choices: [
+                { text: "Accepter ($150)", effect: () => { logMoney(150, "Prod Local"); state.rep += 10; showToast("Feat validé. Le quartier valide. +$150 | +10 REP", "success"); playSuccess(); } },
+                { text: "Négocier ($300)", effect: () => { if(Math.random()>0.5){ logMoney(300, "Prod Local"); showToast("Il a lâché les billets ! +$300", "success"); playSuccess(); } else { showToast("Il a ghosté, trop cher pour lui.", "error"); playError(); } } },
+                { text: "Recaler", effect: () => { state.rep = Math.max(0, state.rep - 5); showToast("Il a mal pris ton refus (-5 REP)", "error"); playError(); } }
+            ]
+        },
+        {
+            id: 'influencer',
+            sender: '@Chloe_Vibes',
+            avatarColor: 'bg-pink-600',
+            text: "Hiii! J'adore grave ton univers ✨ Tu peux me faire un beat chill gratuit pour mon prochain TikTok ? Je te tag devant mes 500k abonnés, promis !",
+            choices: [
+                { text: "Taffer pour la pub", effect: () => { logFollower(3000); state.rep = Math.max(0, state.rep - 15); showToast("Boost énorme (+3000 Fans) mais l'industrie de la prod te juge (-15 REP).", "info"); playBleep(); } },
+                { text: "Facturer ($400)", effect: () => { if(Math.random()>0.7){ logMoney(400, "Synchro TikTok"); showToast("Elle a payé ! Belle synchro (+ $400).", "success"); playSuccess(); } else { state.followers = Math.max(0, state.followers - 500); showToast("Elle t'a affiché en story pour être 'vénal' (-500 Fans).", "error"); playError(); } } }
+            ]
+        },
+        {
+            id: 'label_deal',
+            sender: '@SonyMusic_A&R',
+            avatarColor: 'bg-purple-600',
+            text: "Bonjour, on suit ton ascension de très près. On aimerait racheter les droits exclusifs et tes masters sur ton dernier banger pour 5000$.",
+            choices: [
+                { text: "Vendre ses droits ($5000)", effect: () => { logMoney(5000, "Vente Exclusive Label"); state.rep = Math.max(0, state.rep - 30); showToast("Cash in ! +$5000, mais tu as perdu le respect de l'underground (-30 REP).", "success"); playCashSound(); } },
+                { text: "Garder ses masters", effect: () => { state.rep += 50; showToast("Indépendant jusqu'à la mort ! La street te valide (+50 REP).", "success"); playSuccess(); } }
+            ]
+        }
+    ];
 
+    function switchSocialTab(tab) {
+        const btnFeed = document.getElementById('tab-social-feed');
+        const btnDMs = document.getElementById('tab-social-dms');
+        const contentFeed = document.getElementById('social-content-feed');
+        const contentDMs = document.getElementById('social-content-dms');
+
+        if (tab === 'feed') {
+            btnFeed.className = "flex-1 py-4 transition-colors border-r border-[#27272a] bg-[#27272a] text-white shadow-inner";
+            btnDMs.className = "flex-1 py-4 transition-colors text-gray-500 hover:bg-white/5 hover:text-white relative";
+            contentFeed.classList.remove('hidden');
+            contentDMs.classList.add('hidden');
+            contentDMs.classList.remove('flex');
+        } else {
+            btnDMs.className = "flex-1 py-4 transition-colors bg-[#27272a] text-white shadow-inner relative";
+            btnFeed.className = "flex-1 py-4 transition-colors border-r border-[#27272a] text-gray-500 hover:bg-white/5 hover:text-white";
+            contentFeed.classList.add('hidden');
+            contentDMs.classList.remove('hidden');
+            contentDMs.classList.add('flex');
+            
+            // Masque la pastille rouge
+            const notif = document.getElementById('dm-notif');
+            if(notif) notif.classList.add('hidden');
+            renderDMs();
+        }
+        playBleep();
+    }
+
+    function renderDMs() {
+        const container = document.getElementById('dm-list-container');
+        if (!container) return;
+
+        state.dms = state.dms || [];
+
+        if (state.dms.length === 0) {
+            container.innerHTML = '<p class="text-[10px] text-gray-500 font-retro text-center mt-10 tracking-widest uppercase">Boîte de réception vide.</p>';
+            return;
+        }
+
+        // Tri : Non lus en premier, puis du plus récent au plus vieux
+        const sortedDMs = [...state.dms].sort((a, b) => {
+            if (a.resolved === b.resolved) return b.timestamp - a.timestamp;
+            return a.resolved ? 1 : -1;
+        });
+
+        container.innerHTML = sortedDMs.map(dm => {
+            const template = DM_TEMPLATES.find(t => t.id === dm.templateId);
+            if (!template) return '';
+
+            let choicesHTML = '';
+            if (!dm.resolved) {
+                choicesHTML = `<div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-[#27272a]">` + 
+                    template.choices.map((c, idx) => `
+                        <button class="btn-minimal flex-1 py-2 px-3 text-[9px] rounded font-retro tracking-widest hover:border-[var(--accent)] hover:text-white transition-colors" onclick="answerDM('${dm.instanceId}', ${idx})">${c.text}</button>
+                    `).join('') + `</div>`;
+            } else {
+                const choiceText = template.choices[dm.choiceIdx]?.text || "Ignoré";
+                choicesHTML = `<div class="mt-4 pt-4 border-t border-[#27272a]"><span class="text-[9px] font-retro text-gray-500 tracking-widest uppercase">✅ Répondu : ${choiceText}</span></div>`;
+            }
+
+            return `
+                <div class="bg-[#18181b] border border-[#27272a] rounded-xl p-4 shadow-sm ${dm.resolved ? 'opacity-50' : 'border-l-4 border-l-[var(--accent)]'}">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-full ${template.avatarColor} flex items-center justify-center text-white font-bold text-xs shadow-inner">
+                            ${template.sender.charAt(1).toUpperCase()}
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-sm text-gray-200">${template.sender}</span>
+                            <span class="text-[9px] font-retro text-[var(--text-muted)] tracking-widest">Il y a ${Math.max(1, Math.floor((getTotalMins() - dm.timestamp)/60))} heures</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-300 leading-relaxed font-sans">${template.text}</p>
+                    ${choicesHTML}
+                </div>
+            `;
+        }).join('');
+    }
+
+    function answerDM(instanceId, choiceIdx) {
+        const dm = state.dms.find(d => d.instanceId == instanceId);
+        if (!dm || dm.resolved) return;
+
+        const template = DM_TEMPLATES.find(t => t.id === dm.templateId);
+        if (template && template.choices[choiceIdx]) {
+            template.choices[choiceIdx].effect(); // Exécute les gains/pertes
+        }
+
+        dm.resolved = true;
+        dm.choiceIdx = choiceIdx;
+        renderDMs();
+        updateHUD();
+        saveGame();
+    }
+
+    function spawnRandomDM() {
+        state.dms = state.dms || [];
+        
+        // Sélectionne un template aléatoire
+        const template = DM_TEMPLATES[Math.floor(Math.random() * DM_TEMPLATES.length)];
+        
+        state.dms.push({
+            instanceId: Date.now(),
+            templateId: template.id,
+            timestamp: getTotalMins(),
+            resolved: false,
+            choiceIdx: -1
+        });
+
+        // Affiche la pastille rouge
+        const notif = document.getElementById('dm-notif');
+        if (notif) notif.classList.remove('hidden');
+
+        // Notification visuelle et sonore
+        showToast(`💬 Nouveau message privé de ${template.sender} !`, "info");
+        playTone(600, 'square', 0.05, 0.05); setTimeout(() => playTone(800, 'square', 0.1, 0.05), 100); 
+        
+        // On actualise si l'onglet est ouvert
+        const contentDMs = document.getElementById('social-content-dms');
+        if (contentDMs && !contentDMs.classList.contains('hidden')) {
+            renderDMs();
+        }
+        saveGame();
+    }
 
         const sponsors = [
             { id: 'sp1', name: "Enerji Drink",  reqFollowers: 1000,  reward: 500,  repCost: 15, cooldownDays: 1 },
@@ -6458,6 +6638,7 @@
                     state.multiplier      = parseFloat(state.multiplier) || 1.0;
                     state.plugins         = parseInt(state.plugins, 10) || 0;
                     state.energy          = parseFloat(state.energy);
+                    state.dms = state.dms || [];
 
                     if (isNaN(state.timeMins)) state.timeMins = 8 * 60;
                     if (isNaN(state.day) || state.day < 1) state.day = 1;
@@ -6660,8 +6841,8 @@
                 if (r < 0.001) triggerRandomEvent('collab');        
                 else if (r < 0.002) triggerRandomEvent('vol');      
                 else if (r < 0.0025) triggerRandomEvent('badbuzz'); 
+                else if (r < 0.004) spawnRandomDM(); // <-- Plus de chance d'avoir un DM qu'un gros event bloquant
             }
-        }
 
         // ==========================================
         // 14. HUD UPDATE
@@ -7044,14 +7225,14 @@
             
             if (result.score === 3) {
                 resultTxt = "🔥 PERFECT BANGER! (Top Charts)"; state.stats.bangers++; 
-                state.stats.consecutiveFlops = 0; playSuccess();
+                state.stats.consecutiveFlops = 0; 
                 if (result.rewardType === 'money')     { moneyGain = 600;  repGain += 15; }
                 if (result.rewardType === 'followers') { moneyGain = 100;  follGain = 5000; repGain += 20; }
                 if (result.rewardType === 'stable')    { moneyGain = 300;  repGain += 15; }
                 if (result.rewardType === 'rep')       { moneyGain = 100;  repGain += 45; follGain = 1000; }
             } else if (result.score === 1) {
                 resultTxt = "👍 Decent track. It'll stream."; 
-                state.stats.consecutiveFlops = 0; playBleep();
+                state.stats.consecutiveFlops = 0; 
                 if (result.rewardType === 'money')     { moneyGain = 150;  repGain += 7; }
                 if (result.rewardType === 'followers') { moneyGain = 35;   follGain = 800; repGain += 8; }
                 if (result.rewardType === 'stable')    { moneyGain = 100;  repGain += 1; }
@@ -7059,7 +7240,7 @@
             } else {
                 resultTxt = "🗑️ MASSIVE FLOP. Wrong vibe for 2026.";
                 moneyGain = 15; repGain -= 5; state.stats.flops++; 
-                state.stats.consecutiveFlops++; playError();
+                state.stats.consecutiveFlops++; 
             }
             checkAchievement('productivite_toxique', () => state.stats.consecutiveFlops >= 5);
 
@@ -7913,7 +8094,10 @@
         const avgColor = avg >= 7 ? 'text-[var(--retro-green)]' : avg >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]';
         avgEl.className = `text-5xl font-bold font-retro ${avgColor}`;
         avgEl.innerText = `${avg}/10`;
-        playSuccess();
+        
+        if (avg >= 7.0) playSuccess();
+        else if (avg >= 4.0) playBleep();
+        else playError();
     
         if (avg >= 7.0) fireConfetti('banger'); // <-- DÉCLENCHEUR ICI
         
