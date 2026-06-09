@@ -261,6 +261,14 @@
             animation: moneyFloat 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
+        @keyframes achievementGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(129, 140, 248, 0.4), inset 0 0 10px rgba(129, 140, 248, 0.2); border-color: var(--accent); }
+            50% { box-shadow: 0 0 40px rgba(129, 140, 248, 0.8), inset 0 0 20px rgba(129, 140, 248, 0.4); border-color: #fff; }
+        }
+        .animate-achievement {
+            animation: achievementGlow 1.5s ease-in-out infinite;
+        }
+
         @keyframes hudShake {
             0%, 100% { transform: translateX(-50%); }
             20%, 60% { transform: translateX(calc(-50% - 3px)); }
@@ -3964,13 +3972,50 @@ function drawSysGraphUI(timestamp) {
     // ==========================================
     // SYSTÈME D'ACHIEVEMENTS
     // ==========================================
+    // ==========================================
+    // SYSTÈME D'ACHIEVEMENTS PRO (WITH QUEUE)
+    // ==========================================
+    let achievementQueue = [];
+    let isAchievementShowing = false;
+
+    function unlockAchievement(title, desc, icon = '🏆') {
+        achievementQueue.push({ title, desc, icon });
+        processAchievementQueue();
+    }
+
+    function processAchievementQueue() {
+        if (isAchievementShowing || achievementQueue.length === 0) return;
+        isAchievementShowing = true;
+        const data = achievementQueue.shift();
+        const popup = document.getElementById('achievement-popup');
+        if (!popup) return;
+        
+        document.getElementById('achievement-icon').innerText = data.icon;
+        document.getElementById('achievement-title').innerText = data.title;
+        document.getElementById('achievement-desc').innerText = data.desc;
+
+        // Slide down
+        popup.style.top = '24px';
+        popup.classList.add('animate-achievement');
+        playSuccess();
+
+        setTimeout(() => {
+            // Slide up
+            popup.style.top = '-150px';
+            popup.classList.remove('animate-achievement');
+            setTimeout(() => {
+                isAchievementShowing = false;
+                processAchievementQueue();
+            }, 600);
+        }, 5000);
+    }
+
     function checkAchievement(id, condition) {
         if (!state.achievements[id] || state.achievements[id].unlocked) return;
-
         if (condition()) {
             state.achievements[id].unlocked = true;
-            showToast(`Achievement débloqué : ${id}! ${state.achievements[id].description}`, 'success');
-            playSuccess();
+            const a = state.achievements[id];
+            unlockAchievement(a.name || id, a.description, a.icon || '🏆');
             saveGame();
         }
     }
@@ -4609,21 +4654,21 @@ function createAvatarGroup(styleIndex) {
         isReviewActive: false, // Ajout de l'état pour les revues
         trackList: [],
         achievements: { // Nouveau : Système d'achievements
-            'first_blood': { unlocked: false, description: "Tu as exporté ta toute première prod. Le début de la gloire." },
-            'certifie_classique': { unlocked: false, description: "Obtenir un score parfait (10/10) par les critiques." },
-            'dans_la_sauce': { unlocked: false, description: "Atteindre la barre des 100 000 fans. Tu ne peux plus sortir dans la rue tranquille." },
-            'productivite_toxique': { unlocked: false, description: "Enchaîner 5 flops d'affilée. Remets-toi en question." },
-            'alerte_rouge': { unlocked: false, description: "Te manger ton premier écran bleu (BSOD) à cause d'un plugin cracké." },
-            'hacker_man': { unlocked: false, description: "Télécharger 5 plugins sur CrackZ. Le FBI te cherche." },
-            'cancel_culture': { unlocked: false, description: "Survivre à ton premier Bad Buzz sur les réseaux." },
-            'avocat_du_diable': { unlocked: false, description: "Gagner un procès contre un rappeur qui a volé ta prod." },
-            'let_him_cook': { unlocked: false, description: "T'asseoir 10 fois sur le canapé pour 'chercher l'inspi'." }, // Lifestyle & Studio
-            'sellout': { unlocked: false, description: "Accepter ton premier placement de produit (Sponsor). L'argent n'a pas d'odeur." }, // Business & Industrie
-            'inge_son_certifie': { unlocked: false, description: "Acheter ton premier plugin légal avec ton propre argent sur AudioStore." }, // Business & Industrie
-            'prix_de_la_paix': { unlocked: false, description: "Régler un vol de prod à l'amiable en acceptant de perdre de l'argent." }, // Business & Industrie
-            'toujours_dans_le_rouge': { unlocked: false, description: "Lancer un export de mixdown avec moins de 5% d'énergie. Danger de mort." },
-            'lumiere_divine': { unlocked: false, description: "Allumer et éteindre la lampe Pixar 20 fois. (Tu t'ennuies ?)" },
-            'vrai_rat_de_studio': { unlocked: false, description: "Passer 3 jours entiers in-game sans jamais cliquer sur le lit pour dormir." }
+            'first_blood': { unlocked: false, name: "First Blood", icon: "🩸", description: "Tu as exporté ta toute première prod. Le début de la gloire." },
+            'certifie_classique': { unlocked: false, name: "Certifié Classique", icon: "📀", description: "Obtenir un score parfait (10/10) par les critiques." },
+            'dans_la_sauce': { unlocked: false, name: "Dans la Sauce", icon: "🌶️", description: "Atteindre la barre des 100 000 fans. Tu ne peux plus sortir dans la rue tranquille." },
+            'productivite_toxique': { unlocked: false, name: "Productivité Toxique", icon: "🗑️", description: "Enchaîner 5 flops d'affilée. Remets-toi en question." },
+            'alerte_rouge': { unlocked: false, name: "Alerte Rouge", icon: "💀", description: "Te manger ton premier écran bleu (BSOD) à cause d'un plugin cracké." },
+            'hacker_man': { unlocked: false, name: "Hacker Man", icon: "🥷", description: "Télécharger 5 plugins sur CrackZ. Le FBI te cherche." },
+            'cancel_culture': { unlocked: false, name: "Cancel Culture", icon: "📉", description: "Survivre à ton premier Bad Buzz sur les réseaux." },
+            'avocat_du_diable': { unlocked: false, name: "Avocat du Diable", icon: "⚖️", description: "Gagner un procès contre un rappeur qui a volé ta prod." },
+            'let_him_cook': { unlocked: false, name: "Let Him Cook", icon: "🍕", description: "T'asseoir 10 fois sur le canapé pour 'chercher l'inspi'." },
+            'sellout': { unlocked: false, name: "Sellout", icon: "🤝", description: "Accepter ton premier placement de produit (Sponsor). L'argent n'a pas d'odeur." },
+            'inge_son_certifie': { unlocked: false, name: "Ingé Son Certifié", icon: "🎛️", description: "Acheter ton premier plugin légal avec ton propre argent sur AudioStore." },
+            'prix_de_la_paix': { unlocked: false, name: "Le Prix de la Paix", icon: "🕊️", description: "Régler un vol de prod à l'amiable en acceptant de perdre de l'argent." },
+            'toujours_dans_le_rouge': { unlocked: false, name: "Toujours dans le rouge", icon: "🔋", description: "Lancer un export de mixdown avec moins de 5% d'énergie. Danger de mort." },
+            'lumiere_divine': { unlocked: false, name: "Lumière Divine", icon: "💡", description: "Allumer et éteindre la lampe Pixar 20 fois. (Tu t'ennuies ?)" },
+            'vrai_rat_de_studio': { unlocked: false, name: "Vrai Rat de Studio", icon: "🧛‍♂️", description: "Passer 3 jours entiers in-game sans jamais cliquer sur le lit pour dormir." }
         }
     };
 
@@ -6995,3 +7040,4 @@ window.smoothCamTarget = new THREE.Vector3(0, 0, 0);
 </script>
     </body>
         </html>
+    
