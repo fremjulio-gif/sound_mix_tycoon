@@ -2270,9 +2270,9 @@
         // TABLEAU DES SUCCÈS (Disque d'Or au-dessus du lit)
         // ==========================================
         const boardGroup = new THREE.Group();
-        // Positionné sur le mur de droite, centré au-dessus des oreillers
-        boardGroup.position.set(4.95, 1.8, -2.9);
-        boardGroup.rotation.y = -Math.PI / 2; // Fait face à la pièce
+        // Positionné sur le mur du fond (Z = -5), centré au-dessus du lit
+        boardGroup.position.set(3.8, 1.8, -4.95);
+        boardGroup.rotation.y = 0; // Fait face à la pièce
 
         // Le Cadre
         const frameBoardGeo = new THREE.BoxGeometry(1.6, 1.2, 0.05);
@@ -2878,6 +2878,7 @@
 
         // --- JUICY HUD COUNTER LOGIC ---
         let hudDisplayValues = { money: 0, rep: 0, foll: 0 };
+        let hudLastTargetValues = { money: 0, rep: 0, foll: 0 };
         let hudActiveAnims = {};
 
         function animateHUDNumber(id, target, key) {
@@ -2885,12 +2886,12 @@
             if (!el) return;
             
             const targetVal = Math.floor(Number(target));
+
+            // Ne déclenche l'effet que si la valeur de base a réellement changé
+            if (hudLastTargetValues[key] === targetVal) return;
+
             const startVal = hudDisplayValues[key] || 0;
-            
-            if (startVal === targetVal) {
-                el.innerText = formatNum(targetVal);
-                return;
-            }
+            hudLastTargetValues[key] = targetVal;
 
             // Punch effect
             el.classList.remove('juicy-pop');
@@ -4108,7 +4109,7 @@
                     let interactDist = INTERACTION_DIST;
                     if (objName === 'bed_mesh') interactDist = 2.8;
                     if (objName === 'pc_mesh') interactDist = 2.4;
-                    if (item.mesh.name === 'achievements_board_mesh') customDist = 4.0; 
+                    if (objName === 'achievements_board_mesh') interactDist = 4.0;
                     if (objName === 'sofa_mesh') interactDist = 3.0;
 
                     if (dist > interactDist) {
@@ -6442,6 +6443,9 @@
             hudDisplayValues.money = state.money;
             hudDisplayValues.rep = state.rep;
             hudDisplayValues.foll = state.followers;
+            hudLastTargetValues.money = state.money;
+            hudLastTargetValues.rep = state.rep;
+            hudLastTargetValues.foll = state.followers;
 
             selectDawGenre();
             selectDawVoice();
@@ -7990,4 +7994,3 @@
     </script>
         </body>
             </html>
-
