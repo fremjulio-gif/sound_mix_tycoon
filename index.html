@@ -1224,7 +1224,7 @@
             </div>
         </div>
         
-    <div id="hud" class="liquid-glass-heavy min-h-[64px] md:min-h-[76px] fixed top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 rounded-[30px] flex items-center justify-between px-3 md:px-8 transition-all w-[96%] md:w-max max-w-6xl border border-white/10 shadow-2xl gap-2 md:gap-8">
+    <div id="hud" class="liquid-glass-heavy min-h-[64px] md:min-h-[76px] fixed top-3 md:top-6 left-1/2 -translate-x-1/2 z-[1000] rounded-[30px] flex items-center justify-between px-3 md:px-8 transition-all w-[96%] md:w-max max-w-6xl border border-white/10 shadow-2xl gap-2 md:gap-8">
             <div class="flex items-center gap-3 shrink-0">
                 <div id="hud-avatar" class="w-[48px] h-[48px] md:w-[64px] md:h-[64px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shadow-[0_0_15px_rgba(129,140,248,0.5)]"
                 onclick="toggleTooltip('avatar', this)" onmouseenter="!isMobile && showTooltip('avatar', this)" onmouseleave="!isMobile && hideTooltip()"></div>
@@ -1274,7 +1274,7 @@
         </div>
 
         <!-- Audio Settings Overlay -->
-        <div id="audio-settings-gear" class="fixed top-3 md:top-6 right-3 md:right-6 z-50 liquid-glass-heavy p-3 rounded-full cursor-pointer transition-all hover:scale-105 active:scale-95" onclick="openAudioSettings()" style="display: block !important; opacity: 1 !important;">
+        <div id="audio-settings-gear" class="fixed top-3 md:top-6 right-3 md:right-6 z-[1000] liquid-glass-heavy p-3 rounded-full cursor-pointer transition-all hover:scale-105 active:scale-95" onclick="openAudioSettings()" style="display: block !important; opacity: 1 !important;">
             <svg class="w-6 h-6 text-white drop-shadow-lg animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -1316,7 +1316,7 @@
          </div> 
     </div> 
 
-</div> <div id="login-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
+</div> <div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
             <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
                 <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it</h1>
                 <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">v16</p>
@@ -1735,7 +1735,7 @@
 
         </div>
 
-    <div id="bsod" class="absolute inset-0 z-[100] bg-[#0000AA] text-white p-8 md:p-16 flex-col hidden font-retro">
+    <div id="bsod" class="absolute inset-0 z-[2000] bg-[#0000AA] text-white p-8 md:p-16 flex-col hidden font-retro">
             <h1 class="text-3xl md:text-5xl font-bold bg-white text-[#0000AA] inline-block px-5 py-2 mb-8 md:mb-10 mt-10">CRITICAL_SYSTEM_ERROR</h1>
             <p class="mb-6 text-lg md:text-xl tracking-wider">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
             <p class="mb-12 md:mb-16 text-base md:text-lg text-gray-300">Unlicensed software execution caused a memory leak. Restoring system state...</p>
@@ -4377,6 +4377,18 @@
         { id: 5, name: "Diamond Architect", minFol: 500000, icon: "💎", color: "from-[#083344] to-[#022c22]", borderColor: "from-[#22d3ee] to-[#06b6d4]", glowColor: "#22d3ee" }  // Diamant/Cyan
     ];
 
+    function calculateLevelData() {
+        // Normalisation des stats pour le calcul du niveau (Moyenne pondérée)
+        const moneyScore = Math.min(100, (state.money / 25000) * 100);    // $25k = Max Mastery
+        const repScore   = Math.min(100, (state.rep / 2000) * 100);      // 2k Rep = Max Mastery
+        const follScore  = Math.min(100, (state.followers / 250000) * 100); // 250k Fans = Max Mastery
+        
+        const avgMastery = (moneyScore + repScore + follScore) / 3;
+        const level = Math.floor(avgMastery / 1.5) + 1; // Échelle de niveau ~1 à 67
+        
+        return { level, avg: avgMastery, money: moneyScore, rep: repScore, foll: follScore };
+    }
+
     function getCurrentRank() {
         let current = PLAYER_RANKS[0];
         for (let r of PLAYER_RANKS) {
@@ -4411,27 +4423,42 @@
             globalTooltip.style.opacity = '1';
                     if (type === 'avatar') {
             const rank = getCurrentRank();
-            const nextRank = PLAYER_RANKS.find(r => r.minFol > state.followers);
-            let progressHtml = '';
-
-            // Barre de progression vers la prochaine ligue
-            if (nextRank) {
-                const prevFol = rank.minFol;
-                const reqFol = nextRank.minFol;
-                const percent = Math.min(100, Math.max(0, ((state.followers - prevFol) / (reqFol - prevFol)) * 100));
-                progressHtml = `
-                    <div class="w-full mt-3">
-                        <div class="flex justify-between text-[8px] font-retro text-[var(--text-muted)] mb-1 tracking-widest uppercase">
-                            <span>Vers: ${nextRank.name}</span>
-                            <span>${formatNum(state.followers)} / ${formatNum(reqFol)}</span>
+            const lData = calculateLevelData();
+            
+            const statsBreakdown = `
+                <div class="w-full space-y-2 mt-4 border-t border-white/10 pt-3">
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between text-[7px] uppercase tracking-tighter text-gray-500">
+                            <span>Banque Mastery</span>
+                            <span class="text-white">${Math.floor(lData.money)}%</span>
                         </div>
-                        <div class="h-1.5 w-full bg-black border border-white/10 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r ${nextRank.borderColor} shadow-[0_0_8px_${nextRank.glowColor}]" style="width: ${percent}%;"></div>
+                        <div class="h-1 w-full bg-black rounded-full overflow-hidden">
+                            <div class="h-full bg-[var(--retro-green)]" style="width: ${lData.money}%"></div>
                         </div>
-                    </div>`;
-            } else {
-                progressHtml = `<div class="mt-4 text-[9px] font-retro text-cyan-400 tracking-widest uppercase animate-pulse">LÉGENDE VIVANTE</div>`;
-            }
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between text-[7px] uppercase tracking-tighter text-gray-500">
+                            <span>Reputation Mastery</span>
+                            <span class="text-white">${Math.floor(lData.rep)}%</span>
+                        </div>
+                        <div class="h-1 w-full bg-black rounded-full overflow-hidden">
+                            <div class="h-full bg-[var(--retro-orange)]" style="width: ${lData.rep}%"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex justify-between text-[7px] uppercase tracking-tighter text-gray-500">
+                            <span>Fanbase Mastery</span>
+                            <span class="text-white">${Math.floor(lData.foll)}%</span>
+                        </div>
+                        <div class="h-1 w-full bg-black rounded-full overflow-hidden">
+                            <div class="h-full bg-[var(--accent)]" style="width: ${lData.foll}%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full mt-4 bg-[var(--accent)]/10 border border-[var(--accent)]/20 p-2 rounded text-center">
+                    <span class="text-[9px] text-[var(--accent)] font-bold tracking-widest">GLOBAL PROGRESS: ${Math.floor(lData.avg)}%</span>
+                </div>
+            `;
 
             globalTooltip.innerHTML = `
                 <div class="flex flex-col items-center py-2 px-1">
@@ -4445,14 +4472,14 @@
                         
                         <div class="relative z-10 text-5xl filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] transform -translate-y-1">${rank.icon}</div>
                         
-                        <div class="absolute -bottom-2 bg-black border border-white/20 text-white text-[8px] px-2 py-0.5 rounded font-retro tracking-widest shadow-lg z-20">TIER ${rank.id}</div>
+                        <div class="absolute -bottom-2 bg-black border border-white/20 text-white text-[9px] px-3 py-1 rounded-full font-retro font-bold tracking-widest shadow-lg z-20 border-b-2 border-b-[var(--accent)]">LVL ${lData.level}</div>
                     </div>
 
                     <div class="text-[13px] font-retro font-bold text-white tracking-widest uppercase mt-2 drop-shadow-md text-center" style="color: ${rank.glowColor}; text-shadow: 0 0 10px ${rank.glowColor}55;">
                         ${rank.name}
                     </div>
                     
-                    ${progressHtml}
+                    ${statsBreakdown}
                 </div>
             `;
         }
