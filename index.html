@@ -896,10 +896,6 @@
                 #timeline-container { overflow-x: auto !important; }
                 .vu-led { width: 4px; height: 100%; margin-bottom: 0; margin-right: 2px; }
                 #vu-meter-container { flex-direction: row !important; height: 16px !important; width: 100% !important; padding: 2px !important; }
-                
-                #global-tooltip { left: 50% !important; transform: translateX(-50%) !important; top: 90px !important; 
-            
-                }
 
                 #three-canvas-container {
                 touch-action: none; /* Bloque le comportement tactile natif (zoom, scroll) */
@@ -4635,12 +4631,13 @@
             const tooltipWidth = 340; // Synchronisé avec la classe CSS w-[340px]
             let leftPos = rect.left + (rect.width / 2) - (tooltipWidth / 2);
             
-            // Sécurité : empêche le tooltip de sortir de l'écran (marge de 10px)
-            leftPos = Math.max(10, Math.min(window.innerWidth - tooltipWidth - 10, leftPos));
+            // Empêche le tooltip de déborder de l'écran avec une marge de sécurité
+            const margin = 12;
+            leftPos = Math.max(margin, Math.min(window.innerWidth - tooltipWidth - margin, leftPos));
 
             globalTooltip.style.left = `${leftPos}px`;
             globalTooltip.style.transform = 'none';
-            globalTooltip.style.top = `${rect.bottom + 15}px`;
+            globalTooltip.style.top = `${rect.bottom + 8}px`;
 
             globalTooltip.classList.remove('hidden');
             void globalTooltip.offsetWidth;
@@ -6751,6 +6748,37 @@
             tlContainer.addEventListener('touchstart', (e) => onTlClick(e.touches[0].clientX), { passive: true });
         }
 
+        function generateRandomTimelineClips() {
+            const tracks = document.querySelectorAll('.tl-track');
+            tracks.forEach(track => {
+                // Nettoyage des clips existants pour la génération dynamique
+                track.querySelectorAll('.tl-clip').forEach(c => c.remove());
+
+                const colorTag = track.querySelector('.track-color-tag');
+                if (!colorTag) return;
+
+                const bgClass = Array.from(colorTag.classList).find(c => c.startsWith('bg-'));
+                const colorBase = bgClass ? bgClass.split('-')[1] : 'blue';
+
+                let currentX = 140; 
+                const timelineLimit = 2000; 
+
+                while (currentX < timelineLimit - 150) {
+                    const gap = 15 + Math.random() * 120;
+                    currentX += gap;
+                    if (currentX > timelineLimit) break;
+
+                    const width = 30 + Math.random() * 220;
+                    const clip = document.createElement('div');
+                    clip.className = `tl-clip daw-animated-clip bg-${colorBase}-500/30 text-${colorBase}-500`;
+                    clip.style.left = currentX + 'px';
+                    clip.style.width = width + 'px';
+                    track.appendChild(clip);
+                    currentX += width;
+                }
+            });
+        }
+
         // --- DICTIONNAIRE DES STYLES MUSICAUX ---
     const DAW_GENRES = [
         { id: 'drill',      name: 'UK Drill',      unlockAt: 0,  targetBpm: 140, tol: 5, targetVoice: 'm',      reward: 'money' },
@@ -7443,6 +7471,11 @@
                 MusicSystem.muteForGameplay(0.5);
                 const playhead = document.getElementById('playhead');
                 if (playhead) playhead.classList.add('playhead-animated');
+
+                // Remplit la timeline aléatoirement uniquement sur PC
+                if (!isMobile) {
+                    generateRandomTimelineClips();
+                }
             }
 
             // Positionnement initial (Desktop uniquement)
