@@ -114,7 +114,6 @@
                 inset: 0;
                 z-index: 1;
                 overflow: hidden;
-                background: #050508;
             }
             #room-ui {
                 position: absolute;
@@ -154,7 +153,7 @@
             #grid-overlay {
                 position: absolute;
                 inset: 0;
-                z-index: 1;
+                z-index: 5;
                 background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
                 background-size: 42px 42px;
                 opacity: 0.45;
@@ -177,7 +176,7 @@
                 border-radius: 999px;
                 height: 30px; width: 160px;
                 pointer-events: none;
-                z-index: 1;
+                z-index: 2;
                 animation: cloudScroll linear infinite;
                 transition: background 0.8s ease, box-shadow 0.8s ease;
             }
@@ -2272,8 +2271,8 @@
 
         const container = document.getElementById('three-canvas-container');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color('#7f889c');
-
+        scene.background = null; // Correctif 1 : Rendre la scène 3D transparente
+        
         const aspect = window.innerWidth / window.innerHeight;
         let frustumSize = window.innerWidth <= 767 ? 22 : 11.5;
         const camera = new THREE.OrthographicCamera(
@@ -2283,7 +2282,7 @@
         camera.position.set(20, 20, 20);
         camera.lookAt(0, 0, 0);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // Correctif 1 : Activer le support de la transparence
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
@@ -6971,6 +6970,7 @@ function triggerLevelUp(oldLevel, newLevel) {
         // 11. INIT UI
         // ==========================================
         function initUI() {
+            spawnClouds(); // Correctif 3 : Génération au lancement de l'interface
             const cont = document.getElementById('avatar-container');
             cont.innerHTML = avatars.map((a, i) => `
                 <div class="avatar-sel aspect-square relative p-0 overflow-hidden flex items-center justify-center ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
@@ -9336,7 +9336,6 @@ function triggerLevelUp(oldLevel, newLevel) {
         window.answerDM           = answerDM;
         
         // Boot
-        spawnClouds();
         initUI();
         animate3D();
 
