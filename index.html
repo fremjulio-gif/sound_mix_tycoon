@@ -3924,6 +3924,9 @@
                 }
 
                 isMoving = (Math.abs(displacementX) > 0.001 || Math.abs(displacementZ) > 0.001);
+                // Si l'avatar est bloqué, même si velX/Z sont non nuls, isMoving doit être faux.
+                // On recalcule le déplacement réel après les potentielles collisions.
+                isMoving = (Math.abs(currentRoomAvatar.position.x - prevX) > 0.001 || Math.abs(currentRoomAvatar.position.z - prevZ) > 0.001);
             } else {
                 window.velX = 0;
                 window.velZ = 0;
@@ -6195,10 +6198,10 @@
             achievements: { // Nouveau : Système d'achievements
                 'first_blood': { unlocked: false, name: "First Blood", icon: "🩸", description: "Tu as exporté ta toute première prod. Le début de la gloire." },
                 'certifie_classique': { unlocked: false, name: "Certifié Classique", icon: "📀", description: "Obtenir un score parfait (10/10) par les critiques." },
-                'dans_la_sauce': { unlocked: false, name: "Dans la Sauce", icon: "🌶️", description: "Atteindre la barre des 100 000 fans. Tu ne peux plus sortir dans la rue tranquille." },
+                'dans_la_sauce': { unlocked: false, name: "Dans la Sauce", icon: "🌶️", description: "Atteindre la barre des 15000 fans. Tu ne peux plus sortir dans la rue tranquille." },
                 'productivite_toxique': { unlocked: false, name: "Productivité Toxique", icon: "🗑️", description: "Enchaîner 5 flops d'affilée. Remets-toi en question." },
                 'alerte_rouge': { unlocked: false, name: "Alerte Rouge", icon: "💀", description: "Te manger ton premier écran bleu (BSOD) à cause d'un plugin cracké." },
-                'hacker_man': { unlocked: false, name: "Hacker Man", icon: "🥷", description: "Télécharger 5 plugins sur CrackZ. Le FBI te cherche." },
+                'hacker_man': { unlocked: false, name: "Hacker Man", icon: "🥷", description: "Télécharger 10 plugins sur CrackZ. Le FBI te cherche." },
                 'cancel_culture': { unlocked: false, name: "Cancel Culture", icon: "📉", description: "Survivre à ton premier Bad Buzz sur les réseaux." },
                 'avocat_du_diable': { unlocked: false, name: "Avocat du Diable", icon: "⚖️", description: "Gagner un procès contre un rappeur qui a volé ta prod." },
                 'let_him_cook': { unlocked: false, name: "Let Him Cook", icon: "🍕", description: "T'asseoir 10 fois sur le canapé pour 'chercher l'inspi'." },
@@ -6228,7 +6231,7 @@
         const ACHIEVEMENT_DETAILS = {
         first_blood: { category: 'music', progressPath: 'stats.tracks', target: 1, unit: 'track', reward: { money: 500, rep: 10 } },
         certifie_classique: { category: 'music', target: 1, unit: 'review', reward: { money: 2000, rep: 50, followers: 1000 } },
-        dans_la_sauce: { category: 'business', progressPath: 'followers', target: 100000, unit: 'followers', reward: { rep: 100, followers: 5000 } },
+        dans_la_sauce: { category: 'business', progressPath: 'followers', target: 15000, unit: 'followers', reward: { rep: 100, followers: 5000 } },
         productivite_toxique: { category: 'music', progressPath: 'stats.consecutiveFlops', target: 5, unit: 'flops', reward: { money: 100 } },
         alerte_rouge: { category: 'dark', progressPath: 'stats.viruses', target: 1, unit: 'virus', reward: { money: 500 } },
         hacker_man: { category: 'dark', progressPath: 'stats.crackDownloads', target: 5, unit: 'downloads', reward: { money: 1000 } },
@@ -6343,7 +6346,7 @@
                 state.followers = (parseInt(state.followers, 10) || 0) + amount;
                 state.history.followers.unshift(generateFanName());
                 if (state.history.followers.length > 4) state.history.followers.pop();
-                checkAchievement('dans_la_sauce', () => state.followers >= 100000);
+                checkAchievement('dans_la_sauce', () => state.followers >= 15000);
                 refreshAchievementsPanel();
             }
         }
@@ -7922,7 +7925,7 @@
             if (!crack) return;
             
             state.stats.crackDownloads = (parseInt(state.stats.crackDownloads, 10) || 0) + 1;
-            checkAchievement('hacker_man', () => state.stats.crackDownloads >= 5);
+            checkAchievement('hacker_man', () => state.stats.crackDownloads >= 10);
             state.cooldowns.crackzTimeReady = getTotalMins() + getVpnCooldown();
             
             // Si on tombe dans le pourcentage de risque : ÉCHEC
