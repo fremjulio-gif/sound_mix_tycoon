@@ -7569,18 +7569,18 @@
             if (repGain !== 0) toastMsg += ` | ${repGain > 0 ? '+' : ''}${repGain} Rep`;
 
             // Stockage des gains pour application à la fermeture de la review
-            window.pendingReviewData = {
-                money: moneyGain,
-                rep: repGain,
-                fans: follGain,
-                toast: { msg: toastMsg, type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error') },
-                // On stocke les données de la track actuelle pour le Live Chat
-                track: { title: trackTitle, genre: genre.toUpperCase(), score: trackScore, voice: voice }
-            };
+        window.pendingReviewData = {
+            money: moneyGain,
+            rep: repGain,
+            fans: follGain,
+            toast: { msg: toastMsg, type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error') },
+            // On stocke les données de la track actuelle pour le Live Chat
+            track: { title: trackTitle, genre: genre.toUpperCase(), score: trackScore, voice: voice }
+        };
 
-            state.stats.tracks++;
-            // Déclencheur pour l'achievement "First Blood"
-            checkAchievement('first_blood', () => state.stats.tracks >= 1);
+        state.stats.tracks++;
+        // Déclencheur pour l'achievement "First Blood"
+        checkAchievement('first_blood', () => state.stats.tracks >= 1);
 
             const trackScore = result.score === 3 ? Math.floor(7 + Math.random() * 3) :
                     result.score === 1 ? Math.floor(4 + Math.random() * 3) :
