@@ -4471,8 +4471,17 @@
             clearTimeout(tooltipTimeout);
             globalTooltip.dataset.type = type;
             const rect = el.getBoundingClientRect();
-            if (isMobile) { globalTooltip.style.left = '50%'; globalTooltip.style.transform = 'translateX(-50%)'; globalTooltip.style.top = `${rect.bottom + 15}px`; }
-            else { globalTooltip.style.left = `${rect.left + rect.width/2 - 140}px`; globalTooltip.style.transform = 'none'; globalTooltip.style.top = `${rect.bottom + 15}px`; }
+            
+            const tooltipWidth = 340; // Synchronisé avec la classe CSS w-[340px]
+            let leftPos = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+            
+            // Sécurité : empêche le tooltip de sortir de l'écran (marge de 10px)
+            leftPos = Math.max(10, Math.min(window.innerWidth - tooltipWidth - 10, leftPos));
+
+            globalTooltip.style.left = `${leftPos}px`;
+            globalTooltip.style.transform = 'none';
+            globalTooltip.style.top = `${rect.bottom + 15}px`;
+
             globalTooltip.classList.remove('hidden');
             void globalTooltip.offsetWidth;
             globalTooltip.style.opacity = '1';
@@ -5901,27 +5910,34 @@
                     "Supprime avant que ton label voit ça",
                     "Qui lui a dit que c'était une bonne idée ?",
                     "On dirait une alarme de réveil",
-                    "Gênant...",
+                    "genant smr",
                     `Même pour du ${lowerGenre}, c'est insultant`,
                     "Pire son de 2026, félicitations.",
                     "Remboursez mon temps d'écoute."
                 );
             }
             
-            // 4. CONTEXTE CARRIÈRE (Followers)
+            // 4. CONTEXTE CARRIÈRE (Followers / Rank)
+            const playerRank = getCurrentRank();
             if (state.followers > 50000) {
-                if (isFlop) pool.push("Il est fini le goat 😭", "Il a vendu son âme à l'industrie", "Il fait plus d'effort depuis qu'il a percé", "On regrette l'ancienne époque...");
-                if (isBanger) pool.push("Il rate JAMAIS 👑", "Le patron a encore frappé", "Streamé 100 fois aujourd'hui", "En route pour le disque de platine");
+                if (isFlop) pool.push("Il est fini le goat 😭", "Il a vendu son âme à l'industrie", "On regrette l'ancienne époque...");
+                else if (isBanger) pool.push("Il rate JAMAIS 👑", "Le patron a encore frappé", "En route pour le disque de platine");
             } else if (state.followers < 5000) {
                 if (isBanger) pool.push("Algorithme SoundNet fais ton taff !!", "Underrated de fou", "POV: t'es là avant le million");
-                if (isFlop) pool.push("C'est pour ça qu'il reste dans sa chambre", "Gardez-le underground. Vraiment très loin sous terre.");
+                else if (isFlop) pool.push("C'est pour ça qu'il reste dans sa chambre", "Gardez-le underground.");
+            } else if (playerRank.id >= 4) { // Diamond Architect / Industry Hitmaker
+                if (isFlop) pool.push(`Un bide industriel...`, `Gros malaise pour un ${playerRank.name}.`, "C'est ça votre prod à 5000€ ? 💀");
+                else if (isBanger) pool.push(`${playerRank.name} certifié.`, "La street valide le patron.");
             }
 
             // 5. CONTEXTE RÉPUTATION (Dramas, Scams, etc.)
             if (state.rep < 0) {
-                pool.push("Cancel culture fais ton taff.", "Supprime ton compte bro.", "On n'oublie pas le drama frérot.", "Je stream illégalement juste pour pas lui donner 1 centime.");
+                if (isBanger) pool.push("C'est méchant mais j'oublie pas le drama.", "Le talent est là, mais le mec est un rat.");
+                else pool.push("Cancel culture fais ton taff.", "Supprime ton compte bro.", "On n'oublie pas le drama frérot.");
             } else if (state.rep > 100) {
-                pool.push("L'ingé son le plus respecté de la plateforme.", "Zéro bad buzz, que du bon son.");
+                if (isBanger) pool.push("L'ingé son le plus respecté de la plateforme.", "Zéro bad buzz, que du bon son.");
+                else if (isFlop) pool.push("Même les meilleurs peuvent avoir un coup de mou.", "D'habitude il est plus carré que ça.");
+                else pool.push("Travail sérieux comme d'hab.");
             }
 
             return pool[Math.floor(Math.random() * pool.length)];
