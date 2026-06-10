@@ -1319,6 +1319,38 @@
         }
         .level-up-toast h2 { font-weight: 900; text-transform: uppercase; letter-spacing: -1px; }
         .level-up-toast button { box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+
+        /* --- JOYSTICK VISUAL INDICATOR (LIQUID GLASS) --- */
+        #joystick-ui {
+            position: fixed;
+            pointer-events: none;
+            z-index: 5000;
+            display: none;
+            width: 100px;
+            height: 100px;
+            transform: translate(-50%, -50%);
+        }
+        .joystick-base {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .joystick-knob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 34px;
+            height: 34px;
+            margin: -17px 0 0 -17px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8);
+        }
         </style>
     </head>
 
@@ -1467,6 +1499,12 @@
             </div> 
          </div> 
     </div> 
+
+        <!-- Joystick Virtuel Visual Indicator -->
+        <div id="joystick-ui">
+            <div class="joystick-base"></div>
+            <div class="joystick-knob" id="joystick-knob"></div>
+        </div>
 
 <div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
             <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
@@ -4445,25 +4483,48 @@
             const groundHit = intersects.find(hit => hit.object.name === 'floor_mesh' || hit.object.parent?.name === 'RoomAvatarRoot');
             if (groundHit) {
                 isJoystickActive = true;
-                joystickStartPos.set(clientX, clientY);
                 targetPosition = null; // Annule l'ancien pathfinding par clic
+                const jUI = document.getElementById('joystick-ui');
+                if (jUI) jUI.style.display = 'block';
             }
         }
 
         // --- ÉCOUTEURS COMPLÉMENTAIRES DU JOYSTICK ---
         const canvasCont = document.getElementById('three-canvas-container');
+        const joystickUI = document.getElementById('joystick-ui');
+        const joystickKnob = document.getElementById('joystick-knob');
+
         canvasCont.addEventListener('pointermove', (e) => {
-            if (!isJoystickActive) return;
+            if (!isJoystickActive || !currentRoomAvatar || !joystickUI) return;
             
-            const deltaX = e.clientX - joystickStartPos.x;
-            const deltaY = e.clientY - joystickStartPos.y;
+            // 1. Projection 3D vers 2D de l'avatar pour trouver son centre sur l'écran
+            const avatarPos = window._v3a.setFromMatrixPosition(currentRoomAvatar.matrixWorld);
+            avatarPos.project(camera);
             
-            const maxRadius = 60; // Sensibilité du joystick
+            const avatarScreenX = (avatarPos.x * 0.5 + 0.5) * window.innerWidth;
+            const avatarScreenY = (avatarPos.y * -0.5 + 0.5) * window.innerHeight;
+
+            // 2. Nouveau calcul du Delta par rapport à la position de l'avatar
+            const deltaX = e.clientX - avatarScreenX;
+            const deltaY = e.clientY - avatarScreenY;
+            
+            const maxRadius = 100;
             const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             const clampedDist = Math.min(dist, maxRadius);
             const factor = clampedDist / maxRadius;
             
-            if (dist > 5) { // Zone morte de 5px
+            // MAJ Visuelle du Joystick (Base sur l'avatar, Knob vers le doigt)
+            joystickUI.style.left = `${avatarScreenX}px`;
+            joystickUI.style.top = `${avatarScreenY}px`;
+            if (joystickKnob) {
+                const visualClamp = Math.min(dist, 50); // Rayon visuel de la base
+                const vx = dist > 0 ? (deltaX / dist) * visualClamp : 0;
+                const vy = dist > 0 ? (deltaY / dist) * visualClamp : 0;
+                joystickKnob.style.transform = `translate(${vx}px, ${vy}px)`;
+            }
+
+            if (dist > 10) { // Zone morte de 10px pour éviter les micro-mouvements
+                // 3. Injection de la vélocité directionnelle
                 window.joystickVec.x = (deltaX / dist) * factor;
                 window.joystickVec.z = (deltaY / dist) * factor;
             } else {
@@ -4476,6 +4537,8 @@
             isJoystickActive = false;
             window.joystickVec.x = 0;
             window.joystickVec.z = 0;
+            if (joystickUI) joystickUI.style.display = 'none';
+            if (joystickKnob) joystickKnob.style.transform = 'none';
         };
         canvasCont.addEventListener('pointerup', stopJoystick);
         canvasCont.addEventListener('pointercancel', stopJoystick);
