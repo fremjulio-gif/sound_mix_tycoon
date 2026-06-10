@@ -349,29 +349,28 @@
                 100% { opacity: 1; transform: scale(1); filter: blur(0px); }
             }
 
-            .os-window {
-        position: absolute;
-        width: 800px;
-        max-width: 95vw;
-        min-width: 320px;
-        /* Borne dure liée à la vraie hauteur viewport */
-        height: auto;
-        max-height: calc(100dvh - 120px);
-        display: none;
-        flex-direction: column;
-        /* overflow: hidden est critique pour que flex+scroll fonctionne */
-        overflow: hidden;
-        z-index: 10;
-        transition: border-color 0.3s ease;
-        resize: both;
-        box-sizing: border-box;
-    }
-            .os-window.active-window {
-                z-index: 40;
-                border-color: rgba(129, 140, 248, 0.8);
-                box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--accent), inset 0 1px 1px rgba(255, 255, 255, 0.3);
-                animation: liquidGlassOpen 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            }
+        .os-window {
+            position: absolute;
+            width: 800px;
+            max-width: 95vw;
+            min-width: 320px;
+            height: auto;
+            max-height: calc(100dvh - 120px);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            /* STRATE 1: Les fenêtres vivent entre 100 et 1000 (géré par JS) */
+            z-index: 100; 
+            transition: border-color 0.3s ease;
+            resize: both;
+            box-sizing: border-box;
+        }
+        .os-window.active-window {
+            border-color: rgba(129, 140, 248, 0.8);
+            box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--accent), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+            animation: liquidGlassOpen 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            /* Note: z-index sera écrasé par style.zIndex dans le JS */
+        }
             .window-header {
                 background: rgba(0, 0, 0, 0.6);
                 padding: 12px 16px;
@@ -654,12 +653,14 @@
                 #taskbar-bottom { display: none !important; }
                 
                 /* HUD devient une "Top Bar" fixe */
-                #hud {
-                    min-height: 50px !important;
-                    top: env(safe-area-inset-top, 5px) !important;
-                    border-radius: 16px !important;
-                    width: 96% !important;
-                }
+        #hud {
+            min-height: 50px !important;
+            top: env(safe-area-inset-top, 5px) !important;
+            border-radius: 16px !important;
+            width: 96% !important;
+            /* STRATE 2: Le HUD est toujours au-dessus des fenêtres (2000+) */
+            z-index: 2000 !important; 
+        }
                     #hud-avatar { 
                 /* Supprimer le width/height 100% pour laisser Tailwind gérer la taille fixe de 38px */
                 border-radius: 50%;      
