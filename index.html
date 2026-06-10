@@ -5784,7 +5784,10 @@
         if (btnDMs) btnDMs.classList.add('animate-dm-shake');
 
         // Notification visuelle et sonore
-        showToast(`💬 Nouveau message privé de ${template.sender} !`, "info");
+        showToast(`💬 Nouveau message privé de ${template.sender} !`, "info", () => {
+            openApp('app-social');
+            switchSocialTab('dms');
+        });
         playTone(600, 'square', 0.05, 0.05); setTimeout(() => playTone(800, 'square', 0.1, 0.05), 100); 
         
         // On actualise si l'onglet est ouvert
@@ -5819,56 +5822,93 @@
         const isFlop = track.score < 4;
         
         // Générateur de vocabulaire basé sur la data
+        const getMessage = () => {        // Générateur de vocabulaire massivement enrichi
         const getMessage = () => {
             let pool = [];
             const rCancel = rappersCancel[Math.floor(Math.random() * rappersCancel.length)];
+            const rConnu = rappersConnus[Math.floor(Math.random() * rappersConnus.length)];
+            const lowerGenre = track.genre.toLowerCase();
             
-            // 1. Base selon le SCORE
+            // 1. RÉACTIONS : BANGER (Score >= 7)
             if (isBanger) {
                 pool.push(
                     "méchant c'est quel plugin ?",
                     "Bcp trop sous coté",
                     "808 insane bro 🔥",
                     "Le mix est tellement clean",
-                    `Ce banger de ${track.genre} !`,
+                    `Ce banger de ${lowerGenre} !`,
                     "Masterclass absolue.",
-                    "Je viens de le découvrir, pépite."
+                    "Je viens de le découvrir, pépite.",
+                    "Qui a laissé le bro cuisiner ?? 🧑‍🍳🔥",
+                    "j'écoute ça dans la gova à 200km/h",
+                    "ajoutez ça sur toutes les playlists direct",
+                    "c'est du miel pour mes oreilles",
+                    "banger de l'année no cap",
+                    "les drums tapent bcp trop fort",
+                    "il a piraté le game c'est pas possible",
+                    `j'attends le remix avec ${rConnu}`,
+                    "Prod de génie.",
+                    "L'arrangement est parfait, 10/10."
                 );
-                if(track.voice !== 'instru') pool.push(`La voix colle trop bien à la prod`);
-                if(track.voice === 'instru') pool.push(`Donnez un micro à quelqu'un là-dessus !`);
-            } else if (isMid) {
+                if(track.voice === 'm' || track.voice === 'f') pool.push(`La voix colle trop bien à la prod`, `Le topline vocal est incroyable`);
+                if(track.voice === 'instru') pool.push(`Donnez un micro à quelqu'un là-dessus !`, `Je kicke dessus demain sans faute.`);
+            } 
+            // 2. RÉACTIONS : MID (Score 4 à 6)
+            else if (isMid) {
                 pool.push(
                     "Sympa mais sans plus",
                     "Ça passe en fond pendant que je game",
                     "Un peu répétitif non ?",
-                    `Classique ${track.genre}, pas ouf mais ok`,
+                    `Classique ${lowerGenre}, pas ouf mais ok`,
                     "C'est cool mais j'ai déjà oublié le refrain",
-                    "Mix un peu brouillon au niveau des basses"
+                    "Mix un peu brouillon au niveau des basses",
+                    "mid, j'attends la prochaine",
+                    "y'a du potentiel mais le mix est plat",
+                    "pourquoi pas, mais on a vu mieux",
+                    "pas ouf la compression",
+                    "Beat de type YouTube libre de droits 💀",
+                    "C'est la prod du pauvre mdr",
+                    "Il manque un vrai drop",
+                    `"${track.title}" mdr le titre est mieux que le son`,
+                    "J'skip à la moitié."
                 );
-            } else { // Nul
+            } 
+            // 3. RÉACTIONS : FLOP (Score < 4)
+            else { 
                 pool.push(
                     "mix éclaté par terre mdr",
                     "ça sent le preset gratuit",
                     "C'est une blague ce son ?",
-                    "Ratio",
+                    "Ratio.",
                     `Je l'ai aperçu avec ${rCancel} hier, ça m'étonne pas 💀`,
                     "Mes oreilles saignent",
                     "Arrête la musique frérot trouve un vrai taff",
-                    `"${track.title}" mdrrr on dirait un mot de passe wifi`
+                    `"${track.title}" mdrrr on dirait un mot de passe wifi`,
+                    "Il a exporté avec le micro de son PC ou quoi ?",
+                    "Supprime avant que ton label voit ça",
+                    "Qui lui a dit que c'était une bonne idée ?",
+                    "On dirait une alarme de réveil",
+                    "Gênant...",
+                    `Même pour du ${lowerGenre}, c'est insultant`,
+                    "Pire son de 2026, félicitations.",
+                    "Remboursez mon temps d'écoute."
                 );
             }
             
-            // 2. Base selon les FOLLOWERS / REP (Contexte de carrière)
+            // 4. CONTEXTE CARRIÈRE (Followers)
             if (state.followers > 50000) {
-                if (isFlop) pool.push("Il est fini le goat 😭", "Il a vendu son âme aux labels", "Il fait plus d'effort depuis qu'il a percé");
-                if (isBanger) pool.push("Il rate JAMAIS 👑", "Le patron a encore frappé", "Streamé 100 fois aujourd'hui");
-            } else if (state.followers < 1000) {
-                if (isBanger) pool.push("Faut qu'il perce lui", "Pourquoi il a que 100 abonnés ??");
-                if (isFlop) pool.push("C'est pour ça qu'il reste dans sa chambre", "Gardez le underground. Vraiment sous terre.");
+                if (isFlop) pool.push("Il est fini le goat 😭", "Il a vendu son âme à l'industrie", "Il fait plus d'effort depuis qu'il a percé", "On regrette l'ancienne époque...");
+                if (isBanger) pool.push("Il rate JAMAIS 👑", "Le patron a encore frappé", "Streamé 100 fois aujourd'hui", "En route pour le disque de platine");
+            } else if (state.followers < 5000) {
+                if (isBanger) pool.push("Algorithme SoundNet fais ton taff !!", "Underrated de fou", "POV: t'es là avant le million");
+                if (isFlop) pool.push("C'est pour ça qu'il reste dans sa chambre", "Gardez-le underground. Vraiment très loin sous terre.");
             }
 
+            // 5. CONTEXTE RÉPUTATION (Dramas, Scams, etc.)
             if (state.rep < 0) {
-                pool.push("Cancel direct.", "Supprime ton compte.");
+                pool.push("Cancel culture fais ton taff.", "Supprime ton compte bro.", "On n'oublie pas le drama frérot.", "Je stream illégalement juste pour pas lui donner 1 centime.");
+            } else if (state.rep > 100) {
+                pool.push("L'ingé son le plus respecté de la plateforme.", "Zéro bad buzz, que du bon son.");
             }
 
             return pool[Math.floor(Math.random() * pool.length)];
@@ -7795,7 +7835,7 @@
         // ==========================================
         // 21. TOASTS
         // ==========================================
-        function showToast(msg, type = 'info') {
+        function showToast(msg, type = 'info', onClick = null) {
             const zone = document.getElementById('toast-zone');
             if (!zone) return;
             const t = document.createElement('div');
@@ -7804,7 +7844,7 @@
             if (type === 'error')   colorClass = "bg-[#4c0519] border-[var(--retro-red)] text-rose-100 shadow-[0_0_15px_rgba(251,113,133,0.3)]";
             if (type === 'info')    colorClass = "bg-[#1e1b4b] border-[var(--accent)] text-indigo-100 shadow-[0_0_15px_rgba(129,140,248,0.3)]";
             if (type === 'discreet') colorClass = "bg-black/30 border-white/5 text-gray-500 shadow-none !py-2 !text-[9px]";
-            t.className = `toast px-6 py-4 w-full rounded-lg border text-xs font-retro tracking-widest uppercase backdrop-blur-md ${colorClass} whitespace-pre-line leading-relaxed`;
+            t.className = `toast px-6 py-4 w-full rounded-lg border text-xs font-retro tracking-widest uppercase backdrop-blur-md ${colorClass} whitespace-pre-line leading-relaxed ${onClick ? 'cursor-pointer' : ''}`;
             t.innerText = msg;
             zone.appendChild(t);
 
@@ -7849,6 +7889,13 @@
                     
                     // Réactivation d'une transition douce pour le relâchement
                     t.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease';
+
+                    // DETECTION CLIC : Si le mouvement est très faible (< 5px) et qu'un handler existe
+                    if (Math.abs(currentDelta) < 5 && onClick) {
+                        onClick();
+                        t.remove();
+                        return;
+                    }
 
                     if (currentDelta < -60) {
                         t.style.transform = 'translateX(-120%)';
