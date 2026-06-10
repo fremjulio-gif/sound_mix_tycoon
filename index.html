@@ -7507,7 +7507,7 @@
             }, 60);
         }
 
-        function finishExport(genre, bpm, voice, pads, pluginId, trackTitle) {
+                function finishExport(genre, bpm, voice, pads, pluginId, trackTitle) {
             const result = calculateSuccess(genre, bpm, voice);
             let moneyGain = 0, repGain = 0, follGain = 0, resultTxt = "", critique = "";
 
@@ -7543,7 +7543,7 @@
             
             if (pads > 8) { moneyGain += 20; }
 
-        if (pluginId) {
+            if (pluginId) {
                 const usedCrack = cracks.find(c => c.id === pluginId);
                 if (usedCrack) {
                     const match = usedCrack.desc.match(/\+(\d+)%/);
@@ -7554,8 +7554,6 @@
                         critique += `\n[${usedCrack.name}] : Bonus +${bonusPercent}% sur les royalties !`;
                     }
                 }
-                
-                // Le plugin n'est plus supprimé ici, il reste actif à vie dans le menu déroulant !
             }
             
             let snowballBonus = Math.floor(state.followers * 0.01);
@@ -7568,53 +7566,46 @@
             if (follGain > 0) toastMsg += ` | +${follGain} Fans`;
             if (repGain !== 0) toastMsg += ` | ${repGain > 0 ? '+' : ''}${repGain} Rep`;
 
-            // Stockage des gains pour application à la fermeture de la review
-        window.pendingReviewData = {
-            money: moneyGain,
-            rep: repGain,
-            fans: follGain,
-            toast: { msg: toastMsg, type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error') },
-            // On stocke les données de la track actuelle pour le Live Chat
-            track: { title: trackTitle, genre: genre.toUpperCase(), score: trackScore, voice: voice }
-        };
-
-        state.stats.tracks++;
-        // Déclencheur pour l'achievement "First Blood"
-        checkAchievement('first_blood', () => state.stats.tracks >= 1);
-
+            // 🚨 CORRECTION CRITIQUE : LE SCORE EST CALCULÉ EN PREMIER !
             const trackScore = result.score === 3 ? Math.floor(7 + Math.random() * 3) :
                     result.score === 1 ? Math.floor(4 + Math.random() * 3) :
                                             Math.floor(1 + Math.random() * 3);
+
+            // Stockage des gains pour application à la fermeture de la review
+            window.pendingReviewData = {
+                money: moneyGain,
+                rep: repGain,
+                fans: follGain,
+                toast: { msg: toastMsg, type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error') },
+                // La variable trackScore est maintenant correctement injectée
+                track: { title: trackTitle, genre: genre.toUpperCase(), score: trackScore, voice: voice }
+            };
+
+            state.stats.tracks++;
+            checkAchievement('first_blood', () => state.stats.tracks >= 1);
             
-            // const toastData = {
-            //    msg: toastMsg,
-            //   type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error')
-            //}
-    state.trackList.push({
-        title: trackTitle,
-        genre: genre.toUpperCase(),
-        score: trackScore,
-        money: moneyGain,
-        fans: follGain,
-        date: state.day
-    });
+            state.trackList.push({
+                title: trackTitle,
+                genre: genre.toUpperCase(),
+                score: trackScore,
+                money: moneyGain,
+                fans: follGain,
+                date: state.day
+            });
 
-    // Trie le tableau du meilleur au pire score
-    state.trackList.sort((a, b) => b.score - a.score);
+            // Trie le tableau du meilleur au pire score
+            state.trackList.sort((a, b) => b.score - a.score);
 
-    // Optionnel : on ne garde que le Top 15 en mémoire pour ne pas alourdir la save
-    if (state.trackList.length > 15) {
-        state.trackList.length = 15;
-    }
+            if (state.trackList.length > 15) {
+                state.trackList.length = 15;
+            }
 
-    // Mise à jour de l'affichage
-    updateTopChartsWidget();
-    updateDawGenres();
-    // ---------------------------------------------
+            updateTopChartsWidget();
+            updateDawGenres();
 
-    showTrackReview(trackScore, trackTitle, null);
-    saveGame(); updateHUD(); updateCooldownUIs();
-    }
+            showTrackReview(trackScore, trackTitle, null);
+            saveGame(); updateHUD(); updateCooldownUIs();
+        }
 
         let isTapeRecording = true;
 
