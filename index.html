@@ -2043,7 +2043,7 @@
                 </div>
 
                 <div class="loader-track">
-                    <div id="loader-progress" class="h-full bg-gradient-to-r from-[var(--accent)] to-[#a5b4fc] w-0 transition-all duration-300" style="box-shadow: 0 0 15px rgba(129, 140, 248, 0.4); background-image: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.2) 4px, rgba(0,0,0,0.2) 6px);"></div>
+                    <div id="loader-progress" class="h-full bg-gradient-to-r from-[var(--accent)] to-[#a5b4fc] w-0" style="box-shadow: 0 0 15px rgba(129, 140, 248, 0.4); background-image: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.2) 4px, rgba(0,0,0,0.2) 6px);"></div>
                 </div>
 
                 <div id="loader-text" class="text-[#34d399] font-mono text-[10px] tracking-[0.15em] uppercase mt-4 w-full text-left opacity-70 h-4">Initializing Kernel...</div>
@@ -2068,10 +2068,6 @@
     // ==========================================
     // GESTION DE L'ÉCRAN DE CHARGEMENT
     // ==========================================
-    const studioLoader = document.getElementById('studio-loader');
-    const loaderText = document.getElementById('loader-text');
-    const loaderProgress = document.getElementById('loader-progress');
-
     // Assure que le popup d'achievement n'est pas enfermé dans le loader (qui devient display:none)
     ;(function relocateAchievementPopup(){
         try {
@@ -2096,40 +2092,46 @@
     let loadPercentage = 0;
 
     function simulateLoading() {
+        const sLoader = document.getElementById('studio-loader');
+        const lText = document.getElementById('loader-text');
+        const lProgress = document.getElementById('loader-progress');
+        if (!sLoader || !lText || !lProgress) return;
+
         // Fait défiler le texte toutes les 800ms
         const textInterval = setInterval(() => {
             phraseIndex++;
             if (phraseIndex < loadingPhrases.length) {
-                loaderText.innerText = loadingPhrases[phraseIndex];
+                lText.innerText = loadingPhrases[phraseIndex];
             }
-        }, 600);
+        }, 800);
 
         // Fait avancer la barre de progression fluidement
         const progressInterval = setInterval(() => {
-            // Vitesse de chargement aléatoire pour un effet naturel
-            loadPercentage += Math.random() * 30; 
+            // Vitesse de chargement plus réaliste (0.5% à 2.5% par cycle)
+            loadPercentage += (Math.random() * 2) + 0.5; 
             
             if (loadPercentage >= 100) {
                 loadPercentage = 100;
                 clearInterval(progressInterval);
                 clearInterval(textInterval);
-                loaderText.innerText = loadingPhrases[loadingPhrases.length - 1]; // "Prêt."
+                lText.innerText = loadingPhrases[loadingPhrases.length - 1]; 
                 
                 // Laisse le texte "Prêt" visible une demi-seconde avant de fondre
-                setTimeout(hideLoader, 500); 
+                setTimeout(() => hideLoader(sLoader), 500); 
             }
             
-            loaderProgress.style.width = `${loadPercentage}%`;
-        }, 100);
+            lProgress.style.width = `${loadPercentage}%`;
+        }, 60);
     }
 
-    function hideLoader() {
+    function hideLoader(sLoader) {
+        if (!sLoader) return;
         // Ajoute une classe pour baisser l'opacité (transition CSS)
-        studioLoader.style.opacity = '0';
+        sLoader.style.opacity = '0';
         
         // Supprime le loader du DOM après la transition (1s) pour libérer la mémoire
         setTimeout(() => {
-            studioLoader.style.display = 'none';
+            sLoader.style.display = 'none';
             
             // C'est ICI qu'il faut appeler ta fonction qui affiche l'écran de login 
             // ou qui démarre l'animation de la room 3D.
