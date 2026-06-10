@@ -914,9 +914,9 @@
             10. SETTINGS / ACHIEVEMENTS
             ========================================= */
             .settings-shell {
-                width: min(94vw, 700px);
-                height: min(90dvh, 680px);
-                max-height: 90dvh;
+                width: min(96vw, 900px);
+                height: min(92dvh, 800px);
+                max-height: 92dvh;
                 overflow: hidden;
                 text-align: left;
             }
@@ -930,7 +930,7 @@
                 color: var(--text-muted);
                 transition: all 0.18s ease;
                 touch-action: manipulation;
-                font-size: 11px;
+                font-size: 13px;
             }
             .settings-nav-btn:hover,
             .achievement-filter-btn:hover,
@@ -973,16 +973,16 @@
             .achievement-category-strip::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
 
             .achievement-card {
-                flex: 0 0 220px;
-                width: 220px;
-                min-height: 148px;
+                flex: 0 0 280px;
+                width: 280px;
+                min-height: 180px;
                 border-radius: 18px;
                 border: 1px solid rgba(255,255,255,0.09);
                 background: rgba(12, 14, 24, 0.72);
                 backdrop-filter: blur(24px) saturate(180%);
                 -webkit-backdrop-filter: blur(24px) saturate(180%);
-                box-shadow: 0 8px 24px rgba(0,0,0,0.32), inset 0 1px 1px rgba(255,255,255,0.08);
-                padding: 14px;
+                box-shadow: 0 12px 32px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.08);
+                padding: 18px;
                 box-sizing: border-box;
                 scroll-snap-align: start;
                 transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -996,6 +996,16 @@
                 background: linear-gradient(145deg, rgba(129,140,248,0.13), rgba(12,14,24,0.80));
                 box-shadow: 0 0 20px rgba(129,140,248,0.14), 0 8px 24px rgba(0,0,0,0.4);
             }
+            /* Effet de surbrillance dorée pour les récompenses non réclamées */
+            .achievement-card.unclaimed {
+                border-color: #fbbf24 !important;
+                box-shadow: 0 0 30px rgba(251, 191, 36, 0.4), inset 0 0 15px rgba(251, 191, 36, 0.1);
+                animation: unclaimedPulse 2.5s infinite ease-in-out;
+            }
+            @keyframes unclaimedPulse {
+                0%, 100% { border-color: #fbbf24; transform: scale(1); }
+                50% { border-color: #fff; transform: scale(1.02); box-shadow: 0 0 45px rgba(251, 191, 36, 0.6); }
+            }
             .achievement-card.locked {
                 filter: grayscale(0.6);
                 opacity: 0.60;
@@ -1005,9 +1015,9 @@
             }
 
             .achievement-icon-wrap {
-                width: 44px;
-                height: 44px;
-                font-size: 1.4rem;
+                width: 56px;
+                height: 56px;
+                font-size: 1.8rem;
                 border-radius: 12px;
                 border: 1px solid rgba(255,255,255,0.10);
                 background: rgba(0,0,0,0.35);
@@ -1046,11 +1056,11 @@
 
             @media (min-width: 768px) {
                 .settings-shell {
-                    width: min(92vw, 780px);
-                    height: min(88dvh, 700px);
+                    width: min(94vw, 1100px);
+                    height: min(90dvh, 850px);
                 }
-                .achievement-card { flex: 0 0 240px; width: 240px; min-height: 158px; }
-                .achievement-icon-wrap { width: 50px; height: 50px; font-size: 1.6rem; }
+                .achievement-card { flex: 0 0 350px; width: 350px; min-height: 220px; }
+                .achievement-icon-wrap { width: 72px; height: 72px; font-size: 2.4rem; }
             }
 
             @media (max-width: 767px) {
@@ -1367,20 +1377,20 @@
                 <div class="flex items-center gap-4 mb-4 shrink-0 bg-black/40 p-4 rounded-xl border border-white/10">
                     <div class="text-4xl drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]">🏆</div>
                     <div class="flex-1">
-                        <div class="flex justify-between font-retro text-[10px] text-[var(--text-muted)] mb-1 tracking-widest uppercase">
+                        <div class="flex justify-between font-retro text-[12px] text-[var(--text-muted)] mb-1 tracking-widest uppercase font-bold">
                             <span>Progression Globale</span>
                             <span id="achievements-global-percent" class="text-white">0%</span>
                         </div>
                         <div class="h-2 bg-black/80 rounded-full overflow-hidden border border-white/10 shadow-inner">
                             <div id="achievements-global-bar" class="h-full bg-gradient-to-r from-[var(--accent)] to-[var(--retro-green)] transition-all duration-500 w-0 shadow-[0_0_10px_var(--accent)]"></div>
                         </div>
-                        <div class="text-[9px] font-retro text-[var(--text-muted)] mt-1.5 tracking-widest">
+                        <div class="text-[11px] font-retro text-[var(--text-muted)] mt-1.5 tracking-widest">
                             <span id="achievements-unlocked-count" class="text-white">0</span> / <span id="achievements-total-count">0</span> SUCCÈS DÉBLOQUÉS
                         </div>
                     </div>
                 </div>
 
-                <div id="achievement-filter-tabs" class="flex gap-2 mb-4 shrink-0 overflow-x-auto pb-2 custom-scrollbar font-retro text-[10px] uppercase tracking-widest"></div>
+                <div id="achievement-filter-tabs" class="flex gap-2 mb-4 shrink-0 overflow-x-auto pb-2 custom-scrollbar font-retro text-[12px] uppercase tracking-widest font-bold"></div>
 
                 <div id="achievements-grid" class="flex-1 overflow-y-auto pr-2 custom-scrollbar flex flex-col gap-6"></div>
             </div>
@@ -4447,7 +4457,7 @@
         // ==========================================
         const globalTooltip = document.createElement('div');
         globalTooltip.id = 'global-tooltip';
-        globalTooltip.className = 'fixed z-[99999] bg-black/95 border border-[var(--glass-border)] rounded-lg p-4 w-[280px] opacity-0 pointer-events-none transition-opacity shadow-2xl font-retro text-[10px] text-white hidden';
+        globalTooltip.className = 'fixed z-[99999] bg-black/95 border border-[var(--glass-border)] rounded-lg p-5 w-[340px] opacity-0 pointer-events-none transition-opacity shadow-2xl font-retro text-[12px] text-white hidden';
         document.body.appendChild(globalTooltip);
         let tooltipTimeout;
 
@@ -4473,7 +4483,7 @@
             const statsBreakdown = `
                 <div class="w-full space-y-2 mt-4 border-t border-white/10 pt-3">
                     <div class="flex flex-col gap-1">
-                        <div class="flex justify-between text-[7px] uppercase tracking-tighter text-gray-500">
+                        <div class="flex justify-between text-[10px] uppercase tracking-tighter text-gray-500 font-bold">
                             <span>Banque Mastery</span>
                             <span class="text-white">${Math.floor(lData.money)}%</span>
                         </div>
@@ -4482,7 +4492,7 @@
                         </div>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <div class="flex justify-between text-[7px] uppercase tracking-tighter text-gray-500">
+                        <div class="flex justify-between text-[10px] uppercase tracking-tighter text-gray-500 font-bold">
                             <span>Reputation Mastery</span>
                             <span class="text-white">${Math.floor(lData.rep)}%</span>
                         </div>
@@ -4491,7 +4501,7 @@
                         </div>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <div class="flex justify-between text-[7px] uppercase tracking-tighter text-gray-500">
+                        <div class="flex justify-between text-[10px] uppercase tracking-tighter text-gray-500 font-bold">
                             <span>Fanbase Mastery</span>
                             <span class="text-white">${Math.floor(lData.foll)}%</span>
                         </div>
@@ -4501,7 +4511,7 @@
                     </div>
                 </div>
                 <div class="w-full mt-4 bg-[var(--accent)]/10 border border-[var(--accent)]/20 p-2 rounded text-center">
-                    <span class="text-[9px] text-[var(--accent)] font-bold tracking-widest">GLOBAL PROGRESS: ${Math.floor(lData.avg)}%</span>
+                    <span class="text-[12px] text-[var(--accent)] font-bold tracking-widest">GLOBAL PROGRESS: ${Math.floor(lData.avg)}%</span>
                 </div>
             `;
 
@@ -4517,10 +4527,10 @@
                         
                         <div class="relative z-10 text-5xl filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] transform -translate-y-1">${rank.icon}</div>
                         
-                        <div class="absolute -bottom-2 bg-black border border-white/20 text-white text-[9px] px-3 py-1 rounded-full font-retro font-bold tracking-widest shadow-lg z-20 border-b-2 border-b-[var(--accent)]">LVL ${lData.level}</div>
+                        <div class="absolute -bottom-2 bg-black border border-white/20 text-white text-[12px] px-4 py-1 rounded-full font-retro font-bold tracking-widest shadow-lg z-20 border-b-2 border-b-[var(--accent)]">LVL ${lData.level}</div>
                     </div>
 
-                    <div class="text-[13px] font-retro font-bold text-white tracking-widest uppercase mt-2 drop-shadow-md text-center" style="color: ${rank.glowColor}; text-shadow: 0 0 10px ${rank.glowColor}55;">
+                    <div class="text-[18px] font-retro font-bold text-white tracking-widest uppercase mt-2 drop-shadow-md text-center" style="color: ${rank.glowColor}; text-shadow: 0 0 10px ${rank.glowColor}55;">
                         ${rank.name}
                     </div>
                     
@@ -4867,8 +4877,8 @@
                 // En-tête de catégorie
                 section.innerHTML = `
                     <div class="flex items-center justify-between px-1">
-                        <span class="font-retro text-[11px] text-[var(--text-muted)] uppercase tracking-widest">${escapeHTML(cat.label)}</span>
-                        <span class="font-retro text-[11px] text-[var(--accent)]">${unlockedInCat}/${catEntries.length}</span>
+                        <span class="font-retro text-[15px] text-[var(--text-muted)] uppercase tracking-widest font-bold">${escapeHTML(cat.label)}</span>
+                        <span class="font-retro text-[15px] text-[var(--accent)] font-bold">${unlockedInCat}/${catEntries.length}</span>
                     </div>`;
 
                 // Carrousel horizontal
@@ -4881,7 +4891,11 @@
                     const title    = isSecretLocked ? '???' : (achievement.name || achievement.id);
                     const desc     = isSecretLocked ? 'Succès secret — continue à jouer' : (achievement.description || '');
                     const icon     = isSecretLocked ? '🔒' : (achievement.icon || '🏆');
-                    const stateClass = achievement.unlocked ? 'unlocked' : (isSecretLocked ? 'locked secret-locked' : 'locked');
+                    const hasReward = achievement.reward && Object.keys(achievement.reward).length > 0;
+                    let stateClass = achievement.unlocked ? 'unlocked' : (isSecretLocked ? 'locked secret-locked' : 'locked');
+                    if (achievement.unlocked && !achievement.rewardClaimed && hasReward) {
+                        stateClass += ' unclaimed';
+                    }
                     const unlockLabel = getAchievementUnlockLabel(achievement);
 
                                     const card = document.createElement('div');
@@ -4889,7 +4903,7 @@
 
                 const progressHTML = progress.progressive && !isSecretLocked ? `
                     <div class="mt-2">
-                        <div class="flex justify-between font-retro text-[9px] text-[var(--text-muted)] mb-1 tracking-widest">
+                        <div class="flex justify-between font-retro text-[11px] text-[var(--text-muted)] mb-1 tracking-widest">
                             <span>${formatNum(progress.current)}/${formatNum(progress.target)} ${escapeHTML(progress.unit)}</span>
                             <span>${progress.percent}%</span>
                         </div>
@@ -4911,17 +4925,17 @@
                     if (!achievement.rewardClaimed) {
                         // Bouton pour récupérer le loot
                         rewardUI = `
-                                                <button class="mt-3 w-full bg-[var(--accent)] text-white hover:bg-[var(--retro-green)] hover:text-black transition-colors py-2 rounded font-retro text-[9px] font-bold tracking-widest" 
+                                                <button class="mt-3 w-full bg-[var(--accent)] text-white hover:bg-[var(--retro-green)] hover:text-black transition-colors py-3 rounded-lg font-retro text-[11px] font-bold tracking-widest shadow-lg" 
                                 onclick="claimAchievementReward('${achievement.id}', event)">
                             CLAIM: ${rewardString}
                         </button>`;
                     } else {
                         // Déjà récupéré
-                        rewardUI = `<div class="mt-3 w-full text-center py-2 text-[var(--retro-green)] font-retro font-bold text-[9px] tracking-widest border border-[var(--retro-green)]/30 rounded">CLAIMED ✓</div>`;
+                        rewardUI = `<div class="mt-3 w-full text-center py-3 text-[var(--retro-green)] font-retro font-bold text-[11px] tracking-widest border border-[var(--retro-green)]/30 rounded-lg">CLAIMED ✓</div>`;
                     }
                 } else if (!isSecretLocked && rewardString) {
                     // Montre la récompense pour motiver le joueur
-                    rewardUI = `<div class="mt-3 w-full text-center py-2 text-gray-500 font-retro text-[8px] tracking-widest border border-white/5 rounded">REWARD: ${rewardString}</div>`;
+                    rewardUI = `<div class="mt-3 w-full text-center py-3 text-gray-500 font-retro text-[11px] tracking-widest border border-white/5 rounded-lg">REWARD: ${rewardString}</div>`;
                 }
                 // ------------------------------------------
 
@@ -4929,8 +4943,8 @@
                     <div class="flex items-start gap-3 mb-2">
                         <div class="achievement-icon-wrap">${escapeHTML(icon)}</div>
                         <div class="flex-1 min-w-0">
-                            <div class="font-retro text-[11px] text-white font-bold tracking-wide leading-tight truncate">${escapeHTML(title)}</div>
-                            <div class="text-[10px] text-[var(--text-muted)] mt-0.5 leading-snug line-clamp-2 ${isSecretLocked ? 'blur-[2px]' : ''}">${escapeHTML(desc)}</div>
+                            <div class="font-retro text-[15px] text-white font-bold tracking-wide leading-tight truncate">${escapeHTML(title)}</div>
+                            <div class="text-[12px] text-[var(--text-muted)] mt-1.5 leading-snug line-clamp-3 ${isSecretLocked ? 'blur-[2px]' : ''}">${escapeHTML(desc)}</div>
                         </div>
                     </div>
                     ${progressHTML}
@@ -8646,4 +8660,3 @@
     </script>
         </body>
             </html>
-            
