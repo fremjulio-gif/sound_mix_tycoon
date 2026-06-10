@@ -4697,16 +4697,17 @@ const PLAYER_RANKS = [
 
 function calculateLevelData() {
     // --- SEUILS CALIBRÉS SUR LES VRAIES VALEURS DU JEU ---
-    const moneyScore  = Math.min(100, (state.money / 50000) * 100);
-    const repScore    = Math.min(100, (state.rep / 500) * 100);
-    const follScore   = Math.min(100, (state.followers / 50000) * 100);
-    const trackScore  = Math.min(100, (state.stats.tracks / 50) * 100);
+    // On utilise (Number(x) || 0) pour empêcher la propagation de NaN si une valeur de l'état est corrompue
+    const moneyScore  = Math.min(100, ((Number(state.money) || 0) / 50000) * 100);
+    const repScore    = Math.min(100, ((Number(state.rep) || 0) / 500) * 100);
+    const follScore   = Math.min(100, ((Number(state.followers) || 0) / 50000) * 100);
+    const trackScore  = Math.min(100, ((Number(state.stats?.tracks) || 0) / 50) * 100);
 
     // Ratio bangers/tracks = skill réel
-    const bangerRatio = state.stats.tracks > 0
-        ? (state.stats.bangers / state.stats.tracks)
+    const bangerRatio = (state.stats?.tracks > 0)
+        ? ((Number(state.stats.bangers) || 0) / state.stats.tracks)
         : 0;
-    const skillScore = Math.min(100, bangerRatio * 150);
+    const skillScore = Math.min(100, (Number(bangerRatio) || 0) * 150);
 
     // Moyenne pondérée
     const avgMastery = (
@@ -4717,7 +4718,7 @@ function calculateLevelData() {
         skillScore  * 0.15
     );
 
-    const level = Math.max(1, Math.floor(avgMastery));
+    const level = Math.max(1, Math.floor(avgMastery) || 1);
 
     // --- 1. DÉTECTION DE LEVEL UP ---
     if (state.lastLevel !== undefined && level > state.lastLevel) {
@@ -4735,9 +4736,10 @@ function calculateLevelData() {
     // Ce qui manque pour monter de rang (le critère le plus loin)
     let progressToNext = null;
     if (nextRank) {
-        const folProgress  = Math.min(1, state.followers / nextRank.minFol);
-        const repProgress  = Math.min(1, state.rep / nextRank.minRep);
-        const trkProgress  = Math.min(1, state.stats.tracks / nextRank.minTracks);
+        // Sécurité division par zéro et NaN
+        const folProgress  = nextRank.minFol > 0 ? Math.min(1, (Number(state.followers) || 0) / nextRank.minFol) : 1;
+        const repProgress  = nextRank.minRep > 0 ? Math.min(1, (Number(state.rep) || 0) / nextRank.minRep) : 1;
+        const trkProgress  = nextRank.minTracks > 0 ? Math.min(1, (Number(state.stats?.tracks) || 0) / nextRank.minTracks) : 1;
         
         // Le critère le plus bloquant détermine la progression affichée
         const bottleneck = Math.min(folProgress, repProgress, trkProgress);
@@ -7263,14 +7265,14 @@ function triggerLevelUp(oldLevel, newLevel) {
                     state = { ...JSON.parse(JSON.stringify(DEFAULT_STATE)), ...parsed };
                     state.username = username; // Sécurité : on s'assure que le pseudo est bien celui saisi
 
-                    state.timeMins        = parseInt(state.timeMins, 10);
-                    state.day             = parseInt(state.day, 10);
-                    state.money           = parseInt(state.money, 10);
-                    state.rep             = parseInt(state.rep, 10);
-                    state.followers       = parseInt(state.followers, 10);
+                    state.timeMins        = parseInt(state.timeMins, 10) || 8 * 60;
+                    state.day             = parseInt(state.day, 10) || 1;
+                    state.money           = parseInt(state.money, 10) || 0;
+                    state.rep             = parseInt(state.rep, 10) || 0;
+                    state.followers       = parseInt(state.followers, 10) || 0;
                     state.multiplier      = parseFloat(state.multiplier) || 1.0;
                     state.plugins         = parseInt(state.plugins, 10) || 0;
-                    state.energy          = parseFloat(state.energy);
+                    state.energy          = parseFloat(state.energy) || 100;
                     state.dms = state.dms || [];
 
                     if (isNaN(state.timeMins)) state.timeMins = 8 * 60;
