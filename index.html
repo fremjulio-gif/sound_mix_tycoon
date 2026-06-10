@@ -7572,7 +7572,9 @@
                 money: moneyGain,
                 rep: repGain,
                 fans: follGain,
-                toast: { msg: toastMsg, type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error') }
+                toast: { msg: toastMsg, type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error') },
+                // On stocke les données de la track actuelle pour le Live Chat
+                track: { title: trackTitle, genre: genre.toUpperCase(), score: trackScore, voice: voice }
             };
 
             state.stats.tracks++;
@@ -8030,11 +8032,11 @@
             checkAchievement('dans_la_sauce', () => state.followers >= 100000);
             if (d.money > 0) playCashSound();
             showToast(d.toast.msg, d.toast.type);
-            window.pendingReviewData = null; // Nettoyage
             updateHUD();
             saveGame();
-                        // --- NOUVEAU : DÉCLENCHEMENT DU LIVE CHAT ---
-            if (state.trackList && state.trackList.length > 0) {
+
+            // --- DÉCLENCHEMENT DU LIVE CHAT SYNCHRONISÉ ---
+            if (d.track) {
                 // 1. Force l'ouverture de l'application SoundNet au premier plan
                 openApp('app-social');
                 
@@ -8043,9 +8045,10 @@
                 
                 // 3. Lance le chat avec un tout petit délai pour laisser l'animation de la fenêtre se faire
                 setTimeout(() => {
-                    startLiveChat(state.trackList[0]);
+                    startLiveChat(d.track);
                 }, 400);
             }
+            window.pendingReviewData = null; // Nettoyage après déclenchement
         }
 
         setTimeout(() => {
