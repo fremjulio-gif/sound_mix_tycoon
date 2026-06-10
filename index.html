@@ -1197,13 +1197,37 @@
         }
         .animate-chat-pop {
             animation: chatPop 0.2s ease-out forwards;
-        }   
+        }
+                /* =========================================
+           EXHAUSTION SYSTEM (Fatigue visuelle)
+           ========================================= */
+        #exhaustion-overlay {
+            /* Un dégradé radial qui assombrit fortement les bords mais laisse le centre visible */
+            background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.95) 100%);
+            pointer-events: none; /* Laisse passer les clics */
+            mix-blend-mode: multiply; /* Assombrit de manière plus réaliste */
+            transition: opacity 0.5s ease;
+        }
+
+        /* Un vrai rythme de battement de cœur (Double pulsation) */
+        @keyframes heartbeat-vignette {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            15% { transform: scale(1.03); opacity: 1; }
+            30% { transform: scale(1); opacity: 0.7; }
+            45% { transform: scale(1.03); opacity: 1; }
+        }
+
+        .exhausted-pulse {
+            animation: heartbeat-vignette 1.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
         </style>
     </head>
 
         
     <body data-theme="neon">
     <div id="game-container">
+
+        <div id="exhaustion-overlay" class="absolute inset-0 z-[900] opacity-0 hidden w-full h-full"></div>
 
         <div id="sleep-overlay">
             <div class="text-4xl animate-pulse mb-4">Zzz...</div>
@@ -5917,27 +5941,34 @@
                 );
             }
             
-            // 4. CONTEXTE CARRIÈRE (Followers / Rank)
-            const playerRank = getCurrentRank();
+            // 4. CONTEXTE CARRIÈRE (Followers)
             if (state.followers > 50000) {
-                if (isFlop) pool.push("Il est fini le goat 😭", "Il a vendu son âme à l'industrie", "On regrette l'ancienne époque...");
-                else if (isBanger) pool.push("Il rate JAMAIS 👑", "Le patron a encore frappé", "En route pour le disque de platine");
+                if (isBanger) pool.push("Il rate JAMAIS 👑", "Le patron a encore frappé", "En route pour le disque de platine");
+                else if (isMid) pool.push("C'est propre, mais il nous a habitué à mieux.", "Un peu en pilotage automatique là.");
+                else if (isFlop) pool.push("Il est fini le goat 😭", "Il a vendu son âme à l'industrie", "On regrette l'ancienne époque...");
             } else if (state.followers < 5000) {
-                if (isBanger) pool.push("Algorithme SoundNet fais ton taff !!", "Underrated de fou", "POV: t'es là avant le million");
+                if (isBanger) pool.push("Algorithme SoundNet fais ton taff !!", "POV: t'es là avant le million");
+                else if (isMid) pool.push("Y'a un truc, hâte de voir la suite.", "Le talent est là, ça va percer.");
                 else if (isFlop) pool.push("C'est pour ça qu'il reste dans sa chambre", "Gardez-le underground.");
-            } else if (playerRank.id >= 4) { // Diamond Architect / Industry Hitmaker
-                if (isFlop) pool.push(`Un bide industriel...`, `Gros malaise pour un ${playerRank.name}.`, "C'est ça votre prod à 5000€ ? 💀");
-                else if (isBanger) pool.push(`${playerRank.name} certifié.`, "La street valide le patron.");
             }
 
-            // 5. CONTEXTE RÉPUTATION (Dramas, Scams, etc.)
+            // 5. CONTEXTE RANG (Expertise)
+            const playerRank = getCurrentRank();
+            if (playerRank.id >= 4) {
+                if (isBanger) pool.push(`${playerRank.name} certifié.`, "La street valide le patron.", "L'expertise parle d'elle même.");
+                else if (isMid) pool.push("Efficacité redoutable.", "On sent l'expérience derrière le mix.");
+                else if (isFlop) pool.push(`Un bide industriel...`, `Gros malaise pour un ${playerRank.name}.`, "C'est ça votre prod à 5000€ ? 💀");
+            }
+
+            // 6. CONTEXTE RÉPUTATION (Dramas, Scams, etc.)
             if (state.rep < 0) {
-                if (isBanger) pool.push("C'est méchant mais j'oublie pas le drama.", "Le talent est là, mais le mec est un rat.");
+                if (isBanger) pool.push("C'est lourd mais le mec est un rat.", "Le talent est là, mais j'oublie pas le drama.");
+                else if (isMid) pool.push("Musicalement ok, humainement zéro.", "Je stream en anonyme pour pas lui donner de force.");
                 else pool.push("Cancel culture fais ton taff.", "Supprime ton compte bro.", "On n'oublie pas le drama frérot.");
             } else if (state.rep > 100) {
                 if (isBanger) pool.push("L'ingé son le plus respecté de la plateforme.", "Zéro bad buzz, que du bon son.");
+                else if (isMid) pool.push("Travail sérieux comme d'hab.", "Valeur sûre du game.");
                 else if (isFlop) pool.push("Même les meilleurs peuvent avoir un coup de mou.", "D'habitude il est plus carré que ça.");
-                else pool.push("Travail sérieux comme d'hab.");
             }
 
             return pool[Math.floor(Math.random() * pool.length)];
@@ -7085,6 +7116,42 @@
             } else {
                 warning.classList.add('hidden');
             }
+
+                        // --- SYSTÈME DE FATIGUE VISUELLE (S'active sous les 40% d'énergie) ---
+            const gameContainer = document.getElementById('game-container');
+            const exhaustOverlay = document.getElementById('exhaustion-overlay');
+            
+            if (energyVal <= 40) {
+                // 1. Calcul du ratio : À 40%, ratio = 1 (Normal). À 0%, ratio = 0 (Noir & Blanc, Noir total)
+                const ratio = Math.max(0, energyVal / 40); 
+                
+                // On désature totalement les couleurs du jeu
+                gameContainer.style.filter = `saturate(${ratio})`;
+                
+                if (exhaustOverlay) {
+                    exhaustOverlay.classList.remove('hidden');
+                    // L'opacité de l'écran noir augmente quand l'énergie approche de zéro
+                    exhaustOverlay.style.opacity = (1 - ratio).toString();
+                    
+                    // Le cœur bat de plus en plus vite (de 1.5s à 0.5s par cycle)
+                    const heartbeatSpeed = Math.max(0.5, 1.5 * ratio);
+                    exhaustOverlay.style.animationDuration = `${heartbeatSpeed}s`;
+                    
+                    if (!exhaustOverlay.classList.contains('exhausted-pulse')) {
+                        exhaustOverlay.classList.add('exhausted-pulse');
+                    }
+                }
+            } else {
+                // Rétablissement total si énergie > 40%
+                gameContainer.style.filter = 'saturate(1)';
+                if (exhaustOverlay) {
+                    exhaustOverlay.style.opacity = '0';
+                    exhaustOverlay.classList.remove('exhausted-pulse');
+                    // Délai pour cacher le div proprement après le fade-out
+                    setTimeout(() => exhaustOverlay.classList.add('hidden'), 500);
+                }
+            }
+            // ----------------------------------------------------------------------
 
             const t = parseInt(state.timeMins, 10) || 0;
             const h = Math.floor(t / 60);
