@@ -1420,7 +1420,7 @@
             <div class="settings-shell liquid-glass-heavy p-5 md:p-7 rounded-2xl border border-[var(--accent)] shadow-[0_0_60px_rgba(0,0,0,0.8)] flex flex-col">
                 <div class="flex items-center justify-between gap-3 shrink-0 mb-4">
                     <div>
-                        <p class="text-[10px] font-retro text-[var(--accent)] tracking-widest uppercase mb-1">bounce_it v17</p>
+                        <p class="text-[10px] font-retro text-[var(--accent)] tracking-widest uppercase mb-1">bounce_it v16</p>
                         <h2 class="text-xl md:text-2xl font-retro text-white tracking-widest uppercase drop-shadow-lg">Paramètres</h2>
                     </div>
                     <button onclick="closeAudioSettings()" class="btn-minimal w-12 h-12 !p-0 rounded-lg text-xl leading-none flex items-center justify-center" aria-label="Fermer les paramètres">✕</button>
@@ -1453,7 +1453,7 @@
 <div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
             <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
                 <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it</h1>
-                <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">v16</p>
+                <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">v17</p>
                 <div class="mb-6 flex justify-center">
                     <img src="logo.jpeg" alt="Logo bounce_it" 
                         class="w-32 h-32 md:w-40 md:h-40 object-cover rounded-2xl border border-white/10 shadow-[0_0_25px_rgba(129,140,248,0.2)] pixelated" />
@@ -3724,6 +3724,19 @@
             if (typeof playTone === 'function') playTone(400, 'square', 0.05, 0.05);
         }
     }
+
+    function warmupMovement() {
+        if (!currentRoomAvatar) return;
+        // Force l'optimisation JIT des fonctions de mouvement avec des valeurs neutres
+        const dummyTarget = new THREE.Vector3(0, -0.95, 0);
+        for (let i = 0; i < 64; i++) {
+            checkCollision(Math.sin(i) * 5, Math.cos(i) * 5);
+            rotateAvatarToward(dummyTarget, 0.12);
+        }
+        // Pré-calcul des matrices mondiales de la scène
+        scene.updateMatrixWorld(true);
+        camera.updateMatrixWorld(true);
+    }
         
     function rotateAvatarToward(target, smooth = 0.12) {
         if (!currentRoomAvatar || !target) return;
@@ -3824,6 +3837,12 @@
         window._v2b = window._v2b || new THREE.Vector2();
         window._v3a = window._v3a || new THREE.Vector3();
         window._v3b = window._v3b || new THREE.Vector3();
+        window._v3c = window._v3c || new THREE.Vector3();
+        window._v3finalCam = window._v3finalCam || new THREE.Vector3();
+        window._v3finalLook = window._v3finalLook || new THREE.Vector3();
+        window._v3startPos = window._v3startPos || new THREE.Vector3();
+        window._v3startLook = window._v3startLook || new THREE.Vector3();
+        window._v3lerpTarget = window._v3lerpTarget || new THREE.Vector3();
 
         // --- SÉCURITÉ DE L'ÉTAT DU JEU (Évite l'écran noir dû aux NaN) ---
         const currentState = typeof state !== 'undefined' && state ? state : { isSitting: false, isSleeping: false, isEventActive: false };
@@ -3871,6 +3890,10 @@
             window.velX = window.velX || 0;
             window.velZ = window.velZ || 0;
             window.kbdState = window.kbdState || {};
+
+            // Fix : On capture la position avant mouvement pour le calcul de blocage
+            const prevX = currentRoomAvatar.position.x;
+            const prevZ = currentRoomAvatar.position.z;
             
             let targetDirX = 0;
             let targetDirZ = 0;
@@ -4132,18 +4155,18 @@
                 currentRoomAvatar.getWorldPosition(avatarFocusPoint);
                 const roomCenter = window._v3b.set(0, 0, 0); 
                 
-                const idealTarget = new THREE.Vector3().copy(roomCenter).lerp(avatarFocusPoint, focusStrength);
+                const idealTarget = window._v3c.copy(roomCenter).lerp(avatarFocusPoint, focusStrength);
                 window.smoothCamTarget.lerp(idealTarget, 0.1); 
 
                 const offsetEcran = 1.7; 
 
-                const finalCamPosition = new THREE.Vector3(
+                const finalCamPosition = window._v3finalCam.set(
                     20 + window.smoothCamTarget.x, 
                     20 + offsetEcran,              
                     20 + window.smoothCamTarget.z
                 );
                 
-                const finalLookTarget = new THREE.Vector3(
+                const finalLookTarget = window._v3finalLook.set(
                     window.smoothCamTarget.x, 
                     offsetEcran,                    
                     window.smoothCamTarget.z
@@ -4161,14 +4184,14 @@
                     const t = window.introProgress;
                     const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-                    const startPos = new THREE.Vector3(15, 0.5, 15);
-                    const startLook = new THREE.Vector3(0, 0, 0); 
+                    const startPos = window._v3startPos.set(15, 0.5, 15);
+                    const startLook = window._v3startLook.set(0, 0, 0); 
                     const startZoom = 2.2; 
 
-                    const currentPos = new THREE.Vector3().lerpVectors(startPos, finalCamPosition, ease);
+                    const currentPos = window._v3lerpTarget.lerpVectors(startPos, finalCamPosition, ease);
                     camera.position.copy(currentPos);
                     
-                    const currentLook = new THREE.Vector3().lerpVectors(startLook, finalLookTarget, ease);
+                    const currentLook = window._v3lerpTarget.lerpVectors(startLook, finalLookTarget, ease);
                     camera.lookAt(currentLook);
 
                     camera.zoom = startZoom + (window.targetCamZoom - startZoom) * ease;
@@ -5065,7 +5088,7 @@ function getCurrentRank() {
 
         function getAchievementUnlockLabel(achievement) {
             if (!achievement.unlocked) return 'LOCKED';
-            if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant v16';
+            if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant v17';
             if (achievement.unlockedDay) return `JOUR ${achievement.unlockedDay}${achievement.unlockedTime ? ' · ' + achievement.unlockedTime : ''}`;
             return 'Débloqué avant v16';
         }
@@ -6871,6 +6894,9 @@ function getCurrentRank() {
             };
             tlContainer.addEventListener('mousedown', (e) => onTlClick(e.clientX));
             tlContainer.addEventListener('touchstart', (e) => onTlClick(e.touches[0].clientX), { passive: true });
+
+            // Pré-calcul immédiat des matrices pour éviter les pics de calcul au premier input
+            scene.updateMatrixWorld(true);
         }
 
         function generateRandomTimelineClips() {
@@ -7302,6 +7328,8 @@ function getCurrentRank() {
             // Correctif 1 : Pré-compilation des shaders pour éviter le freeze au lancement
             // On compile la scène avec tous les objets (y compris l'avatar fraîchement spawn)
             renderer.compile(scene, camera);
+             // Correctif 2 : Warmup des fonctions de mouvement pour éviter le lag au premier input
+            warmupMovement();
             isSceneReady = true; // Débloque la boucle animate3D
 
             // --- DÉCLENCHEMENT DE LA CINÉMATIQUE D'INTRO ---
