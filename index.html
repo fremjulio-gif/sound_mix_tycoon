@@ -4485,7 +4485,10 @@
                 isJoystickActive = true;
                 targetPosition = null; // Annule l'ancien pathfinding par clic
                 const jUI = document.getElementById('joystick-ui');
-                if (jUI) jUI.style.display = 'block';
+                if (jUI) {
+                    jUI.style.display = 'block';
+                    jUI.style.opacity = '0.3'; // Opacité de base au contact
+                }
             }
         }
 
@@ -4510,9 +4513,19 @@
             
             const maxRadius = 100;
             const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+            // Feeling "libre" : zone morte réduite à 2px sur l'avatar (rayon ~45px)
+            // contre 10px sur le reste du sol pour la stabilité.
+            const currentDeadzone = dist < 45 ? 2 : 10;
+
             const clampedDist = Math.min(dist, maxRadius);
             const factor = clampedDist / maxRadius;
             
+            // MAJ de l'opacité : plus on s'éloigne de l'avatar, plus le joystick est visible (entre 0.3 et 1.0)
+            const minOpacity = 0.3;
+            const maxOpacity = 1.0;
+            joystickUI.style.opacity = (minOpacity + (maxOpacity - minOpacity) * factor).toString();
+
             // MAJ Visuelle du Joystick (Base sur l'avatar, Knob vers le doigt)
             joystickUI.style.left = `${avatarScreenX}px`;
             joystickUI.style.top = `${avatarScreenY}px`;
@@ -4523,7 +4536,7 @@
                 joystickKnob.style.transform = `translate(${vx}px, ${vy}px)`;
             }
 
-            if (dist > 10) { // Zone morte de 10px pour éviter les micro-mouvements
+            if (dist > currentDeadzone) { // Zone morte dynamique pour plus de liberté
                 // 3. Injection de la vélocité directionnelle
                 window.joystickVec.x = (deltaX / dist) * factor;
                 window.joystickVec.z = (deltaY / dist) * factor;
