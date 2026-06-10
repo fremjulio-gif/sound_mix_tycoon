@@ -1301,6 +1301,24 @@
         #playhead {
             transition: left 60ms linear;
         }
+
+        /* --- ANIMATION LEVEL UP --- */
+        @keyframes levelUpPop {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        .juicy-level-up { animation: levelUpPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .level-up-toast {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 10000000; width: min(92vw, 420px);
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            border: 5px solid #fff; border-radius: 40px; padding: 45px 25px;
+            text-align: center; color: #000; font-family: 'Outfit', sans-serif;
+            box-shadow: 0 0 120px rgba(251, 191, 36, 0.6), inset 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+        .level-up-toast h2 { font-weight: 900; text-transform: uppercase; letter-spacing: -1px; }
+        .level-up-toast button { box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         </style>
     </head>
 
@@ -4701,6 +4719,15 @@ function calculateLevelData() {
 
     const level = Math.max(1, Math.floor(avgMastery));
 
+    // --- 1. DÉTECTION DE LEVEL UP ---
+    if (state.lastLevel !== undefined && level > state.lastLevel) {
+        const oldL = state.lastLevel;
+        state.lastLevel = level;
+        // Délai pour laisser le temps à l'action déclencheuse (ex: export) de finir ses propres visuels
+        setTimeout(() => triggerLevelUp(oldL, level), 800);
+    }
+    if (state.lastLevel === undefined) state.lastLevel = level;
+
     // XP vers le prochain rang
     const currentRank = getCurrentRank();
     const nextRank = PLAYER_RANKS.find(r => r.id === currentRank.id + 1);
@@ -4756,6 +4783,31 @@ function getCurrentRank() {
     return current;
 }
 
+function triggerLevelUp(oldLevel, newLevel) {
+    // 2. ANIMATIONS DE CÉLÉBRATION
+    fireConfetti('achievement');
+    window.camShakeIntensity = 1.5; // Shake caméra intense
+    playLevelUpSound(); // Son spécifique de Level Up
+    setTimeout(playLevelUpSound, 200); // Double-tone pour l'impact
+
+    const toast = document.createElement('div');
+    toast.className = 'level-up-toast juicy-level-up';
+    const rank = getCurrentRank();
+    
+    toast.innerHTML = `
+        <div class="text-6xl mb-4 drop-shadow-lg">⭐</div>
+        <h2 class="text-4xl mb-1">LEVEL UP !</h2>
+        <p class="text-sm font-bold uppercase tracking-widest opacity-80 mb-6">Tu es passé du niveau ${oldLevel} au niveau ${newLevel}</p>
+        <div class="bg-black/10 rounded-2xl p-5 border border-white/20 mb-8">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-black/60 mb-1">Avantage actuel</p>
+            <p class="text-xl font-black uppercase tracking-tight">${rank.name}</p>
+            <p class="text-[11px] mt-1 font-medium opacity-90">"${rank.perk}"</p>
+        </div>
+        <button onclick="this.parentElement.remove()" class="w-full bg-black text-white py-4 rounded-2xl font-bold tracking-widest hover:scale-105 active:scale-95 transition-transform uppercase text-xs">C'est le moment de percer !</button>
+    `;
+    document.body.appendChild(toast);
+}
+
         // ==========================================
         // 4. TOOLTIP
         // ==========================================
@@ -4799,28 +4851,28 @@ function getCurrentRank() {
                     <div class="flex flex-col gap-1">
                         <div class="flex justify-between text-[10px] uppercase tracking-tighter text-gray-500 font-bold">
                             <span>Banque Mastery</span>
-                            <span class="text-white">${Math.floor(lData.money)}%</span>
+                            <span class="text-white">${Math.floor(lData.breakdown.money)}%</span>
                         </div>
                         <div class="h-1 w-full bg-black rounded-full overflow-hidden">
-                            <div class="h-full bg-[var(--retro-green)]" style="width: ${lData.money}%"></div>
+                            <div class="h-full bg-[var(--retro-green)]" style="width: ${lData.breakdown.money}%"></div>
                         </div>
                     </div>
                     <div class="flex flex-col gap-1">
                         <div class="flex justify-between text-[10px] uppercase tracking-tighter text-gray-500 font-bold">
                             <span>Reputation Mastery</span>
-                            <span class="text-white">${Math.floor(lData.rep)}%</span>
+                            <span class="text-white">${Math.floor(lData.breakdown.rep)}%</span>
                         </div>
                         <div class="h-1 w-full bg-black rounded-full overflow-hidden">
-                            <div class="h-full bg-[var(--retro-orange)]" style="width: ${lData.rep}%"></div>
+                            <div class="h-full bg-[var(--retro-orange)]" style="width: ${lData.breakdown.rep}%"></div>
                         </div>
                     </div>
                     <div class="flex flex-col gap-1">
                         <div class="flex justify-between text-[10px] uppercase tracking-tighter text-gray-500 font-bold">
                             <span>Fanbase Mastery</span>
-                            <span class="text-white">${Math.floor(lData.foll)}%</span>
+                            <span class="text-white">${Math.floor(lData.breakdown.foll)}%</span>
                         </div>
                         <div class="h-1 w-full bg-black rounded-full overflow-hidden">
-                            <div class="h-full bg-[var(--accent)]" style="width: ${lData.foll}%"></div>
+                            <div class="h-full bg-[var(--accent)]" style="width: ${lData.breakdown.foll}%"></div>
                         </div>
                     </div>
                 </div>
@@ -5566,9 +5618,15 @@ function getCurrentRank() {
         function playSynthNote(note, isPlaying) {
             if (!audioCtxUI) initAudio();
             if (!audioCtxUI) return;
-
+            
+            // Sécurité : Ne pas jouer de son si l'audio context est suspendu
+            if (audioCtxUI.state === 'suspended') {
+                audioCtxUI.resume();
+            }
+            
             // Récupère l'élément du clavier UI créé à l'étape 2 pour le feedback visuel
             const keyEl = document.querySelector(`.pr-key-row[data-note="${note}"]`);
+            if (!keyEl) return; // S'assurer que l'élément existe
 
             if (isPlaying) {
                 if (activeSynthNotes[note]) return; // Empêche le chevauchement si la note joue déjà
@@ -5612,6 +5670,14 @@ function getCurrentRank() {
         const playError   = () => { playTone(200, 'sawtooth', 0.2, 0.05); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); };
         const playKick    = () => { playTone(60, 'sine', 0.2, 0.2); playTone(120, 'square', 0.05, 0.1); };
         const playCashSound = () => { playTone(600, 'sine', 0.1, 0.08); setTimeout(() => playTone(1200, 'sine', 0.2, 0.08), 100); };
+        
+        // Nouveau son pour le Level Up
+        const playLevelUpSound = () => {
+            playTone(440, 'triangle', 0.1, 0.05); // A4
+            setTimeout(() => playTone(554, 'triangle', 0.1, 0.05), 50); // C#5
+            setTimeout(() => playTone(659, 'triangle', 0.2, 0.08), 100); // E5
+            setTimeout(() => playTone(880, 'sine', 0.3, 0.1), 200); // A5 (plus prononcé)
+        };
         
     // ==========================================
     // CRÉATION DES AVATARS (Style Funko Pop Blocky / Flat 3D)
@@ -6331,7 +6397,7 @@ function getCurrentRank() {
             money: 100, rep: 10, followers: 0, energy: 100,
             timeMins: 8 * 60,
             day: 1,
-            multiplier: 1.0, plugins: 0,
+            multiplier: 1.0, plugins: 0, lastLevel: 1,
             stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0, consecutiveFlops: 0, sofaChills: 0, lampToggles: 0, awakeDays: 0 },
             cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, sponsors: {} },
             inventory: [], ownedCracks: [], downloadedCracks: {},
@@ -7363,6 +7429,9 @@ function getCurrentRank() {
             refreshSocial();
             updateMoodRingWidget();
             updateTopChartsWidget();
+            
+            // Initialisation silencieuse au boot pour ne pas pop au login
+            state.lastLevel = calculateLevelData().level;
 
             // --- AJOUT : Force les couleurs correctes à l'apparition de la 3D ---
             updateThemeColors();
@@ -7428,6 +7497,7 @@ function getCurrentRank() {
         // 14. HUD UPDATE
         // ==========================================
         function updateHUD() {
+            calculateLevelData(); // Vérification automatique à chaque mise à jour des stats
             animateHUDNumber('hud-money', state.money, 'money');
             animateHUDNumber('hud-rep', state.rep, 'rep');
             animateHUDNumber('hud-foll', state.followers, 'foll');
