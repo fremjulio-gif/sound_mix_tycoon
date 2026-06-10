@@ -2252,8 +2252,8 @@
         // --- SYSTÈME JOYSTICK VIRTUEL ---
         let isJoystickActive = false;
         let joystickStartPos = new THREE.Vector2();
-        let joystickCenterX = 0;
-        let joystickCenterY = 0;
+        window.lastPointerX = 0;
+        window.lastPointerY = 0;
         window.joystickVec = { x: 0, z: 0 };
         
         // VARIABLES GLOBALES POUR L'ANIMATION
@@ -3994,6 +3994,44 @@
         // Vérification de l'avatar principal
         if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar) {
             
+            // --- MISE À JOUR DYNAMIQUE DU JOYSTICK (SUIVI DE L'AVATAR) ---
+            if (isJoystickActive && typeof joystickUI !== 'undefined' && joystickUI) {
+                const avatarPos = window._v3a.setFromMatrixPosition(currentRoomAvatar.matrixWorld);
+                avatarPos.project(camera);
+                const cx = (avatarPos.x * 0.5 + 0.5) * window.innerWidth;
+                const cy = (avatarPos.y * -0.5 + 0.5) * window.innerHeight;
+
+                joystickUI.style.left = `${cx}px`;
+                joystickUI.style.top = `${cy}px`;
+
+                if (window.lastPointerX !== undefined) {
+                    const deltaX = window.lastPointerX - cx;
+                    const deltaY = window.lastPointerY - cy;
+                    const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                    const maxRadius = 100;
+                    const currentDeadzone = dist < 45 ? 2 : 10;
+                    const clampedDist = Math.min(dist, maxRadius);
+                    const factor = clampedDist / maxRadius;
+
+                    // Feedback visuel (Opacité et Knob)
+                    joystickUI.style.opacity = (0.3 + 0.7 * factor).toString();
+                    if (typeof joystickKnob !== 'undefined' && joystickKnob) {
+                        const visualClamp = Math.min(dist, 50);
+                        const vx = dist > 0 ? (deltaX / dist) * visualClamp : 0;
+                        const vy = dist > 0 ? (deltaY / dist) * visualClamp : 0;
+                        joystickKnob.style.transform = `translate(${vx}px, ${vy}px)`;
+                    }
+
+                    // Injection dans la vélocité (en sync avec la position réelle de l'avatar)
+                    if (dist > currentDeadzone) {
+                        window.joystickVec.x = (deltaX / dist) * factor;
+                        window.joystickVec.z = (deltaY / dist) * factor;
+                    } else {
+                        window.joystickVec.x = 0; window.joystickVec.z = 0;
+                    }
+                }
+            }
+
             // ==========================================
             // --- LOGIQUE DE LA TÉLÉVISION ---
             // ==========================================
@@ -4561,22 +4599,13 @@
             if (groundHit) {
                 isJoystickActive = true;
                 targetPosition = null; // Annule l'ancien pathfinding par clic
-
-                // Correctif 1 : On fige la position de la base (UI absolue) au moment du déclenchement
-                if (currentRoomAvatar) {
-                    // Projection 3D -> 2D de l'avatar pour placer le joystick sur lui à l'écran
-                    const avatarPos = (window._v3a || new THREE.Vector3()).setFromMatrixPosition(currentRoomAvatar.matrixWorld);
-                    avatarPos.project(camera);
-                    joystickCenterX = (avatarPos.x * 0.5 + 0.5) * window.innerWidth;
-                    joystickCenterY = (avatarPos.y * -0.5 + 0.5) * window.innerHeight;
-                }
+                
+                window.lastPointerX = clientX;
+                window.lastPointerY = clientY;
 
                 const jUI = document.getElementById('joystick-ui');
                 if (jUI) {
                     jUI.style.display = 'block';
-                    jUI.style.opacity = '0.3'; // Opacité de base au contact
-                    jUI.style.left = `${joystickCenterX}px`;
-                    jUI.style.top = `${joystickCenterY}px`;
                 }
             }
         }
@@ -4587,42 +4616,9 @@
         const joystickKnob = document.getElementById('joystick-knob');
 
         canvasCont.addEventListener('pointermove', (e) => {
-            if (!isJoystickActive || !joystickUI) return;
-            
-            // Correctif 2 : Calcul du Delta par rapport au centre figé (évite le feedback loop de tremblement)
-            const deltaX = e.clientX - joystickCenterX;
-            const deltaY = e.clientY - joystickCenterY;
-            
-            const maxRadius = 100;
-            const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-            // Feeling "libre" : zone morte réduite à 2px sur l'avatar (rayon ~45px)
-            // contre 10px sur le reste du sol pour la stabilité.
-            const currentDeadzone = dist < 45 ? 2 : 10;
-
-            const clampedDist = Math.min(dist, maxRadius);
-            const factor = clampedDist / maxRadius;
-            
-            // MAJ de l'opacité : plus on s'éloigne de l'avatar, plus le joystick est visible (entre 0.3 et 1.0)
-            const minOpacity = 0.3;
-            const maxOpacity = 1.0;
-            joystickUI.style.opacity = (minOpacity + (maxOpacity - minOpacity) * factor).toString();
-
-            if (joystickKnob) {
-                const visualClamp = Math.min(dist, 50); // Rayon visuel de la base
-                const vx = dist > 0 ? (deltaX / dist) * visualClamp : 0;
-                const vy = dist > 0 ? (deltaY / dist) * visualClamp : 0;
-                joystickKnob.style.transform = `translate(${vx}px, ${vy}px)`;
-            }
-
-            if (dist > currentDeadzone) { // Zone morte dynamique pour plus de liberté
-                // 3. Injection de la vélocité directionnelle
-                window.joystickVec.x = (deltaX / dist) * factor;
-                window.joystickVec.z = (deltaY / dist) * factor;
-            } else {
-                window.joystickVec.x = 0;
-                window.joystickVec.z = 0;
-            }
+            if (!isJoystickActive) return;
+            window.lastPointerX = e.clientX;
+            window.lastPointerY = e.clientY;
         });
 
         const stopJoystick = () => {
