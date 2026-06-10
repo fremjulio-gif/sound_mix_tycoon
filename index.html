@@ -1754,8 +1754,6 @@
                 </div>
 
                 <div>
-                    <h4 class="text-xs text-white mb-5 uppercase tracking-widest font-retro border-b border-[var(--accent)]/30 pb-3 font-bold">Brand Deals (Sellout)</h4>
-                    <div>
                         <h4 class="text-xs text-white mb-5 uppercase tracking-widest font-retro border-b border-[var(--accent)]/30 pb-3 font-bold">Brand Deals (Sellout)</h4>
                         <div id="sponsor-list" class="space-y-4"></div>
                     </div>
@@ -5900,16 +5898,19 @@
             // Auto-clean pour ne pas faire lagger le DOM (Garde max 15 messages)
             if (chatBox.children.length > 15) chatBox.firstChild.remove();
             
-            // Scroll automatique vers le bas
+                        // Scroll automatique vers le bas
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Délai aléatoire avant le prochain message (mitraillette si banger, lent si mid)
-            const speedBase = isBanger ? 300 : (isFlop ? 400 : 800);
-            liveChatTimeout = setTimeout(postMessage, speedBase + Math.random() * 1200);
+            // --- NOUVEAUX DÉLAIS (Plus lents et plus humains) ---
+            // Banger: 1s à 2.5s | Flop: 1.5s à 3s | Mid: 2s à 4s
+            const speedBase = isBanger ? 1000 : (isFlop ? 1500 : 2000);
+            const variance = isBanger ? 1500 : (isFlop ? 1500 : 2000);
+            
+            liveChatTimeout = setTimeout(postMessage, speedBase + Math.random() * variance);
         };
 
-        // Lancement du premier message
-        postMessage();
+        // Lancement du premier message (avec un délai initial pour faire monter la tension)
+        liveChatTimeout = setTimeout(postMessage, 1000);
     }
 
         const sponsors = [
@@ -7882,10 +7883,18 @@
             window.pendingReviewData = null; // Nettoyage
             updateHUD();
             saveGame();
-             // --- NOUVEAU : DÉCLENCHEMENT DU LIVE CHAT ---
+                        // --- NOUVEAU : DÉCLENCHEMENT DU LIVE CHAT ---
             if (state.trackList && state.trackList.length > 0) {
-                // On passe le tout dernier son exporté au générateur
-                startLiveChat(state.trackList[0]);
+                // 1. Force l'ouverture de l'application SoundNet au premier plan
+                openApp('app-social');
+                
+                // 2. Force l'affichage de l'onglet "Feed" (là où se trouve le chat)
+                switchSocialTab('feed');
+                
+                // 3. Lance le chat avec un tout petit délai pour laisser l'animation de la fenêtre se faire
+                setTimeout(() => {
+                    startLiveChat(state.trackList[0]);
+                }, 400);
             }
         }
 
