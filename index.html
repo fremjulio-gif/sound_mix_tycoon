@@ -277,13 +277,37 @@
             }
 
             .animate-wave {
+                height: 20%;
+                animation: soundWave 1.2s ease-in-out infinite;
+            }
 
-            
-            height: 20%;
-            animation: soundWave 1.2s ease-in-out infinite;
-        }
-
-            
+            /* --- DAW SPLASH SCREEN --- */
+            .splash-card {
+                background: rgba(10, 10, 15, 0.7);
+                backdrop-filter: blur(50px) saturate(200%);
+                -webkit-backdrop-filter: blur(50px) saturate(200%);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-top: 1px solid rgba(255, 255, 255, 0.3);
+                box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.9), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+                border-radius: 32px;
+                padding: 60px 45px;
+                width: 440px;
+                max-width: 90vw;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+            }
+            .loader-track {
+                width: 100%;
+                height: 10px;
+                background: rgba(0, 0, 0, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 4px;
+                overflow: hidden;
+                position: relative;
+                box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+            }
             /* =========================================
             4. OS LAYER & WINDOWS
             ========================================= */
@@ -2007,19 +2031,24 @@
 
         <div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[999999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
 
-        <div id="studio-loader" class="fixed inset-0 z-[9999] bg-[#0f172a] flex flex-col items-center justify-center transition-opacity duration-1000">
-            <div class="flex items-end gap-1.5 h-8 mb-6">
-                <div class="w-1.5 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.0s"></div>
-                <div class="w-1.5 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.2s"></div>
-                <div class="w-1.5 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.4s"></div>
-                <div class="w-1.5 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.1s"></div>
+        <div id="studio-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-1000" style="background: radial-gradient(circle at center, #1e1b4b 0%, #050508 100%);">
+            <div class="splash-card">
+                <h1 class="font-retro text-2xl md:text-3xl text-white tracking-[0.3em] uppercase mb-10 drop-shadow-2xl">bounce_it <span class="text-[var(--accent)] opacity-60">v17</span></h1>
+                
+                <div class="flex items-end gap-2 h-10 mb-8">
+                    <div class="w-2 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.0s"></div>
+                    <div class="w-2 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.2s"></div>
+                    <div class="w-2 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.4s"></div>
+                    <div class="w-2 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.1s"></div>
+                </div>
+
+                <div class="loader-track">
+                    <div id="loader-progress" class="h-full bg-gradient-to-r from-[var(--accent)] to-[#a5b4fc] w-0 transition-all duration-300" style="box-shadow: 0 0 15px rgba(129, 140, 248, 0.4); background-image: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.2) 4px, rgba(0,0,0,0.2) 6px);"></div>
+                </div>
+
+                <div id="loader-text" class="text-[#34d399] font-mono text-[10px] tracking-[0.15em] uppercase mt-4 w-full text-left opacity-70 h-4">Initializing Kernel...</div>
             </div>
 
-            <div id="loader-text" class="text-gray-400 font-mono text-sm tracking-widest uppercase h-4">Initialisation...</div>
-
-            <div class="w-48 h-[1px] bg-gray-800 mt-6 rounded-full overflow-hidden">
-                <div id="loader-progress" class="h-full bg-[var(--accent)] w-0 transition-all duration-300 shadow-[0_0_10px_rgba(129,140,248,0.8)]"></div>
-            </div>
             <!-- Achievement Popup (Z-INDEX MAXIMUM) -->
         <div id="achievement-popup" class="fixed top-[-150px] left-1/2 -translate-x-1/2 z-[1000000] w-[90%] max-w-md liquid-glass-heavy border-2 border-[var(--accent)] rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(129,140,248,0.5)] transition-all duration-500 pointer-events-none">
             <div id="achievement-icon" class="text-4xl shrink-0 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">🏆</div>
@@ -2056,11 +2085,11 @@
 
     // Phrases d'immersion (studio vibe)
     const loadingPhrases = [
-        "Chauffe des lampes analogiques...",
-        "Patching de la console...",
-        "Accordage des instruments...",
-        "Calibration des moniteurs...",
-        "Prêt."
+        "AUDIO: Initializing Core Driver...",
+        "VST: Scanning Plugin Registry...",
+        "IO: Mapping Virtual Patchbay...",
+        "DSP: Warming Analog Emulation...",
+        "ENGINE READY."
     ];
 
     let phraseIndex = 0;
