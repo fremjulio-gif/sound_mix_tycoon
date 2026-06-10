@@ -6534,7 +6534,8 @@
         const container = document.getElementById('daw-genres-container');
         if (!container) return;
         
-        const currentTracks = state.stats.tracks || 0;
+        // Sécurité si les stats ne sont pas encore prêtes
+        const currentTracks = (state && state.stats) ? (state.stats.tracks || 0) : 0;
         
         container.innerHTML = DAW_GENRES.map(g => {
             const isUnlocked = currentTracks >= g.unlockAt;
@@ -6543,15 +6544,15 @@
                 return `<button class="btn-daw-pad flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest min-w-[40%]" disabled title="Débloqué à ${g.unlockAt} tracks">🔒 ??? (${g.unlockAt} TRK)</button>`;
             }
             
-            const isActive = currentDawGenre === g.id;
+            const isActive = (currentDawGenre === g.id);
             const btnClass = isActive ? 'btn-daw-pad selected' : 'btn-daw-pad';
             return `<button class="${btnClass} flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest min-w-[40%]" data-val="${g.id}" onclick="selectDawGenre('${g.id}')">${g.name}</button>`;
         }).join('');
     }
 
         
-        function selectDawGenre(val) {
-        currentDawGenre = val || 'drill';
+        function selectDawGenre(val = null) {
+        if (val) currentDawGenre = val;
         updateDawGenres();
         playBleep();
     }
@@ -6991,7 +6992,7 @@
                 if (r < 0.001) triggerRandomEvent('collab');        
                 else if (r < 0.002) triggerRandomEvent('vol');      
                 else if (r < 0.0025) triggerRandomEvent('badbuzz'); 
-                else if (r < 0.004) spawnRandomDM(); // <-- Plus de chance d'avoir un DM qu'un gros event bloquant
+                else if (r < 0.008) spawnRandomDM(); // Augmente la chance d'avoir un DM
             }
         }
 
@@ -7171,6 +7172,7 @@
                 }
                             if (id === 'app-daw') {
                     updateDawPlugins();
+                    updateDawGenres();
                     MusicSystem.muteForGameplay(0.5); // <-- AJOUT ICI
                 }
             }
