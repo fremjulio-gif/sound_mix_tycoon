@@ -2146,6 +2146,11 @@
         let currentRoomAvatar = null;
         let targetPosition = null;
         
+        // --- SYSTÈME JOYSTICK VIRTUEL ---
+        let isJoystickActive = false;
+        let joystickStartPos = new THREE.Vector2();
+        window.joystickVec = { x: 0, z: 0 };
+        
         // VARIABLES GLOBALES POUR L'ANIMATION
         let time = 0;
         let walkTime = 0;
@@ -3913,14 +3918,22 @@
             const prevX = currentRoomAvatar.position.x;
             const prevZ = currentRoomAvatar.position.z;
             
-            let targetDirX = 0;
-            let targetDirZ = 0;
+            // Injection du vecteur joystick en priorité
+            let targetDirX = window.joystickVec.x;
+            let targetDirZ = window.joystickVec.z;
             
             if (!currentState.isSleeping && !currentState.isEventActive) {
                 if (window.kbdState.up) targetDirZ -= 1;
                 if (window.kbdState.down) targetDirZ += 1;
                 if (window.kbdState.left) targetDirX -= 1;
                 if (window.kbdState.right) targetDirX += 1;
+            }
+
+            // Normalisation pour garder une vitesse constante même en cumul joystick + clavier
+            const inputMag = Math.sqrt(targetDirX * targetDirX + targetDirZ * targetDirZ);
+            if (inputMag > 1) {
+                targetDirX /= inputMag;
+                targetDirZ /= inputMag;
             }
 
             if (targetDirX !== 0 || targetDirZ !== 0) {
@@ -4398,62 +4411,74 @@
             raycaster.setFromCamera(mousePos, camera);
 
             const intersects = raycaster.intersectObjects(scene.children, true);
-            let hasWarned = false; // <-- LE CADENAS ICI
-            for (let i = 0; i < intersects.length; i++) {
-                const objName = intersects[i].object.name;
+            
+            // 1. Priorité aux interactions objets (PC, Lit, etc.)
+            const interactableHit = intersects.find(hit => interactableNames.includes(hit.object.name));
+            if (interactableHit) {
+                const objName = interactableHit.object.name;
+                const worldPos = new THREE.Vector3();
+                interactableHit.object.getWorldPosition(worldPos);
+                const dist = Math.hypot(worldPos.x - currentRoomAvatar.position.x, worldPos.z - currentRoomAvatar.position.z);
+                
+                let interactDist = INTERACTION_DIST;
+                if (objName === 'bed_mesh') interactDist = 2.8;
+                if (objName === 'pc_mesh') interactDist = 2.4;
+                if (objName === 'achievements_board_mesh') interactDist = 4.0;
+                if (objName === 'sofa_mesh') interactDist = 3.0;
 
-                // --- VÉRIFICATION DES OBJETS INTERACTIFS ---
-                if (interactableNames.includes(objName)) {
-                    
-                    // Calcul de la distance lors du clic
-                    const targetPos = new THREE.Vector3();
-                    intersects[i].object.getWorldPosition(targetPos);
-                    const dist = Math.hypot(targetPos.x - currentRoomAvatar.position.x, targetPos.z - currentRoomAvatar.position.z);
-
-                    // Rayons d'action sur-mesure pour les gros objets (cohérence avec le highlight)
-                    let interactDist = INTERACTION_DIST;
-                    if (objName === 'bed_mesh') interactDist = 2.8;
-                    if (objName === 'pc_mesh') interactDist = 2.4;
-                    if (objName === 'achievements_board_mesh') interactDist = 4.0;
-                    if (objName === 'sofa_mesh') interactDist = 3.0;
-
-                    if (dist > interactDist) {
-                        showToast("Trop loin ! Rapproche-toi pour interagir.", "discreet");
-                        hasWarned = true; // On ferme le cadenas pour ce clic
-                        continue; // On continue pour permettre de cliquer sur le sol derrière l'objet
-                    }
-
-                    // Actions si on est assez proche
-                    if (objName === 'pc_mesh') { enterPC(); break; }
-                    if (objName === 'achievements_board_mesh') { openAchievementsBoard(); break; }
-                if (objName === 'synth_mesh') { openPianoRoll(); break; }
-                    if (objName === 'bed_mesh') {
+                if (dist <= interactDist) {
+                    if (objName === 'pc_mesh') enterPC();
+                    else if (objName === 'achievements_board_mesh') openAchievementsBoard();
+                    else if (objName === 'synth_mesh') openPianoRoll();
+                    else if (objName === 'bed_mesh') {
                         if (state.energy < 50) goSleep();
-                        else { showToast("Tu n'es pas assez fatigué pour dormir (< 50% NRJ).", "info"); playBleep(); }
-                        break;
+                        else showToast("Tu n'es pas assez fatigué (< 50% NRJ).", "info");
                     }
-                    if (objName === 'sofa_mesh') { goSit(); break; }
-                    if (objName === 'interactiveLamp') { togglePixarLamp(); break; }
-                    if (objName === 'speaker_mesh') { openAudioSettings(); break; } // Nouvelle interaction pour les paramètres audio
-                }
-
-                // --- DÉPLACEMENT (Reste inchangé) ---
-                if (objName === 'floor_mesh') {
-                    const currentTime = performance.now();
-                    const timeDiff = currentTime - lastFloorClickTime;
-                    
-                    if (timeDiff < 350) {
-                        const rawX = intersects[i].point.x;
-                        const rawZ = intersects[i].point.z;
-                        const snappedX = Math.round(rawX / GRID_SIZE) * GRID_SIZE;
-                        const snappedZ = Math.round(rawZ / GRID_SIZE) * GRID_SIZE;
-                        targetPosition = new THREE.Vector3(snappedX, -0.95, snappedZ);
-                    }
-                    lastFloorClickTime = currentTime;
-                    break;
+                    else if (objName === 'sofa_mesh') goSit();
+                    else if (objName === 'interactiveLamp') togglePixarLamp();
+                    else if (objName === 'speaker_mesh') openAudioSettings();
+                    return; // On arrête tout si on a interagi
                 }
             }
+
+            // 2. Si on n'a pas touché d'objet, on active le Joystick sur le sol ou l'avatar
+            const groundHit = intersects.find(hit => hit.object.name === 'floor_mesh' || hit.object.parent?.name === 'RoomAvatarRoot');
+            if (groundHit) {
+                isJoystickActive = true;
+                joystickStartPos.set(clientX, clientY);
+                targetPosition = null; // Annule l'ancien pathfinding par clic
+            }
         }
+
+        // --- ÉCOUTEURS COMPLÉMENTAIRES DU JOYSTICK ---
+        const canvasCont = document.getElementById('three-canvas-container');
+        canvasCont.addEventListener('pointermove', (e) => {
+            if (!isJoystickActive) return;
+            
+            const deltaX = e.clientX - joystickStartPos.x;
+            const deltaY = e.clientY - joystickStartPos.y;
+            
+            const maxRadius = 60; // Sensibilité du joystick
+            const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const clampedDist = Math.min(dist, maxRadius);
+            const factor = clampedDist / maxRadius;
+            
+            if (dist > 5) { // Zone morte de 5px
+                window.joystickVec.x = (deltaX / dist) * factor;
+                window.joystickVec.z = (deltaY / dist) * factor;
+            } else {
+                window.joystickVec.x = 0;
+                window.joystickVec.z = 0;
+            }
+        });
+
+        const stopJoystick = () => {
+            isJoystickActive = false;
+            window.joystickVec.x = 0;
+            window.joystickVec.z = 0;
+        };
+        canvasCont.addEventListener('pointerup', stopJoystick);
+        canvasCont.addEventListener('pointercancel', stopJoystick);
 
             
 
