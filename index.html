@@ -6532,10 +6532,10 @@
 
     function updateDawGenres() {
         const container = document.getElementById('daw-genres-container');
-        if (!container) return;
+        if (!container || !DAW_GENRES) return;
         
-        // Sécurité si les stats ne sont pas encore prêtes
-        const currentTracks = (state && state.stats) ? (state.stats.tracks || 0) : 0;
+        // On s'assure de récupérer la valeur numérique correcte
+        const currentTracks = (state && state.stats && typeof state.stats.tracks === 'number') ? state.stats.tracks : 0;
         
         container.innerHTML = DAW_GENRES.map(g => {
             const isUnlocked = currentTracks >= g.unlockAt;
@@ -6544,7 +6544,7 @@
                 return `<button class="btn-daw-pad flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest min-w-[40%]" disabled title="Débloqué à ${g.unlockAt} tracks">🔒 ??? (${g.unlockAt} TRK)</button>`;
             }
             
-            const isActive = (currentDawGenre === g.id);
+            const isActive = currentDawGenre === g.id;
             const btnClass = isActive ? 'btn-daw-pad selected' : 'btn-daw-pad';
             return `<button class="${btnClass} flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest min-w-[40%]" data-val="${g.id}" onclick="selectDawGenre('${g.id}')">${g.name}</button>`;
         }).join('');
@@ -7151,38 +7151,43 @@
         let zIndexCounter = 50;
 
         function openApp(id) {
-                        if (id === 'app-daw') {
-                updateDawPlugins();
-                updateDawGenres();
-                MusicSystem.muteForGameplay(0.5);
-                document.getElementById('playhead').classList.add('playhead-animated');
-            }
-            if (isMobile) document.querySelectorAll('.os-window').forEach(w => { if (w.id !== id) w.style.display = 'none'; });
             const win = document.getElementById(id);
-            if (win.style.display === 'none' || win.style.display === '') {
-                win.style.display = 'flex';
-                void win.offsetWidth;
-                if (!isMobile) {
-                    const w = win.offsetWidth || 700;
-                    const h = win.offsetHeight || 500;
-                    win.style.left = `${Math.max(20, window.innerWidth/2 - w/2)}px`;
-                    win.style.top  = `${Math.max(80, window.innerHeight/2 - h/2 + 20)}px`;
-                } else {
-                    win.style.left = '0px'; win.style.top = '0px';
-                }
-                            if (id === 'app-daw') {
-                    updateDawPlugins();
-                    updateDawGenres();
-                    MusicSystem.muteForGameplay(0.5); // <-- AJOUT ICI
-                }
+            if (!win) return;
+
+            // Gestion du mode mobile (une seule app à la fois)
+            if (isMobile) {
+                document.querySelectorAll('.os-window').forEach(w => { 
+                    if (w.id !== id) w.style.display = 'none'; 
+                });
             }
+
+            const wasHidden = (win.style.display === 'none' || win.style.display === '');
+            win.style.display = 'flex';
+            
+            // Logique spécifique au DAW
+            if (id === 'app-daw') {
+                updateDawPlugins();
+                updateDawGenres(); // Injection forcée des boutons
+                MusicSystem.muteForGameplay(0.5);
+                const playhead = document.getElementById('playhead');
+                if (playhead) playhead.classList.add('playhead-animated');
+            }
+
+            // Positionnement initial (Desktop uniquement)
+            if (wasHidden && !isMobile) {
+                const w = win.offsetWidth || 700;
+                const h = win.offsetHeight || 500;
+                win.style.left = `${Math.max(20, window.innerWidth/2 - w/2)}px`;
+                win.style.top  = `${Math.max(80, window.innerHeight/2 - h/2 + 20)}px`;
+            }
+
             bringToFront(id);
             if (!isMobile) updateTaskbar();
             playBleep();
+            
             if (id === 'app-stats')  refreshStats();
             if (id === 'app-social') refreshSocial();
             if (id === 'app-browser') {
-                // Rafraîchit le store dès l'ouverture pour refléter les données de la sauvegarde (argent/plugins)
                 const isAudioTab = document.getElementById('tab-audio').classList.contains('text-white');
                 renderStore(isAudioTab ? 'audio' : 'crackz');
             }
