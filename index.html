@@ -171,20 +171,35 @@
             /* --- 2D CLOUDS BACKGROUND --- */
             .cloud-2d {
                 position: absolute;
-                background: rgba(255, 255, 255, 0.04);
-                backdrop-filter: blur(4px);
-                -webkit-backdrop-filter: blur(4px);
+                 background: rgba(255, 255, 255, 0.15);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
                 border-radius: 999px;
                 height: 30px; width: 160px;
                 pointer-events: none;
                 z-index: 2;
                 animation: cloudScroll linear infinite;
                 transition: background 0.8s ease, box-shadow 0.8s ease;
+                box-shadow: inset 0 10px 20px rgba(255,255,255,0.4), 0 5px 15px rgba(0,0,0,0.1);
             }
+            /* Forme cotonneuse / fluffy avec amas ronds */
+            .cloud-2d::before, .cloud-2d::after {
+                content: '';
+                position: absolute;
+                background: inherit;
+                backdrop-filter: inherit;
+                -webkit-backdrop-filter: inherit;
+                border-radius: 50%;
+                box-shadow: inherit;
+            }
+            .cloud-2d::before { width: 70px; height: 70px; top: -35px; left: 20px; }
+            .cloud-2d::after { width: 90px; height: 90px; top: -50px; left: 55px; }
+            
             .cloud-2d.cloud-glow {
-                background: rgba(255, 255, 255, 0.12);
-                box-shadow: 0 0 25px rgba(129, 140, 248, 0.3);
+                background: rgba(255, 255, 255, 0.25);
+                box-shadow: inset 0 10px 20px rgba(255,255,255,0.6), 0 0 35px rgba(129, 140, 248, 0.5);
             }
+            
             @keyframes cloudScroll {
                 from { transform: scale(var(--s)) translateX(-120vw); }
                 to { transform: scale(var(--s)) translateX(120vw); }
@@ -7158,9 +7173,9 @@ function triggerLevelUp(oldLevel, newLevel) {
                 const cloud = document.createElement('div');
                 cloud.className = 'cloud-2d';
                 
-                const scale = 0.5 + Math.random() * 2.0;
+                const scale = 1.5 + Math.random() * 2.5; // Volume XXL (1.5x à 4.0x)
                 const top = 5 + Math.random() * 80; 
-                const opacity = 0.15 + Math.random() * 0.25;
+                const opacity = 0.3 + Math.random() * 0.3; // Plus visibles (0.3 à 0.6)
                 const duration = 40 + Math.random() * 80; 
                 const delay = -(Math.random() * duration); 
                 
