@@ -168,6 +168,28 @@
                 100% { transform: translate(-8%, -6%) scale(0.95); }
             }
 
+            /* --- 2D CLOUDS BACKGROUND --- */
+            .cloud-2d {
+                position: absolute;
+                background: rgba(255, 255, 255, 0.04);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+                border-radius: 999px;
+                height: 30px; width: 160px;
+                pointer-events: none;
+                z-index: 1;
+                animation: cloudScroll linear infinite;
+                transition: background 0.8s ease, box-shadow 0.8s ease;
+            }
+            .cloud-2d.cloud-glow {
+                background: rgba(255, 255, 255, 0.12);
+                box-shadow: 0 0 25px rgba(129, 140, 248, 0.3);
+            }
+            @keyframes cloudScroll {
+                from { transform: scale(var(--s)) translateX(-120vw); }
+                to { transform: scale(var(--s)) translateX(120vw); }
+            }
+
             /* TAPE SPIN FIX */
             @keyframes tapeSpin {
                 from { transform: rotate(0deg); }
@@ -3967,6 +3989,7 @@
         }
 
         let isMoving = false; 
+        let isNearSomething = false; 
 
         // Vérification de l'avatar principal
         if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar) {
@@ -4366,6 +4389,7 @@
                     let targetLineColor = defColor;
 
                     if (dist < customDist) {
+                        isNearSomething = true;
                         if (!(item.mesh.geometry && item.mesh.geometry.type === "PlaneGeometry" && item.mesh.name === 'pc_mesh')) {
                             targetEmissive += 0.25; 
                         }
@@ -4382,6 +4406,14 @@
                         item.edges.material.color.lerp(targetLineColor, 0.15);
                     }
                 });
+            }
+
+            // --- MISE À JOUR VISUELLE DES NUAGES (GLOW PROXIMITÉ) ---
+            if (window._bgNearPrev !== isNearSomething) {
+                if (window._bgClouds) {
+                    window._bgClouds.forEach(c => c.classList.toggle('cloud-glow', isNearSomething));
+                }
+                window._bgNearPrev = isNearSomething;
             }
         } // FIN DU BLOC if (currentRoomAvatar)
 
@@ -7115,6 +7147,35 @@ function triggerLevelUp(oldLevel, newLevel) {
             scene.updateMatrixWorld(true);
         }
 
+        // Génération des nuages de fond
+        function spawnClouds() {
+            const container = document.getElementById('dynamic-bg');
+            if (!container) return;
+            
+            window._bgClouds = [];
+            // Génère entre 5 et 8 nuages
+            const count = 5 + Math.floor(Math.random() * 4); 
+            for (let i = 0; i < count; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud-2d';
+                
+                const scale = 0.5 + Math.random() * 2.0;
+                const top = 5 + Math.random() * 80; 
+                const opacity = 0.02 + Math.random() * 0.08;
+                const duration = 40 + Math.random() * 80; 
+                const delay = -(Math.random() * duration); 
+                
+                cloud.style.setProperty('--s', scale);
+                cloud.style.top = `${top}%`;
+                cloud.style.opacity = opacity;
+                cloud.style.animationDuration = `${duration}s`;
+                cloud.style.animationDelay = `${delay}s`;
+                
+                container.appendChild(cloud);
+                window._bgClouds.push(cloud);
+            }
+        }
+
         function generateRandomTimelineClips() {
             const tracks = document.querySelectorAll('.tl-track');
             tracks.forEach(track => {
@@ -9279,6 +9340,7 @@ function triggerLevelUp(oldLevel, newLevel) {
         window.answerDM           = answerDM;
         
         // Boot
+        spawnClouds();
         initUI();
         animate3D();
 
