@@ -574,9 +574,8 @@
             .seq-pad:active { transform: scale(0.9); }
             .seq-pad.active { background: var(--accent); border-color: var(--accent-hover); box-shadow: 0 0 10px var(--accent), inset 0 0 4px rgba(255,255,255,0.6); }
             
-            .tl-track { height: 36px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; position: relative; }
-            .tl-header { width: 90px; background: rgba(0,0,0,0.5); height: 100%; display: flex; align-items: center; padding-left: 10px; font-size: 9px; border-right: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); flex-shrink: 0; text-transform: uppercase; letter-spacing: 1px; z-index: 20; font-weight: bold; }
-            .tl-clip { position: absolute; height: 20px; border-radius: 3px; top: 8px; opacity: 0.95; pointer-events: none; box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), 0 2px 5px rgba(0,0,0,0.5); }
+            .tl-track { height: 52px; border-bottom: 1px solid rgba(0,0,0,0.4); display: flex; align-items: center; position: relative; background: rgba(255,255,255,0.015); }
+            .tl-clip { position: absolute; border-radius: 10px; top: 6px; bottom: 6px; z-index: 10; }
             
             .knob-container { display: flex; flex-direction: column; align-items: center; gap: 6px; }
             .knob { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #3f3f46, #18181b); border: 2px solid #27272a; position: relative; transform: rotate(-135deg); cursor: grab; box-shadow: 0 4px 8px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.2); }
@@ -834,17 +833,58 @@
                 /* DAW Layout fixes Portrait */
                 #app-daw { min-width: 0 !important; overflow: hidden !important; }
                 
+                
+                .timeline-ruler {
+                height: 28px !important;
+                background: #09090b !important;
+                border-bottom: 2px solid #000 !important;
+                color: #818cf8 !important;
+                font-family: 'Share Tech Mono', monospace;
+                font-size: 9px !important;
+                letter-spacing: 1px;
+                text-shadow: 0 0 8px rgba(129, 140, 248, 0.4);
+            }
+
+
                 .daw-grid-container {
         display: flex !important;
         flex-direction: column !important;
-        gap: 12px;
-        padding: 12px 12px 32px 12px;
+        gap: 14px;
+        padding: 14px;
         background: rgba(0,0,0,0.4);
         box-sizing: border-box;
         /* Ne jamais forcer une hauteur ici — laisser window-content scroller */
         width: 100%;
         overflow: visible;
-    }
+                    }
+
+            .btn-msr {
+                width: 18px; height: 18px; background: #27272a; border: 1px solid rgba(255,255,255,0.05);
+                color: #71717a; font-size: 8px; font-weight: 900; border-radius: 3px;
+                display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;
+            }
+            .btn-msr:hover { background: #3f3f46; color: #fff; }
+            .btn-msr.active-m { background: #d97706 !important; color: #fff; box-shadow: 0 0 10px rgba(217, 119, 6, 0.3); }
+            .btn-msr.active-s { background: #eab308 !important; color: #000; box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); }
+            .btn-msr.active-r { background: #ef4444 !important; color: #fff; box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); animation: msr-pulse 1.5s infinite; }
+            @keyframes msr-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+            .tl-header { 
+                width: 125px !important; 
+                background: #18181b !important; 
+                border-right: 2px solid #000 !important;
+                display: flex !important; 
+                flex-direction: column !important; 
+                align-items: flex-start !important; 
+                justify-content: space-between !important;
+                padding: 8px !important;
+                z-index: 30 !important;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+            }
+
+            .track-color-tag {
+                width: 3px; height: 14px; border-radius: 99px;
+            }
                 .daw-panel-neon { 
                     min-width: 0 !important; 
                     width: 100% !important; 
@@ -1231,28 +1271,34 @@
             from { background-position: 0 0; }
             to { background-position: 40px 0; }
         }
+
         .daw-animated-clip {
-            /* Motif hachuré type forme d'onde DAW classique */
-            background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 6px) !important;
-            background-size: 40px 40px !important;
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease, box-shadow 0.2s ease !important;
+            /* Look Liquid Glass iOS */
+            backdrop-filter: blur(12px) saturate(180%) !important;
+            -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.35) !important;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.4) !important;
+            /* Simulation Waveform Pro */
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.15) 0%, transparent 40%, rgba(0,0,0,0.1) 100%),
+                repeating-linear-gradient(90deg, rgba(255,255,255,0.4) 0px, rgba(255,255,255,0.4) 1px, transparent 1px, transparent 3px) !important;
+            background-size: 100% 100%, 4px 100% !important;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 35%, transparent 45%, transparent 55%, black 65%, black 85%, transparent 100%);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
             cursor: pointer;
         }
-        /* L'animation ne s'active que pendant l'export (ajoutée par le playhead) */
-        .playhead-animated ~ .tl-track .daw-animated-clip {
-            animation: scrollWaveform 1.5s linear infinite;
-        }
+
         /* Effet magnétique au survol */
         .daw-animated-clip:hover {
-            transform: scaleY(1.2) scaleX(1.02);
-            filter: brightness(1.3);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.6), inset 0 0 10px rgba(255,255,255,0.3) !important;
-            z-index: 40;
+            transform: scaleY(1.08) scaleX(1.02) translateY(-2px);
+            filter: brightness(1.25) saturate(120%);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.6) !important;
+            z-index: 50;
         }
         .tl-track {
             transition: background-color 0.2s ease;
         }
-        .tl-track:hover {
+        .tl-track:hover:not(.is-ruler) {
             background-color: #1f1f22 !important; /* Met la ligne en surbrillance au survol */
         }
         /* La magie du smooth sur la tête de lecture (calé sur ton intervalle de 60ms) */
@@ -1681,43 +1727,83 @@
 
                         <div class="flex-1 border border-[#27272a] rounded-lg flex flex-col overflow-x-auto overflow-y-hidden relative bg-[#09090b] cursor-crosshair shadow-[inset_0_5px_15px_rgba(0,0,0,0.9)]" id="timeline-container">
                             
-                            <div class="h-6 bg-[#121214] border-b border-[#27272a] flex items-end pb-0.5 font-mono text-[8px] text-gray-600 tracking-widest min-w-[700px] select-none sticky top-0 z-30">
+                            <div class="h-7 timeline-ruler flex items-end pb-1 min-w-[700px] select-none sticky top-0 z-40">
                                 <div class="flex-1 flex justify-between px-2" style="background-image: linear-gradient(90deg, #3f3f46 1px, transparent 1px), linear-gradient(90deg, #27272a 1px, transparent 1px); background-size: 50px 100%, 12.5px 50%; background-repeat: no-repeat, repeat-x; background-position: bottom;">
                                     <span>1.1</span><span>5.1</span><span>9.1</span><span>13.1</span><span>17.1</span><span>21.1</span><span>25.1</span><span>29.1</span><span>33.1</span>
                                 </div>
                             </div>
                             
-                            <div class="absolute inset-0 top-6 pointer-events-none z-0 min-w-[700px]" style="background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px); background-size: 50px 100%, 100% 25%;"></div>
+                            <div class="absolute inset-0 top-7 pointer-events-none z-0 min-w-[700px]" style="background-image: linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px); background-size: 12.5px 100%, 100% 52px;"></div>
 
                             <div class="flex flex-col flex-1 min-w-[700px] relative z-10 py-1">
                                 
-                                <div class="tl-track flex-1 border-b border-[#1f1f22] bg-transparent relative group/track">
-                                    <div class="tl-header bg-[#121214]/90 backdrop-blur border-r border-[#27272a] text-gray-400 font-mono text-[9px] w-[95px] absolute left-0 z-20 h-full flex items-center px-2 sticky group-hover/track:text-white transition-colors">DRUMS / 808</div>
-                                    <div class="tl-clip daw-animated-clip bg-[#ef4444] border-t border-b border-[#fca5a5] rounded opacity-90 shadow-[inset_0_-4px_8px_rgba(0,0,0,0.5)]" style="left: 110px; width: 140px; height: 60%; top: 20%;"></div>
-                                    <div class="tl-clip daw-animated-clip bg-[#ef4444] border-t border-b border-[#fca5a5] rounded opacity-90 shadow-[inset_0_-4px_8px_rgba(0,0,0,0.5)]" style="left: 300px; width: 80px; height: 60%; top: 20%;"></div>
+                                <div class="tl-track relative group/track">
+                                    <div class="tl-header sticky left-0 group-hover/track:brightness-125 transition-all">
+                                        <div class="flex items-center gap-2 w-full">
+                                            <div class="track-color-tag bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]"></div>
+                                            <span class="text-[9px] text-gray-400 font-bold uppercase tracking-tight">DRUMS / 808</span>
+                                        </div>
+                                        <div class="flex gap-1.5">
+                                            <button class="btn-msr">M</button>
+                                            <button class="btn-msr">S</button>
+                                            <button class="btn-msr active-r">R</button>
+                                        </div>
+                                    </div>
+                                    <div class="tl-clip daw-animated-clip bg-red-500/30 text-red-500" style="left: 140px; width: 140px;"></div>
+                                    <div class="tl-clip daw-animated-clip bg-red-500/30 text-red-500" style="left: 320px; width: 80px;"></div>
                                 </div>
                                 
-                                <div class="tl-track flex-1 border-b border-[#1f1f22] bg-transparent relative group/track">
-                                    <div class="tl-header bg-[#121214]/90 backdrop-blur border-r border-[#27272a] text-gray-400 font-mono text-[9px] w-[95px] absolute left-0 z-20 h-full flex items-center px-2 sticky group-hover/track:text-white transition-colors">PERC / FX</div>
-                                    <div class="tl-clip daw-animated-clip bg-[#3b82f6] border-t border-b border-[#93c5fd] rounded opacity-90 shadow-[inset_0_-4px_8px_rgba(0,0,0,0.5)]" style="left: 140px; width: 40px; height: 60%; top: 20%;"></div>
-                                    <div class="tl-clip daw-animated-clip bg-[#3b82f6] border-t border-b border-[#93c5fd] rounded opacity-90 shadow-[inset_0_-4px_8px_rgba(0,0,0,0.5)]" style="left: 330px; width: 40px; height: 60%; top: 20%;"></div>
+                                <div class="tl-track relative group/track">
+                                    <div class="tl-header sticky left-0 group-hover/track:brightness-125 transition-all">
+                                        <div class="flex items-center gap-2 w-full">
+                                            <div class="track-color-tag bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]"></div>
+                                            <span class="text-[9px] text-gray-400 font-bold uppercase tracking-tight">PERC / FX</span>
+                                        </div>
+                                        <div class="flex gap-1.5">
+                                            <button class="btn-msr">M</button>
+                                            <button class="btn-msr">S</button>
+                                            <button class="btn-msr">R</button>
+                                        </div>
+                                    </div>
+                                    <div class="tl-clip daw-animated-clip bg-blue-500/30 text-blue-500" style="left: 180px; width: 40px;"></div>
+                                    <div class="tl-clip daw-animated-clip bg-blue-500/30 text-blue-500" style="left: 360px; width: 40px;"></div>
                                 </div>
                                 
-                                <div class="tl-track flex-1 border-b border-[#1f1f22] bg-transparent relative group/track">
-                                    <div class="tl-header bg-[#121214]/90 backdrop-blur border-r border-[#27272a] text-gray-400 font-mono text-[9px] w-[95px] absolute left-0 z-20 h-full flex items-center px-2 sticky group-hover/track:text-white transition-colors">MELODY</div>
-                                    <div class="tl-clip daw-animated-clip bg-[#10b981] border-t border-b border-[#6ee7b7] rounded opacity-90 shadow-[inset_0_-4px_8px_rgba(0,0,0,0.5)]" style="left: 110px; width: 250px; height: 60%; top: 20%;"></div>
+                                <div class="tl-track relative group/track">
+                                    <div class="tl-header sticky left-0 group-hover/track:brightness-125 transition-all">
+                                        <div class="flex items-center gap-2 w-full">
+                                            <div class="track-color-tag bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div>
+                                            <span class="text-[9px] text-gray-400 font-bold uppercase tracking-tight">MELODY</span>
+                                        </div>
+                                        <div class="flex gap-1.5">
+                                            <button class="btn-msr">M</button>
+                                            <button class="btn-msr active-s">S</button>
+                                            <button class="btn-msr">R</button>
+                                        </div>
+                                    </div>
+                                    <div class="tl-clip daw-animated-clip bg-emerald-500/30 text-emerald-500" style="left: 140px; width: 250px;"></div>
                                 </div>
                                 
-                                <div class="tl-track flex-1 bg-transparent relative group/track">
-                                    <div class="tl-header bg-[#121214]/90 backdrop-blur border-r border-[#27272a] text-gray-400 font-mono text-[9px] w-[95px] absolute left-0 z-20 h-full flex items-center px-2 sticky group-hover/track:text-white transition-colors">VOCALS</div>
-                                    <div class="tl-clip daw-animated-clip bg-[#a855f7] border-t border-b border-[#d8b4fe] rounded opacity-90 shadow-[inset_0_-4px_8px_rgba(0,0,0,0.5)]" style="left: 190px; width: 150px; height: 60%; top: 20%;"></div>
+                                <div class="tl-track relative group/track">
+                                    <div class="tl-header sticky left-0 group-hover/track:brightness-125 transition-all">
+                                        <div class="flex items-center gap-2 w-full">
+                                            <div class="track-color-tag bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.4)]"></div>
+                                            <span class="text-[9px] text-gray-400 font-bold uppercase tracking-tight">VOCALS</span>
+                                        </div>
+                                        <div class="flex gap-1.5">
+                                            <button class="btn-msr">M</button>
+                                            <button class="btn-msr">S</button>
+                                            <button class="btn-msr">R</button>
+                                        </div>
+                                    </div>
+                                    <div class="tl-clip daw-animated-clip bg-purple-500/30 text-purple-500" style="left: 240px; width: 150px;"></div>
                                 </div>
                                 
                             </div>
                             
-                            <div id="playhead" class="absolute top-0 bottom-0 w-[2px] bg-[#fbbf24] left-[110px] z-40 pointer-events-none shadow-[0_0_10px_#fbbf24]">
+                            <div id="playhead" class="absolute top-0 bottom-0 w-[2px] bg-[#fff] left-[130px] z-50 pointer-events-none shadow-[0_0_15px_#fff,0_0_10px_#818cf8]">
                                 <div class="absolute top-0 -left-[5px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-[#fbbf24]"></div>
-                                <div class="absolute inset-y-0 left-0 w-full bg-white/50 blur-[1px]"></div>
+                                <div class="absolute inset-y-0 left-0 w-full bg-white/30 blur-[2px]"></div>
                             </div>
                         </div>
                     </div>
