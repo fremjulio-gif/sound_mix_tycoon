@@ -127,8 +127,8 @@
                 padding-bottom: 10vh;
             }
 
-            /* --- DYNAMIC MESH BACKGROUND --- */
-                #dynamic-bg {
+            /* --- ROOM BACKGROUND LAYER (PERMANENT) --- */
+            #room-bg-layer {
             position: absolute;
             inset: 0;
             z-index: 0;
@@ -1506,6 +1506,14 @@
             </div>
         </div>
 
+        <div id="room-bg-layer">
+            <div class="mesh-blob blob-1"></div>
+            <div class="mesh-blob blob-2"></div>
+            <div class="mesh-blob blob-3"></div>
+        </div>
+        
+        <div id="grid-overlay"></div>
+
         <div id="three-canvas-container"></div>
 
         <div id="room-ui">
@@ -1645,12 +1653,6 @@
             
 
         <div id="pc-ui-layer" style="display: none;">
-            <div id="dynamic-bg">
-                <div class="mesh-blob blob-1"></div>
-                <div class="mesh-blob blob-2"></div>
-                <div class="mesh-blob blob-3"></div>
-                <div id="grid-overlay"></div>
-            </div>
             <button id="btn-quit-pc" onclick="quitPC()">CLOSE OS SESSION</button>
 
             <div id="desktop-content">
@@ -7143,9 +7145,9 @@ function triggerLevelUp(oldLevel, newLevel) {
             scene.updateMatrixWorld(true);
         }
 
-        // Génération des nuages de fond
+        // Génération des nuages de fond (Room Layer)
         function spawnClouds() {
-            const container = document.getElementById('dynamic-bg');
+            const container = document.getElementById('room-bg-layer');
             if (!container) return;
             
             window._bgClouds = [];
