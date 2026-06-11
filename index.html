@@ -1255,11 +1255,16 @@
         .juicy-pop {
             animation: juicyPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #hud-money, #hud-rep, #hud-foll {
+        #hud-money, #hud-rep-num, #hud-foll {
             display: inline-block;
             will-change: transform;
             transition: color 0.3s ease;
         }
+
+        /* Reputation gauge */
+        .hud-rep-gauge { display: inline-block; position: relative; width: 6.5rem; height: 0.6rem; border-radius: 999px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); overflow: hidden; box-shadow: inset 0 -2px 6px rgba(0,0,0,0.4); }
+        .hud-rep-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background-image: linear-gradient(90deg, var(--retro-orange), var(--accent)); box-shadow: 0 0 10px rgba(255,140,40,0.18); transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
+        .hud-rep-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.65rem; color: white; pointer-events: none; text-shadow: 0 1px 6px rgba(0,0,0,0.6); }
         @keyframes moneyPulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.15); }
@@ -1501,8 +1506,12 @@
                     <span class="text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] text-[10px] md:text-lg">$$$</span> <span id="hud-money" class="text-white text-[11px] md:text-lg">0</span>
                 </div>
                 
-                <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)" onmouseleave="!isMobile && hideTooltip()">
-                    <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)] text-[10px] md:text-lg">REP</span> <span id="hud-rep" class="text-white text-[11px] md:text-lg">0</span>
+                <div class="flex items-center gap-2 md:gap-3 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)" onmouseleave="!isMobile && hideTooltip()">
+                    <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)] text-[10px] md:text-lg">REP</span>
+                    <div class="hud-rep-gauge ml-1 md:ml-2" role="progressbar" aria-label="Reputation" aria-valuemin="0" aria-valuemax="100">
+                        <div id="hud-rep-fill" class="hud-rep-fill"></div>
+                        <div id="hud-rep-num" class="hud-rep-num">0</div>
+                    </div>
                 </div>
                 
                 <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)" onmouseleave="!isMobile && hideTooltip()">
@@ -8089,7 +8098,8 @@ function triggerRankUp(oldRank, newRank) {
 
             // Force l'affichage immédiat des valeurs chargées pour éviter le blocage à zéro
             document.getElementById('hud-money').innerText = formatNum(state.money);
-            document.getElementById('hud-rep').innerText   = formatNum(state.rep);
+            const repNumEl = document.getElementById('hud-rep-num');
+            if (repNumEl) repNumEl.innerText = formatNum(state.rep);
             document.getElementById('hud-foll').innerText  = formatNum(state.followers);
 
             selectDawGenre();
@@ -8189,9 +8199,9 @@ function triggerRankUp(oldRank, newRank) {
         // 14. HUD UPDATE
         // ==========================================
         function updateHUD() {
-            calculateLevelData(); // Vérification automatique à chaque mise à jour des stats
+            const _levelData = calculateLevelData(); // Vérification automatique à chaque mise à jour des stats
             animateHUDNumber('hud-money', state.money, 'money');
-            animateHUDNumber('hud-rep', state.rep, 'rep');
+            animateHUDNumber('hud-rep-num', state.rep, 'rep');
             animateHUDNumber('hud-foll', state.followers, 'foll');
 
             document.getElementById('hud-day').innerText   = `JOUR ${state.day}`;
@@ -8253,6 +8263,27 @@ function triggerRankUp(oldRank, newRank) {
             const timeStrWidget = `${hs}<span class="clock-colon">:</span>${ms}`;
 
             document.getElementById('sys-time').textContent          = timeStrSystem;
+
+            // --- REP GAUGE: compute fill percent relative to next rank's minRep ---
+            try {
+                const repFillEl = document.getElementById('hud-rep-fill');
+                const repNumEl = document.getElementById('hud-rep-num');
+                if (repFillEl && repNumEl) {
+                    let ratio = 1;
+                    const nextRank = _levelData && _levelData.nextRank;
+                    if (nextRank && Number(nextRank.minRep) > 0) {
+                        ratio = Math.min(1, (Number(state.rep) || 0) / Number(nextRank.minRep));
+                    } else {
+                        ratio = 1; // no next rank -> full
+                    }
+                    const pct = Math.round(ratio * 100);
+                    repFillEl.style.width = pct + '%';
+                    // update numeric overlay (keep smaller)
+                    repNumEl.innerText = formatNum(state.rep);
+                    // optional tooltip title
+                    repFillEl.parentElement && repFillEl.parentElement.setAttribute('title', `${pct}% toward next rank`);
+                }
+            } catch(e) {}
             
             const widgetClock = document.getElementById('widget-clock-time');
             if(widgetClock) widgetClock.innerHTML = timeStrWidget;
@@ -9625,6 +9656,7 @@ function triggerRankUp(oldRank, newRank) {
 
         // Synth / voice pool
         const prScheduled = new Set(); // track scheduled note instance ids
+        const prActiveNotes = []; // track active voices for kill/cleanup
         let prSynthPreset = 'saw_classic';
         let prPresetOpts = {};
         let prSwing = 0; // swing amount in fraction of stepDuration (0..0.3)
@@ -9677,9 +9709,21 @@ function triggerRankUp(oldRank, newRank) {
             gain.gain.cancelScheduledValues(offTime);
             gain.gain.setValueAtTime(gain.gain.value, offTime);
             gain.gain.exponentialRampToValueAtTime(0.001, offTime + release + 0.01);
-            osc.stop(offTime + release + 0.02);
+            const scheduledStop = offTime + release + 0.02;
+            try { osc.stop(scheduledStop); } catch(e) {}
 
-            return { osc, gain, filter };
+            // Track active voice for cleanup. We'll remove it shortly after scheduledStop.
+            const voiceObj = { osc, gain, filter, stopTime: scheduledStop, cleanupTimer: null };
+            prActiveNotes.push(voiceObj);
+            // schedule cleanup to remove from active list after it naturally stops
+            const nowSec = audioCtxUI.currentTime || 0;
+            const msUntilCleanup = Math.max(0, (scheduledStop - nowSec) * 1000) + 200;
+            voiceObj.cleanupTimer = setTimeout(() => {
+                const idx = prActiveNotes.indexOf(voiceObj);
+                if (idx !== -1) prActiveNotes.splice(idx, 1);
+            }, msUntilCleanup);
+
+            return voiceObj;
         }
 
         function scheduleNoteInstance(note, stepStart, durationSteps) {
@@ -9747,6 +9791,37 @@ function triggerRankUp(oldRank, newRank) {
             prRequestId = requestAnimationFrame(schedulerLoop);
         }
 
+        // Kill switch: stop all active voices cleanly
+        function killAllNotes() {
+            if (!audioCtxUI) return;
+            const now = audioCtxUI.currentTime;
+            // Copy array to avoid mutation during loop
+            const copy = prActiveNotes.slice();
+            copy.forEach(v => {
+                try {
+                    // cancel scheduled ramps and set quick target to 0 to avoid clicks
+                    v.gain.gain.cancelScheduledValues(now);
+                    v.gain.gain.setTargetAtTime(0, now, 0.015);
+                } catch(e) {}
+                try {
+                    // stop oscillator slightly after ramp
+                    v.osc.stop(now + 0.04);
+                } catch(e) {}
+                try { v.osc.disconnect && v.osc.disconnect(); } catch(e) {}
+                try { v.filter && v.filter.disconnect && v.filter.disconnect(); } catch(e) {}
+                try { v.gain && v.gain.disconnect && v.gain.disconnect(); } catch(e) {}
+                if (v.cleanupTimer) { clearTimeout(v.cleanupTimer); v.cleanupTimer = null; }
+                const idx = prActiveNotes.indexOf(v);
+                if (idx !== -1) prActiveNotes.splice(idx, 1);
+            });
+            // Also ensure any live keyboard-held notes are turned off
+            try {
+                Object.keys(activeSynthNotes).forEach(note => {
+                    try { playSynthNote(note, false); } catch(e) {}
+                });
+            } catch(e) {}
+        }
+
         function startPrPlayback() {
             if (prIsPlaying) return;
             if (!audioCtxUI) initAudio();
@@ -9772,19 +9847,14 @@ function triggerRankUp(oldRank, newRank) {
 
         function stopPrPlayback() {
             prIsPlaying = false;
-            if (prRequestId) cancelAnimationFrame(prRequestId);
-            prRequestId = null;
+            // Stop scheduler and clear upcoming scheduling
+            if (prRequestId) { cancelAnimationFrame(prRequestId); prRequestId = null; }
             prCurrentStep = 0;
             prScheduled.clear();
             updatePrPlayheadUI(0);
 
-            // Failsafe: stop WebAudio voices by resuming a short silence (best-effort)
-            try {
-                if (audioCtxUI && audioCtxUI.state !== 'closed') {
-                    // nothing to forcibly stop since we scheduled stops, but clear activeSynthNotes map
-                    Object.keys(activeSynthNotes).forEach(note => playSynthNote(note, false));
-                }
-            } catch(e) {}
+            // Kill all active voices cleanly to avoid stuck notes
+            try { killAllNotes(); } catch(e) {}
 
             const btnPlay = document.getElementById('pr-btn-play');
             if (btnPlay) {
