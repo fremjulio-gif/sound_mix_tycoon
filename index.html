@@ -4940,12 +4940,22 @@ function calculateLevelData() {
     // --- 1. DÉTECTION DE LEVEL UP ---
     if (state.lastLevel !== undefined && level > state.lastLevel) {
         const oldL = state.lastLevel;
-        state.lastLevel = level;
+        // Le Toast de Level Up ne se déclenche que tous les 10 niveaux
+        if (level % 10 === 0) {
         // Délai pour laisser le temps à l'action déclencheuse (ex: export) de finir ses propres visuels
         setTimeout(() => triggerLevelUp(oldL, level), 800);
+        }
+        state.lastLevel = level; // On met toujours à jour le lastLevel pour la progression
     }
     if (state.lastLevel === undefined) state.lastLevel = level;
 
+    // --- 2. DÉTECTION DE CHANGEMENT DE LIGUE (RANK) ---
+    if (state.lastRankId === undefined) state.lastRankId = 1; // Initialisation si non présent
+    if (currentRank.id > state.lastRankId) {
+        const oldRank = PLAYER_RANKS.find(r => r.id === state.lastRankId);
+        state.lastRankId = currentRank.id;
+        setTimeout(() => triggerRankUp(oldRank, currentRank), 800);
+    }
     // XP vers le prochain rang
     const currentRank = getCurrentRank();
     const nextRank = PLAYER_RANKS.find(r => r.id === currentRank.id + 1);
@@ -5023,6 +5033,30 @@ function triggerLevelUp(oldLevel, newLevel) {
             <p class="text-[11px] mt-1 font-medium opacity-90">"${rank.perk}"</p>
         </div>
         <button onclick="this.parentElement.remove()" class="w-full bg-black text-white py-4 rounded-2xl font-bold tracking-widest hover:scale-105 active:scale-95 transition-transform uppercase text-xs">C'est le moment de percer !</button>
+    `;
+    document.body.appendChild(toast);
+}
+
+// --- 3. NOUVELLE CÉLÉBRATION DE LIGUE ---
+function triggerRankUp(oldRank, newRank) {
+    fireConfetti('rankup'); // Confettis dorés pour la montée en ligue
+    window.camShakeIntensity = 2.5; // Screen shake encore plus intense
+    playLevelUpSound(); // Son de Level Up
+    setTimeout(playLevelUpSound, 200); // Double-tone pour l'impact
+
+    const toast = document.createElement('div');
+    toast.className = 'level-up-toast juicy-level-up'; // Réutilise le style de base, peut être customisé
+    
+    toast.innerHTML = `
+        <div class="text-6xl mb-4 drop-shadow-lg">👑</div>
+        <h2 class="text-4xl mb-1">NOUVELLE LIGUE ATTEINTE !</h2>
+        <p class="text-sm font-bold uppercase tracking-widest opacity-80 mb-6">Tu es passé de ${oldRank ? oldRank.name : 'Inconnu'} à</p>
+        <div class="bg-black/10 rounded-2xl p-5 border border-white/20 mb-8">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-black/60 mb-1">Ton nouveau statut</p>
+            <p class="text-xl font-black uppercase tracking-tight" style="color: ${newRank.glowColor}; text-shadow: 0 0 10px ${newRank.glowColor}55;">${newRank.name}</p>
+            <p class="text-[11px] mt-1 font-medium opacity-90">"${newRank.perk}"</p>
+        </div>
+        <button onclick="this.parentElement.remove()" class="w-full bg-black text-white py-4 rounded-2xl font-bold tracking-widest hover:scale-105 active:scale-95 transition-transform uppercase text-xs">La légende continue !</button>
     `;
     document.body.appendChild(toast);
 }
@@ -6624,6 +6658,7 @@ function triggerLevelUp(oldLevel, newLevel) {
             isExporting: false, isSleeping: false, isEventActive: false,
             isSitting: false,
             isReviewActive: false, // Ajout de l'état pour les revues
+            lastRankId: 1, // Nouveau : ID de la dernière ligue atteinte
             trackList: [],
             achievements: { // Nouveau : Système d'achievements
                 'first_blood': { unlocked: false, name: "First Blood", icon: "🩸", description: "Tu as exporté ta toute première prod. Le début de la gloire." },
@@ -7528,6 +7563,7 @@ function triggerLevelUp(oldLevel, newLevel) {
                     if (isNaN(state.rep)) state.rep = 10;
                     if (isNaN(state.followers)) state.followers = 0;
                     if (isNaN(state.energy)) state.energy = 100;
+                    state.lastRankId = parseInt(state.lastRankId, 10) || 1; // Initialise lastRankId
 
                     state.cooldowns = state.cooldowns || {};
                     state.cooldowns.dawTimeReady   = parseInt(state.cooldowns.dawTimeReady, 10)   || 0;
@@ -9296,6 +9332,9 @@ function triggerLevelUp(oldLevel, newLevel) {
         } else if (type === 'store') {
             count = 30; // Petit achat stylé
             colors = ['#3b82f6', '#10b981', '#ffffff']; // Bleu, Vert, Blanc
+        } else if (type === 'rankup') { // Nouveau type pour la montée en ligue
+            count = 150; // Encore plus de confettis pour un événement majeur
+            colors = ['#fbbf24', '#ffd700', '#ffffff', '#a855f7']; // Doré, Blanc, Violet
         }
 
         for (let i = 0; i < count; i++) {
