@@ -4976,65 +4976,53 @@
 // - Sponsors débloqués à 1k/5k/10k followers
 // => Les paliers doivent être atteignables mais pas triviaux
 const PLAYER_RANKS = [
-    { 
-        id: 1, 
-        name: "Bedroom Producer",  
-        minFol: 0,      
+    {
+        id: 1,
+        name: "Street Certified",
+        minFol: 0,
         minRep: 0,
         minTracks: 0,
-        icon: "🎧", 
-        color: "from-[#292524] to-[#1c1917]", 
-        borderColor: "from-[#78716c] to-[#57534e]", 
+        icon: "🔥",
+        color: "from-[#292524] to-[#1c1917]",
+        borderColor: "from-[#78716c] to-[#57534e]",
         glowColor: "#a8a29e",
-        perk: "Accès au DAW de base"
+        perk: "Débute ta carrière"
     },
-    { 
-        id: 2, 
-        name: "SoundNet Hustler",  
-        minFol: 500,   
-        minRep: 20,
+    {
+        id: 2,
+        name: "Rising Talent",
+        minFol: 5000,
+        minRep: 10,
         minTracks: 2,
-        icon: "💿", 
-        color: "from-[#1e3a8a] to-[#172554]", 
-        borderColor: "from-[#60a5fa] to-[#3b82f6]", 
+        icon: "💿",
+        color: "from-[#1e3a8a] to-[#172554]",
+        borderColor: "from-[#60a5fa] to-[#3b82f6]",
         glowColor: "#3b82f6",
-        perk: "Sponsors Tier 1 débloqués"
+        perk: "Visibilité accrue"
     },
-    { 
-        id: 3, 
-        name: "Street Certified",  
-        minFol: 3000,  
-        minRep: 75,
-        minTracks: 8,
-        icon: "🔥", 
-        color: "from-[#78350f] to-[#451a03]", 
-        borderColor: "from-[#fbbf24] to-[#f59e0b]", 
-        glowColor: "#fbbf24",
-        perk: "Sponsors Tier 2 + Events collab fréquents"
-    },
-    { 
-        id: 4, 
-        name: "Industry Hitmaker", 
-        minFol: 12000, 
-        minRep: 200,
-        minTracks: 20,
-        icon: "🔮", 
-        color: "from-[#4a044e] to-[#280137]", 
-        borderColor: "from-[#c084fc] to-[#a855f7]", 
+    {
+        id: 3,
+        name: "Industry Player",
+        minFol: 20000,
+        minRep: 30,
+        minTracks: 5,
+        icon: "🔮",
+        color: "from-[#4a044e] to-[#280137]",
+        borderColor: "from-[#c084fc] to-[#a855f7]",
         glowColor: "#a855f7",
-        perk: "Sponsors Tier 3 + Multiplier x1.5 bonus"
+        perk: "Accès aux gros deals"
     },
-    { 
-        id: 5, 
-        name: "Diamond Architect", 
-        minFol: 50000, 
-        minRep: 500,
-        minTracks: 40,
-        icon: "💎", 
-        color: "from-[#083344] to-[#022c22]", 
-        borderColor: "from-[#22d3ee] to-[#06b6d4]", 
+    {
+        id: 4,
+        name: "Legendary Status",
+        minFol: 50000,
+        minRep: 100,
+        minTracks: 10,
+        icon: "💎",
+        color: "from-[#083344] to-[#022c22]",
+        borderColor: "from-[#22d3ee] to-[#06b6d4]",
         glowColor: "#22d3ee",
-        perk: "Statut légendaire. Tout est débloqué."
+        perk: "Statut légendaire"
     }
 ];
 
@@ -5048,29 +5036,35 @@ function calculateLevelData(isSilentInit = false) {
     const tracks    = Number(state?.stats?.tracks) || 0;
     const bangers   = Number(state?.stats?.bangers) || 0;
 
-    // --- SCALING NON-LIMITÉ (racines carrées / log pour éviter hard-cap) ---
-    // Ces formules croissent avec l'effort mais n'imposent aucune limite maximale.
-    const moneyScore  = Math.sqrt(money / 500);            // slow growth with money
-    const repScore    = Math.sqrt(rep / 2);                // reputation contributes steadily
-    const follScore   = Math.sqrt(followers / 200);        // followers scaled by sqrt
-    const trackScore  = Math.sqrt(Math.max(0, tracks) * 2); // tracks give diminishing returns
+    // --- NOUVEAU: Weighted score with log-scaling for followers and money ---
+    // We normalize each axis roughly into a 0-100 range, then apply the weights:
+    // Followers: 40%, Reputation: 30%, Money: 20%, Skill: 10%
+    const follScore = Math.min(100, Math.log10(followers + 1) * 22); // log10 scaling, tuned
+    const moneyScore = Math.min(100, Math.log10(money + 1) * 16);     // log10 scaling
+    const repScore = Math.min(100, rep);                              // assume rep is already on a friendly scale
 
-    // Ratio bangers/tracks = skill réel (sécurisé)
+    // Skill: ratio of bangers to tracks, normalized to 0-100
     const bangerRatio = tracks > 0 ? (bangers / tracks) : 0;
-    const skillScore = bangerRatio * Math.sqrt(Math.max(1, tracks)) * 5;
+    const skillScore = Math.min(100, bangerRatio * 100);
 
-    // Moyenne pondérée (les poids reflètent l'importance relative des axes)
     const avgMastery = (
-        moneyScore  * 0.25 +
-        follScore   * 0.25 +
-        repScore    * 0.20 +
-        trackScore  * 0.15 +
-        skillScore  * 0.15
+        follScore * 0.40 +
+        repScore  * 0.30 +
+        moneyScore* 0.20 +
+        skillScore* 0.10
     );
 
     const level = Math.max(1, Math.floor(avgMastery) || 1);
-    // XP vers le prochain rang
-    const currentRank = getCurrentRank();
+    // Determine current rank with catch-up: pick highest rank whose follower threshold is met
+    let currentRank = getCurrentRank();
+    try {
+        const safeFollowers = Number(state?.followers) || 0;
+        // find highest rank by minFol descending where followers >= minFol
+        const sortedDesc = (PLAYER_RANKS || []).slice().sort((a,b)=> (b.minFol||0) - (a.minFol||0));
+        for (const r of sortedDesc) {
+            if (safeFollowers >= (Number(r.minFol) || 0)) { currentRank = r; break; }
+        }
+    } catch(e){}
     const nextRank = PLAYER_RANKS.find(r => r.id === currentRank?.id + 1);
     
     
@@ -5133,7 +5127,7 @@ function calculateLevelData(isSilentInit = false) {
             money:  Math.round(moneyScore),
             rep:    Math.round(repScore),
             foll:   Math.round(follScore),
-            tracks: Math.round(trackScore),
+            tracks: tracks,
             skill:  Math.round(skillScore),
         }
     };
@@ -5324,25 +5318,18 @@ function calculateLevelData(isSilentInit = false) {
 }
 
 function getCurrentRank() {
-    // Un rang est atteint uniquement si LES 3 CONDITIONS sont remplies
-    // On itère sur une copie triée par `id` pour garantir qu'on récupère
-    // toujours la ligue la plus élevée atteinte de manière sûre.
-    let current = PLAYER_RANKS[0];
+    // Determine rank primarily by follower thresholds (highest-first).
+    // This ensures players with high follower counts are promoted immediately
+    // even if other axes (rep/tracks) are slightly behind.
     const safeFollowers = Number(state?.followers) || 0;
-    const safeRep = Number(state?.rep) || 0;
-    const safeTracks = Number(state?.stats?.tracks) || 0;
-
-    const sortedRanks = PLAYER_RANKS.slice().sort((a, b) => a.id - b.id);
-    for (const rank of sortedRanks) {
-        if (
-            safeFollowers >= (Number(rank.minFol) || 0) &&
-            safeRep       >= (Number(rank.minRep) || 0) &&
-            safeTracks    >= (Number(rank.minTracks) || 0)
-        ) {
-            current = rank;
+    const sortedDesc = PLAYER_RANKS.slice().sort((a, b) => (b.minFol || 0) - (a.minFol || 0));
+    for (const rank of sortedDesc) {
+        if (safeFollowers >= (Number(rank.minFol) || 0)) {
+            return rank; // first (highest) match
         }
     }
-    return current;
+    // fallback to first rank
+    return PLAYER_RANKS[0];
 }
 
 function triggerLevelUp(oldLevel, newLevel, isRankUp = false, rankData = null) {
