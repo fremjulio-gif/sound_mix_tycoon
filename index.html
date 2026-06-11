@@ -178,104 +178,11 @@
             /* --- 2D CLOUDS BACKGROUND --- */
             .cloud-2d {
                 position: absolute;
-                 background: rgba(255, 255, 255, 0.15);
+                background: rgba(255, 255, 255, 0.06);
                 backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
-                border-radius: 999px;
-                height: 30px; width: 160px;
                 pointer-events: none;
-                z-index: 2;
-                animation: cloudScroll linear infinite;
-                transition: background 0.8s ease, box-shadow 0.8s ease;
-                box-shadow: inset 0 10px 20px rgba(255,255,255,0.4), 0 5px 15px rgba(0,0,0,0.1);
-            }
-            /* Forme cotonneuse / fluffy avec amas ronds */
-            .cloud-2d::before, .cloud-2d::after {
-                content: '';
-                position: absolute;
-                background: inherit;
-                backdrop-filter: inherit;
-                -webkit-backdrop-filter: inherit;
-                border-radius: 50%;
-                box-shadow: inherit;
-            }
-            .cloud-2d::before { width: 70px; height: 70px; top: -35px; left: 20px; }
-            .cloud-2d::after { width: 90px; height: 90px; top: -50px; left: 55px; }
-            
-            .cloud-2d.cloud-glow {
-                background: rgba(255, 255, 255, 0.25);
-                box-shadow: inset 0 10px 20px rgba(255,255,255,0.6), 0 0 35px rgba(129, 140, 248, 0.5);
-            }
-            
-            @keyframes cloudScroll {
-                from { transform: scale(var(--s)) translateX(-120vw); }
-                to { transform: scale(var(--s)) translateX(120vw); }
-            }
-
-            /* TAPE SPIN FIX */
-            @keyframes tapeSpin {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-            }
-            .tape-reel-slow { animation: tapeSpin 6s linear infinite; }
-            .tape-reel-fast { animation: tapeSpin 4.5s linear infinite; }
-            .tape-paused { animation-play-state: paused !important; }
-
-            /* WIDGET ANIMATIONS ADDED */
-            @keyframes clockPulse {
-                0%, 100% { opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.8); }
-                50% { opacity: 0.2; text-shadow: none; }
-            }
-            .clock-colon { animation: clockPulse 1s steps(1, end) infinite; }
-
-            @keyframes signalPulse {
-                0%, 100% { box-shadow: 0 0 0 transparent; border-color: rgba(255,255,255,0.15); opacity: 0.6; }
-                50% { box-shadow: 0 0 12px currentColor; border-color: currentColor; opacity: 1; transform: scale(1.05); }
-            }
-            .signal-node { transition: all 0.3s ease; color: inherit; }
-            .signal-node-1 { animation: signalPulse 2s infinite 0.0s; color: var(--retro-green); }
-            .signal-node-2 { animation: signalPulse 2s infinite 0.5s; color: var(--retro-orange); }
-            .signal-node-3 { animation: signalPulse 2s infinite 1.0s; color: var(--accent); }
-            .signal-node-4 { animation: signalPulse 2s infinite 1.5s; color: #ffffff; }
-
-            @keyframes signalFlowPath {
-                0% { transform: scaleX(0); transform-origin: left; opacity: 1; }
-                45% { transform: scaleX(1); transform-origin: left; opacity: 1; }
-                55% { transform: scaleX(1); transform-origin: right; opacity: 1; }
-                100% { transform: scaleX(0); transform-origin: right; opacity: 0; }
-            }
-            .signal-line {
-                position: absolute;
-                height: 2px;
-                background: var(--accent);
-                top: 50%;
-                left: 5px;
-                right: 5px;
-                z-index: -1;
-                transform-origin: left;
-                animation: signalFlowPath 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-                box-shadow: 0 0 8px var(--accent);
-            }
-
-            .cpu-grid {
-                background-image:
-                    linear-gradient(rgba(52, 211, 153, 0.08) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(52, 211, 153, 0.08) 1px, transparent 1px);
-                background-size: 10px 10px;
-            }
-
-            .todo-item { transition: all 0.2s ease; cursor: pointer; border-left: 2px solid transparent; padding-left: 4px; }
-            .todo-item:hover { transform: translateX(4px); color: #fef08a !important; border-left-color: #fde047; }
-            .todo-item.line-through:hover { opacity: 0.8 !important; }
-
-            @keyframes moodDrift {
-                0% { filter: hue-rotate(0deg) brightness(1); transform: scale(1); }
-                50% { filter: hue-rotate(30deg) brightness(1.2); transform: scale(1.05); }
-                100% { filter: hue-rotate(0deg) brightness(1); transform: scale(1); }
-            }
-            .mood-animated {
-                animation: moodDrift 30s infinite ease-in-out;
-                transition: background 1s ease-in-out, filter 0.5s ease;
+                border-radius: 12px;
+                opacity: 0.5;
             }
 
 
@@ -488,7 +395,7 @@
         align-self: start;
     }
 
-        .widgets-container {
+            .widgets-container {
                 grid-column: 2 / 4;
                 grid-row: 1 / 3;
                 width: 100%;
@@ -498,34 +405,20 @@
                 padding-right: 0;
 
                 display: grid;
-                grid-template-columns: minmax(220px, 0.9fr) minmax(260px, 1.1fr) minmax(240px, 0.9fr);
-                
-                /* 1. On donne un peu plus de place minimale à la 3ème ligne (1fr = prend le reste) */
-                grid-template-rows: 150px 150px minmax(220px, 1fr);
+                grid-template-columns: repeat(3, minmax(220px, 1fr));
+                grid-auto-rows: minmax(120px, auto);
+                grid-auto-flow: row dense;
                 gap: 18px;
-                
-                /* 2. LA MAGIE : Autorise la grille à s'étirer jusqu'en bas */
-                align-content: stretch; 
+                align-content: start;
             }
 
             .widgets-container .desktop-widget {
-        width: 100% !important;
-        margin: 0 !important;
-        min-width: 0;
-    }
+                width: 100% !important;
+                margin: 0 !important;
+                min-width: 0;
+                display: block;
+            }
 
-    /* Gauche : To-Do (haut/étiré) et Mood (bas) */
-    .widgets-container .desktop-widget:nth-child(7) { grid-column: 1; grid-row: 1 / 3; align-self: stretch; display: flex; flex-direction: column; min-height: 0; }
-    .widgets-container .desktop-widget:nth-child(5) { grid-column: 1; grid-row: 3; align-self: start; }
-
-    /* Milieu : Horloge (haut) et Top Charts (bas/étiré en grand) */
-    .widgets-container .desktop-widget:nth-child(1) { grid-column: 2; grid-row: 1; }
-    .widgets-container .desktop-widget:nth-child(3) { grid-column: 2; grid-row: 2 / 4; align-self: stretch; }
-
-    /* Droite : Secret Tape (haut), CPU (milieu), Routing (bas) */
-    .widgets-container .desktop-widget:nth-child(6) { grid-column: 3; grid-row: 1; }
-    .widgets-container .desktop-widget:nth-child(2) { grid-column: 3; grid-row: 2; }
-    .widgets-container .desktop-widget:nth-child(4) { grid-column: 3; grid-row: 3; }
             .widgets-container::-webkit-scrollbar { width: 0px; }
             .desktop-widget { flex-shrink: 0; transition: transform 0.3s ease; }
             .desktop-widget:hover { transform: translateY(-2px); }
@@ -2787,13 +2680,93 @@
 
         scene.add(crateGroup);
 
-        // Vinyl art sources (can be overridden elsewhere). Put real URLs in this array.
-        window.vinylArt = window.vinylArt || ['art1.jpg','art2.jpg','art3.jpg','art4.jpg','art5.jpg'];
-        // Robust loading: use a LoadingManager to detect errors and apply fallbacks
-        window.vinylLoadingManager = window.vinylLoadingManager || new THREE.LoadingManager();
-        window.vinylTextureLoader = window.vinylTextureLoader || new THREE.TextureLoader(window.vinylLoadingManager);
-        // Fallback texture (dark vinyl cover) as a simple dataTexture / color
+        // Vinyl art sources (kept for compatibility but not used for external loads)
+        window.vinylArt = window.vinylArt || [];
+        // Cache for generated CanvasTextures so we don't recreate every frame
+        window.vinylGeneratedTextures = window.vinylGeneratedTextures || {};
+        // Fallback color for covers
         window.vinylFallbackColor = window.vinylFallbackColor || '#0f172a';
+
+        // Create a Canvas-based vinyl cover texture (unique, random aesthetic)
+        window.createVinylCoverTexture = function(key, size = 1024) {
+            try {
+                const cacheKey = String(key || 'default');
+                if (window.vinylGeneratedTextures[cacheKey]) return window.vinylGeneratedTextures[cacheKey];
+                const canvas = document.createElement('canvas');
+                canvas.width = size; canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                // Random palette
+                function randInt(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+                function randHex(){ return '#' + Math.floor(Math.random()*0xFFFFFF).toString(16).padStart(6,'0'); }
+                const base = randHex();
+                const accent = randHex();
+                const accent2 = randHex();
+
+                // Background gradient
+                const g = ctx.createLinearGradient(0,0,size,size);
+                g.addColorStop(0, base);
+                g.addColorStop(1, accent);
+                ctx.fillStyle = g; ctx.fillRect(0,0,size,size);
+
+                // Add soft radial vignette
+                const vg = ctx.createRadialGradient(size*0.6, size*0.35, size*0.1, size*0.5, size*0.5, size*0.9);
+                vg.addColorStop(0, 'rgba(255,255,255,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.35)');
+                ctx.fillStyle = vg; ctx.fillRect(0,0,size,size);
+
+                // Draw geometric layers
+                const shapes = randInt(3,7);
+                for (let s=0; s<shapes; s++){
+                    const type = Math.random();
+                    ctx.save();
+                    const cx = Math.random()*size, cy = Math.random()*size;
+                    const w = randInt(size*0.12, size*0.6), h = randInt(size*0.08, size*0.6);
+                    ctx.translate(cx,cy);
+                    ctx.rotate((Math.random()-0.5)*Math.PI);
+                    const localGrad = ctx.createLinearGradient(-w,-h,w,h);
+                    localGrad.addColorStop(0, accent2); localGrad.addColorStop(1, 'rgba(255,255,255,0.06)');
+                    ctx.fillStyle = localGrad;
+                    ctx.globalAlpha = 0.85 - Math.random()*0.5;
+                    if (type < 0.4) {
+                        // circle
+                        ctx.beginPath(); ctx.arc(0,0,Math.max(w,h)/2,0,Math.PI*2); ctx.fill();
+                    } else if (type < 0.75) {
+                        // rounded rect
+                        const rx = -w/2, ry = -h/2, rw = w, rh = h, r = Math.min(40, Math.min(w,h)/6);
+                        roundRect(ctx, rx, ry, rw, rh, r); ctx.fill();
+                    } else {
+                        // triangle
+                        ctx.beginPath(); ctx.moveTo(0,-h/2); ctx.lineTo(w/2,h/2); ctx.lineTo(-w/2,h/2); ctx.closePath(); ctx.fill();
+                    }
+                    ctx.restore();
+                }
+
+                // Add radial center label (simulate record hole area)
+                ctx.save();
+                ctx.beginPath(); ctx.arc(size/2, size/2, size*0.12, 0, Math.PI*2); ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fill();
+                ctx.beginPath(); ctx.arc(size/2, size/2, size*0.04, 0, Math.PI*2); ctx.fillStyle = '#111'; ctx.fill();
+                ctx.restore();
+
+                // subtle noise overlay
+                const imgData = ctx.getImageData(0,0,size,size);
+                for (let i=0;i<imgData.data.length;i+=4){
+                    const v = (Math.random()-0.5)*6; imgData.data[i]+=v; imgData.data[i+1]+=v; imgData.data[i+2]+=v;
+                }
+                ctx.putImageData(imgData,0,0);
+
+                // helper: rounded rect
+                function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+                const tex = new THREE.CanvasTexture(canvas);
+                try { tex.encoding = THREE.sRGBEncoding; } catch(e){}
+                tex.flipY = false;
+                tex.needsUpdate = true;
+                window.vinylGeneratedTextures[cacheKey] = tex;
+                return tex;
+            } catch(err) {
+                console.warn('createVinylCoverTexture failed', err);
+                return null;
+            }
+        };
 
         window.updateVinylCrate = function() {
             if (!window.vinylsContainer) return;
@@ -2813,31 +2786,25 @@
                 const artList = window.vinylArt || [];
                 const url = artList.length ? artList[Math.floor(Math.random() * artList.length)] : null;
 
-                // front face material (will receive texture)
+                // front face material (will receive a dynamically generated CanvasTexture)
                 const frontMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.6 });
-                if (url) {
-                    try {
-                        window.vinylTextureLoader.load(url, tex => {
-                            try { tex.encoding = THREE.sRGBEncoding; } catch(e){}
-                            try { tex.flipY = false; } catch(e){}
-                            frontMat.map = tex;
-                            frontMat.color.set('#ffffff');
-                            frontMat.needsUpdate = true;
-                        }, undefined, err => {
-                            // On error, apply fallback color to avoid pure white material
-                            console.warn('Vinyl texture failed to load:', url, err);
-                            frontMat.map = null;
-                            frontMat.color.set(window.vinylFallbackColor);
-                            frontMat.needsUpdate = true;
-                        });
-                    } catch(e) {
+                try {
+                    // create a unique key per vinyl index + optional art hint
+                    const cacheKey = url ? url : ('gen_' + i);
+                    const genTex = window.createVinylCoverTexture(cacheKey, 1024);
+                    if (genTex) {
+                        frontMat.map = genTex;
+                        frontMat.color.set('#ffffff');
+                        frontMat.needsUpdate = true;
+                    } else {
                         frontMat.map = null;
                         frontMat.color.set(window.vinylFallbackColor);
                         frontMat.needsUpdate = true;
                     }
-                } else {
+                } catch(e) {
                     frontMat.map = null;
                     frontMat.color.set(window.vinylFallbackColor);
+                    frontMat.needsUpdate = true;
                 }
 
                 // material order: [right, left, top, bottom, front, back]
@@ -8826,6 +8793,8 @@ function triggerRankUp(oldRank, newRank) {
 
             bringToFront(id);
             if (!isMobile) updateTaskbar();
+            // realign widgets after opening a window to avoid layout gaps
+            try { if (typeof realignWidgets === 'function') realignWidgets(); } catch(e) {}
             playBleep();
             
             if (id === 'app-stats')  refreshStats();
@@ -8842,6 +8811,7 @@ function triggerRankUp(oldRank, newRank) {
             }
             document.getElementById(id).style.display = 'none';
             if (!isMobile) updateTaskbar();
+            try { if (typeof realignWidgets === 'function') realignWidgets(); } catch(e) {}
             playBleep();
         }
         function bringToFront(id) {
@@ -8872,6 +8842,21 @@ function triggerRankUp(oldRank, newRank) {
                 }
             });
         }
+        // Ensure widgets are realigned after layout changes
+        function realignWidgets() {
+            try {
+                const container = document.querySelector('.widgets-container');
+                if (!container) return;
+                // force reflow
+                container.classList.add('widgets-reflow');
+                void container.offsetWidth;
+                setTimeout(() => container.classList.remove('widgets-reflow'), 60);
+            } catch(e) {}
+        }
+
+        window.addEventListener('resize', () => {
+            try { realignWidgets(); } catch(e) {}
+        });
 
         // ==========================================
         // 17. DAW LOGIC & ENERGY CONSUMPTION
