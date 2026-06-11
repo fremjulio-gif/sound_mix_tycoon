@@ -5995,6 +5995,24 @@ function triggerRankUp(oldRank, newRank) {
                 if (keyEl) keyEl.style.filter = '';
             }
         }
+
+        // Kill any transient preview voices (used by PianoRoll preview/drags)
+        function killPreviewVoices() {
+            if (!audioCtxUI) initAudio();
+            if (!audioCtxUI) return;
+            const now = audioCtxUI.currentTime || 0;
+            try {
+                Object.keys(activeSynthNotes).forEach(k => {
+                    const v = activeSynthNotes[k];
+                    try { v.gain.gain.cancelScheduledValues(now); } catch(e) {}
+                    try { v.gain.gain.setTargetAtTime(0, now, 0.01); } catch(e) {}
+                    try { v.osc.stop && v.osc.stop(now + 0.03); } catch(e) {}
+                    try { v.osc.disconnect && v.osc.disconnect(); } catch(e) {}
+                    try { v.gain.disconnect && v.gain.disconnect(); } catch(e) {}
+                    delete activeSynthNotes[k];
+                });
+            } catch(e) {}
+        }
         
         const playBleep   = () => playTone(800, 'sine', 0.05, 0.03);
         const playSuccess = () => { playTone(600, 'square', 0.1, 0.03); setTimeout(() => playTone(800, 'square', 0.15, 0.03), 100); };
@@ -7232,6 +7250,8 @@ function triggerRankUp(oldRank, newRank) {
                     
                     const newNote = { id: window.prNoteIdCounter++, note: noteName, startStep: step, duration: 1 };
                     window.prNotes.push(newNote);
+                    if (typeof killPreviewVoices === 'function') killPreviewVoices();
+                    if (typeof killPreviewVoices === 'function') killPreviewVoices();
                     if (typeof playSynthNote === 'function') playSynthNote(noteName, true);
                     renderPrNotes();
                     
@@ -7253,6 +7273,7 @@ function triggerRankUp(oldRank, newRank) {
                         if (noteData) {
                             window.prDragState = { active: true, type: 'move', noteId: noteData.id, startX: window.prPointerDown.startX, initialStep: noteData.startStep, initialNote: noteData.note };
                             if (isMobile && navigator.vibrate) navigator.vibrate(6);
+                            if (typeof killPreviewVoices === 'function') killPreviewVoices();
                             if (typeof playSynthNote === 'function') playSynthNote(noteData.note, true);
                             window.prPointerDown.moved = true;
                         }
@@ -7379,12 +7400,13 @@ function triggerRankUp(oldRank, newRank) {
                     if (dx > 6 || dy > 6) {
                         const noteData = window.prNotes.find(n => n.id === window.prPointerDown.noteId);
                         if (noteData) {
-                            window.prDragState = { active: true, type: 'move', noteId: noteData.id, startX: window.prPointerDown.startX, initialStep: noteData.startStep, initialNote: noteData.note };
-                            if (isMobile && navigator.vibrate) navigator.vibrate(6);
-                            if (typeof playSynthNote === 'function') playSynthNote(noteData.note, true);
-                            window.prPointerDown.moved = true;
-                            ev.preventDefault();
-                        }
+                                window.prDragState = { active: true, type: 'move', noteId: noteData.id, startX: window.prPointerDown.startX, initialStep: noteData.startStep, initialNote: noteData.note };
+                                if (isMobile && navigator.vibrate) navigator.vibrate(6);
+                                if (typeof killPreviewVoices === 'function') killPreviewVoices();
+                                if (typeof playSynthNote === 'function') playSynthNote(noteData.note, true);
+                                window.prPointerDown.moved = true;
+                                ev.preventDefault();
+                            }
                     }
                 }
 
@@ -7440,13 +7462,24 @@ function triggerRankUp(oldRank, newRank) {
         function initUI() {
             spawnClouds(); // Correctif 3 : Génération au lancement de l'interface
             const cont = document.getElementById('avatar-container');
-            cont.innerHTML = avatars.map((a, i) => `
-                <div class="avatar-sel aspect-square relative p-0 overflow-hidden flex items-center justify-center ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
-                    <img src="${a.img}" alt="${a.id}" class="w-full h-full object-cover pointer-events-none" onerror="this.style.border='1px solid red'" />
-                // Expose shared audio context for other helpers
-                try { audioCtxUI = ctx; } catch(e) {}
+            // Clear any accidental text nodes and rebuild avatar buttons programmatically
+            while (cont.firstChild) cont.removeChild(cont.firstChild);
+            avatars.forEach((a, i) => {
+                const wrap = document.createElement('div');
+                wrap.className = `avatar-sel aspect-square relative p-0 overflow-hidden flex items-center justify-center ${i===0? 'selected' : ''}`;
+                wrap.dataset.idx = i;
+                wrap.setAttribute('data-idx', i);
+                wrap.onclick = () => selectAvatar(i);
 
-                </div>`).join('');
+                const img = document.createElement('img');
+                img.src = a.img;
+                img.alt = a.id || `avatar-${i}`;
+                img.className = 'w-full h-full object-cover pointer-events-none';
+                img.onerror = function() { this.style.border = '1px solid red'; };
+
+                wrap.appendChild(img);
+                cont.appendChild(wrap);
+            });
             // --- LISTENERS CLAVIER PIANO ROLL ---
             window.addEventListener('keydown', (e) => {
                 const prWindow = document.getElementById('app-pianoroll');
@@ -9646,7 +9679,7 @@ function triggerRankUp(oldRank, newRank) {
         // ==========================================
         let prIsPlaying = false;
         let prCurrentStep = 0;
-        const PR_TOTAL_STEPS = 32; // 2 mesures
+        const PR_TOTAL_STEPS = 128; // 8 mesures (4/4, double-croches = 128 steps)
 
         // Sequencer timing
         let prStartTime = 0; // audioCtx time when playback started
@@ -9766,7 +9799,14 @@ function triggerRankUp(oldRank, newRank) {
             const stepDuration = (15 / bpm);
 
             // compute how many steps have elapsed since prStartTime
-            const elapsed = now - prStartTime;
+            let elapsed = now - prStartTime;
+            // If we've passed full loop(s), advance prStartTime forward to keep scheduler in-sync
+            const loopSeconds = PR_TOTAL_STEPS * stepDuration;
+            if (elapsed >= loopSeconds) {
+                const loopsPassed = Math.floor(elapsed / loopSeconds);
+                prStartTime += loopsPassed * loopSeconds;
+                elapsed = now - prStartTime;
+            }
             const currentStepFloat = elapsed / stepDuration;
             const currentStep = Math.floor(currentStepFloat) % PR_TOTAL_STEPS;
             prCurrentStep = currentStep;
