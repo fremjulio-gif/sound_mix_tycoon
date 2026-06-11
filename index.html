@@ -2669,7 +2669,7 @@
         crateGroup.rotation.y = -Math.PI / 4; // Tourné vers le centre
 
         const crateMat = new THREE.MeshStandardMaterial({ color: '#3d2b1f', roughness: 0.9 }); // Bois sombre
-        const edgeMat = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 });
+        const crateEdgeMat = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 });
 
         // Structure du bac
         const crateBase = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.05, 0.6), crateMat);
@@ -2689,7 +2689,7 @@
 
         [crateBase, crateSideL, crateSideR, crateBack, crateFront].forEach(mesh => {
             mesh.castShadow = true; mesh.receiveShadow = true;
-            mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), edgeMat));
+            mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), crateEdgeMat));
             crateGroup.add(mesh);
         });
 
@@ -2734,7 +2734,7 @@
                 vinyl.rotation.z = (Math.random() - 0.5) * 0.05;
                 
                 vinyl.castShadow = true;
-                vinyl.add(new THREE.LineSegments(new THREE.EdgesGeometry(vinylGeo), edgeMat));
+                vinyl.add(new THREE.LineSegments(new THREE.EdgesGeometry(vinylGeo), crateEdgeMat));
                 window.vinylsContainer.add(vinyl);
             }
         };
