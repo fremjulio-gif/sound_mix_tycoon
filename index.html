@@ -2773,7 +2773,8 @@
         // Hitbox plus large pour faciliter le clic + collision
         const hitbox = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.0, 1.0), new THREE.MeshBasicMaterial({ visible: false }));
         hitbox.position.y = 0.4;
-        hitbox.name = 'vinyl_crate_hitbox';
+        // Name must match raycast interactable list so clicks open Achievements
+        hitbox.name = 'achievements_board_mesh';
         crateGroup.add(hitbox);
         // register into global collision objects for avatar movement checks
         window.collisionObjects = window.collisionObjects || [];
@@ -2788,7 +2789,11 @@
 
         // Vinyl art sources (can be overridden elsewhere). Put real URLs in this array.
         window.vinylArt = window.vinylArt || ['art1.jpg','art2.jpg','art3.jpg','art4.jpg','art5.jpg'];
-        window.vinylTextureLoader = window.vinylTextureLoader || new THREE.TextureLoader();
+        // Robust loading: use a LoadingManager to detect errors and apply fallbacks
+        window.vinylLoadingManager = window.vinylLoadingManager || new THREE.LoadingManager();
+        window.vinylTextureLoader = window.vinylTextureLoader || new THREE.TextureLoader(window.vinylLoadingManager);
+        // Fallback texture (dark vinyl cover) as a simple dataTexture / color
+        window.vinylFallbackColor = window.vinylFallbackColor || '#0f172a';
 
         window.updateVinylCrate = function() {
             if (!window.vinylsContainer) return;
@@ -2814,13 +2819,25 @@
                     try {
                         window.vinylTextureLoader.load(url, tex => {
                             try { tex.encoding = THREE.sRGBEncoding; } catch(e){}
-                            tex.flipY = false; // box textures usually need flipY=false
+                            try { tex.flipY = false; } catch(e){}
                             frontMat.map = tex;
+                            frontMat.color.set('#ffffff');
                             frontMat.needsUpdate = true;
                         }, undefined, err => {
-                            // fail silently and keep frontMat plain
+                            // On error, apply fallback color to avoid pure white material
+                            console.warn('Vinyl texture failed to load:', url, err);
+                            frontMat.map = null;
+                            frontMat.color.set(window.vinylFallbackColor);
+                            frontMat.needsUpdate = true;
                         });
-                    } catch(e) {}
+                    } catch(e) {
+                        frontMat.map = null;
+                        frontMat.color.set(window.vinylFallbackColor);
+                        frontMat.needsUpdate = true;
+                    }
+                } else {
+                    frontMat.map = null;
+                    frontMat.color.set(window.vinylFallbackColor);
                 }
 
                 // material order: [right, left, top, bottom, front, back]
@@ -4733,8 +4750,13 @@
             const intersects = raycaster.intersectObjects(scene.children, true);
             
             // 1. Priorité aux interactions objets (PC, Lit, etc.)
+            // Debug each intersect for easier tracing
+            try {
+                intersects.forEach(i => { if (i && i.object) console.log('Raycast candidate:', i.object.name); });
+            } catch(e) {}
             const interactableHit = intersects.find(hit => interactableNames.includes(hit.object.name));
             if (interactableHit) {
+                console.log('Raycast hit:', interactableHit.object.name, interactableHit.object);
                 const objName = interactableHit.object.name;
                 const worldPos = new THREE.Vector3();
                 interactableHit.object.getWorldPosition(worldPos);
