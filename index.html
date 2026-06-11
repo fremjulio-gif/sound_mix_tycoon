@@ -1265,6 +1265,8 @@
         .hud-rep-gauge { display: inline-block; position: relative; width: 6.5rem; height: 0.6rem; border-radius: 999px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); overflow: hidden; box-shadow: inset 0 -2px 6px rgba(0,0,0,0.4); }
         .hud-rep-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background-image: linear-gradient(90deg, var(--retro-orange), var(--accent)); box-shadow: 0 0 10px rgba(255,140,40,0.18); transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
         .hud-rep-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.65rem; color: white; pointer-events: none; text-shadow: 0 1px 6px rgba(0,0,0,0.6); }
+        /* Inspiration gauge */
+        #hud-inspi-val { font-weight: 700; font-size: 0.65rem; color: white; text-shadow: 0 1px 6px rgba(0,0,0,0.6); }
         @keyframes moneyPulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.15); }
@@ -1528,6 +1530,15 @@
                             <div id="hud-energy-bar" class="h-full bg-[var(--retro-red)] shadow-[0_0_5px_var(--retro-red)] transition-all duration-300" style="width: 100%;"></div>
                         </div>
                         <div id="energy-warning" class="absolute -bottom-4 md:-bottom-5 left-0 text-[10px] md:text-[9px] text-[var(--retro-red)] whitespace-nowrap animate-pulse hidden font-bold">Fatigue extrême</div>
+                    </div>
+                    <div class="flex flex-col gap-1 w-12 md:w-20 mt-2 relative">
+                        <div class="flex justify-between text-[10px] md:text-[13px] font-retro text-[var(--accent)] font-bold tracking-widest">
+                            <span>INSPI</span>
+                            <span id="hud-inspi-val">100%</span>
+                        </div>
+                        <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--accent)]/20 rounded-full overflow-hidden shadow-inner">
+                            <div id="hud-inspi-bar" class="h-full" style="width: 100%; background-image: linear-gradient(90deg, var(--accent), #7c3aed); box-shadow: 0 0 8px rgba(124,58,237,0.12); transition: width 0.4s cubic-bezier(0.4,0,0.2,1);"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -6792,6 +6803,8 @@ function triggerRankUp(oldRank, newRank) {
         const DEFAULT_STATE = {
             username: '', activeCharacter: 0,
             money: 100, rep: 10, followers: 0, energy: 100,
+            inspi: 100,
+            lastGenres: [],
             // --- AJOUT DES VOLUMES PAR DÉFAUT ---
             masterVolume: 1.0,
             musicVolume: 0.8,
@@ -7792,6 +7805,8 @@ function triggerRankUp(oldRank, newRank) {
         function goSleep() {
             if (state.isExporting) { showToast("Tu peux pas dormir en plein mix, frérot !", "error"); playError(); return; }
             state.isSleeping = true;
+            // Restore full creative inspiration when going to sleep
+            try { state.inspi = 100; } catch(e) {}
             MusicSystem.crossfadeTo('sleep', 3.0); // <-- AJOUT ICI (Fondu lent de 3s)
             const overlay = document.getElementById('sleep-overlay'), progText = document.getElementById('sleep-progress-text');
             overlay.classList.add('active');
@@ -7959,6 +7974,10 @@ function triggerRankUp(oldRank, newRank) {
 
             // Application du gain d'énergie
             state.energy = Math.min(100, state.energy + energyGain);
+            // Restore some inspiration after chilling on the sofa
+            try {
+                state.inspi = Math.min(100, (Number(state.inspi) || 0) + 25);
+            } catch(e) {}
 
             showToast(`Pause terminée. Énergie récupérée (+${energyGain}% NRJ)`, "success");
             playSuccess();
@@ -8018,6 +8037,11 @@ function triggerRankUp(oldRank, newRank) {
                     state.money           = parseInt(state.money, 10) || 0;
                     state.rep             = parseInt(state.rep, 10) || 0;
                     state.followers       = parseInt(state.followers, 10) || 0;
+                    // Inspiration (creative fatigue)
+                    state.inspi           = state.inspi !== undefined ? parseFloat(state.inspi) : 100;
+                    if (isNaN(state.inspi)) state.inspi = 100;
+                    // lastGenres migration: ensure array
+                    state.lastGenres = Array.isArray(state.lastGenres) ? state.lastGenres : [];
                     state.multiplier      = parseFloat(state.multiplier) || 1.0;
                     state.plugins         = parseInt(state.plugins, 10) || 0;
                     state.energy          = parseFloat(state.energy) || 100;
@@ -8134,6 +8158,11 @@ function triggerRankUp(oldRank, newRank) {
             const repNumEl = document.getElementById('hud-rep-num');
             if (repNumEl) repNumEl.innerText = formatNum(state.rep);
             document.getElementById('hud-foll').innerText  = formatNum(state.followers);
+            // init inspi HUD
+            const inspValEl = document.getElementById('hud-inspi-val');
+            const inspBarEl = document.getElementById('hud-inspi-bar');
+            if (inspValEl) inspValEl.innerText = `${Math.floor(state.inspi)}%`;
+            if (inspBarEl) inspBarEl.style.width = `${Math.max(0, Math.min(100, Math.floor(state.inspi)))}%`;
 
             selectDawGenre();
             selectDawVoice();
@@ -8315,6 +8344,18 @@ function triggerRankUp(oldRank, newRank) {
                     repNumEl.innerText = formatNum(state.rep);
                     // optional tooltip title
                     repFillEl.parentElement && repFillEl.parentElement.setAttribute('title', `${pct}% toward next rank`);
+                }
+            } catch(e) {}
+            // --- INSPI GAUGE: show creative inspiration (0-100) ---
+            try {
+                const inspBar = document.getElementById('hud-inspi-bar');
+                const inspVal = document.getElementById('hud-inspi-val');
+                if (inspBar && inspVal) {
+                    const iv = Math.max(0, Math.min(100, Math.floor(Number(state.inspi) || 0)));
+                    inspBar.style.width = iv + '%';
+                    inspVal.innerText = iv + '%';
+                    // subtle title
+                    inspBar.parentElement && inspBar.parentElement.setAttribute('title', `Inspiration: ${iv}%`);
                 }
             } catch(e) {}
             
@@ -8728,6 +8769,16 @@ function triggerRankUp(oldRank, newRank) {
             const trackScore = result.score === 3 ? Math.floor(7 + Math.random() * 3) :
                     result.score === 1 ? Math.floor(4 + Math.random() * 3) :
                                             Math.floor(1 + Math.random() * 3);
+            // --- Review penalty for creative block: if inspi <= 0 apply random -1..-3 to final score ---
+            let finalTrackScore = trackScore;
+            try {
+                if ((Number(state.inspi) || 0) <= 0) {
+                    const pen = Math.floor(Math.random() * 3) + 1; // 1..3
+                    finalTrackScore = Math.max(1, finalTrackScore - pen);
+                    // inform player
+                    showToast(`Syndrome de la page blanche : -${pen} au score final`, 'error');
+                }
+            } catch(e) {}
 
             // Stockage des gains pour application à la fermeture de la review
             window.pendingReviewData = {
@@ -8736,7 +8787,7 @@ function triggerRankUp(oldRank, newRank) {
                 fans: follGain,
                 toast: { msg: toastMsg, type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error') },
                 // La variable trackScore est maintenant correctement injectée
-                track: { title: trackTitle, genre: genre.toUpperCase(), score: trackScore, voice: voice }
+                track: { title: trackTitle, genre: genre.toUpperCase(), score: finalTrackScore, voice: voice }
             };
 
             state.stats.tracks++;
@@ -8746,11 +8797,37 @@ function triggerRankUp(oldRank, newRank) {
             state.trackList.push({
                 title: trackTitle,
                 genre: genre.toUpperCase(),
-                score: trackScore,
+                score: finalTrackScore,
                 money: moneyGain,
                 fans: follGain,
                 date: state.day
             });
+
+            // --- Creative fatigue: record last genres and apply inspi penalty for repetition ---
+            try {
+                state.lastGenres = Array.isArray(state.lastGenres) ? state.lastGenres : [];
+                const prevGenre = state.lastGenres.length ? state.lastGenres[state.lastGenres.length - 1] : null;
+                const newGenre = (genre || '').toString().toLowerCase();
+                state.lastGenres.push(newGenre);
+                // keep only last 3
+                while (state.lastGenres.length > 3) state.lastGenres.shift();
+                // Variety bonus: if new track genre differs from previous, grant +15 inspi (capped at 100)
+                try {
+                    if (prevGenre && prevGenre !== newGenre) {
+                        state.inspi = Math.min(100, (Number(state.inspi) || 0) + 15);
+                        showToast('Inspi: nouvelle vibe — +15 inspiration', 'success');
+                    }
+                } catch(e) {}
+                // Repetition penalty: if the last 3 are identical, apply -35 inspi
+                try {
+                    if (state.lastGenres.length === 3) {
+                        if (state.lastGenres[0] === state.lastGenres[1] && state.lastGenres[1] === state.lastGenres[2]) {
+                            state.inspi = Math.max(0, (Number(state.inspi) || 0) - 35);
+                            showToast("Inspi: répétition détectée — perte d'inspiration (-35)", 'error');
+                        }
+                    }
+                } catch(e) {}
+            } catch(e) {}
 
             // Trie le tableau du meilleur au pire score
             state.trackList.sort((a, b) => b.score - a.score);
