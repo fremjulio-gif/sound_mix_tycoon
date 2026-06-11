@@ -1521,23 +1521,28 @@
                 </div>
 
                 <div class="flex items-center gap-2 px-1 md:px-4 py-2 border-l border-white/10 ml-1 md:ml-2">
-                    <div class="flex flex-col gap-1 w-12 md:w-20 relative">
-                        <div class="flex justify-between text-[10px] md:text-[13px] font-retro text-[var(--retro-red)] font-bold tracking-widest">
-                            <span>NRJ</span>
-                            <span id="hud-energy-val">100%</span>
+                    <div class="flex flex-col md:flex-row items-start md:items-center gap-2">
+                        <!-- NRJ column (keeps original structure/classes) -->
+                        <div class="flex flex-col gap-1 w-12 md:w-20 relative">
+                            <div class="flex justify-between text-[10px] md:text-[13px] font-retro text-[var(--retro-red)] font-bold tracking-widest">
+                                <span>NRJ</span>
+                                <span id="hud-energy-val">100%</span>
+                            </div>
+                            <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--retro-red)]/30 rounded-full overflow-hidden shadow-inner">
+                                <div id="hud-energy-bar" class="h-full bg-[var(--retro-red)] shadow-[0_0_5px_var(--retro-red)] transition-all duration-300" style="width: 100%;"></div>
+                            </div>
+                            <div id="energy-warning" class="absolute -bottom-4 md:-bottom-5 left-0 text-[10px] md:text-[9px] text-[var(--retro-red)] whitespace-nowrap animate-pulse hidden font-bold">Fatigue extrême</div>
                         </div>
-                        <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--retro-red)]/30 rounded-full overflow-hidden shadow-inner">
-                            <div id="hud-energy-bar" class="h-full bg-[var(--retro-red)] shadow-[0_0_5px_var(--retro-red)] transition-all duration-300" style="width: 100%;"></div>
-                        </div>
-                        <div id="energy-warning" class="absolute -bottom-4 md:-bottom-5 left-0 text-[10px] md:text-[9px] text-[var(--retro-red)] whitespace-nowrap animate-pulse hidden font-bold">Fatigue extrême</div>
-                    </div>
-                    <div class="flex flex-col gap-1 w-12 md:w-20 mt-2 relative">
-                        <div class="flex justify-between text-[10px] md:text-[13px] font-retro text-[var(--accent)] font-bold tracking-widest">
-                            <span>INSPI</span>
-                            <span id="hud-inspi-val">100%</span>
-                        </div>
-                        <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--accent)]/20 rounded-full overflow-hidden shadow-inner">
-                            <div id="hud-inspi-bar" class="h-full" style="width: 100%; background-image: linear-gradient(90deg, var(--accent), #7c3aed); box-shadow: 0 0 8px rgba(124,58,237,0.12); transition: width 0.4s cubic-bezier(0.4,0,0.2,1);"></div>
+
+                        <!-- INSPI column (mirrors NRJ structure for perfect alignment) -->
+                        <div class="flex flex-col gap-1 w-12 md:w-20 relative">
+                            <div class="flex justify-between text-[10px] md:text-[13px] font-retro text-[var(--accent)] font-bold tracking-widest">
+                                <span>INSPI</span>
+                                <span id="hud-inspi-val">100%</span>
+                            </div>
+                            <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--accent)]/20 rounded-full overflow-hidden shadow-inner">
+                                <div id="hud-inspi-bar" class="h-full bg-[var(--accent)] shadow-[0_0_5px_var(--accent)] transition-all duration-300" style="width: 100%; background-image: linear-gradient(90deg, var(--accent), #7c3aed);"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
