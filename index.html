@@ -1821,6 +1821,17 @@
                             <li class="todo-item" onclick="toggleTodo(this)">Sign Brand Deal</li>
                             <li class="todo-item text-yellow-300 font-bold drop-shadow-[0_0_5px_rgba(253,224,71,0.5)]" onclick="toggleTodo(this)">Make a BANGER</li>
                         </ul>
+                        <div id="challenge-widget" class="mt-3 p-3 rounded-xl border border-white/10 bg-black/40 shadow-inner">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="text-xs font-retro uppercase text-gray-300 tracking-widest">Défi Hebdo</div>
+                                <div id="challenge-days" class="text-xs font-retro text-yellow-300">7j</div>
+                            </div>
+                            <div id="challenge-desc" class="text-sm font-handwriting text-yellow-100/95 mb-2">Aucun défi actif</div>
+                            <div class="w-full bg-white/5 rounded-full h-3 overflow-hidden">
+                                <div id="challenge-bar" class="h-3 bg-gradient-to-r from-yellow-400 to-yellow-300" style="width:0%"></div>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-300 flex justify-between"><span id="challenge-progress">0/0</span><span id="challenge-reward" class="text-yellow-300">+0 REP</span></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5071,6 +5082,190 @@ function calculateLevelData(isSilentInit = false) {
             skill:  Math.round(skillScore),
         }
     };
+
+    // ==========================================
+    // Weekly Challenge Pool
+    // ==========================================
+    const CHALLENGE_POOL = [
+        { type: 'specific_track', title: 'Produce a specific track', desc: 'Produce a {genre} track at {bpm} BPM today.', rewardType: 'rep_boost', rewardAmount: 25 },
+        { type: 'specific_track', title: 'Produce a specific track', desc: 'Produce a {genre} track at {bpm} BPM today.', rewardType: 'followers', rewardAmount: 1500 },
+        { type: 'social_streak', title: 'Social Streak', desc: 'Post {target} stories in total.', rewardType: 'followers', rewardAmount: 800 },
+        { type: 'pure_skill', title: 'Pure Skill Banger', desc: 'Make {target} Banger(s) without plugins.', rewardType: 'rep_boost', rewardAmount: 40 }
+    ];
+
+    function pickRandomGenreForChallenge() {
+        const available = DAW_GENRES || [];
+        if (!available.length) return 'Amapiano';
+        const pick = available[Math.floor(Math.random() * available.length)];
+        return pick ? pick.name : 'Amapiano';
+    }
+    function pickRandomBpmForChallenge(genreId) {
+        const g = DAW_GENRES.find(x => x.name === genreId || x.id === genreId);
+        if (!g) return 120;
+        // return targetBpm +/- small variation
+        const variance = Math.floor(Math.random() * 9) - 4; // -4..+4
+        return Math.max(60, g.targetBpm + variance);
+    }
+
+    function generateNewChallenge(force) {
+        try {
+            const pool = CHALLENGE_POOL.slice();
+            const base = pool[Math.floor(Math.random() * pool.length)];
+            const now = Date.now();
+            const id = `ch_${now}_${Math.floor(Math.random()*9999)}`;
+            const ch = JSON.parse(JSON.stringify(base));
+            ch.id = id;
+            ch.currentProgress = 0;
+            ch.daysRemaining = 7;
+            ch.isCompleted = false;
+
+            if (ch.type === 'specific_track') {
+                const genre = pickRandomGenreForChallenge();
+                const bpm = pickRandomBpmForChallenge(genre);
+                ch.description = ch.desc.replace('{genre}', genre).replace('{bpm}', bpm);
+                ch.targetValue = 1;
+                ch.meta = { genre: genre.toLowerCase(), bpm };
+            } else if (ch.type === 'social_streak') {
+                const t = 3 + Math.floor(Math.random() * 3); // 3..5
+                ch.description = ch.desc.replace('{target}', t);
+                ch.targetValue = t;
+            } else if (ch.type === 'pure_skill') {
+                const t = 1 + Math.floor(Math.random() * 2); // 1..2
+                ch.description = ch.desc.replace('{target}', t);
+                ch.targetValue = t;
+            }
+
+            state.activeChallenge = ch;
+            saveGame();
+            showToast(`Nouveau défi: ${ch.description}`, 'info');
+            return ch;
+        } catch (e) { return null; }
+    }
+
+    function updateChallengeProgress(event, payload) {
+        try {
+            const ch = state.activeChallenge || {};
+            if (!ch || !ch.type || ch.isCompleted) return;
+
+            if (ch.type === 'specific_track' && event === 'export') {
+                const meta = ch.meta || {};
+                const gotGenre = (payload.genre || '').toString().toLowerCase();
+                const gotBpm = Number(payload.bpm) || 0;
+                if (meta.genre && gotGenre.includes(meta.genre) && Math.abs(gotBpm - (meta.bpm || 0)) <= 4) {
+                    ch.currentProgress = (ch.currentProgress || 0) + 1;
+                }
+            } else if (ch.type === 'social_streak' && event === 'story') {
+                ch.currentProgress = (ch.currentProgress || 0) + 1;
+            } else if (ch.type === 'pure_skill' && event === 'export') {
+                // payload: {score, pluginId}
+                if ((payload.score || 0) >= 7 && !(payload.pluginId)) {
+                    ch.currentProgress = (ch.currentProgress || 0) + 1;
+                }
+            }
+
+            // Check completion
+            if (ch.currentProgress >= ch.targetValue) {
+                ch.isCompleted = true;
+                // delegate to completeChallenge to apply rewards and block next week
+                completeChallenge(ch);
+            } else {
+                saveGame(); updateHUD();
+            }
+        } catch(e) {}
+    }
+
+    // Apply rewards and finalize the challenge
+    function completeChallenge(chObj) {
+        try {
+            const ch = chObj || state.activeChallenge || {};
+            if (!ch || ch.isCompleted === false) ch.isCompleted = true;
+
+            // Block progression until next week
+            ch.daysRemaining = 7;
+
+            // Apply reward
+            if (ch.rewardType === 'followers') {
+                const amount = parseInt(ch.rewardAmount || 0, 10) || 0;
+                state.followers = (state.followers || 0) + amount;
+            } else if (ch.rewardType === 'rep_boost') {
+                // Apply a temporary reputation multiplier boost (default x2 for 3 days)
+                const boostMult = 2;
+                const boostDays = 3;
+                state.multiplier = (parseFloat(state.multiplier) || 1) * boostMult;
+                state.activeBoost = { type: 'rep', multiplier: boostMult, expiresDay: (parseInt(state.day || 0, 10) + boostDays) };
+                // Also give a small flat REP immediate bonus if rewardAmount given
+                const immediate = parseInt(ch.rewardAmount || 0, 10) || 0;
+                if (immediate > 0) state.rep = Math.max(0, (state.rep || 0) + immediate);
+            }
+
+            // Visual feedback
+            showToast(`Défi complété ! ${ch.rewardType === 'followers' ? ('+' + (ch.rewardAmount || 0) + ' fans') : 'Boost REP activé !'}`, 'success');
+            fireConfetti('achievement');
+
+            // Persist and refresh
+            state.activeChallenge = ch;
+            saveGame(); updateHUD(); updateChallengeUI();
+        } catch (e) { console.error(e); }
+    }
+
+    // Validate an action against the active challenge, then update progress if valid
+    function checkChallengeProgress(actionType, actionData) {
+        try {
+            const ch = state.activeChallenge || {};
+            if (!ch || !ch.type || ch.isCompleted) return false;
+
+            let matched = false;
+            if (ch.type === 'specific_track' && actionType === 'export') {
+                const meta = ch.meta || {};
+                const gotGenre = (actionData.genre || '').toString().toLowerCase();
+                const gotBpm = Number(actionData.bpm) || 0;
+                if (meta.genre && gotGenre.includes(meta.genre) && Math.abs(gotBpm - (meta.bpm || 0)) <= 4) matched = true;
+            } else if (ch.type === 'social_streak' && actionType === 'story') {
+                matched = true;
+            } else if (ch.type === 'pure_skill' && actionType === 'export') {
+                if ((actionData.score || 0) >= 7 && !(actionData.pluginId)) matched = true;
+            }
+
+            if (matched) {
+                updateChallengeProgress(actionType, actionData);
+                updateChallengeUI();
+                return true;
+            }
+            return false;
+        } catch (e) { return false; }
+    }
+
+    function updateChallengeUI() {
+        try {
+            const elDesc = document.getElementById('challenge-desc');
+            const elBar = document.getElementById('challenge-bar');
+            const elProg = document.getElementById('challenge-progress');
+            const elDays = document.getElementById('challenge-days');
+            const elReward = document.getElementById('challenge-reward');
+            const ch = state.activeChallenge || null;
+            if (!ch || !ch.id) {
+                if (elDesc) elDesc.innerText = 'Aucun défi actif';
+                if (elBar) elBar.style.width = '0%';
+                if (elProg) elProg.innerText = '0/0';
+                if (elDays) elDays.innerText = '';
+                if (elReward) elReward.innerText = '';
+                return;
+            }
+
+            if (elDesc) elDesc.innerText = ch.description || ch.title || 'Défi actif';
+            const cur = Number(ch.currentProgress || 0);
+            const tgt = Number(ch.targetValue || 0) || 0;
+            const pct = tgt > 0 ? Math.min(100, Math.round((cur / tgt) * 100)) : 0;
+            if (elBar) elBar.style.width = `${pct}%`;
+            if (elProg) elProg.innerText = `${cur}/${tgt}`;
+            if (elDays) elDays.innerText = `${Math.max(0, parseInt(ch.daysRemaining || 0, 10))}j`;
+            if (elReward) {
+                if (ch.rewardType === 'rep_boost') elReward.innerText = `+${ch.rewardAmount || 0} REP`;
+                else if (ch.rewardType === 'followers') elReward.innerText = `+${ch.rewardAmount || 0} FANS`;
+                else elReward.innerText = '';
+            }
+        } catch(e){}
+    }
 }
 
 function getCurrentRank() {
@@ -6826,6 +7021,18 @@ function triggerRankUp(oldRank, newRank) {
             isReviewActive: false, // Ajout de l'état pour les revues
             lastRankId: 1, // Nouveau : ID de la dernière ligue atteinte
             trackList: [],
+            // Weekly challenge system
+            activeChallenge: {
+                id: null,
+                description: '',
+                type: null,
+                targetValue: 0,
+                currentProgress: 0,
+                rewardType: null,
+                rewardAmount: 0,
+                daysRemaining: 7,
+                isCompleted: false
+            },
             achievements: { // Nouveau : Système d'achievements
                 'first_blood': { unlocked: false, name: "First Blood", icon: "🩸", description: "Tu as exporté ta toute première prod. Le début de la gloire." },
                 'certifie_classique': { unlocked: false, name: "Certifié Classique", icon: "📀", description: "Obtenir un score parfait (10/10) par les critiques." },
@@ -8178,6 +8385,11 @@ function triggerRankUp(oldRank, newRank) {
             refreshSocial();
             updateMoodRingWidget();
             updateTopChartsWidget();
+            // Ensure there's an active weekly challenge and update UI
+            try {
+                if (!state.activeChallenge || !state.activeChallenge.id) generateNewChallenge();
+                try { updateChallengeUI(); } catch(e) {}
+            } catch(e) {}
             
             // Initialisation silencieuse au boot pour ne pas pop au login
             const _initLevelData = calculateLevelData(true) || { level: 1, currentRank: PLAYER_RANKS[0] };
@@ -8441,6 +8653,32 @@ function triggerRankUp(oldRank, newRank) {
             }
             refreshSocial();
             refreshStats();
+            // Decrement challenge daysRemaining and auto-generate when expired
+            try {
+                state.activeChallenge = state.activeChallenge || { daysRemaining: 7 };
+                state.activeChallenge.daysRemaining = (parseInt(state.activeChallenge.daysRemaining, 10) || 0) - 1;
+                if (state.activeChallenge.daysRemaining <= 0) {
+                    generateNewChallenge();
+                    try { updateChallengeUI(); } catch(e) {}
+                } else {
+                    saveGame();
+                }
+            } catch(e) {}
+
+            // Expire temporary boosts if needed
+            try {
+                if (state.activeBoost && state.activeBoost.expiresDay !== undefined) {
+                    const nowDay = parseInt(state.day || 0, 10) || 0;
+                    if (nowDay >= (parseInt(state.activeBoost.expiresDay, 10) || 0)) {
+                        // revert multiplier
+                        const mult = parseFloat(state.activeBoost.multiplier || 1) || 1;
+                        state.multiplier = (parseFloat(state.multiplier) || 1) / mult;
+                        delete state.activeBoost;
+                        showToast('Le boost REP est terminé.', 'info');
+                        saveGame(); updateHUD();
+                    }
+                }
+            } catch(e) {}
         }
 
 
@@ -8844,6 +9082,9 @@ function triggerRankUp(oldRank, newRank) {
             updateTopChartsWidget();
             updateDawGenres();
 
+            // Update challenge progress for exports (validated)
+            try { checkChallengeProgress('export', { genre: genre, bpm: bpm, score: finalTrackScore, pluginId: consumedPluginId }); } catch(e) {}
+
             showTrackReview(trackScore, trackTitle, null);
             saveGame(); updateHUD(); updateCooldownUIs();
         }
@@ -9129,6 +9370,7 @@ function triggerRankUp(oldRank, newRank) {
             saveGame(); 
             updateHUD(); 
             refreshSocial();
+            try { checkChallengeProgress('story', {}); } catch(e) {}
         }
 
         function acceptSponsor(id) {
