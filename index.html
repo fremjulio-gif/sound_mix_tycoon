@@ -272,36 +272,62 @@
         overflow: hidden;
     }
             
-        #btn-quit-pc {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        transform: none;
-        z-index: 200;
-        padding: 7px 14px;
-        background: rgba(10, 10, 15, 0.8);
-        border: 1px solid var(--glass-border);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        color: var(--retro-red);
-        font-family: 'Share Tech Mono', monospace;
-        text-transform: uppercase;
-        border-radius: 999px;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        transition: all 0.2s;
-        font-size: 10px;
-        white-space: nowrap;
-        min-width: unset;
-        text-align: center;
-        pointer-events: auto;
-        letter-spacing: 0.05em;
-    }
-    #btn-quit-pc:hover {
-        background: rgba(251, 113, 133, 0.2);
-        border-color: var(--retro-red);
-        box-shadow: 0 0 20px rgba(255, 0, 60, 0.3);
-    }
+            /* --- SYSTEM ACTION BUTTONS (MODERN STUDIO OS LOOK) --- */
+            .btn-system {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                padding: 0 16px;
+                background: rgba(15, 15, 20, 0.7);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(16px) saturate(180%);
+                -webkit-backdrop-filter: blur(16px) saturate(180%);
+                border-radius: 12px;
+                color: var(--text-main);
+                font-family: 'Outfit', sans-serif;
+                font-weight: 600;
+                font-size: 11px;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+                min-width: 44px;
+                min-height: 44px;
+                cursor: pointer;
+                pointer-events: auto;
+            }
+            .btn-system:hover {
+                border-color: var(--accent);
+                background: rgba(129, 140, 248, 0.15);
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 15px var(--glass-glow);
+            }
+            .btn-system:active { transform: translateY(0) scale(0.96); }
+            
+            .btn-system-red { border-color: rgba(255, 0, 60, 0.3); color: var(--retro-red); }
+            .btn-system-red:hover { border-color: var(--retro-red); background: rgba(255, 0, 60, 0.1); }
+
+            #btn-quit-pc {
+                position: absolute;
+                top: 24px;
+                left: 24px;
+                z-index: 300;
+            }
+
+            .window-close-btn {
+                width: 44px;
+                height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 10px;
+                color: #666;
+                transition: all 0.2s;
+                font-size: 20px;
+                background: transparent;
+            }
+            .window-close-btn:hover { background: rgba(255, 0, 60, 0.15); color: var(--retro-red); }
             /* --- LIQUID GLASS --- */
             .liquid-glass {
                 background: var(--glass-bg);
@@ -632,14 +658,16 @@
 
 
                 #btn-quit-pc {
-                    top: calc(78px + env(safe-area-inset-top)) !important;
-                    left: 50% !important;
-                    transform: translateX(-50%) !important;
-                    min-width: unset !important;
-                    font-size: 9px !important;
-                    padding: 6px 14px !important;
+                    top: calc(72px + env(safe-area-inset-top)) !important;
+                    left: 12px !important;
+                    transform: none !important;
+                    padding: 0 12px !important;
                 }
-                
+                #audio-settings-gear {
+                    top: calc(72px + env(safe-area-inset-top)) !important;
+                    right: 12px !important;
+                    padding: 0 12px !important;
+                }
                 
                 /* Navigation OS devient une "Bottom Bar" fixe avec prise en compte Safe Area iOS */
                 #mobile-nav { 
@@ -911,6 +939,71 @@
                     height: auto !important;
                     min-height: 0 !important; /* Empêche le bug de débordement du texte interne */
                 }
+
+
+        /* --- SEGMENTED VITALS METERS (RIGHT SIDE) --- */
+            #vitals-ui {
+                position: fixed;
+                right: 20px;
+                top: 50%;
+                transform: translateY(-50%);
+                display: flex;
+                flex-direction: column;
+                gap: 30px;
+                z-index: 1500;
+                pointer-events: none;
+            }
+            .vitals-meter-group {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            .vitals-meter {
+                width: 14px;
+                height: 140px;
+                background: rgba(10, 10, 15, 0.4);
+                backdrop-filter: blur(16px) saturate(180%);
+                -webkit-backdrop-filter: blur(16px) saturate(180%);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+            }
+            /* LED Segment Overlay Effect */
+            .vitals-meter::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background-image: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.6) 3px, rgba(0,0,0,0.6) 5px);
+                z-index: 10;
+                pointer-events: none;
+            }
+            .vitals-fill {
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+                height: 100%;
+                transition: height 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+                z-index: 1;
+            }
+            .vitals-tag {
+                font-family: 'Share Tech Mono', monospace;
+                font-size: 8px;
+                font-weight: bold;
+                letter-spacing: 2px;
+                writing-mode: vertical-rl;
+                text-orientation: mixed;
+                transform: rotate(180deg);
+                opacity: 0.5;
+                text-transform: uppercase;
+            }
+
+            @media (max-width: 767px) {
+                #vitals-ui { right: 12px; transform: translateY(-50%) scale(0.9); gap: 20px; }
+                .vitals-meter { height: 110px; width: 12px; }
+            }
 
             /* =========================================
             10. SETTINGS / ACHIEVEMENTS
@@ -1296,32 +1389,35 @@
         #joystick-ui {
             position: fixed;
             pointer-events: none;
-            z-index: 5000;
+            z-index: 5000; 
             display: none;
-            width: 100px;
-            height: 100px; /* Fixed size for mobile ergonomics */
+            width: 120px;
+            height: 120px;
             transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
         }
         .joystick-base {
             position: absolute;
             inset: 0;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1.5px solid rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(4px); /* Liquid glass effect */
-            -webkit-backdrop-filter: blur(4px);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
         }
         .joystick-knob {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 34px;
-            height: 34px; /* Fixed size for knob */
-            margin: -17px 0 0 -17px; /* Center the knob */
+            width: 52px;
+            height: 52px;
+            margin: -26px 0 0 -26px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.4);
         }
 
         /* Media query to ensure joystick is hidden on desktop */
@@ -1348,6 +1444,22 @@
         
     <body data-theme="neon">
     <div id="game-container">
+
+        <!-- Integrated Vitals Meters -->
+        <div id="vitals-ui">
+            <div class="vitals-meter-group">
+                <div class="vitals-meter" title="Énergie">
+                    <div id="meter-energy-fill" class="vitals-fill bg-[var(--retro-red)] shadow-[0_0_20px_var(--retro-red)]"></div>
+                </div>
+                <span class="vitals-tag text-[var(--retro-red)]">Energy</span>
+            </div>
+            <div class="vitals-meter-group">
+                <div class="vitals-meter" title="Inspiration">
+                    <div id="meter-inspi-fill" class="vitals-fill bg-[var(--accent)] shadow-[0_0_20px_var(--accent)]" style="background-image: linear-gradient(0deg, var(--accent), #7c3aed);"></div>
+                </div>
+                <span class="vitals-tag text-[var(--accent)]">Inspiration</span>
+            </div>
+        </div>
 
         <div id="exhaustion-overlay" class="absolute inset-0 z-[900] opacity-0 hidden w-full h-full"></div>
 
@@ -1423,33 +1535,6 @@
                 <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)" onmouseleave="!isMobile && hideTooltip()">
                     <span class="text-[var(--accent)] drop-shadow-[0_0_5px_var(--accent)] text-[10px] md:text-lg">FOL</span> <span id="hud-foll" class="text-white text-[11px] md:text-lg">0</span>
                 </div>
-
-                <div class="flex items-center gap-2 px-1 md:px-4 py-2 border-l border-white/10 ml-1 md:ml-2">
-                    <div class="flex flex-col md:flex-row items-start md:items-center gap-2">
-                        <!-- NRJ column (keeps original structure/classes) -->
-                        <div class="flex flex-col gap-1 w-12 md:w-20 relative">
-                            <div class="flex justify-between text-[10px] md:text-[13px] font-retro text-[var(--retro-red)] font-bold tracking-widest">
-                                <span>NRJ</span>
-                                <span id="hud-energy-val">100%</span>
-                            </div>
-                            <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--retro-red)]/30 rounded-full overflow-hidden shadow-inner">
-                                <div id="hud-energy-bar" class="h-full bg-[var(--retro-red)] shadow-[0_0_5px_var(--retro-red)] transition-all duration-300" style="width: 100%;"></div>
-                            </div>
-                            <div id="energy-warning" class="absolute -bottom-4 md:-bottom-5 left-0 text-[10px] md:text-[9px] text-[var(--retro-red)] whitespace-nowrap animate-pulse hidden font-bold">Fatigue extrême</div>
-                        </div>
-
-                        <!-- INSPI column (mirrors NRJ structure for perfect alignment) -->
-                        <div class="flex flex-col gap-1 w-12 md:w-20 relative">
-                            <div class="flex justify-between text-[10px] md:text-[13px] font-retro text-[var(--accent)] font-bold tracking-widest">
-                                <span>INSPI</span>
-                                <span id="hud-inspi-val">100%</span>
-                            </div>
-                            <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--accent)]/20 rounded-full overflow-hidden shadow-inner">
-                                <div id="hud-inspi-bar" class="h-full bg-[var(--accent)] shadow-[0_0_5px_var(--accent)] transition-all duration-300" style="width: 100%; background-image: linear-gradient(90deg, var(--accent), #7c3aed);"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
             
             <div class="font-retro text-right hidden md:flex flex-col justify-center items-end shrink-0 pr-2 pointer-events-none">
@@ -1468,19 +1553,13 @@
 
         <div id="three-canvas-container"></div>
 
-        <div id="room-ui">
-            <div class="bg-black/40 text-[var(--text-muted)] border border-white/10 px-4 py-2 rounded-lg font-retro animate-[pulse_3s_ease-in-out_infinite] tracking-widest text-[10px] mb-6">
-                Clique sur le PC pour compo / Sur le sol pour bouger / Sur le lit pour Dodo
-            </div>
-        </div>
+        <div id="room-ui"></div>
 
-        <!-- Audio Settings Overlay -->
-               <div id="audio-settings-gear" class="fixed top-3 md:top-6 right-3 md:right-6 liquid-glass-heavy p-3 rounded-full cursor-pointer transition-all hover:scale-105 active:scale-95" onclick="openAudioSettings()" style="display: block !important; opacity: 1 !important; z-index: 1000 !important;">
-            <svg class="w-6 h-6 text-white drop-shadow-lg animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
-        </div>
+        <!-- System Settings Button -->
+        <button id="audio-settings-gear" class="btn-system fixed top-3 md:top-6 right-3 md:right-6" onclick="openAudioSettings()" style="z-index: 1000 !important;">
+            <svg class="w-5 h-5 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <span class="hidden md:inline">Paramètres</span>
+        </button>
 
         <!-- Settings Overlay -->
         <div id="audio-settings-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden">
@@ -1490,7 +1569,9 @@
                         <p class="text-[10px] font-retro text-[var(--accent)] tracking-widest uppercase mb-1">bounce_it v16</p>
                         <h2 class="text-xl md:text-2xl font-retro text-white tracking-widest uppercase drop-shadow-lg">Paramètres</h2>
                     </div>
-                    <button onclick="closeAudioSettings()" class="btn-minimal w-12 h-12 !p-0 rounded-lg text-xl leading-none flex items-center justify-center" aria-label="Fermer les paramètres">✕</button>
+                    <button onclick="closeAudioSettings()" class="btn-system !p-0" aria-label="Fermer les paramètres">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
 
                 <div id="settings-audio-panel" class="flex-1 min-h-0 overflow-y-auto pr-1">
@@ -1549,7 +1630,9 @@
 <div id="achievements-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden px-4">
         <div class="settings-shell liquid-glass-heavy p-5 md:p-7 rounded-2xl border-2 border-[var(--retro-orange)] shadow-[0_0_60px_rgba(251,191,36,0.15)] flex flex-col relative">
             
-            <button onclick="closeAchievementsBoard()" class="absolute top-4 right-4 btn-minimal w-10 h-10 !p-0 rounded-lg text-lg leading-none flex items-center justify-center z-50">✕</button>
+            <button onclick="closeAchievementsBoard()" class="btn-system !p-0 absolute top-4 right-4 z-50">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
 
             <div id="settings-achievements-panel" class="flex flex-1 min-h-0 flex-col overflow-hidden w-full h-full pt-2">
                 <div class="flex items-center gap-4 mb-4 shrink-0 bg-black/40 p-4 rounded-xl border border-white/10">
@@ -1582,7 +1665,9 @@
                     <span class="font-retro text-xs md:text-sm text-white tracking-widest uppercase flex items-center gap-3 font-bold">
                         <span class="w-3 h-3 rounded-full bg-[#8b5cf6] shadow-[0_0_10px_#8b5cf6] animate-pulse"></span> Piano Roll Editor
                     </span>
-                    <button class="text-gray-400 hover:text-[var(--retro-red)] transition-colors p-1 text-2xl font-bold" onclick="closePianoRoll()">✕</button>
+                    <button class="window-close-btn" onclick="closePianoRoll()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
                 
                 <div class="window-content flex flex-col p-0 flex-1 min-h-0 bg-[#09090b]">
@@ -1625,7 +1710,10 @@
             
 
         <div id="pc-ui-layer" style="display: none;">
-            <button id="btn-quit-pc" onclick="quitPC()">CLOSE OS SESSION</button>
+            <button id="btn-quit-pc" class="btn-system btn-system-red" onclick="quitPC()">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <span>DECONNEXION</span>
+            </button>
 
             <div id="desktop-content">
             <div class="flex flex-col gap-2 pt-1" id="desktop-icons-container">
@@ -1799,7 +1887,9 @@
                     </div>
                     <span class="text-[10px] text-gray-400 font-mono font-bold tracking-widest uppercase">AbleStudio Pro 11</span>
                 </div>
-                <button class="text-gray-500 hover:text-white transition-colors px-2 text-lg" onclick="closeApp('app-daw')">✕</button>
+                <button class="window-close-btn" onclick="closeApp('app-daw')">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
 
             <div class="window-content daw-grid-container bg-[#121214] p-2 md:p-4 gap-3 md:gap-4 flex flex-col md:flex-row">
@@ -1987,7 +2077,9 @@
             <div id="app-browser" class="os-window liquid-glass flex-col" style="display:none;">
                 <div class="window-header">
                     <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"></span> Web_Nav App</span>
-                    <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-browser')">✕</button>
+                    <button class="window-close-btn" onclick="closeApp('app-browser')">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
                 <div class="flex border-b border-[var(--glass-border)] text-[12px] md:text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-black/60 font-bold">
                     <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
@@ -1999,7 +2091,9 @@
                     <div id="app-social" class="os-window liquid-glass flex-col" style="display:none;">
             <div class="window-header">
                 <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></span> SoundNet</span>
-                <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-social')">✕</button>
+                <button class="window-close-btn" onclick="closeApp('app-social')">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
             
             <div class="flex border-b border-[#27272a] text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-[#18181b] font-bold">
@@ -2038,7 +2132,9 @@
             <div id="app-stats" class="os-window liquid-glass flex-col" style="display:none;">
                 <div class="window-header">
                     <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-[var(--retro-green)] shadow-[0_0_10px_var(--retro-green)]"></span> Sys_Stats</span>
-                    <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-stats')">✕</button>
+                    <button class="window-close-btn" onclick="closeApp('app-stats')">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
                 <div class="window-content font-retro text-sm text-[var(--retro-green)] bg-black/80 p-6 md:p-8 leading-loose tracking-wider shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
                     <div id="stats-content">Loading metrics...</div>
@@ -2669,46 +2765,11 @@
         crateFront.position.set(0, 0.125, 0.31);
 
         [crateBase, crateSideL, crateSideR, crateBack, crateFront].forEach(mesh => {
+            mesh.name = 'achievements_board_mesh'; // Nom d'interaction pour le Raycaster et Proximité
             mesh.castShadow = true; mesh.receiveShadow = true;
             mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), crateEdgeMat));
             crateGroup.add(mesh);
         });
-
-        // Hitbox plus large pour faciliter le clic + collision
-        const hitbox = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.0, 1.0), new THREE.MeshBasicMaterial({ visible: false }));
-        hitbox.position.y = 0.4;
-        // Name must match raycast interactable list so clicks open Achievements
-        hitbox.name = 'achievements_board_mesh';
-        crateGroup.add(hitbox);
-        // register into global collision objects for avatar movement checks
-        window.collisionObjects = window.collisionObjects || [];
-        window.collisionObjects.push(hitbox);
-
-        // --- Outline for the whole crateGroup (box around group) ---
-        try {
-            const bbox = new THREE.Box3().setFromObject(crateGroup);
-            const size = bbox.getSize(new THREE.Vector3());
-            const center = bbox.getCenter(new THREE.Vector3());
-            const boxGeo = new THREE.BoxGeometry(size.x || 1, size.y || 1, size.z || 1);
-            // create a line material cloned from crateEdgeMat so opacity/color can be animated independently
-            const groupEdgeMat = crateEdgeMat.clone();
-            groupEdgeMat.color = groupEdgeMat.color.clone();
-            groupEdgeMat.transparent = true;
-            groupEdgeMat.opacity = 0.0;
-            const groupEdges = new THREE.LineSegments(new THREE.EdgesGeometry(boxGeo), groupEdgeMat);
-            // convert world center to crateGroup local space
-            crateGroup.worldToLocal(center);
-            groupEdges.position.copy(center);
-            groupEdges.userData = groupEdges.userData || {};
-            groupEdges.userData.isGroupOutline = true;
-            crateGroup.add(groupEdges);
-
-            // Ensure the hitbox is treated as the interactable mesh but the edges represent the whole group
-            window.highlightItems = window.highlightItems || [];
-            window.highlightItems.push({ mesh: hitbox, edges: groupEdges });
-        } catch (e) {
-            console.warn('Failed to create crate group outline', e);
-        }
 
         const vinylsContainer = new THREE.Group();
         vinylsContainer.position.set(0, 0.08, -0.25);
@@ -3956,6 +4017,9 @@
 
             // 6. NOUVEAU : Grande Table basse devant le canapé (décalée pour laisser le passage)
             if (x > -1.9 - r && x < -0.9 + r && z > 0.3 - r && z < 2.7 + r) return true;
+
+             // 7. NOUVEAU : Bac de disquaire (x: 3.0 à 4.6, z: -0.1 à 1.1)
+            if (x > 3.0 - r && x < 4.6 + r && z > -0.1 - r && z < 1.1 + r) return true;
             
             // 7. Dynamic collision objects (three.js hitboxes)
             try {
@@ -4198,9 +4262,41 @@
         let isNearSomething = false; 
 
         // Vérification de l'avatar principal
-        if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar) {
+        if (currentRoomAvatar) {
             
-        
+            // --- JOYSTICK LOGIC (DYNAMIC BRAWL STARS STYLE) ---
+            if (isJoystickActive && joystickUI && joystickKnob) {
+                const dx = (window.lastPointerX || 0) - joystickStartX;
+                const dy = (window.lastPointerY || 0) - joystickStartY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const maxRadius = 50; // Zone de mouvement du knob
+
+                // Effet "Sticky" : Si le pouce s'éloigne trop, la base du joystick glisse pour suivre
+                if (dist > maxRadius) {
+                    const angle = Math.atan2(dy, dx);
+                    joystickStartX = window.lastPointerX - Math.cos(angle) * maxRadius;
+                    joystickStartY = window.lastPointerY - Math.sin(angle) * maxRadius;
+                    joystickUI.style.left = `${joystickStartX}px`;
+                    joystickUI.style.top = `${joystickStartY}px`;
+                }
+
+                // Recalcul du déplacement visuel après le potentiel glissement de la base
+                const finalDx = (window.lastPointerX || 0) - joystickStartX;
+                const finalDy = (window.lastPointerY || 0) - joystickStartY;
+                const finalDist = Math.sqrt(finalDx * finalDx + finalDy * finalDy);
+                const angle = Math.atan2(finalDy, finalDx);
+                
+                const clampedDist = Math.min(finalDist, maxRadius);
+                const vx = Math.cos(angle) * clampedDist;
+                const vy = Math.sin(angle) * clampedDist;
+                joystickKnob.style.transform = `translate(${vx}px, ${vy}px)`;
+
+                // Mise à jour du vecteur de mouvement normalisé (0 à 1)
+                const factor = clampedDist / maxRadius;
+                window.joystickVec.x = Math.cos(angle) * factor;
+                window.joystickVec.z = Math.sin(angle) * factor;
+            }
+            
             // ==========================================
             // --- LOGIQUE DE LA TÉLÉVISION ---
             // ==========================================
@@ -4583,6 +4679,7 @@
                     if (item.mesh.name === 'bed_mesh') customDist = 2.8; 
                     if (item.mesh.name === 'pc_mesh') customDist = 2.4;  
                     if (item.mesh.name === 'sofa_mesh') customDist = 3.0; 
+                    if (item.mesh.name === 'achievements_board_mesh') customDist = 2.5;
                     
                     item.mesh.userData = item.mesh.userData || { baseEmissiveIntensity: 0 };
 
@@ -4758,7 +4855,7 @@
                     let interactDist = INTERACTION_DIST;
                     if (objName === 'bed_mesh') interactDist = 2.8;
                     if (objName === 'pc_mesh') interactDist = 2.4;
-                    if (objName === 'achievements_board_mesh') interactDist = 4.0;
+                if (objName === 'achievements_board_mesh') interactDist = 2.5;
                     if (objName === 'sofa_mesh') interactDist = 3.0;
 
                     if (dist <= interactDist) {
@@ -4788,7 +4885,9 @@
                     jUI.style.left = `${joystickStartX}px`;
                     jUI.style.top = `${joystickStartY}px`;
                     jUI.style.display = 'block';
-                    jUI.style.opacity = '0.3'; // Initial opacity
+                    // Forcer un reflow pour déclencher la transition d'opacité
+                    void jUI.offsetWidth;
+                    jUI.style.opacity = '1';
                 }
                 // Prevent default to avoid native scrolling/zoom when joystick is active
                 event.preventDefault();
@@ -4869,8 +4968,13 @@
             isJoystickActive = false;
             window.joystickVec.x = 0;
             window.joystickVec.z = 0;
-            if (joystickUI) joystickUI.style.display = 'none';
-            if (joystickKnob) joystickKnob.style.transform = 'translate(0px, 0px)'; // Reset knob position
+            if (joystickUI) {
+            joystickUI.style.opacity = '0';
+                setTimeout(() => {
+                    if (!isJoystickActive) joystickUI.style.display = 'none';
+                }, 200);
+            }
+            if (joystickKnob) joystickKnob.style.transform = 'translate(0, 0)';
         };
         canvasCont.addEventListener('pointerup', stopJoystick);
         canvasCont.addEventListener('pointercancel', stopJoystick);
@@ -8489,11 +8593,8 @@ function triggerRankUp(oldRank, newRank) {
             const repNumEl = document.getElementById('hud-rep-num');
             if (repNumEl) repNumEl.innerText = formatNum(state.rep);
             document.getElementById('hud-foll').innerText  = formatNum(state.followers);
-            // init inspi HUD
-            const inspValEl = document.getElementById('hud-inspi-val');
-            const inspBarEl = document.getElementById('hud-inspi-bar');
-            if (inspValEl) inspValEl.innerText = `${Math.floor(state.inspi)}%`;
-            if (inspBarEl) inspBarEl.style.width = `${Math.max(0, Math.min(100, Math.floor(state.inspi)))}%`;
+            const inspFillEl = document.getElementById('meter-inspi-fill');
+            if (inspFillEl) inspFillEl.style.height = `${Math.max(0, Math.min(100, Math.floor(state.inspi)))}%`;
 
             selectDawGenre();
             selectDawVoice();
@@ -8605,15 +8706,9 @@ function triggerRankUp(oldRank, newRank) {
             document.getElementById('hud-day').innerText   = `JOUR ${state.day}`;
 
             const energyVal = Math.floor(state.energy);
-            document.getElementById('hud-energy-val').innerText = `${energyVal}%`;
-            document.getElementById('hud-energy-bar').style.width = `${energyVal}%`;
+            const energyFill = document.getElementById('meter-energy-fill');
+            if (energyFill) energyFill.style.height = `${energyVal}%`;
             
-            const warning = document.getElementById('energy-warning');
-            if (energyVal < 20) {
-                warning.classList.remove('hidden');
-            } else {
-                warning.classList.add('hidden');
-            }
 
                         // --- SYSTÈME DE FATIGUE VISUELLE (S'active sous les 40% d'énergie) ---
             const gameContainer = document.getElementById('game-container');
@@ -8684,14 +8779,10 @@ function triggerRankUp(oldRank, newRank) {
             } catch(e) {}
             // --- INSPI GAUGE: show creative inspiration (0-100) ---
             try {
-                const inspBar = document.getElementById('hud-inspi-bar');
-                const inspVal = document.getElementById('hud-inspi-val');
-                if (inspBar && inspVal) {
+                const inspFill = document.getElementById('meter-inspi-fill');
+                if (inspFill) {
                     const iv = Math.max(0, Math.min(100, Math.floor(Number(state.inspi) || 0)));
-                    inspBar.style.width = iv + '%';
-                    inspVal.innerText = iv + '%';
-                    // subtle title
-                    inspBar.parentElement && inspBar.parentElement.setAttribute('title', `Inspiration: ${iv}%`);
+                    inspFill.style.height = iv + '%';
                 }
             } catch(e) {}
             
