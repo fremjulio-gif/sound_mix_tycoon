@@ -2661,31 +2661,37 @@
 
 
 
-                // ==========================================
-        // BAC DE DISQUAIRE (ACHIEVEMENTS)
+                       // ==========================================
+        // BAC DE DISQUAIRE (ACHIEVEMENTS) - VERSION XXL ISOMÉTRIQUE
         // ==========================================
         const crateGroup = new THREE.Group();
-        crateGroup.position.set(4.2, -1, 4.2); // Coin en bas à droite de la pièce
-        crateGroup.rotation.y = -Math.PI / 4; // Tourné vers le centre
+        // Position ajustée pour qu'il ne soit pas trop collé dans le coin
+        crateGroup.position.set(3.8, -1, 3.8); 
+        
+        // Rotation isométrique : on l'aligne sur l'angle de 45°
+        crateGroup.rotation.y = -Math.PI / 4; 
+        
+        // On double la taille globale pour qu'il soit bien visible
+        crateGroup.scale.set(1.8, 1.8, 1.8);
 
-        const crateMat = new THREE.MeshStandardMaterial({ color: '#3d2b1f', roughness: 0.9 }); // Bois sombre
+        const crateMat = new THREE.MeshStandardMaterial({ color: '#3d2b1f', roughness: 0.9 });
         const crateEdgeMat = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 });
 
-        // Structure du bac
-        const crateBase = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.05, 0.6), crateMat);
-        crateBase.position.y = 0.025;
+        // Dimensions augmentées pour le volume
+        const crateBase = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.08, 0.7), crateMat);
+        crateBase.position.y = 0.04;
         
-        const crateSideL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.5, 0.6), crateMat);
-        crateSideL.position.set(-0.375, 0.25, 0);
+        const crateSideL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.6, 0.7), crateMat);
+        crateSideL.position.set(-0.41, 0.3, 0);
         
-        const crateSideR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.5, 0.6), crateMat);
-        crateSideR.position.set(0.375, 0.25, 0);
+        const crateSideR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.6, 0.7), crateMat);
+        crateSideR.position.set(0.41, 0.3, 0);
 
-        const crateBack = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.5, 0.05), crateMat);
-        crateBack.position.set(0, 0.25, -0.275);
+        const crateBack = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.6, 0.08), crateMat);
+        crateBack.position.set(0, 0.3, -0.31);
 
-        const crateFront = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.2, 0.05), crateMat);
-        crateFront.position.set(0, 0.1, 0.275); // Plus bas à l'avant pour voir les disques
+        const crateFront = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.25, 0.08), crateMat);
+        crateFront.position.set(0, 0.125, 0.31);
 
         [crateBase, crateSideL, crateSideR, crateBack, crateFront].forEach(mesh => {
             mesh.castShadow = true; mesh.receiveShadow = true;
@@ -2693,46 +2699,37 @@
             crateGroup.add(mesh);
         });
 
-        // Hitbox invisible cliquable plus large
-        const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
-        const hitbox = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.8, 0.8), hitboxMat);
+        // Hitbox plus large pour faciliter le clic
+        const hitbox = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.0, 1.0), new THREE.MeshBasicMaterial({ visible: false }));
         hitbox.position.y = 0.4;
-        hitbox.name = 'achievements_board_mesh'; // IMPORTANT: Conserve l'ancien nom pour déclencher le clic UI
+        hitbox.name = 'achievements_board_mesh';
         crateGroup.add(hitbox);
 
-        // Container pour les vinyles dynamiques
         const vinylsContainer = new THREE.Group();
-        vinylsContainer.position.set(0, 0.05, -0.2); // Au fond du bac
+        vinylsContainer.position.set(0, 0.08, -0.25);
         crateGroup.add(vinylsContainer);
         window.vinylsContainer = vinylsContainer;
 
         scene.add(crateGroup);
 
-        // Fonction globale pour remplir le bac
         window.updateVinylCrate = function() {
             if (!window.vinylsContainer) return;
-            
-            // Vider le bac avant de le re-remplir
             while(window.vinylsContainer.children.length > 0){ 
                 window.vinylsContainer.remove(window.vinylsContainer.children[0]); 
             }
-
             const trackCount = (typeof state !== 'undefined' && state.stats) ? state.stats.tracks : 0;
             if (trackCount === 0) return;
-
-            // Limiter à 25 vinyles max visuellement pour ne pas déborder du meuble
-            const displayCount = Math.min(25, trackCount);
-            const vinylMat = new THREE.MeshStandardMaterial({ color: '#1f2937', roughness: 0.6 }); 
-            const vinylGeo = new THREE.BoxGeometry(0.6, 0.6, 0.02);
+            
+            const displayCount = Math.min(30, trackCount); // Un peu plus de capacité
+            const vinylMat = new THREE.MeshStandardMaterial({ color: '#1f2937', roughness: 0.5 }); 
+            const vinylGeo = new THREE.BoxGeometry(0.65, 0.65, 0.025);
 
             for (let i = 0; i < displayCount; i++) {
                 const vinyl = new THREE.Mesh(vinylGeo, vinylMat);
-                // Empilement vers l'avant (Z) avec un léger décalage aléatoire en X
-                vinyl.position.set( (Math.random() - 0.5) * 0.05, 0.3, i * 0.018 );
-                // Disques penchés en arrière de manière irrégulière
-                vinyl.rotation.x = -0.1 - (Math.random() * 0.05);
+                // Ajustement du placement interne
+                vinyl.position.set( (Math.random() - 0.5) * 0.08, 0.35, i * 0.015 );
+                vinyl.rotation.x = -0.15 - (Math.random() * 0.05);
                 vinyl.rotation.z = (Math.random() - 0.5) * 0.05;
-                
                 vinyl.castShadow = true;
                 vinyl.add(new THREE.LineSegments(new THREE.EdgesGeometry(vinylGeo), crateEdgeMat));
                 window.vinylsContainer.add(vinyl);
