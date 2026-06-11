@@ -6311,51 +6311,52 @@ function triggerRankUp(oldRank, newRank) {
 
         // ==========================================
     // SYSTÈME DE MESSAGERIE PRIVÉE (DM)
-    // ==========================================
-    const DM_TEMPLATES = [
-        {
-            id: 'scam_playlist',
-            sender: '@A&R_Mike',
-            avatarColor: 'bg-blue-600',
-            text: "Yo bro, tes prods sont insane. Envoie $200 par PayPal et je te mets dans notre grosse playlist Spotify 'Rap Caviar FR'. 50k streams garantis.",
-            choices: [
-                { text: "Payer $200", effect: () => { logMoney(-200, "Scam Playlist"); showToast("Tu t'es fait scam. 0 stream ajouté.", "error"); playError(); } },
-                { text: "L'insulter", effect: () => { state.rep += 5; showToast("T'as gardé ton intégrité face à un rat (+5 REP).", "success"); playBleep(); } },
-                { text: "Ignorer", effect: () => { playBleep(); } }
-            ]
-        },
-        {
-            id: 'local_rapper',
-            sender: '@Lil_Kevdu44',
-            avatarColor: 'bg-green-600',
-            text: "Wesh le s, il me faut une prod bien sombre pour mon freestyle Planète Rap la semaine pro. J'ai 150 balles de budget direct, chaud ?",
-            choices: [
-                { text: "Accepter ($150)", effect: () => { logMoney(150, "Prod Local"); state.rep += 10; showToast("Feat validé. Le quartier valide. +$150 | +10 REP", "success"); playSuccess(); } },
-                { text: "Négocier ($300)", effect: () => { if(Math.random()>0.5){ logMoney(300, "Prod Local"); showToast("Il a lâché les billets ! +$300", "success"); playSuccess(); } else { showToast("Il a ghosté, trop cher pour lui.", "error"); playError(); } } },
-                { text: "Recaler", effect: () => { state.rep = Math.max(0, state.rep - 5); showToast("Il a mal pris ton refus (-5 REP)", "error"); playError(); } }
-            ]
-        },
-        {
-            id: 'influencer',
-            sender: '@Chloe_Vibes',
-            avatarColor: 'bg-pink-600',
-            text: "Hiii! J'adore grave ton univers ✨ Tu peux me faire un beat chill gratuit pour mon prochain TikTok ? Je te tag devant mes 500k abonnés, promis !",
-            choices: [
-                { text: "Taffer pour la pub", effect: () => { logFollower(3000); state.rep = Math.max(0, state.rep - 15); showToast("Boost énorme (+3000 Fans) mais l'industrie de la prod te juge (-15 REP).", "info"); playBleep(); } },
-                { text: "Facturer ($400)", effect: () => { if(Math.random()>0.7){ logMoney(400, "Synchro TikTok"); showToast("Elle a payé ! Belle synchro (+ $400).", "success"); playSuccess(); } else { state.followers = Math.max(0, state.followers - 500); showToast("Elle t'a affiché en story pour être 'vénal' (-500 Fans).", "error"); playError(); } } }
-            ]
-        },
-        {
-            id: 'label_deal',
-            sender: '@SonyMusic_A&R',
-            avatarColor: 'bg-purple-600',
-            text: "Bonjour, on suit ton ascension de très près. On aimerait racheter les droits exclusifs et tes masters sur ton dernier banger pour 5000$.",
-            choices: [
-                { text: "Vendre ses droits ($5000)", effect: () => { logMoney(5000, "Vente Exclusive Label"); state.rep = Math.max(0, state.rep - 30); showToast("Cash in ! +$5000, mais tu as perdu le respect de l'underground (-30 REP).", "success"); playCashSound(); } },
-                { text: "Garder ses masters", effect: () => { state.rep += 50; showToast("Indépendant jusqu'à la mort ! La street te valide (+50 REP).", "success"); playSuccess(); } }
-            ]
+    // Structure catégorisée et pool pour éviter les doublons
+    const DM_TEMPLATES = {
+        spam: [
+            { id: 'spam_1', baseName: 'A&R Mike', avatarColor: 'bg-blue-600', text: "Tes prods sont dingues. Envoie $200 via PayPal et je t'ajoute à une grosse playlist. Streams garantis.", choices: [ { text: "Payer $200", effect: () => { logMoney(-200, "Scam Playlist"); showToast("Tu t'es fait scam. 0 stream ajouté.", "error"); playError(); } }, { text: "L'insulter", effect: () => { state.rep += 5; showToast("T'as gardé ton intégrité (+5 REP).", "success"); playBleep(); } }, { text: "Ignorer", effect: () => { playBleep(); } } ] },
+            { id: 'spam_2', baseName: 'PromoDesk', avatarColor: 'bg-sky-600', text: "Pack promo viral: 5 placements réseaux pour 50€. Offre limitée.", choices: [ { text: "Acheter (50€)", effect: () => { logMoney(-50, "Promo Pack"); showToast("Promo achetée, visibilité mineure.", "info"); } }, { text: "Passer", effect: () => { playBleep(); } } ] },
+            { id: 'spam_3', baseName: 'HotList', avatarColor: 'bg-indigo-600', text: "Placement premium pour 100€. Réponse rapide = feature.", choices: [ { text: "Payer", effect: () => { logMoney(-100, "Placement HotList"); showToast("Placement réservé, pas de garanties.", "info"); } }, { text: "Refuser", effect: () => { playBleep(); } } ] },
+            { id: 'spam_4', baseName: 'PromoBot', avatarColor: 'bg-emerald-600', text: "Boost instantané 2h: +100 followers pour 9,99€.", choices: [ { text: "Acheter", effect: () => { logMoney(-10, "Fake Followers"); logFollower(100); showToast("Followers achetés (+100).", "success"); } }, { text: "Ignorer", effect: () => { playBleep(); } } ] },
+            { id: 'spam_5', baseName: 'QuickGain', avatarColor: 'bg-yellow-600', text: "Tu veux 10k plays immédiats ? Offre 29€. Pas de remboursement.", choices: [ { text: "Acheter", effect: () => { logMoney(-29, "Instant Plays"); showToast("Plays achetés. Effet incertain.", "info"); } }, { text: "Refuser", effect: () => { playBleep(); } } ] }
+        ],
+        collab: [
+            { id: 'collab_1', baseName: 'Lil Kevdu', avatarColor: 'bg-green-600', text: "J'ai un freestyle la semaine pro, budget 150. Tu peux m'envoyer une prod sombre ?", choices: [ { text: "Accepter ($150)", effect: () => { logMoney(150, "Prod Local"); state.rep += 10; showToast("Feat validé: +$150 | +10 REP", "success"); playSuccess(); } }, { text: "Négocier ($300)", effect: () => { if(Math.random()>0.5){ logMoney(300, "Prod Local"); showToast("Il a lâché les billets ! +$300", "success"); playSuccess(); } else { showToast("Il a ghosté.", "error"); playError(); } } }, { text: "Recaler", effect: () => { state.rep = Math.max(0, state.rep - 5); showToast("Il a mal pris ton refus (-5 REP)", "error"); playError(); } } ] },
+            { id: 'collab_2', baseName: 'EchoBeats', avatarColor: 'bg-violet-600', text: "J'adore ton son. On fait un EP ensemble ? On partage les royalties.", choices: [ { text: "Signer l'EP", effect: () => { state.rep += 20; showToast("Collab confirmée: +20 REP", "success"); } }, { text: "Refuser", effect: () => { state.rep = Math.max(0, state.rep - 5); showToast("Collab refusée (-5 REP)", "error"); } } ] },
+            { id: 'collab_3', baseName: 'Nova', avatarColor: 'bg-pink-500', text: "Hey! J'ai 50k followers, je veux un beat gratuit pour mon clip.", choices: [ { text: "Taffer gratis", effect: () => { logFollower(3000); state.rep = Math.max(0, state.rep - 10); showToast("Boost fans (+3000) mais perte de réputation (-10 REP)", "info"); } }, { text: "Facturer ($400)", effect: () => { if(Math.random()>0.6){ logMoney(400, "Synchro"); showToast("Facturation acceptée (+$400)", "success"); } else { state.followers = Math.max(0, state.followers - 200); showToast("Elle t'a clashé (-200 Fans)", "error"); } } } ] },
+            { id: 'collab_4', baseName: 'StreetLink', avatarColor: 'bg-rose-600', text: "On veut ton son pour une BO indé. Paiement et kicker inclus.", choices: [ { text: "Accepter", effect: () => { logMoney(800, "BO Indé"); state.rep += 30; showToast("BO bookée! +$800 | +30 REP", "success"); } }, { text: "Refuser", effect: () => { playBleep(); } } ] },
+            { id: 'collab_5', baseName: 'BeatWave', avatarColor: 'bg-cyan-600', text: "Salut, tu veux prod pour ma tournée locale ? Paiement par date.", choices: [ { text: "Signer dates", effect: () => { logMoney(200, "Tournée"); state.rep += 15; showToast("Dates ajoutées +$200 | +15 REP", "success"); } }, { text: "Passer", effect: () => { playBleep(); } } ] }
+        ],
+        business: [
+            { id: 'biz_1', baseName: 'SonyA&R', avatarColor: 'bg-purple-600', text: "On suit ton ascension. On propose d'acheter tes masters pour $5000.", choices: [ { text: "Vendre masters ($5000)", effect: () => { logMoney(5000, "Vente Exclusive"); state.rep = Math.max(0, state.rep - 30); showToast("Vente conclue: +$5000, -30 REP", "success"); playCashSound(); } }, { text: "Refuser", effect: () => { state.rep += 50; showToast("Indépendant: +50 REP", "success"); playSuccess(); } } ] },
+            { id: 'biz_2', baseName: 'SyncHouse', avatarColor: 'bg-gray-700', text: "Placement sync pour pub télé: $1200 net.", choices: [ { text: "Accepter ($1200)", effect: () => { logMoney(1200, "Sync Deal"); showToast("Sync signée +$1200", "success"); } }, { text: "Refuser", effect: () => { playBleep(); } } ] },
+            { id: 'biz_3', baseName: 'MerchCo', avatarColor: 'bg-orange-600', text: "On veut te sponsoriser pour ta ligne de merch. Offre initiale: $600.", choices: [ { text: "Signer", effect: () => { logMoney(600, "Sponsor"); state.rep += 10; showToast("Sponsor signé +$600 | +10 REP", "success"); } }, { text: "Négocier", effect: () => { if(Math.random()>0.5){ logMoney(1000, "Sponsor"); showToast("Négociation gagnée +$1000", "success"); } else { showToast("Ils ont passé.", "error"); } } } ] },
+            { id: 'biz_4', baseName: 'PublisherX', avatarColor: 'bg-fuchsia-600', text: "On propose un deal d'édition 50/50 pour ton prochain single.", choices: [ { text: "Signer", effect: () => { state.rep += 25; showToast("Contrat d'édition signé +25 REP", "success"); } }, { text: "Refuser", effect: () => { playBleep(); } } ] },
+            { id: 'biz_5', baseName: 'TourAgent', avatarColor: 'bg-slate-600', text: "Booking agent interested for a regional tour. Advance: $1000.", choices: [ { text: "Take advance", effect: () => { logMoney(1000, "Tour Advance"); state.rep += 20; showToast("Booking secured +$1000 | +20 REP", "success"); } }, { text: "Decline", effect: () => { playBleep(); } } ] }
+        ]
+    };
+
+    // Pool to avoid repeats until exhaustion
+    const DM_POOL = { spam: [], collab: [], business: [] };
+    function refillDMPool(category) {
+        const ids = DM_TEMPLATES[category].map(v => v.id).slice();
+        // Fisher-Yates shuffle
+        for (let i = ids.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [ids[i], ids[j]] = [ids[j], ids[i]];
         }
-    ];
+        DM_POOL[category] = ids;
+    }
+
+    function generateSenderName(base) {
+        const prefixes = ['Neo','Sky','Urban','Wave','Lil','DJ','MC','Meta','Echo','Nova','Grand','Prod','Beat'];
+        const suffixes = ['Prod','Beats','Official','Music','Studio','Sounds','Records','Co'];
+        const name = prefixes[Math.floor(Math.random() * prefixes.length)];
+        const num = Math.random() < 0.35 ? String(Math.floor(Math.random() * 90) + 10) : '';
+        const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+        const core = base ? base.split(' ')[0] : name;
+        return `@${core}${num}${suffix}`;
+    }
 
     function switchSocialTab(tab) {
         const btnFeed = document.getElementById('tab-social-feed');
@@ -6385,6 +6386,15 @@ function triggerRankUp(oldRank, newRank) {
         playBleep();
     }
 
+    // Cherche un template par id dans la structure catégorisée
+    function getTemplateById(id) {
+        for (const cat of Object.keys(DM_TEMPLATES)) {
+            const found = DM_TEMPLATES[cat].find(t => t.id === id);
+            if (found) return found;
+        }
+        return null;
+    }
+
     function renderDMs() {
         const container = document.getElementById('dm-list-container');
         if (!container) return;
@@ -6403,8 +6413,13 @@ function triggerRankUp(oldRank, newRank) {
         });
 
         container.innerHTML = sortedDMs.map(dm => {
-            const template = DM_TEMPLATES.find(t => t.id === dm.templateId);
+            const template = getTemplateById(dm.templateId);
             if (!template) return '';
+
+            // Use runtime overrides if present (unique sender/avatar/text per instance)
+            const sender = dm.runtimeSender || template.sender || (`@${template.baseName || template.id}`);
+            const avatarColor = dm.runtimeAvatarColor || template.avatarColor || 'bg-gray-600';
+            const text = dm.runtimeText || template.text || '';
 
             let choicesHTML = '';
             if (!dm.resolved) {
@@ -6420,15 +6435,15 @@ function triggerRankUp(oldRank, newRank) {
             return `
                 <div class="bg-[#18181b] border border-[#27272a] rounded-xl p-4 shadow-sm ${dm.resolved ? 'opacity-50' : 'border-l-4 border-l-[var(--accent)]'}">
                     <div class="flex items-center gap-3 mb-3">
-                        <div class="w-8 h-8 rounded-full ${template.avatarColor} flex items-center justify-center text-white font-bold text-xs shadow-inner">
-                            ${template.sender.charAt(1).toUpperCase()}
+                        <div class="w-8 h-8 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold text-xs shadow-inner">
+                            ${sender.charAt(1) ? sender.charAt(1).toUpperCase() : sender.charAt(0).toUpperCase()}
                         </div>
                         <div class="flex flex-col">
-                            <span class="font-bold text-sm text-gray-200">${template.sender}</span>
+                            <span class="font-bold text-sm text-gray-200">${sender}</span>
                             <span class="text-[9px] font-retro text-[var(--text-muted)] tracking-widest">Il y a ${Math.max(1, Math.floor((getTotalMins() - dm.timestamp)/60))} heures</span>
                         </div>
                     </div>
-                    <p class="text-xs text-gray-300 leading-relaxed font-sans">${template.text}</p>
+                    <p class="text-xs text-gray-300 leading-relaxed font-sans">${text}</p>
                     ${choicesHTML}
                 </div>
             `;
@@ -6438,10 +6453,9 @@ function triggerRankUp(oldRank, newRank) {
     function answerDM(instanceId, choiceIdx) {
         const dm = state.dms.find(d => d.instanceId == instanceId);
         if (!dm || dm.resolved) return;
-
-        const template = DM_TEMPLATES.find(t => t.id === dm.templateId);
+        const template = getTemplateById(dm.templateId);
         if (template && template.choices[choiceIdx]) {
-            template.choices[choiceIdx].effect(); // Exécute les gains/pertes
+            try { template.choices[choiceIdx].effect(); } catch(e) { console.error('DM effect error', e); }
         }
 
         dm.resolved = true;
@@ -6449,20 +6463,43 @@ function triggerRankUp(oldRank, newRank) {
         renderDMs();
         updateHUD();
         saveGame();
+
+        // Purge automatique: retire le DM après 30s de résolution et rafraîchit l'affichage
+        setTimeout(() => {
+            const idx = (state.dms || []).findIndex(d => d.instanceId == instanceId);
+            if (idx !== -1) {
+                state.dms.splice(idx, 1);
+                renderDMs();
+                saveGame();
+            }
+        }, 30000);
     }
 
     function spawnRandomDM() {
         state.dms = state.dms || [];
-        
-        // Sélectionne un template aléatoire
-        const template = DM_TEMPLATES[Math.floor(Math.random() * DM_TEMPLATES.length)];
-        
+        // Choix de catégorie aléatoire (équilibré)
+        const categories = Object.keys(DM_TEMPLATES);
+        const category = categories[Math.floor(Math.random() * categories.length)];
+
+        if (!DM_POOL[category] || DM_POOL[category].length === 0) refillDMPool(category);
+        const tid = DM_POOL[category].shift();
+        const template = getTemplateById(tid);
+        if (!template) return;
+
+        // Génère un nom d'expéditeur unique pour l'instance
+        const runtimeSender = `@${generateSenderName(template.baseName || template.sender || template.id)}`;
+        const runtimeAvatarColor = template.avatarColor || 'bg-gray-600';
+        const runtimeText = template.text;
+
         state.dms.push({
-            instanceId: Date.now(),
+            instanceId: Date.now() + Math.floor(Math.random()*1000),
             templateId: template.id,
             timestamp: getTotalMins(),
             resolved: false,
-            choiceIdx: -1
+            choiceIdx: -1,
+            runtimeSender,
+            runtimeAvatarColor,
+            runtimeText
         });
 
         // Affiche la pastille rouge et active la vibration
@@ -6473,7 +6510,7 @@ function triggerRankUp(oldRank, newRank) {
         if (btnDMs) btnDMs.classList.add('animate-dm-shake');
 
         // Notification visuelle et sonore
-        showToast(`💬 Nouveau message privé de ${template.sender} !`, "info", () => {
+        showToast(`💬 Nouveau message privé de ${state.dms[state.dms.length-1].runtimeSender || template.sender} !`, "info", () => {
             openApp('app-social');
             switchSocialTab('dms');
         });
@@ -7825,7 +7862,11 @@ function triggerRankUp(oldRank, newRank) {
                 if (r < 0.001) triggerRandomEvent('collab');        
                 else if (r < 0.002) triggerRandomEvent('vol');      
                 else if (r < 0.0025) triggerRandomEvent('badbuzz'); 
-                else if (r < 0.008) spawnRandomDM(); // Augmente la chance d'avoir un DM
+                else {
+                    // Probabilité dynamique pour les DMs : environ 5% par tick
+                    const dmChance = 0.05;
+                    if (Math.random() < dmChance) spawnRandomDM();
+                }
             }
         }
 
