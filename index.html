@@ -2673,6 +2673,32 @@
         window.collisionObjects = window.collisionObjects || [];
         window.collisionObjects.push(hitbox);
 
+        // --- Outline for the whole crateGroup (box around group) ---
+        try {
+            const bbox = new THREE.Box3().setFromObject(crateGroup);
+            const size = bbox.getSize(new THREE.Vector3());
+            const center = bbox.getCenter(new THREE.Vector3());
+            const boxGeo = new THREE.BoxGeometry(size.x || 1, size.y || 1, size.z || 1);
+            // create a line material cloned from crateEdgeMat so opacity/color can be animated independently
+            const groupEdgeMat = crateEdgeMat.clone();
+            groupEdgeMat.color = groupEdgeMat.color.clone();
+            groupEdgeMat.transparent = true;
+            groupEdgeMat.opacity = 0.0;
+            const groupEdges = new THREE.LineSegments(new THREE.EdgesGeometry(boxGeo), groupEdgeMat);
+            // convert world center to crateGroup local space
+            crateGroup.worldToLocal(center);
+            groupEdges.position.copy(center);
+            groupEdges.userData = groupEdges.userData || {};
+            groupEdges.userData.isGroupOutline = true;
+            crateGroup.add(groupEdges);
+
+            // Ensure the hitbox is treated as the interactable mesh but the edges represent the whole group
+            window.highlightItems = window.highlightItems || [];
+            window.highlightItems.push({ mesh: hitbox, edges: groupEdges });
+        } catch (e) {
+            console.warn('Failed to create crate group outline', e);
+        }
+
         const vinylsContainer = new THREE.Group();
         vinylsContainer.position.set(0, 0.08, -0.25);
         crateGroup.add(vinylsContainer);
@@ -4100,6 +4126,24 @@
         }
 
         initProximityHighlight();
+        // If some objects registered outlines earlier (created before highlight system), merge them in
+        try {
+            if (window.highlightItems && Array.isArray(window.highlightItems)) {
+                window.highlightItems.forEach(it => {
+                    try {
+                        if (it && it.mesh && it.edges) {
+                            // ensure edges material initial state
+                            it.edges.material = it.edges.material || new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0 });
+                            it.edges.userData = it.edges.userData || {};
+                            it.edges.userData.hovered = false;
+                            highlightItems.push(it);
+                        }
+                    } catch(e) {}
+                });
+                // clear the temporary window store
+                window.highlightItems = [];
+            }
+        } catch(e) {}
         
         
         function animate3D() {
@@ -4577,12 +4621,14 @@
                     let targetLineOp = 0.4; 
                     let targetLineColor = defColor;
 
-                    if (dist < customDist) {
+                    // Hover override: if edges.userData.hovered is set by pointermove, force highlight
+                    const isHovered = !!(item.edges && item.edges.userData && item.edges.userData.hovered);
+                    if (dist < customDist || isHovered) {
                         isNearSomething = true;
                         if (!(item.mesh.geometry && item.mesh.geometry.type === "PlaneGeometry" && item.mesh.name === 'pc_mesh')) {
                             targetEmissive += 0.25; 
                         }
-                        targetLineOp = 0.6;    
+                        targetLineOp = isHovered ? 0.9 : 0.6;    
                         targetLineColor = hlColor; 
                     }
 
@@ -4776,6 +4822,55 @@
             window.lastPointerX = e.clientX;
             window.lastPointerY = e.clientY;
         });
+
+        // Hover detection for interactables -> outline on hover
+        (function(){
+            let lastHoverMesh = null;
+            canvasCont.addEventListener('pointermove', (ev) => {
+                try {
+                    if (isJoystickActive) return; // don't interfere with joystick
+                    const rect = canvasCont.getBoundingClientRect();
+                    const clientX = ev.clientX - rect.left;
+                    const clientY = ev.clientY - rect.top;
+                    mousePos.x = (clientX / rect.width) * 2 - 1;
+                    mousePos.y = -(clientY / rect.height) * 2 + 1;
+                    raycaster.setFromCamera(mousePos, camera);
+                    const intersects = raycaster.intersectObjects(scene.children, true);
+                    const interactableHit = intersects.find(hit => interactableNames.includes(hit.object.name));
+                    if (interactableHit) {
+                        const hitMesh = interactableHit.object;
+                        if (lastHoverMesh !== hitMesh) {
+                            // clear previous
+                            if (lastHoverMesh) {
+                                const prev = (window.highlightItems||[]).find(it => it.mesh === lastHoverMesh || it.mesh.name === lastHoverMesh.name);
+                                if (prev && prev.edges) prev.edges.userData.hovered = false;
+                            }
+                            // set new
+                            const item = (window.highlightItems||[]).find(it => it.mesh === hitMesh || it.mesh.name === hitMesh.name);
+                            if (item && item.edges) item.edges.userData.hovered = true;
+                            lastHoverMesh = hitMesh;
+                        }
+                        return;
+                    }
+                    // no hit -> clear
+                    if (lastHoverMesh) {
+                        const prev = (window.highlightItems||[]).find(it => it.mesh === lastHoverMesh || it.mesh.name === lastHoverMesh.name);
+                        if (prev && prev.edges) prev.edges.userData.hovered = false;
+                        lastHoverMesh = null;
+                    }
+                } catch(e) { /* ignore */ }
+            });
+            // clear on leave
+            canvasCont.addEventListener('pointerleave', () => {
+                try {
+                    if (lastHoverMesh) {
+                        const prev = (window.highlightItems||[]).find(it => it.mesh === lastHoverMesh || it.mesh.name === lastHoverMesh.name);
+                        if (prev && prev.edges) prev.edges.userData.hovered = false;
+                        lastHoverMesh = null;
+                    }
+                } catch(e){}
+            });
+        })();
 
         const stopJoystick = () => {
             isJoystickActive = false;
