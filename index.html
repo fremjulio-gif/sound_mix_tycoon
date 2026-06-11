@@ -38,6 +38,8 @@
                 position: absolute; height: 20px; background: var(--accent); border-radius: 3px;
                 box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.4);
                 cursor: grab; z-index: 20; box-sizing: border-box; margin-top: 2px;
+                transition: transform 120ms cubic-bezier(.2,.9,.2,1), box-shadow 120ms ease, opacity 140ms ease;
+                will-change: transform, box-shadow, opacity;
             }
             .pr-note:active { cursor: grabbing; filter: brightness(1.2); }
             .pr-note-handle {
@@ -45,6 +47,11 @@
                 cursor: ew-resize; background: rgba(255,255,255,0.2); border-radius: 0 3px 3px 0;
             }
             .pr-note-handle:hover { background: rgba(255,255,255,0.5); }
+            .pr-note-creating { transform: scale(0.92); opacity: 0; }
+            .pr-note-created { transform: scale(1); opacity: 1; }
+            .pr-note-deleting { transform: scale(0.9); opacity: 0; transition: transform 160ms ease, opacity 160ms ease; }
+            .pr-note-selected { outline: none; }
+            .pr-note-playing { box-shadow: 0 0 18px rgba(99,102,241,0.95), 0 2px 8px rgba(0,0,0,0.6); transform: scale(1.03); }
             
             /* =========================================
             2. BASE & TYPOGRAPHY
@@ -6477,6 +6484,14 @@ function triggerRankUp(oldRank, newRank) {
 
     function spawnRandomDM() {
         state.dms = state.dms || [];
+        state.cooldowns = state.cooldowns || {};
+        const DM_COOLDOWN_DAYS = 2; // enforce at least N in-game days between inbound DMs
+        // Safety guards: respect inbox hard cap and global cooldown even if called elsewhere
+        const unresolvedCount = (state.dms || []).filter(d => !d.resolved).length;
+        const nextAllowed = parseInt(state.cooldowns.nextDMTick || 0, 10) || 0;
+        const now = getTotalMins();
+        if (unresolvedCount >= 3) return; // too many unresolved messages
+        if (now < nextAllowed) return; // still in DM cooldown window
         // Choix de catégorie aléatoire (équilibré)
         const categories = Object.keys(DM_TEMPLATES);
         const category = categories[Math.floor(Math.random() * categories.length)];
@@ -6501,6 +6516,9 @@ function triggerRankUp(oldRank, newRank) {
             runtimeAvatarColor,
             runtimeText
         });
+
+        // After receiving a DM, set a global cooldown preventing new DMs for DM_COOLDOWN_DAYS
+        state.cooldowns.nextDMTick = getTotalMins() + (DM_COOLDOWN_DAYS * 1440);
 
         // Affiche la pastille rouge et active la vibration
         const notif = document.getElementById('dm-notif');
@@ -7036,9 +7054,36 @@ function triggerRankUp(oldRank, newRank) {
                     }
                     renderPrNotes();
                 });
+                // creation animation: start slightly smaller + transparent then mark created
+                el.classList.add('pr-note-creating');
+                // append first for layout
                 
                 rowEl.appendChild(el);
+                // force layout then animate in
+                requestAnimationFrame(() => {
+                    el.classList.remove('pr-note-creating');
+                    el.classList.add('pr-note-created');
+                    // remove the helper class after transition
+                    setTimeout(() => { el.classList.remove('pr-note-created'); }, 220);
+                });
             });
+        }
+
+        // Supprime des notes avec animation
+        function deleteNotes(ids = []) {
+            if (!Array.isArray(ids) || ids.length === 0) return;
+            // add deleting class to DOM nodes first
+            ids.forEach(id => {
+                const el = document.querySelector(`.pr-note[data-id="${id}"]`);
+                if (el) el.classList.add('pr-note-deleting');
+            });
+            // after animation remove from data model and re-render
+            setTimeout(() => {
+                window.prNotes = window.prNotes.filter(n => !ids.includes(n.id));
+                // clear selection if it included deleted
+                if (window.prSelectedNotes) window.prSelectedNotes = window.prSelectedNotes.filter(i => !ids.includes(i));
+                renderPrNotes();
+            }, 160);
         }
 
         // --- INTERACTIONS SÉQUENCEUR ---
@@ -7076,8 +7121,7 @@ function triggerRankUp(oldRank, newRank) {
                 if (e.button === 2) {
                     const noteEl = e.target.closest('.pr-note');
                     if (noteEl) {
-                        window.prNotes = window.prNotes.filter(n => n.id != noteEl.dataset.id);
-                        renderPrNotes();
+                        deleteNotes([parseInt(noteEl.dataset.id, 10)]);
                     }
                     return;
                 }
@@ -7088,6 +7132,7 @@ function triggerRankUp(oldRank, newRank) {
                     const noteData = window.prNotes.find(n => n.id == noteEl.dataset.id);
                     // start resize immediately
                     window.prDragState = { active: true, type: 'resize', noteId: noteData.id, startX: e.clientX, initialDur: noteData.duration };
+                    if (isMobile && navigator.vibrate) navigator.vibrate(8);
                     e.target.setPointerCapture && e.target.setPointerCapture(e.pointerId);
                     e.stopPropagation();
                     return;
@@ -7117,6 +7162,7 @@ function triggerRankUp(oldRank, newRank) {
                     
                     // Enchaîne direct sur le mode resize pour étirer la note dans le même mouvement
                     window.prDragState = { active: true, type: 'resize', noteId: newNote.id, startX: e.clientX, initialDur: 1 };
+                    if (isMobile && navigator.vibrate) navigator.vibrate(10);
                     window.prSelectedNotes = [newNote.id];
                 }
             });
@@ -7131,6 +7177,7 @@ function triggerRankUp(oldRank, newRank) {
                         const noteData = window.prNotes.find(n => n.id === window.prPointerDown.noteId);
                         if (noteData) {
                             window.prDragState = { active: true, type: 'move', noteId: noteData.id, startX: window.prPointerDown.startX, initialStep: noteData.startStep, initialNote: noteData.note };
+                            if (isMobile && navigator.vibrate) navigator.vibrate(6);
                             if (typeof playSynthNote === 'function') playSynthNote(noteData.note, true);
                             window.prPointerDown.moved = true;
                         }
@@ -7180,6 +7227,7 @@ function triggerRankUp(oldRank, newRank) {
                 if (window.prDragState.active) {
                     const note = window.prNotes.find(n => n.id === window.prDragState.noteId);
                     if (note && typeof playSynthNote === 'function') playSynthNote(note.note, false);
+                    if (isMobile && navigator.vibrate) navigator.vibrate(6);
                     window.prDragState.active = false;
                 }
 
@@ -7197,13 +7245,118 @@ function triggerRankUp(oldRank, newRank) {
                 if (!prWindow || prWindow.classList.contains('hidden')) return;
                 if (e.key === 'Delete' || e.key === 'Backspace') {
                     if (window.prSelectedNotes && window.prSelectedNotes.length) {
-                        window.prNotes = window.prNotes.filter(n => !window.prSelectedNotes.includes(n.id));
-                        window.prSelectedNotes = [];
-                        renderPrNotes();
+                        deleteNotes(window.prSelectedNotes.slice());
                         playError();
                     }
                 }
             });
+
+            // --- TOUCH EVENTS (mobile) ---
+            grid.addEventListener('touchstart', (ev) => {
+                if (!ev.touches || ev.touches.length === 0) return;
+                const t = ev.touches[0];
+                const el = document.elementFromPoint(t.clientX, t.clientY);
+
+                // If touching a note handle -> start resize
+                const handle = el ? el.closest('.pr-note-handle') : null;
+                if (handle) {
+                    ev.preventDefault();
+                    const noteEl = handle.closest('.pr-note');
+                    const noteData = window.prNotes.find(n => n.id == noteEl.dataset.id);
+                    window.prDragState = { active: true, type: 'resize', noteId: noteData.id, startX: t.clientX, initialDur: noteData.duration };
+                    if (isMobile && navigator.vibrate) navigator.vibrate(8);
+                    return;
+                }
+
+                // If touching a note body -> prepare potential move
+                const noteEl = el ? el.closest('.pr-note') : null;
+                if (noteEl) {
+                    ev.preventDefault();
+                    const noteData = window.prNotes.find(n => n.id == noteEl.dataset.id);
+                    window.prPointerDown = { active: true, startX: t.clientX, startY: t.clientY, noteId: noteData.id, moved: false };
+                    return;
+                }
+
+                // Touching the grid empty cell -> create note (tap)
+                const cell = el ? el.closest('.pr-cell') : null;
+                if (cell) {
+                    const step = parseInt(cell.dataset.step, 10);
+                    const noteName = cell.dataset.note;
+                    const newNote = { id: window.prNoteIdCounter++, note: noteName, startStep: step, duration: 1 };
+                    window.prNotes.push(newNote);
+                    if (typeof playSynthNote === 'function') playSynthNote(noteName, true);
+                    renderPrNotes();
+                    window.prDragState = { active: true, type: 'resize', noteId: newNote.id, startX: t.clientX, initialDur: 1 };
+                    window.prSelectedNotes = [newNote.id];
+                    ev.preventDefault();
+                    return;
+                }
+            }, { passive: false });
+
+            document.addEventListener('touchmove', (ev) => {
+                if (!ev.touches || ev.touches.length === 0) return;
+                const t = ev.touches[0];
+
+                // If we had a pointerDown candidate and movement threshold passed, start move
+                if (!window.prDragState.active && window.prPointerDown && window.prPointerDown.active) {
+                    const dx = Math.abs(t.clientX - window.prPointerDown.startX);
+                    const dy = Math.abs(t.clientY - window.prPointerDown.startY);
+                    if (dx > 6 || dy > 6) {
+                        const noteData = window.prNotes.find(n => n.id === window.prPointerDown.noteId);
+                        if (noteData) {
+                            window.prDragState = { active: true, type: 'move', noteId: noteData.id, startX: window.prPointerDown.startX, initialStep: noteData.startStep, initialNote: noteData.note };
+                            if (isMobile && navigator.vibrate) navigator.vibrate(6);
+                            if (typeof playSynthNote === 'function') playSynthNote(noteData.note, true);
+                            window.prPointerDown.moved = true;
+                            ev.preventDefault();
+                        }
+                    }
+                }
+
+                if (!window.prDragState.active) return;
+                ev.preventDefault();
+                const note = window.prNotes.find(n => n.id === window.prDragState.noteId);
+                if (!note) return;
+
+                if (window.prDragState.type === 'resize') {
+                    const deltaX = t.clientX - window.prDragState.startX;
+                    const addedSteps = Math.floor(deltaX / 32);
+                    note.duration = Math.max(1, window.prDragState.initialDur + addedSteps);
+                    renderPrNotes();
+                } else if (window.prDragState.type === 'move') {
+                    const elemBelow = document.elementFromPoint(t.clientX, t.clientY);
+                    const cell = elemBelow ? elemBelow.closest('.pr-cell') : null;
+                    if (cell) {
+                        note.startStep = parseInt(cell.dataset.step, 10);
+                        note.note = cell.dataset.note;
+                        renderPrNotes();
+                    }
+                }
+            }, { passive: false });
+
+            document.addEventListener('touchend', (ev) => {
+                // If we had a touch that didn't move -> treat as tap/select
+                if (window.prPointerDown && window.prPointerDown.active && !window.prPointerDown.moved && !window.prDragState.active) {
+                    const id = window.prPointerDown.noteId;
+                    // simple toggle selection (no shift on touch)
+                    if (!window.prSelectedNotes.includes(id)) window.prSelectedNotes = [id];
+                    else window.prSelectedNotes = [];
+                    renderPrNotes();
+                }
+
+                if (window.prDragState.active) {
+                    const note = window.prNotes.find(n => n.id === window.prDragState.noteId);
+                    if (note && typeof playSynthNote === 'function') playSynthNote(note.note, false);
+                    if (isMobile && navigator.vibrate) navigator.vibrate(6);
+                    window.prDragState.active = false;
+                }
+
+                if (window.prPointerDown) {
+                    window.prPointerDown.active = false;
+                    window.prPointerDown.moved = false;
+                    window.prPointerDown.noteId = null;
+                }
+            }, { passive: false });
         }
         
         // ==========================================
@@ -7946,8 +8099,22 @@ function triggerRankUp(oldRank, newRank) {
                 else if (r < 0.0025) triggerRandomEvent('badbuzz'); 
                 else {
                     // Probabilité dynamique pour les DMs : environ 5% par tick
-                    const dmChance = 0.05;
-                    if (Math.random() < dmChance) spawnRandomDM();
+                    // Mais: on bloque si la boîte de réception contient déjà trop de messages non résolus,
+                    // et on respecte un cooldown global `state.cooldowns.nextDMTick` en minutes.
+                    state.dms = state.dms || [];
+                    state.cooldowns = state.cooldowns || {};
+                    const unresolvedCount = (state.dms || []).filter(d => !d.resolved).length;
+                    const nextAllowed = parseInt(state.cooldowns.nextDMTick || 0, 10) || 0;
+
+                    // Hard cap: max 3 active (non-resolved) DMs
+                    if (unresolvedCount >= 3) {
+                        // Trop de messages actifs : on bloque la génération
+                    } else if (currentTime < nextAllowed) {
+                        // On est encore en cooldown global pour les DMs
+                    } else {
+                        const dmChance = 0.05;
+                        if (Math.random() < dmChance) spawnRandomDM();
+                    }
                 }
             }
         }
@@ -9466,10 +9633,8 @@ function triggerRankUp(oldRank, newRank) {
         function flashPrNoteVisual(instanceId) {
             const el = document.querySelector(`.pr-note[data-id="${instanceId}"]`);
             if (!el) return;
-            el.style.transition = 'box-shadow 0.12s ease, transform 0.12s ease';
-            el.style.boxShadow = '0 0 14px rgba(129,140,248,0.9)';
-            el.style.transform = 'scale(1.02)';
-            setTimeout(() => { el.style.boxShadow = ''; el.style.transform = ''; }, 120);
+            el.classList.add('pr-note-playing');
+            setTimeout(() => { el.classList.remove('pr-note-playing'); }, 120);
         }
 
         function schedulerLoop() {
