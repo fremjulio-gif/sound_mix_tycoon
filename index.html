@@ -6986,6 +6986,9 @@ function triggerRankUp(oldRank, newRank) {
         window.prNotes = window.prNotes || []; 
         window.prNoteIdCounter = window.prNoteIdCounter || 0;
         window.prDragState = { active: false, type: null, noteId: null, startX: 0, initialDur: 1 };
+        // Sélection et état temporaire du pointeur
+        window.prSelectedNotes = window.prSelectedNotes || []; // tableau d'ids sélectionnés
+        window.prPointerDown = { active: false, startX: 0, startY: 0, noteId: null, moved: false };
 
         // --- MOTEUR DE RENDU MIDI ---
         function renderPrNotes() {
@@ -7008,6 +7011,31 @@ function triggerRankUp(oldRank, newRank) {
                 const handle = document.createElement('div');
                 handle.className = 'pr-note-handle';
                 el.appendChild(handle);
+                // Visual selected state
+                if (Array.isArray(window.prSelectedNotes) && window.prSelectedNotes.includes(note.id)) {
+                    el.classList.add('pr-note-selected');
+                    el.style.boxShadow = '0 0 12px rgba(99,102,241,0.95)';
+                    el.style.border = '1px solid rgba(99,102,241,0.9)';
+                }
+
+                // Accessibility: expose id
+                el.setAttribute('role', 'button');
+                el.setAttribute('tabindex', 0);
+                el.dataset.note = note.note;
+
+                // Click handler fallback (for touch where pointer events may not bubble same way)
+                el.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    // Toggle selection (Shift to multi-add)
+                    const id = note.id;
+                    if (ev.shiftKey) {
+                        if (!window.prSelectedNotes.includes(id)) window.prSelectedNotes.push(id);
+                        else window.prSelectedNotes = window.prSelectedNotes.filter(x => x !== id);
+                    } else {
+                        window.prSelectedNotes = [id];
+                    }
+                    renderPrNotes();
+                });
                 
                 rowEl.appendChild(el);
             });
@@ -7058,7 +7086,9 @@ function triggerRankUp(oldRank, newRank) {
                 if (e.target.classList.contains('pr-note-handle')) {
                     const noteEl = e.target.closest('.pr-note');
                     const noteData = window.prNotes.find(n => n.id == noteEl.dataset.id);
+                    // start resize immediately
                     window.prDragState = { active: true, type: 'resize', noteId: noteData.id, startX: e.clientX, initialDur: noteData.duration };
+                    e.target.setPointerCapture && e.target.setPointerCapture(e.pointerId);
                     e.stopPropagation();
                     return;
                 }
@@ -7067,8 +7097,9 @@ function triggerRankUp(oldRank, newRank) {
                 if (e.target.closest('.pr-note')) {
                     const noteEl = e.target.closest('.pr-note');
                     const noteData = window.prNotes.find(n => n.id == noteEl.dataset.id);
-                    window.prDragState = { active: true, type: 'move', noteId: noteData.id, startX: e.clientX };
-                    if (typeof playSynthNote === 'function') playSynthNote(noteData.note, true);
+                    // Candidate for move: wait for pointermove threshold to start actual move
+                    window.prPointerDown = { active: true, startX: e.clientX, startY: e.clientY, noteId: noteData.id, moved: false };
+                    try { noteEl.setPointerCapture && noteEl.setPointerCapture(e.pointerId); } catch(e){}
                     e.stopPropagation();
                     return;
                 }
@@ -7086,10 +7117,25 @@ function triggerRankUp(oldRank, newRank) {
                     
                     // Enchaîne direct sur le mode resize pour étirer la note dans le même mouvement
                     window.prDragState = { active: true, type: 'resize', noteId: newNote.id, startX: e.clientX, initialDur: 1 };
+                    window.prSelectedNotes = [newNote.id];
                 }
             });
 
             document.addEventListener('pointermove', (e) => {
+                // If there is a pointer-down candidate on a note but no active drag, check threshold
+                if (!window.prDragState.active && window.prPointerDown && window.prPointerDown.active) {
+                    const dx = Math.abs(e.clientX - window.prPointerDown.startX);
+                    const dy = Math.abs(e.clientY - window.prPointerDown.startY);
+                    if (dx > 6 || dy > 6) {
+                        // start move
+                        const noteData = window.prNotes.find(n => n.id === window.prPointerDown.noteId);
+                        if (noteData) {
+                            window.prDragState = { active: true, type: 'move', noteId: noteData.id, startX: window.prPointerDown.startX, initialStep: noteData.startStep, initialNote: noteData.note };
+                            if (typeof playSynthNote === 'function') playSynthNote(noteData.note, true);
+                            window.prPointerDown.moved = true;
+                        }
+                    }
+                }
                 if (!window.prDragState.active) return;
                 const note = window.prNotes.find(n => n.id === window.prDragState.noteId);
                 if (!note) return;
@@ -7117,11 +7163,45 @@ function triggerRankUp(oldRank, newRank) {
                 }
             });
 
-            document.addEventListener('pointerup', () => {
+            document.addEventListener('pointerup', (e) => {
+                // If we had a pointer-down candidate without a move, treat as click/select
+                if (window.prPointerDown && window.prPointerDown.active && !window.prPointerDown.moved && !window.prDragState.active) {
+                    const id = window.prPointerDown.noteId;
+                    // Toggle selection: Shift to multi-add
+                    if (e && e.shiftKey) {
+                        if (!window.prSelectedNotes.includes(id)) window.prSelectedNotes.push(id);
+                        else window.prSelectedNotes = window.prSelectedNotes.filter(x => x !== id);
+                    } else {
+                        window.prSelectedNotes = [id];
+                    }
+                    renderPrNotes();
+                }
+
                 if (window.prDragState.active) {
                     const note = window.prNotes.find(n => n.id === window.prDragState.noteId);
                     if (note && typeof playSynthNote === 'function') playSynthNote(note.note, false);
                     window.prDragState.active = false;
+                }
+
+                // clear pointerDown candidate
+                if (window.prPointerDown) {
+                    window.prPointerDown.active = false;
+                    window.prPointerDown.moved = false;
+                    window.prPointerDown.noteId = null;
+                }
+            });
+
+            // Delete key removes selected notes when piano roll is visible
+            window.addEventListener('keydown', (e) => {
+                const prWindow = document.getElementById('app-pianoroll');
+                if (!prWindow || prWindow.classList.contains('hidden')) return;
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    if (window.prSelectedNotes && window.prSelectedNotes.length) {
+                        window.prNotes = window.prNotes.filter(n => !window.prSelectedNotes.includes(n.id));
+                        window.prSelectedNotes = [];
+                        renderPrNotes();
+                        playError();
+                    }
                 }
             });
         }
@@ -7135,7 +7215,9 @@ function triggerRankUp(oldRank, newRank) {
             cont.innerHTML = avatars.map((a, i) => `
                 <div class="avatar-sel aspect-square relative p-0 overflow-hidden flex items-center justify-center ${i===0?'selected':''}" data-idx="${i}" onclick="selectAvatar(${i})">
                     <img src="${a.img}" alt="${a.id}" class="w-full h-full object-cover pointer-events-none" onerror="this.style.border='1px solid red'" />
-                    <span class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded-md text-[8px] md:text-[10px] font-retro text-white uppercase font-bold tracking-widest pointer-events-none text-center whitespace-nowrap border border-white/5 shadow-md">${a.id}</span>
+                // Expose shared audio context for other helpers
+                try { audioCtxUI = ctx; } catch(e) {}
+
                 </div>`).join('');
             // --- LISTENERS CLAVIER PIANO ROLL ---
             window.addEventListener('keydown', (e) => {
@@ -9296,65 +9378,168 @@ function triggerRankUp(oldRank, newRank) {
 
 
         // ==========================================
-        // MOTEUR DE LECTURE DU PIANO ROLL
+        // MOTEUR DE LECTURE DU PIANO ROLL (AudioContext + Scheduler)
         // ==========================================
-        let prPlayInterval = null;
         let prIsPlaying = false;
         let prCurrentStep = 0;
         const PR_TOTAL_STEPS = 32; // 2 mesures
 
+        // Sequencer timing
+        let prStartTime = 0; // audioCtx time when playback started
+        let prRequestId = null;
+        const scheduleAheadTime = 0.2; // seconds to schedule ahead
+        const lookaheadInterval = 25; // ms (not used with RAF but left for reference)
+
+        // Synth / voice pool
+        const prScheduled = new Set(); // track scheduled note instance ids
+        let prSynthPreset = 'sawtooth';
+        let prSwing = 0; // swing amount in fraction of stepDuration (0..0.3)
+
+        function createSynthVoice(freq, startTime, durationSec, opts = {}) {
+            if (!audioCtxUI) initAudio();
+            if (!audioCtxUI) return null;
+
+            const osc = audioCtxUI.createOscillator();
+            const gain = audioCtxUI.createGain();
+            const filter = audioCtxUI.createBiquadFilter();
+
+            osc.type = opts.type || prSynthPreset || 'sawtooth';
+            osc.frequency.setValueAtTime(freq, startTime);
+
+            // Simple lowpass for tone shaping
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(opts.cutoff || 10000, startTime);
+
+            // ADSR
+            const attack = typeof opts.attack === 'number' ? opts.attack : 0.02;
+            const decay = typeof opts.decay === 'number' ? opts.decay : 0.08;
+            const sustain = typeof opts.sustain === 'number' ? opts.sustain : 0.7;
+            const release = typeof opts.release === 'number' ? opts.release : 0.12;
+
+            gain.gain.setValueAtTime(0.0001, startTime);
+            // Attack -> peak
+            gain.gain.linearRampToValueAtTime(1.0 * (opts.peak || 0.12) * window.sfxVolume, startTime + attack);
+            // Decay -> sustain
+            gain.gain.linearRampToValueAtTime(sustain * (opts.peak || 0.12) * window.sfxVolume, startTime + attack + decay);
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtxUI.destination);
+
+            osc.start(startTime);
+
+            const offTime = startTime + Math.max(0.02, durationSec);
+            // schedule release
+            gain.gain.cancelScheduledValues(offTime);
+            gain.gain.setValueAtTime(gain.gain.value, offTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, offTime + release + 0.01);
+            osc.stop(offTime + release + 0.02);
+
+            return { osc, gain, filter };
+        }
+
+        function scheduleNoteInstance(note, stepStart, durationSteps) {
+            if (!audioCtxUI) initAudio();
+            if (!audioCtxUI) return;
+            const bpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
+            const stepDuration = (15 / bpm); // seconds per sixteenth (as before)
+
+            // Swing: apply slight delay to every other eighth (i.e., odd steps)
+            let swingOffset = 0;
+            if (prSwing && (stepStart % 2 === 1)) {
+                swingOffset = stepDuration * prSwing;
+            }
+
+            const noteStartTime = prStartTime + (stepStart * stepDuration) + swingOffset;
+            const noteDurSec = Math.max(0.05, durationSteps * stepDuration);
+
+            const freq = noteToFreq(note.note || note);
+            const voice = createSynthVoice(freq, noteStartTime, noteDurSec, { type: prSynthPreset });
+
+            // Visual feedback: schedule a flash when the note plays
+            const msUntil = Math.max(0, (noteStartTime - (audioCtxUI.currentTime || 0)) * 1000);
+            setTimeout(() => {
+                flashPrNoteVisual(note.id || `${note.note}_${stepStart}`);
+            }, msUntil);
+        }
+
+        function flashPrNoteVisual(instanceId) {
+            const el = document.querySelector(`.pr-note[data-id="${instanceId}"]`);
+            if (!el) return;
+            el.style.transition = 'box-shadow 0.12s ease, transform 0.12s ease';
+            el.style.boxShadow = '0 0 14px rgba(129,140,248,0.9)';
+            el.style.transform = 'scale(1.02)';
+            setTimeout(() => { el.style.boxShadow = ''; el.style.transform = ''; }, 120);
+        }
+
+        function schedulerLoop() {
+            if (!prIsPlaying) return;
+            if (!audioCtxUI) initAudio();
+            const now = audioCtxUI.currentTime;
+            const bpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
+            const stepDuration = (15 / bpm);
+
+            // compute how many steps have elapsed since prStartTime
+            const elapsed = now - prStartTime;
+            const currentStepFloat = elapsed / stepDuration;
+            const currentStep = Math.floor(currentStepFloat) % PR_TOTAL_STEPS;
+            prCurrentStep = currentStep;
+
+            // schedule ahead notes within scheduleAheadTime
+            const lastStepToSchedule = Math.floor((elapsed + scheduleAheadTime) / stepDuration);
+            for (let s = currentStep; s <= lastStepToSchedule; s++) {
+                const stepIndex = s % PR_TOTAL_STEPS;
+                // For each note starting at stepIndex, schedule if not already scheduled for this loop
+                window.prNotes.forEach(n => {
+                    if (n.startStep === stepIndex) {
+                        const uniqueId = `${n.id}@${s}`;
+                        if (!prScheduled.has(uniqueId)) {
+                            prScheduled.add(uniqueId);
+                            scheduleNoteInstance(n, s, n.duration);
+                        }
+                    }
+                });
+            }
+
+            updatePrPlayheadUI(currentStepFloat);
+            prRequestId = requestAnimationFrame(schedulerLoop);
+        }
+
         function startPrPlayback() {
             if (prIsPlaying) return;
+            if (!audioCtxUI) initAudio();
+            if (!audioCtxUI) return;
+            if (audioCtxUI.state === 'suspended') audioCtxUI.resume();
+
             prIsPlaying = true;
-            
-            // On récupère le BPM du DAW pour synchroniser la vitesse
-            const bpmInput = document.getElementById('daw-bpm');
-            const prBpm = bpmInput ? (parseInt(bpmInput.value, 10) || 120) : 120;
-            
-            // Calcul de la durée d'un step (double croche) en millisecondes
-            const stepDurationMs = (15 / prBpm) * 1000;
-            
+            prScheduled.clear();
+            prStartTime = audioCtxUI.currentTime + 0.05; // small latency to allow scheduling
+
             const btnPlay = document.getElementById('pr-btn-play');
             if (btnPlay) {
                 btnPlay.innerText = "⏸ PAUSE";
                 btnPlay.classList.add('text-[var(--retro-red)]', 'border-[var(--retro-red)]');
             }
 
-            updatePrPlayheadUI();
-
-            prPlayInterval = setInterval(() => {
-                // 1. Éteindre les notes qui se terminent sur ce step
-                window.prNotes.forEach(note => {
-                    if (note.startStep + note.duration === prCurrentStep) {
-                        playSynthNote(note.note, false);
-                    }
-                });
-
-                // 2. Allumer les notes qui commencent sur ce step
-                window.prNotes.forEach(note => {
-                    if (note.startStep === prCurrentStep) {
-                        playSynthNote(note.note, true);
-                    }
-                });
-
-                // 3. Avancer la tête de lecture
-                prCurrentStep++;
-                if (prCurrentStep >= PR_TOTAL_STEPS) {
-                    prCurrentStep = 0; // Loop !
-                }
-                
-                updatePrPlayheadUI();
-            }, stepDurationMs);
+            // kick the RAF-based scheduler
+            prRequestId = requestAnimationFrame(schedulerLoop);
         }
 
         function stopPrPlayback() {
             prIsPlaying = false;
-            clearInterval(prPlayInterval);
+            if (prRequestId) cancelAnimationFrame(prRequestId);
+            prRequestId = null;
             prCurrentStep = 0;
-            updatePrPlayheadUI();
-            
-            // Failsafe : on coupe tout le son en cours
-            Object.keys(activeSynthNotes).forEach(note => playSynthNote(note, false));
+            prScheduled.clear();
+            updatePrPlayheadUI(0);
+
+            // Failsafe: stop WebAudio voices by resuming a short silence (best-effort)
+            try {
+                if (audioCtxUI && audioCtxUI.state !== 'closed') {
+                    // nothing to forcibly stop since we scheduled stops, but clear activeSynthNotes map
+                    Object.keys(activeSynthNotes).forEach(note => playSynthNote(note, false));
+                }
+            } catch(e) {}
 
             const btnPlay = document.getElementById('pr-btn-play');
             if (btnPlay) {
@@ -9368,7 +9553,7 @@ function triggerRankUp(oldRank, newRank) {
             else startPrPlayback();
         }
 
-        function updatePrPlayheadUI() {
+        function updatePrPlayheadUI(currentStepFloat = null) {
             const gridContainer = document.getElementById('pr-grid-container');
             if (!gridContainer) return;
 
@@ -9384,25 +9569,24 @@ function triggerRankUp(oldRank, newRank) {
                 playhead.style.zIndex = '50';
                 playhead.style.pointerEvents = 'none';
                 playhead.style.boxShadow = '0 0 10px var(--retro-red)';
-                
-                // Calcule la vitesse de la transition CSS pour qu'elle corresponde au BPM
-                const bpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
-                const stepMs = (15 / bpm);
-                playhead.style.transition = `left ${stepMs}s linear`;
-                
                 gridContainer.appendChild(playhead);
             }
 
-            // On déplace la barre
-            const playheadX = prCurrentStep * 32;
+            // Determine float position
+            const bpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
+            const stepDuration = (15 / bpm);
+            let posSteps = prCurrentStep;
+            if (currentStepFloat !== null) posSteps = currentStepFloat;
+
+            const playheadX = posSteps * 32;
             playhead.style.left = playheadX + 'px';
 
             // Auto-scroll : si la barre sort de l'écran, on fait défiler le container
             if (playheadX > gridContainer.scrollLeft + gridContainer.clientWidth - 64) {
                 gridContainer.scrollLeft = playheadX - gridContainer.clientWidth / 2;
-            } else if (playheadX < gridContainer.scrollLeft && prCurrentStep !== 0) {
+            } else if (playheadX < gridContainer.scrollLeft && posSteps !== 0) {
                 gridContainer.scrollLeft = playheadX;
-            } else if (prCurrentStep === 0) {
+            } else if (Math.floor(posSteps) === 0) {
                 gridContainer.scrollLeft = 0; // Retour au début
             }
         }
