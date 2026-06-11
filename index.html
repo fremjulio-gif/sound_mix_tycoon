@@ -4945,19 +4945,42 @@ function calculateLevelData() {
     );
 
     const level = Math.max(1, Math.floor(avgMastery) || 1);
-
-    // --- 1. DÉTECTION DE LEVEL UP ---
-    if (state.lastLevel !== undefined && level > state.lastLevel) {
-        const oldL = state.lastLevel;
-        state.lastLevel = level;
-        setTimeout(() => triggerLevelUp(oldL, level), 800);
-    }
-    if (state.lastLevel === undefined) state.lastLevel = level;
-
     // XP vers le prochain rang
     const currentRank = getCurrentRank();
     const nextRank = PLAYER_RANKS.find(r => r.id === currentRank?.id + 1);
     
+    
+    // --- 1. DÉTECTION DE CHANGEMENT DE LIGUE & CENTAINE ---
+    if (state.lastLevel === undefined) state.lastLevel = level;
+    if (state.lastRankId === undefined) state.lastRankId = currentRank.id;
+
+    const oldLevel = state.lastLevel;
+    const oldRankId = state.lastRankId;
+
+    let shouldTriggerNotif = false;
+    let isRankUp = false;
+
+    // A. Vérif changement de ligue (Prioritaire)
+    if (currentRank.id > oldRankId) {
+        shouldTriggerNotif = true;
+        isRankUp = true;
+    } 
+    // B. Vérif passage de centaine (ex: 99 -> 100, 199 -> 200)
+    else if (Math.floor(level / 100) > Math.floor(oldLevel / 100)) {
+        shouldTriggerNotif = true;
+    }
+
+    if (shouldTriggerNotif) {
+        state.lastLevel = level;
+        state.lastRankId = currentRank.id;
+        // On envoie des infos supplémentaires à l'animation
+        setTimeout(() => triggerLevelUp(oldLevel, level, isRankUp, currentRank), 800);
+    } else if (level > state.lastLevel) {
+        // Mise à jour silencieuse pour les niveaux intermédiaires (ex: 34 -> 35)
+        state.lastLevel = level;
+        state.lastRankId = currentRank.id;
+    }
+
     let progressToNext = null;
     if (nextRank) {
         const folProgress  = nextRank.minFol > 0 ? Math.min(1, (Number(state?.followers) || 0) / nextRank.minFol) : 1;
@@ -5006,24 +5029,34 @@ function getCurrentRank() {
     return current;
 }
 
-function triggerLevelUp(oldLevel, newLevel) {
-    // 2. ANIMATIONS DE CÉLÉBRATION
+function triggerLevelUp(oldLevel, newLevel) {function triggerLevelUp(oldLevel, newLevel, isRankUp = false, rankData = null) {
+    const rank = rankData || getCurrentRank();
+    
+    // ANIMATIONS DE CÉLÉBRATION (Plus intenses pour les ligues)
     fireConfetti('achievement');
-    window.camShakeIntensity = 1.5; // Shake caméra intense
-    playLevelUpSound(); // Son spécifique de Level Up
-    setTimeout(playLevelUpSound, 200); // Double-tone pour l'impact
+    if (isRankUp) {
+        setTimeout(() => fireConfetti('banger'), 300); // Double dose de confettis pour les ligues
+    }
+    window.camShakeIntensity = isRankUp ? 2.5 : 1.5; 
+    
+    playLevelUpSound(); 
+    setTimeout(playLevelUpSound, 200); 
 
     const toast = document.createElement('div');
     toast.className = 'level-up-toast juicy-level-up';
-    const rank = getCurrentRank();
     
+    const titleText = isRankUp ? "NOUVELLE LIGUE !" : "CENTAINE ATTEINTE !";
+    const subText = isRankUp 
+        ? `Tu passes dans la cour des grands : ${rank.name}` 
+        : `Tu as franchi le cap du niveau ${newLevel} !`;
+
     toast.innerHTML = `
-        <div class="text-6xl mb-4 drop-shadow-lg">⭐</div>
-        <h2 class="text-4xl mb-1">LEVEL UP !</h2>
-        <p class="text-sm font-bold uppercase tracking-widest opacity-80 mb-6">Tu es passé du niveau ${oldLevel} au niveau ${newLevel}</p>
+        <div class="text-6xl mb-4 drop-shadow-lg">${isRankUp ? '👑' : '⭐'}</div>
+        <h2 class="text-4xl mb-1">${titleText}</h2>
+        <p class="text-sm font-bold uppercase tracking-widest opacity-80 mb-6">${subText}</p>
         <div class="bg-black/10 rounded-2xl p-5 border border-white/20 mb-8">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-black/60 mb-1">Avantage actuel</p>
-            <p class="text-xl font-black uppercase tracking-tight">${rank.name}</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-black/60 mb-1">Statut actuel</p>
+            <p class="text-xl font-black uppercase tracking-tight" style="color: ${rank.glowColor || '#fff'}">${rank.name}</p>
             <p class="text-[11px] mt-1 font-medium opacity-90">"${rank.perk}"</p>
         </div>
         <button onclick="this.parentElement.remove()" class="w-full bg-black text-white py-4 rounded-2xl font-bold tracking-widest hover:scale-105 active:scale-95 transition-transform uppercase text-xs">C'est le moment de percer !</button>
@@ -6642,6 +6675,10 @@ function triggerRankUp(oldRank, newRank) {
         const DEFAULT_STATE = {
             username: '', activeCharacter: 0,
             money: 100, rep: 10, followers: 0, energy: 100,
+            // --- AJOUT DES VOLUMES PAR DÉFAUT ---
+            masterVolume: 1.0,
+            musicVolume: 0.8,
+            sfxVolume: 0.5,
             timeMins: 8 * 60,
             day: 1,
             multiplier: 1.0, plugins: 0, lastLevel: 1,
@@ -7114,6 +7151,7 @@ function triggerRankUp(oldRank, newRank) {
             });
 
             // Initialisation des écouteurs pour les sliders audio
+                        // Initialisation des écouteurs pour les sliders audio avec sauvegarde automatique
             function initAudioSettingsListeners() {
                 const masterSlider = document.getElementById('master-volume-slider');
                 const musicSlider = document.getElementById('music-volume-slider');
@@ -7122,24 +7160,32 @@ function triggerRankUp(oldRank, newRank) {
                 if (masterSlider) {
                     masterSlider.addEventListener('input', (e) => {
                         window.masterVolume = parseFloat(e.target.value);
+                        if (typeof state !== 'undefined') state.masterVolume = window.masterVolume;
                         MusicSystem.setMasterVolume(window.masterVolume);
                         document.getElementById('master-volume-value').innerText = `${Math.round(window.masterVolume * 100)}%`;
+                        saveGame();
                     });
                 }
                 if (musicSlider) {
                     musicSlider.addEventListener('input', (e) => {
                         window.musicVolume = parseFloat(e.target.value);
+                        if (typeof state !== 'undefined') state.musicVolume = window.musicVolume;
                         MusicSystem.setMusicVolume(window.musicVolume);
                         document.getElementById('music-volume-value').innerText = `${Math.round(window.musicVolume * 100)}%`;
+                        saveGame();
                     });
                 }
                 if (sfxSlider) {
                     sfxSlider.addEventListener('input', (e) => {
                         window.sfxVolume = parseFloat(e.target.value);
+                        if (typeof state !== 'undefined') state.sfxVolume = window.sfxVolume;
                         document.getElementById('sfx-volume-value').innerText = `${Math.round(window.sfxVolume * 100)}%`;
+                        saveGame();
                     });
                 }
             }
+
+
             initAudioSettingsListeners(); // Appel de la fonction d'initialisation des écouteurs
             initAchievementsUI();
             initPianoRollUI(); // Initialise le DOM du Piano Roll au boot
@@ -7554,6 +7600,22 @@ function triggerRankUp(oldRank, newRank) {
                     state.ownedCracks = Array.isArray(state.ownedCracks) ? state.ownedCracks : [];
                     state.downloadedCracks = state.downloadedCracks && typeof state.downloadedCracks === 'object' ? state.downloadedCracks : {};
                     state.dms = state.dms || [];
+
+                    // --- CHARGEMENT ET SYNC DES VOLUMES AUDIO ---
+                    state.masterVolume = state.masterVolume !== undefined ? parseFloat(state.masterVolume) : 1.0;
+                    state.musicVolume = state.musicVolume !== undefined ? parseFloat(state.musicVolume) : 0.8;
+                    state.sfxVolume = state.sfxVolume !== undefined ? parseFloat(state.sfxVolume) : 0.5;
+
+                    window.masterVolume = state.masterVolume;
+                    window.musicVolume = state.musicVolume;
+                    window.sfxVolume = state.sfxVolume;
+
+                    // On force le rafraîchissement immédiat du mixeur audio
+                    if (typeof MusicSystem !== 'undefined') {
+                        MusicSystem.setMasterVolume(window.masterVolume);
+                        MusicSystem.setMusicVolume(window.musicVolume);
+                    }
+                    // --------------------------------------------
 
                     // 3. Parsing sécurisé des valeurs
                     state.timeMins        = parseInt(state.timeMins, 10) || 8 * 60;
