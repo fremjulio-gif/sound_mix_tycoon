@@ -4921,16 +4921,17 @@ const PLAYER_RANKS = [
 ];
 
 function calculateLevelData() {
-    // --- SEUILS CALIBRÉS SUR LES VRAIES VALEURS DU JEU ---
-    // On utilise (Number(x) || 0) pour empêcher la propagation de NaN si une valeur de l'état est corrompue
-    const moneyScore  = Math.min(100, ((Number(state.money) || 0) / 50000) * 100);
-    const repScore    = Math.min(100, ((Number(state.rep) || 0) / 500) * 100);
-    const follScore   = Math.min(100, ((Number(state.followers) || 0) / 50000) * 100);
-    const trackScore  = Math.min(100, ((Number(state.stats?.tracks) || 0) / 50) * 100);
+    if (!state) return null; // Sécurité globale
 
-    // Ratio bangers/tracks = skill réel
-    const bangerRatio = (state.stats?.tracks > 0)
-        ? ((Number(state.stats.bangers) || 0) / state.stats.tracks)
+    // --- SEUILS CALIBRÉS (Avec Optional Chaining) ---
+    const moneyScore  = Math.min(100, ((Number(state?.money) || 0) / 50000) * 100);
+    const repScore    = Math.min(100, ((Number(state?.rep) || 0) / 500) * 100);
+    const follScore   = Math.min(100, ((Number(state?.followers) || 0) / 50000) * 100);
+    const trackScore  = Math.min(100, ((Number(state?.stats?.tracks) || 0) / 50) * 100);
+
+    // Ratio bangers/tracks = skill réel (Sécurisé)
+    const bangerRatio = (state?.stats?.tracks > 0)
+        ? ((Number(state?.stats?.bangers) || 0) / state.stats.tracks)
         : 0;
     const skillScore = Math.min(100, (Number(bangerRatio) || 0) * 150);
 
@@ -4948,43 +4949,28 @@ function calculateLevelData() {
     // --- 1. DÉTECTION DE LEVEL UP ---
     if (state.lastLevel !== undefined && level > state.lastLevel) {
         const oldL = state.lastLevel;
-        // Le Toast de Level Up ne se déclenche que tous les 10 niveaux
-        if (level % 10 === 0) {
-        // Délai pour laisser le temps à l'action déclencheuse (ex: export) de finir ses propres visuels
+        state.lastLevel = level;
         setTimeout(() => triggerLevelUp(oldL, level), 800);
-        }
-        state.lastLevel = level; // On met toujours à jour le lastLevel pour la progression
     }
     if (state.lastLevel === undefined) state.lastLevel = level;
 
-    // --- 2. DÉTECTION DE CHANGEMENT DE LIGUE (RANK) ---
-    if (state.lastRankId === undefined) state.lastRankId = 1; // Initialisation si non présent
-    if (currentRank.id > state.lastRankId) {
-        const oldRank = PLAYER_RANKS.find(r => r.id === state.lastRankId);
-        state.lastRankId = currentRank.id;
-        setTimeout(() => triggerRankUp(oldRank, currentRank), 800);
-    }
     // XP vers le prochain rang
     const currentRank = getCurrentRank();
-    const nextRank = PLAYER_RANKS.find(r => r.id === currentRank.id + 1);
+    const nextRank = PLAYER_RANKS.find(r => r.id === currentRank?.id + 1);
     
-    // Ce qui manque pour monter de rang (le critère le plus loin)
     let progressToNext = null;
     if (nextRank) {
-        // Sécurité division par zéro et NaN
-        const folProgress  = nextRank.minFol > 0 ? Math.min(1, (Number(state.followers) || 0) / nextRank.minFol) : 1;
-        const repProgress  = nextRank.minRep > 0 ? Math.min(1, (Number(state.rep) || 0) / nextRank.minRep) : 1;
-        const trkProgress  = nextRank.minTracks > 0 ? Math.min(1, (Number(state.stats?.tracks) || 0) / nextRank.minTracks) : 1;
+        const folProgress  = nextRank.minFol > 0 ? Math.min(1, (Number(state?.followers) || 0) / nextRank.minFol) : 1;
+        const repProgress  = nextRank.minRep > 0 ? Math.min(1, (Number(state?.rep) || 0) / nextRank.minRep) : 1;
+        const trkProgress  = nextRank.minTracks > 0 ? Math.min(1, (Number(state?.stats?.tracks) || 0) / nextRank.minTracks) : 1;
         
-        // Le critère le plus bloquant détermine la progression affichée
         const bottleneck = Math.min(folProgress, repProgress, trkProgress);
         
         progressToNext = {
             percent: Math.round(bottleneck * 100),
-            // Indique au joueur exactement ce qui le bloque
-            missingFol:    Math.max(0, nextRank.minFol    - state.followers),
-            missingRep:    Math.max(0, nextRank.minRep    - state.rep),
-            missingTracks: Math.max(0, nextRank.minTracks - state.stats.tracks),
+            missingFol:    Math.max(0, nextRank.minFol    - (state?.followers || 0)),
+            missingRep:    Math.max(0, nextRank.minRep    - (state?.rep || 0)),
+            missingTracks: Math.max(0, nextRank.minTracks - (state?.stats?.tracks || 0)),
         };
     }
 
@@ -5298,28 +5284,25 @@ function triggerRankUp(oldRank, newRank) {
             }, 80);
         }
 
-        // ==========================================
-        // SYSTÈME D'ACHIEVEMENTS
-        // ==========================================
+
         // ==========================================
         // SYSTÈME D'ACHIEVEMENTS PRO (VISIBLE PARTOUT)
         // ==========================================
-        function normalizeAchievementState() {
+                function normalizeAchievementState() {
             if (!state) return;
-            const existing = (state.achievements && typeof state.achievements === 'object') ? state.achievements : {};
+            const existing = (state?.achievements && typeof state.achievements === 'object') ? state.achievements : {};
             const normalized = {};
 
-            // Synchroniser avec les définitions actuelles du code
-            Object.keys(DEFAULT_STATE.achievements).forEach(id => {
+            Object.keys(DEFAULT_STATE?.achievements || {}).forEach(id => {
                 const template = DEFAULT_STATE.achievements[id] || {};
-                const technical = ACHIEVEMENT_DETAILS[id] || {};
+                const technical = ACHIEVEMENT_DETAILS?.[id] || {};
                 const saved = existing[id] || {};
 
                 normalized[id] = { 
                     ...template, 
                     ...technical, 
                     ...(typeof saved === 'object' ? saved : {}), 
-                    unlocked: Boolean(saved.unlocked || saved === true) 
+                    unlocked: Boolean(saved?.unlocked || saved === true) 
                 };
             });
             state.achievements = normalized;
@@ -5385,14 +5368,17 @@ function triggerRankUp(oldRank, newRank) {
         }
 
         function migrateCompletedAchievementProgress() {
+            if (!state) return; // Sécurité anti-crash
             normalizeAchievementState();
+            
             Object.keys(state.achievements || {}).forEach(id => {
                 const achievement = state.achievements[id];
-                const detail = ACHIEVEMENT_DETAILS[id] || {};
+                const detail = ACHIEVEMENT_DETAILS?.[id] || {};
+                
                 if (!achievement || achievement.unlocked || !detail.progressPath) return;
 
                 const progress = getAchievementProgress(id, achievement);
-                if (progress.current >= progress.target) {
+                if (progress?.current >= progress?.target) {
                     achievement.unlocked = true;
                     achievement.legacyUnlocked = true;
                 }
@@ -7635,7 +7621,7 @@ function triggerRankUp(oldRank, newRank) {
                     showToast("Session Restored.", "success");
                 } catch(e) {
                     // On utilise console.error pour tracer le problème s'il se reproduit un jour
-                    console.error('Save corrupted, resetting', e); 
+                    console.error('Erreur critique au chargement de la sauvegarde :', e); 
                     state = JSON.parse(JSON.stringify(DEFAULT_STATE));
                     state.username = username;
                     state.activeCharacter = selectedAvatarIndex;
