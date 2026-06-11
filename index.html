@@ -2661,72 +2661,83 @@
 
 
 
+                // ==========================================
+        // BAC DE DISQUAIRE (ACHIEVEMENTS)
         // ==========================================
-        // TABLEAU DES SUCCÈS (Disque d'Or au-dessus du lit)
-        // ==========================================
-        const boardGroup = new THREE.Group();
-        // Positionné sur le mur du fond (Z = -5), centré au-dessus du lit
-        boardGroup.position.set(3.8, 1.8, -4.95);
-        boardGroup.rotation.y = 0; // Fait face à la pièce
+        const crateGroup = new THREE.Group();
+        crateGroup.position.set(4.2, -1, 4.2); // Coin en bas à droite de la pièce
+        crateGroup.rotation.y = -Math.PI / 4; // Tourné vers le centre
 
-        // Le Cadre (plus grand, plus épais, avec un matériau plus distinct)
-        const frameBoardGeo = new THREE.BoxGeometry(1.8, 1.4, 0.1); // Augmenté
-        const frameBoardMat = new THREE.MeshStandardMaterial({ color: '#2c2c2c', roughness: 0.6, metalness: 0.3 }); // Plus sombre, légèrement métallique
-        const frameBoard = new THREE.Mesh(frameBoardGeo, frameBoardMat);
-        frameBoard.position.set(0, 0, 0.02); // Légèrement avancé
+        const crateMat = new THREE.MeshStandardMaterial({ color: '#3d2b1f', roughness: 0.9 }); // Bois sombre
+        const edgeMat = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 });
+
+        // Structure du bac
+        const crateBase = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.05, 0.6), crateMat);
+        crateBase.position.y = 0.025;
         
-        // Le Fond (Passe-partout sombre, ajusté à la nouvelle taille du cadre)
-        const canvasGeo = new THREE.PlaneGeometry(1.6, 1.2); // Ajusté
-        const canvasMat = new THREE.MeshStandardMaterial({ color: '#1f2937', roughness: 0.5 });
-        const canvasMesh = new THREE.Mesh(canvasGeo, canvasMat);
-        canvasMesh.position.set(0, 0, 0.001); // Légèrement en retrait du cadre
+        const crateSideL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.5, 0.6), crateMat);
+        crateSideL.position.set(-0.375, 0.25, 0);
+        
+        const crateSideR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.5, 0.6), crateMat);
+        crateSideR.position.set(0.375, 0.25, 0);
 
-        // Le Disque d'or (Cylindre aplati - plus grand, plus épais, plus de segments)
-        const recordGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.03, 64); // Rayon 0.4, épaisseur 0.03, 64 segments
-        recordGeo.rotateX(Math.PI / 2);
-        const recordMat = new THREE.MeshStandardMaterial({ color: '#fbbf24', metalness: 0.9, roughness: 0.1, emissive: '#fbbf24', emissiveIntensity: 0.1 }); // Ajout d'un léger emissive
-        const recordMesh = new THREE.Mesh(recordGeo, recordMat);
-        recordMesh.position.set(0, 0.15, 0.06); // Remonté et avancé
+        const crateBack = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.5, 0.05), crateMat);
+        crateBack.position.set(0, 0.25, -0.275);
 
-        // Le Label central du disque
-        const labelGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.008, 32); // Petit cylindre fin
-        labelGeo.rotateX(Math.PI / 2);
-        const recordLabelMat = new THREE.MeshStandardMaterial({ color: '#818cf8', roughness: 0.7, emissive: '#818cf8', emissiveIntensity: 0.05 }); // Couleur accent du jeu
-        const labelMesh = new THREE.Mesh(labelGeo, recordLabelMat);
-        labelMesh.position.set(0, 0, 0.005); // Positionné par rapport au recordMesh
-        recordMesh.add(labelMesh);
+        const crateFront = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.2, 0.05), crateMat);
+        crateFront.position.set(0, 0.1, 0.275); // Plus bas à l'avant pour voir les disques
 
-        // Le Trou central du disque
-        const holeGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.01, 16);
-        holeGeo.rotateX(Math.PI / 2);
-        const holeMat = new THREE.MeshStandardMaterial({ color: '#050505', roughness: 0.9 });
-        const holeMesh = new THREE.Mesh(holeGeo, holeMat);
-        holeMesh.position.set(0, 0, 0.01); // Positionné par rapport au recordMesh
-        recordMesh.add(holeMesh);
-
-        // Petite plaque dorée sous le disque (plus grande et plus épaisse)
-        const plaqueGeo = new THREE.BoxGeometry(0.6, 0.2, 0.03); // Augmenté
-        const plaqueMesh = new THREE.Mesh(plaqueGeo, recordMat);
-        plaqueMesh.position.set(0, -0.35, 0.06); // Déplacé vers le bas et avancé
-
-        // Détail sur la plaque (simule un texte gravé ou une petite étiquette)
-        const plaqueDetailGeo = new THREE.BoxGeometry(0.5, 0.1, 0.005);
-        const plaqueDetailMat = new THREE.MeshStandardMaterial({ color: '#a1a1aa', roughness: 0.8 }); // Couleur gris clair
-        const plaqueDetailMesh = new THREE.Mesh(plaqueDetailGeo, plaqueDetailMat);
-        plaqueDetailMesh.position.set(0, -0.35, 0.065); // Légèrement devant la plaque
-
-        boardGroup.add(frameBoard, canvasMesh, recordMesh, plaqueMesh, plaqueDetailMesh);
-
-        // Assignation pour le clic et le surlignage
-        boardGroup.traverse(child => {
-            if (child.isMesh) {
-                child.name = 'achievements_board_mesh';
-                const edges = new THREE.EdgesGeometry(child.geometry);
-                child.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.5 })));
-            }
+        [crateBase, crateSideL, crateSideR, crateBack, crateFront].forEach(mesh => {
+            mesh.castShadow = true; mesh.receiveShadow = true;
+            mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), edgeMat));
+            crateGroup.add(mesh);
         });
 
-        scene.add(boardGroup);
+        // Hitbox invisible cliquable plus large
+        const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
+        const hitbox = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.8, 0.8), hitboxMat);
+        hitbox.position.y = 0.4;
+        hitbox.name = 'achievements_board_mesh'; // IMPORTANT: Conserve l'ancien nom pour déclencher le clic UI
+        crateGroup.add(hitbox);
+
+        // Container pour les vinyles dynamiques
+        const vinylsContainer = new THREE.Group();
+        vinylsContainer.position.set(0, 0.05, -0.2); // Au fond du bac
+        crateGroup.add(vinylsContainer);
+        window.vinylsContainer = vinylsContainer;
+
+        scene.add(crateGroup);
+
+        // Fonction globale pour remplir le bac
+        window.updateVinylCrate = function() {
+            if (!window.vinylsContainer) return;
+            
+            // Vider le bac avant de le re-remplir
+            while(window.vinylsContainer.children.length > 0){ 
+                window.vinylsContainer.remove(window.vinylsContainer.children[0]); 
+            }
+
+            const trackCount = (typeof state !== 'undefined' && state.stats) ? state.stats.tracks : 0;
+            if (trackCount === 0) return;
+
+            // Limiter à 25 vinyles max visuellement pour ne pas déborder du meuble
+            const displayCount = Math.min(25, trackCount);
+            const vinylMat = new THREE.MeshStandardMaterial({ color: '#1f2937', roughness: 0.6 }); 
+            const vinylGeo = new THREE.BoxGeometry(0.6, 0.6, 0.02);
+
+            for (let i = 0; i < displayCount; i++) {
+                const vinyl = new THREE.Mesh(vinylGeo, vinylMat);
+                // Empilement vers l'avant (Z) avec un léger décalage aléatoire en X
+                vinyl.position.set( (Math.random() - 0.5) * 0.05, 0.3, i * 0.018 );
+                // Disques penchés en arrière de manière irrégulière
+                vinyl.rotation.x = -0.1 - (Math.random() * 0.05);
+                vinyl.rotation.z = (Math.random() - 0.5) * 0.05;
+                
+                vinyl.castShadow = true;
+                vinyl.add(new THREE.LineSegments(new THREE.EdgesGeometry(vinylGeo), edgeMat));
+                window.vinylsContainer.add(vinyl);
+            }
+        };
 
 
     // ==========================================
@@ -7541,12 +7552,27 @@ function triggerRankUp(oldRank, newRank) {
             if (!username) { document.getElementById('login-error').classList.remove('hidden'); playError(); return; }
 
             const savedData = SafeStorage.get(getSaveKey(username)) || SafeStorage.get('smt_save_' + username);
-            if (savedData) {
+            
+            // 1. On ignore les sauvegardes corrompues qui contiennent le texte "undefined" ou "null"
+            if (savedData && savedData !== "undefined" && savedData !== "null") {
                 try {
                     const parsed = JSON.parse(savedData);
                     state = { ...JSON.parse(JSON.stringify(DEFAULT_STATE)), ...parsed };
-                    state.username = username; // Sécurité : on s'assure que le pseudo est bien celui saisi
+                    state.username = username;
 
+                    // 2. Sécurisation TOTALE des objets imbriqués AVANT toute lecture
+                    state.stats = state.stats || {};
+                    state.cooldowns = state.cooldowns || {};
+                    state.cooldowns.sponsors = state.cooldowns.sponsors || {};
+                    state.history = state.history || { money: [], followers: [] };
+                    state.achievements = state.achievements || {};
+                    state.trackList = state.trackList || [];
+                    state.inventory = state.inventory || [];
+                    state.ownedCracks = Array.isArray(state.ownedCracks) ? state.ownedCracks : [];
+                    state.downloadedCracks = state.downloadedCracks && typeof state.downloadedCracks === 'object' ? state.downloadedCracks : {};
+                    state.dms = state.dms || [];
+
+                    // 3. Parsing sécurisé des valeurs
                     state.timeMins        = parseInt(state.timeMins, 10) || 8 * 60;
                     state.day             = parseInt(state.day, 10) || 1;
                     state.money           = parseInt(state.money, 10) || 0;
@@ -7555,102 +7581,64 @@ function triggerRankUp(oldRank, newRank) {
                     state.multiplier      = parseFloat(state.multiplier) || 1.0;
                     state.plugins         = parseInt(state.plugins, 10) || 0;
                     state.energy          = parseFloat(state.energy) || 100;
-                    state.dms = state.dms || [];
-
-                    if (isNaN(state.timeMins)) state.timeMins = 8 * 60;
-                    if (isNaN(state.day) || state.day < 1) state.day = 1;
-                    if (isNaN(state.money)) state.money = 100;
-                    if (isNaN(state.rep)) state.rep = 10;
-                    if (isNaN(state.followers)) state.followers = 0;
-                    if (isNaN(state.energy)) state.energy = 100;
-                    state.lastRankId = parseInt(state.lastRankId, 10) || 1; // Initialise lastRankId
-
-                    state.cooldowns = state.cooldowns || {};
-                    state.cooldowns.dawTimeReady   = parseInt(state.cooldowns.dawTimeReady, 10)   || 0;
-                    state.cooldowns.crackzTimeReady= parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
-                    // Bonus QoL : On réinitialise la story à chaque boot pour récompenser la connexion
-                    state.cooldowns.storyTimeReady = 0;
-                    state.cooldowns.sponsors       = state.cooldowns.sponsors || {};
-
                     
-                    state.isEventActive = false;
-                    state.isReviewActive = false;
+                    state.cooldowns.dawTimeReady    = parseInt(state.cooldowns.dawTimeReady, 10) || 0;
+                    state.cooldowns.crackzTimeReady = parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
+                    state.cooldowns.storyTimeReady  = 0; // Bonus QoL
 
                     Object.keys(state.cooldowns.sponsors).forEach(k => {
                         state.cooldowns.sponsors[k] = parseInt(state.cooldowns.sponsors[k], 10) || 0;
                     });
 
-                    state.inventory              = state.inventory || [];
-                    state.ownedCracks = Array.isArray(state.ownedCracks) ? state.ownedCracks : [];
-                    state.downloadedCracks = state.downloadedCracks && typeof state.downloadedCracks === 'object' ? state.downloadedCracks : {};
-
-                    state.stats                  = state.stats || {};
-                    state.stats.tracks           = parseInt(state.stats.tracks, 10)        || 0;
-                    state.stats.bangers          = parseInt(state.stats.bangers, 10)       || 0;
-                    state.stats.flops            = parseInt(state.stats.flops, 10)         || 0;
-                    state.stats.viruses          = parseInt(state.stats.viruses, 10)       || 0;
-                    state.stats.crackDownloads   = parseInt(state.stats.crackDownloads, 10)|| 0;
+                    state.stats.tracks           = parseInt(state.stats.tracks, 10) || 0;
+                    state.stats.bangers          = parseInt(state.stats.bangers, 10) || 0;
+                    state.stats.flops            = parseInt(state.stats.flops, 10) || 0;
+                    state.stats.viruses          = parseInt(state.stats.viruses, 10) || 0;
+                    state.stats.crackDownloads   = parseInt(state.stats.crackDownloads, 10) || 0;
                     state.stats.consecutiveFlops = parseInt(state.stats.consecutiveFlops, 10) || 0;
                     state.stats.sofaChills       = parseInt(state.stats.sofaChills, 10) || 0;
                     state.stats.lampToggles      = parseInt(state.stats.lampToggles, 10) || 0;
                     state.stats.awakeDays        = parseInt(state.stats.awakeDays, 10) || 0;
-                    state.history                = state.history || { money: [], followers: [] };
-                    state.trackList = state.trackList || [];
-                    state.achievements = state.achievements || {}; // Charge les achievements existants
 
-                    // --- DÉBUT MIGRATION RÉTROCOMPATIBILITÉ TOP CHARTS ---
-        if (state.trackList.length === 0 && state.stats.tracks > 0) {
-            let bangersToCreate = state.stats.bangers || 0;
-            let flopsToCreate = state.stats.flops || 0;
+                    // --- MIGRATION RÉTROCOMPATIBILITÉ TOP CHARTS ---
+                    if (state.trackList.length === 0 && state.stats.tracks > 0) {
+                        let bangersToCreate = state.stats.bangers || 0;
+                        let flopsToCreate = state.stats.flops || 0;
 
-            for (let i = 0; i < state.stats.tracks; i++) {
-                let score, titlePrefix;
-            
-                if (bangersToCreate > 0) {
-                score = Math.floor(7 + Math.random() * 3); // Score entre 7 et 9
-                titlePrefix = "ARCHIVED_HIT";
-                bangersToCreate--;
-                } else if (flopsToCreate > 0) {
-                score = Math.floor(1 + Math.random() * 3); // Score entre 1 et 3
-                titlePrefix = "ARCHIVED_FLOP";
-                flopsToCreate--;
-                } else {
-                score = Math.floor(4 + Math.random() * 3); // Score entre 4 et 6
-                titlePrefix = "ARCHIVED_TUNE";
-                }
-
-                state.trackList.push({
-                title: `${titlePrefix}_${i + 1}`,
-                genre: "UNKNOWN",
-                score: score,
-                money: 0, // Donnée historique perdue
-                fans: 0,  // Donnée historique perdue
-                date: "???"
-                });
-            }
-        
-        // Tri décroissant pour s'assurer que le Top Charts affiche les meilleurs morceaux archivés
-            state.trackList.sort((a, b) => b.score - a.score);
-
-        // Tronquer à 15 éléments max pour préserver les performances et la mémoire
-            if (state.trackList.length > 15) {
-                state.trackList.length = 15;
-        }
-        }
-    // --- FIN MIGRATION ---
+                        for (let i = 0; i < state.stats.tracks; i++) {
+                            let score, titlePrefix;
+                            if (bangersToCreate > 0) {
+                                score = Math.floor(7 + Math.random() * 3);
+                                titlePrefix = "ARCHIVED_HIT";
+                                bangersToCreate--;
+                            } else if (flopsToCreate > 0) {
+                                score = Math.floor(1 + Math.random() * 3);
+                                titlePrefix = "ARCHIVED_FLOP";
+                                flopsToCreate--;
+                            } else {
+                                score = Math.floor(4 + Math.random() * 3);
+                                titlePrefix = "ARCHIVED_TUNE";
+                            }
+                            state.trackList.push({ title: `${titlePrefix}_${i + 1}`, genre: "UNKNOWN", score: score, money: 0, fans: 0, date: "???" });
+                        }
+                        state.trackList.sort((a, b) => b.score - a.score);
+                        if (state.trackList.length > 15) state.trackList.length = 15;
+                    }
+                    
+                    state.isEventActive = false;
+                    state.isReviewActive = false;
                     state.isExporting = false;
                     state.isSleeping  = false;
                     state.isSitting   = false;
+
                     state.activeCharacter = parseInt(state.activeCharacter ?? state.avatar, 10) || 0;
-                    
-                    if (avatarChanged) {
-                        state.activeCharacter = selectedAvatarIndex;
-                    }
+                    if (avatarChanged) state.activeCharacter = selectedAvatarIndex;
                     if (state.activeCharacter < 0 || state.activeCharacter >= avatars.length) state.activeCharacter = 0;
 
                     showToast("Session Restored.", "success");
                 } catch(e) {
-                    console.warn('Save corrupted, resetting', e);
+                    // On utilise console.error pour tracer le problème s'il se reproduit un jour
+                    console.error('Save corrupted, resetting', e); 
                     state = JSON.parse(JSON.stringify(DEFAULT_STATE));
                     state.username = username;
                     state.activeCharacter = selectedAvatarIndex;
@@ -7667,6 +7655,7 @@ function triggerRankUp(oldRank, newRank) {
             refreshAchievementsPanel();
 
             spawnRoomAvatar(state.activeCharacter);
+            if (typeof window.updateVinylCrate === 'function') window.updateVinylCrate();
 
             saveGame();
 
@@ -7970,15 +7959,15 @@ function triggerRankUp(oldRank, newRank) {
         let zIndexCounter = 50;
 
         function openApp(id) {
+            // 1. Fermeture automatique des autres apps (Exclusivité stricte Desktop & Mobile)
+            document.querySelectorAll('.os-window').forEach(win => {
+                if (win.id !== id && win.style.display !== 'none') {
+                    closeApp(win.id);
+                }
+            });
+
             const win = document.getElementById(id);
             if (!win) return;
-
-            // Gestion du mode mobile (une seule app à la fois)
-            if (isMobile) {
-                document.querySelectorAll('.os-window').forEach(w => { 
-                    if (w.id !== id) w.style.display = 'none'; 
-                });
-            }
 
             const wasHidden = (win.style.display === 'none' || win.style.display === '');
             win.style.display = 'flex';
@@ -8269,6 +8258,7 @@ function triggerRankUp(oldRank, newRank) {
             };
 
             state.stats.tracks++;
+            if (typeof window.updateVinylCrate === 'function') window.updateVinylCrate();
             checkAchievement('first_blood', () => state.stats.tracks >= 1);
             
             state.trackList.push({
