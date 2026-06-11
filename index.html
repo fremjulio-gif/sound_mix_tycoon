@@ -1658,11 +1658,31 @@
                 
                 <div class="window-content flex flex-col p-0 flex-1 min-h-0 bg-[#09090b]">
                     <!-- Barre de transport -->
-                    <div class="flex items-center gap-4 p-3 bg-black/60 border-b border-white/10 shrink-0">
-                        <button class="btn-action px-4 py-2 text-[10px] rounded" id="pr-btn-play">▶ PLAY</button>
-                        <button class="btn-minimal px-4 py-2 text-[10px] rounded" id="pr-btn-stop">■ STOP</button>
+                    <div class="flex items-center gap-4 p-3 bg-black/60 border-b border-white/10 shrink-0 flex-wrap">
+                        <div class="flex items-center gap-2">
+                            <button class="btn-action px-4 py-2 text-[10px] rounded" id="pr-btn-play">▶ PLAY</button>
+                            <button class="btn-minimal px-4 py-2 text-[10px] rounded" id="pr-btn-stop">■ STOP</button>
+                        </div>
                         <div class="h-6 w-px bg-white/20 mx-2"></div>
-                        <span class="font-retro text-xs text-[var(--accent)] tracking-widest">INSTRUMENT: <span class="text-white">SYNTH_LEAD</span></span>
+
+                        <div class="flex items-center gap-2 ml-2">
+                            <label class="text-[10px] font-retro text-[var(--text-muted)] uppercase tracking-widest">Instrument</label>
+                            <select id="pr-instrument-select" class="rounded-md px-2 py-1 bg-black/50 border border-white/10 text-sm text-white focus:outline-none touch-none">
+                                <option value="sine_soft">Sine douce</option>
+                                <option value="saw_classic" selected>Sawtooth classique</option>
+                                <option value="square_hard">Square agressive</option>
+                                <option value="pluck">Pluck</option>
+                                <option value="pad">Pad</option>
+                                <option value="bass">Bass</option>
+                            </select>
+                        </div>
+
+                        <div class="h-6 w-px bg-white/20 mx-2"></div>
+                        <div class="flex items-center gap-2 md:ml-4">
+                            <label class="text-[10px] font-retro text-[var(--text-muted)] uppercase tracking-widest">BPM</label>
+                            <input id="daw-bpm" type="range" min="60" max="200" value="120" class="w-40 touch-none" />
+                            <input id="daw-bpm-num" type="number" min="60" max="200" value="120" class="w-16 bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-white" />
+                        </div>
                     </div>
 
                     <!-- Zone d'édition (Clavier + Grille) -->
@@ -7113,6 +7133,52 @@ function triggerRankUp(oldRank, newRank) {
             const grid = document.getElementById('pr-grid-container');
             if(!grid) return;
 
+            // INITIALIZE transport controls (instrument + BPM)
+            try {
+                window._currentBpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
+            } catch(e) { window._currentBpm = 120; }
+
+            const instrSelect = document.getElementById('pr-instrument-select');
+            if (instrSelect) {
+                instrSelect.addEventListener('change', (ev) => {
+                    const val = ev.target.value;
+                    prSynthPreset = val;
+                    prPresetOpts = PR_PRESETS[val] || {};
+                    // update small label if needed
+                    const instrLabel = document.querySelector('.window-content .font-retro span');
+                    // optional: show current preset
+                    // provide immediate auditory feedback
+                    if (isMobile && navigator.vibrate) navigator.vibrate(6);
+                    playTone(400, 'sine', 0.04, 0.02);
+                });
+            }
+
+            const bpmRange = document.getElementById('daw-bpm');
+            const bpmNum = document.getElementById('daw-bpm-num');
+            function setBPM(newBpm) {
+                newBpm = Math.max(60, Math.min(200, parseInt(newBpm, 10) || 120));
+                if (!audioCtxUI) window._currentBpm = newBpm;
+                // If playing, adjust prStartTime to preserve playhead position
+                if (prIsPlaying && audioCtxUI && prStartTime) {
+                    const now = audioCtxUI.currentTime;
+                    const oldStep = (15 / (window._currentBpm || 120));
+                    const newStep = (15 / newBpm);
+                    const elapsed = now - prStartTime;
+                    const posSteps = elapsed / oldStep; // fractional steps
+                    prStartTime = now - (posSteps * newStep);
+                }
+                window._currentBpm = newBpm;
+                if (bpmRange) bpmRange.value = newBpm;
+                if (bpmNum) bpmNum.value = newBpm;
+            }
+
+            if (bpmRange) {
+                bpmRange.addEventListener('input', (e) => { setBPM(e.target.value); });
+            }
+            if (bpmNum) {
+                bpmNum.addEventListener('change', (e) => { setBPM(e.target.value); });
+            }
+
             // Désactive le menu clic droit natif sur la zone d'édition
             grid.addEventListener('contextmenu', e => e.preventDefault());
 
@@ -9559,35 +9625,46 @@ function triggerRankUp(oldRank, newRank) {
 
         // Synth / voice pool
         const prScheduled = new Set(); // track scheduled note instance ids
-        let prSynthPreset = 'sawtooth';
+        let prSynthPreset = 'saw_classic';
+        let prPresetOpts = {};
         let prSwing = 0; // swing amount in fraction of stepDuration (0..0.3)
+
+        const PR_PRESETS = {
+            'sine_soft': { type: 'sine', attack: 0.02, decay: 0.12, sustain: 0.85, release: 0.25, peak: 0.12 },
+            'saw_classic': { type: 'sawtooth', attack: 0.01, decay: 0.08, sustain: 0.65, release: 0.12, peak: 0.14 },
+            'square_hard': { type: 'square', attack: 0.005, decay: 0.04, sustain: 0.6, release: 0.08, peak: 0.16 },
+            'pluck': { type: 'sawtooth', attack: 0.001, decay: 0.06, sustain: 0.0, release: 0.3, peak: 0.2, cutoff: 3000 },
+            'pad': { type: 'sine', attack: 0.25, decay: 0.6, sustain: 0.7, release: 0.8, peak: 0.08 },
+            'bass': { type: 'square', attack: 0.005, decay: 0.06, sustain: 0.85, release: 0.12, peak: 0.18 }
+        };
 
         function createSynthVoice(freq, startTime, durationSec, opts = {}) {
             if (!audioCtxUI) initAudio();
             if (!audioCtxUI) return null;
+            // Merge global preset options with call-specific opts
+            const merged = Object.assign({}, prPresetOpts || {}, opts || {});
 
             const osc = audioCtxUI.createOscillator();
             const gain = audioCtxUI.createGain();
             const filter = audioCtxUI.createBiquadFilter();
-
-            osc.type = opts.type || prSynthPreset || 'sawtooth';
+            osc.type = merged.type || prSynthPreset || 'sawtooth';
             osc.frequency.setValueAtTime(freq, startTime);
 
             // Simple lowpass for tone shaping
             filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(opts.cutoff || 10000, startTime);
+            filter.frequency.setValueAtTime(merged.cutoff || 10000, startTime);
 
             // ADSR
-            const attack = typeof opts.attack === 'number' ? opts.attack : 0.02;
-            const decay = typeof opts.decay === 'number' ? opts.decay : 0.08;
-            const sustain = typeof opts.sustain === 'number' ? opts.sustain : 0.7;
-            const release = typeof opts.release === 'number' ? opts.release : 0.12;
+            const attack = typeof merged.attack === 'number' ? merged.attack : 0.02;
+            const decay = typeof merged.decay === 'number' ? merged.decay : 0.08;
+            const sustain = typeof merged.sustain === 'number' ? merged.sustain : 0.7;
+            const release = typeof merged.release === 'number' ? merged.release : 0.12;
 
             gain.gain.setValueAtTime(0.0001, startTime);
             // Attack -> peak
-            gain.gain.linearRampToValueAtTime(1.0 * (opts.peak || 0.12) * window.sfxVolume, startTime + attack);
+            gain.gain.linearRampToValueAtTime(1.0 * (merged.peak || 0.12) * window.sfxVolume, startTime + attack);
             // Decay -> sustain
-            gain.gain.linearRampToValueAtTime(sustain * (opts.peak || 0.12) * window.sfxVolume, startTime + attack + decay);
+            gain.gain.linearRampToValueAtTime(sustain * (merged.peak || 0.12) * window.sfxVolume, startTime + attack + decay);
 
             osc.connect(filter);
             filter.connect(gain);
@@ -9621,7 +9698,7 @@ function triggerRankUp(oldRank, newRank) {
             const noteDurSec = Math.max(0.05, durationSteps * stepDuration);
 
             const freq = noteToFreq(note.note || note);
-            const voice = createSynthVoice(freq, noteStartTime, noteDurSec, { type: prSynthPreset });
+            const voice = createSynthVoice(freq, noteStartTime, noteDurSec, {});
 
             // Visual feedback: schedule a flash when the note plays
             const msUntil = Math.max(0, (noteStartTime - (audioCtxUI.currentTime || 0)) * 1000);
@@ -9679,6 +9756,9 @@ function triggerRankUp(oldRank, newRank) {
             prIsPlaying = true;
             prScheduled.clear();
             prStartTime = audioCtxUI.currentTime + 0.05; // small latency to allow scheduling
+
+            // ensure preset opts reflect currently selected instrument
+            if (PR_PRESETS[prSynthPreset]) prPresetOpts = PR_PRESETS[prSynthPreset];
 
             const btnPlay = document.getElementById('pr-btn-play');
             if (btnPlay) {
