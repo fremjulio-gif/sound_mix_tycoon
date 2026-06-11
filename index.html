@@ -59,8 +59,8 @@
             body {
                 margin: 0;
                 overflow: hidden;
-                width: 100vw;
-                height: 100dvh;
+                width: 100%;
+                height: 100dvh; /* Utilisation de dvh pour éviter les sauts d'interface sur mobile */
                 /* FIX CRITIQUE: position fixed et overscroll-behavior none empêchent tout scroll natif (pull-to-refresh) du navigateur mobile */
                 position: fixed;
                 overscroll-behavior: none;
@@ -326,11 +326,11 @@
 
         .os-window {
             position: absolute;
-            width: 800px;
-            max-width: 95vw;
+            width: min(900px, 94vw);
+            min-width: 320px;
             min-width: 320px;
             height: auto;
-            max-height: calc(100dvh - 120px);
+            max-height: calc(100dvh - 130px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
             display: none;
             flex-direction: column;
             overflow: hidden;
@@ -502,16 +502,16 @@
         .daw-grid-container {
             flex-direction: row !important;
             /* height: auto laisse le contenu respirer */
-            height: auto !important;
-            padding-bottom: 32px !important;
-            overflow: visible !important;
+            height: 100% !important;
+            padding-bottom: 12px !important;
+            overflow: hidden !important;
             align-items: stretch;
         }
         #app-daw { 
-            width: min(900px, 92vw);
-            min-width: 680px;
+            width: min(1000px, 94vw);
+            min-width: 720px;
             /* S'adapte exactement à la hauteur dispo */
-            max-height: calc(100dvh - 140px);
+            max-height: calc(100dvh - 120px - env(safe-area-inset-top));
         }
 
 
@@ -694,7 +694,7 @@
             display: grid !important;
             grid-template-columns: repeat(4, 1fr) !important;
             width: 100% !important;
-            gap: 8px 4px !important;
+            gap: 12px 4px !important;
             justify-items: center !important;
             align-items: start !important;
             margin: 0 !important;
@@ -787,8 +787,9 @@
                     justify-content: center;
                 }
 
-                .btn-minimal, .btn-action, .seq-pad { min-height: 44px; }
-                .seq-pad { min-width: 44px; }
+                .btn-minimal, .btn-action, .seq-pad, .btn-daw-pad { min-height: 44px; }
+                .btn-minimal, .btn-action { padding: 12px 10px !important; }
+                .seq-pad, .btn-daw-pad { min-width: 44px; }
                 #bpm-val { font-size: 18px !important; }
 
                 /* DAW Layout fixes Portrait */
@@ -830,18 +831,21 @@
             .btn-msr.active-r { background: #ef4444 !important; color: #fff; box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); animation: msr-pulse 1.5s infinite; }
             @keyframes msr-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
-            .tl-header { 
-                width: 125px !important; 
+            .tl-header {
+                width: 95px !important;
                 background: #18181b !important; 
                 border-right: 2px solid #000 !important;
                 display: flex !important; 
                 flex-direction: column !important; 
                 align-items: flex-start !important; 
                 justify-content: space-between !important;
-                padding: 8px !important;
+                padding: 6px !important;
                 z-index: 30 !important;
                 box-shadow: 4px 0 15px rgba(0,0,0,0.3);
             }
+
+            .tl-header span { font-size: 8px !important; }
+            .btn-msr { width: 22px; height: 22px; font-size: 9px; }
 
             .track-color-tag {
                 width: 3px; height: 14px; border-radius: 99px;
@@ -1295,7 +1299,7 @@
             z-index: 5000;
             display: none;
             width: 100px;
-            height: 100px;
+            height: 100px; /* Fixed size for mobile ergonomics */
             transform: translate(-50%, -50%);
         }
         .joystick-base {
@@ -1304,7 +1308,7 @@
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.05);
             border: 1.5px solid rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px); /* Liquid glass effect */
             -webkit-backdrop-filter: blur(4px);
         }
         .joystick-knob {
@@ -1312,12 +1316,19 @@
             top: 50%;
             left: 50%;
             width: 34px;
-            height: 34px;
-            margin: -17px 0 0 -17px;
+            height: 34px; /* Fixed size for knob */
+            margin: -17px 0 0 -17px; /* Center the knob */
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8);
+        }
+
+        /* Media query to ensure joystick is hidden on desktop */
+        @media (min-width: 768px) {
+            #joystick-ui {
+                display: none !important;
+            }
         }
 
         /* --- LOADER TEXT GLITCH --- */
@@ -1388,7 +1399,7 @@
             </div>
         </div>
         
-        <div id="hud" class="liquid-glass-heavy min-h-[64px] md:min-h-[76px] fixed top-3 md:top-6 left-1/2 -translate-x-1/2 rounded-[30px] flex items-center justify-between px-3 md:px-8 transition-all w-[96%] md:w-max max-w-6xl border border-white/10 shadow-2xl gap-2 md:gap-8" style="z-index: 1000 !important;">
+        <div id="hud" class="liquid-glass-heavy min-h-[52px] md:min-h-[76px] fixed top-[max(8px,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 rounded-[16px] md:rounded-[30px] flex items-center justify-between px-2 md:px-8 transition-all w-[96vw] md:w-max max-w-6xl border border-white/10 shadow-2xl gap-1 md:gap-8" style="z-index: 2000 !important;">
             <div class="flex items-center gap-3 shrink-0">
                 <div id="hud-avatar" class="w-[48px] h-[48px] md:w-[64px] md:h-[64px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shadow-[0_0_15px_rgba(129,140,248,0.5)]"
                 onclick="toggleTooltip('avatar', this)" onmouseenter="!isMobile && showTooltip('avatar', this)" onmouseleave="!isMobile && hideTooltip()"></div>
@@ -1791,9 +1802,9 @@
                 <button class="text-gray-500 hover:text-white transition-colors px-2 text-lg" onclick="closeApp('app-daw')">✕</button>
             </div>
 
-            <div class="window-content daw-grid-container bg-[#121214] p-3 gap-3 md:gap-4 flex flex-col md:flex-row">
+            <div class="window-content daw-grid-container bg-[#121214] p-2 md:p-4 gap-3 md:gap-4 flex flex-col md:flex-row">
                 
-                <div class="flex-1 flex flex-col relative md:min-w-[620px]">
+                <div class="flex-1 flex flex-col relative md:min-w-0">
                     
                     <div class="mb-3 relative group">
                         <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
@@ -1807,7 +1818,7 @@
                     <div id="daw-genres-container" class="flex flex-wrap gap-2 max-h-[100px] overflow-y-auto custom-scrollbar pr-1 pb-1 mb-3"></div>
 
                     <div class="flex flex-col md:flex-row gap-3 mb-3 md:mb-0">
-                                            <div class="bg-[#18181b] border border-[#27272a] rounded-xl p-3 shadow-inner flex flex-col mb-3 flex-1 min-h-[220px] md:min-h-[260px] relative overflow-hidden group">
+                                            <div class="bg-[#18181b] border border-[#27272a] rounded-xl p-3 shadow-inner flex flex-col mb-3 flex-1 min-h-[250px] md:min-h-[300px] relative overflow-hidden group">
                         
                         <div class="flex justify-between items-end mb-2 border-b border-[#3f3f46] pb-1 shrink-0 z-10">
                             <label class="text-[9px] text-[#10b981] font-mono uppercase tracking-widest font-bold flex items-center gap-2">
@@ -1930,7 +1941,7 @@
                             </div>
                     </div>
 
-                    <div class="flex flex-col md:flex-row gap-6 md:gap-8 items-stretch bg-[#18181b] p-5 rounded-xl md:rounded-t-none border border-[#27272a] shadow-inner">
+                    <div class="flex flex-col md:flex-row gap-4 md:gap-8 items-stretch bg-[#18181b] p-3 md:p-5 rounded-xl md:rounded-t-none border border-[#27272a] shadow-inner">
                             
                             <div class="flex gap-2 flex-1">
                                 <button class="btn-voice btn-daw-pad flex-1 py-2 text-[9px] rounded" data-val="m" onclick="selectDawVoice('m')">Male Voc</button>
@@ -1999,10 +2010,10 @@
                 </button>
             </div>
 
-            <div class="window-content p-6 md:p-8" id="social-content-feed">
+            <div class="window-content p-4 md:p-8" id="social-content-feed">
                 <div class="border border-[var(--accent)]/30 bg-black/40 p-6 md:p-8 rounded-xl text-center mb-8 shadow-inner">
                         <p class="text-sm text-[var(--text-muted)] mb-6">Poste pour trouver ta commu</p>
-                        <button id="btn-story" class="btn-action px-10 py-4 text-xs rounded-lg tracking-widest font-bold w-full md:w-auto" onclick="postStory()">POSTER UNE STORY</button>
+                        <button id="btn-story" class="btn-action px-10 py-5 text-xs rounded-lg tracking-widest font-bold w-full md:w-auto" onclick="postStory()">POSTER UNE STORY</button>
                         <p id="story-status" class="text-xs text-[var(--retro-green)] mt-5 font-retro tracking-widest drop-shadow-[0_0_5px_var(--retro-green)]">STATUS: READY</p>
                     </div>
                     <div id="live-chat-section" class="border border-[var(--accent)]/30 bg-black/40 p-4 md:p-6 rounded-xl text-left mb-8 shadow-inner hidden transition-opacity duration-500">
@@ -2254,10 +2265,10 @@
         let currentRoomAvatar = null;
         let targetPosition = null;
         
-        // --- SYSTÈME JOYSTICK VIRTUEL ---
+        // --- SYSTÈME JOYSTICK VIRTUEL (BRAWL STARS STYLE) ---
         let isJoystickActive = false;
-        let joystickStartPos = new THREE.Vector2();
-        window.lastPointerX = 0;
+        let joystickStartX = 0; // Initial touch X position
+        let joystickStartY = 0; // Initial touch Y position
         window.lastPointerY = 0;
         window.joystickVec = { x: 0, z: 0 };
         
@@ -4189,44 +4200,7 @@
         // Vérification de l'avatar principal
         if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar) {
             
-            // --- MISE À JOUR DYNAMIQUE DU JOYSTICK (SUIVI DE L'AVATAR) ---
-            if (isJoystickActive && typeof joystickUI !== 'undefined' && joystickUI) {
-                const avatarPos = window._v3a.setFromMatrixPosition(currentRoomAvatar.matrixWorld);
-                avatarPos.project(camera);
-                const cx = (avatarPos.x * 0.5 + 0.5) * window.innerWidth;
-                const cy = (avatarPos.y * -0.5 + 0.5) * window.innerHeight;
-
-                joystickUI.style.left = `${cx}px`;
-                joystickUI.style.top = `${cy}px`;
-
-                if (window.lastPointerX !== undefined) {
-                    const deltaX = window.lastPointerX - cx;
-                    const deltaY = window.lastPointerY - cy;
-                    const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                    const maxRadius = 100;
-                    const currentDeadzone = dist < 45 ? 2 : 10;
-                    const clampedDist = Math.min(dist, maxRadius);
-                    const factor = clampedDist / maxRadius;
-
-                    // Feedback visuel (Opacité et Knob)
-                    joystickUI.style.opacity = (0.3 + 0.7 * factor).toString();
-                    if (typeof joystickKnob !== 'undefined' && joystickKnob) {
-                        const visualClamp = Math.min(dist, 50);
-                        const vx = dist > 0 ? (deltaX / dist) * visualClamp : 0;
-                        const vy = dist > 0 ? (deltaY / dist) * visualClamp : 0;
-                        joystickKnob.style.transform = `translate(${vx}px, ${vy}px)`;
-                    }
-
-                    // Injection dans la vélocité (en sync avec la position réelle de l'avatar)
-                    if (dist > currentDeadzone) {
-                        window.joystickVec.x = (deltaX / dist) * factor;
-                        window.joystickVec.z = (deltaY / dist) * factor;
-                    } else {
-                        window.joystickVec.x = 0; window.joystickVec.z = 0;
-                    }
-                }
-            }
-
+        
             // ==========================================
             // --- LOGIQUE DE LA TÉLÉVISION ---
             // ==========================================
@@ -4247,38 +4221,37 @@
             }
             
             // ==========================================
-            // --- 1A. GESTION DU CLAVIER (SMOOTH ZQSD) ---
+            // --- 1A. GESTION DU CLAVIER / JOYSTICK ---
             // ==========================================
             window.velX = window.velX || 0;
             window.velZ = window.velZ || 0;
             window.kbdState = window.kbdState || {};
 
-            // Fix : On capture la position avant mouvement pour le calcul de blocage
             const prevX = currentRoomAvatar.position.x;
             const prevZ = currentRoomAvatar.position.z;
             
-            // Injection du vecteur joystick en priorité
-            let targetDirX = window.joystickVec.x;
-            let targetDirZ = window.joystickVec.z;
-            
-            if (!currentState.isSleeping && !currentState.isEventActive) {
-                if (window.kbdState.up) targetDirZ -= 1;
-                if (window.kbdState.down) targetDirZ += 1;
-                if (window.kbdState.left) targetDirX -= 1;
-                if (window.kbdState.right) targetDirX += 1;
+            let targetDirX = 0;
+            let targetDirZ = 0;
+
+            if (!currentState.isSleeping && !currentState.isEventActive && !currentState.isSitting) {
+                if (isJoystickActive) { // Joystick is active (mobile touch)
+                    targetDirX = window.joystickVec.x;
+                    targetDirZ = window.joystickVec.z;
+                    // If joystick is active, disable mouse-click movement
+                    targetPosition = null;
+                } else { // Keyboard input (desktop, or mobile without active joystick)
+                    if (window.kbdState.up) targetDirZ -= 1;
+                    if (window.kbdState.down) targetDirZ += 1;
+                    if (window.kbdState.left) targetDirX -= 1;
+                    if (window.kbdState.right) targetDirX += 1;
+                }
             }
 
-            // Normalisation pour garder une vitesse constante même en cumul joystick + clavier
+            // Normalisation pour garder une vitesse constante
             const inputMag = Math.sqrt(targetDirX * targetDirX + targetDirZ * targetDirZ);
             if (inputMag > 1) {
                 targetDirX /= inputMag;
                 targetDirZ /= inputMag;
-            }
-
-            if (targetDirX !== 0 || targetDirZ !== 0) {
-                const length = Math.sqrt(targetDirX * targetDirX + targetDirZ * targetDirZ);
-                targetDirX /= length;
-                targetDirZ /= length;
             }
 
             const acceleration = 0.15; 
@@ -4290,7 +4263,7 @@
             const maxSpeed = 0.025 * energySpeedMult;
             
             if (Math.abs(window.velX) > 0.005 || Math.abs(window.velZ) > 0.005) {
-                if (typeof targetPosition !== 'undefined') targetPosition = null; 
+                if (typeof targetPosition !== 'undefined' && targetPosition) targetPosition = null; // Clear mouse target if moving by keyboard/joystick
 
                 const nextX = currentRoomAvatar.position.x + (window.velX * maxSpeed);
                 const nextZ = currentRoomAvatar.position.z + (window.velZ * maxSpeed);
@@ -4332,7 +4305,8 @@
             // ==========================================
             // --- 1B. DÉPLACEMENT À LA SOURIS (Clic) ---
             // ==========================================
-            if (typeof targetPosition !== 'undefined' && targetPosition && !currentState.isSleeping && !currentState.isSitting) {
+            // Only allow mouse-click movement if joystick is NOT active
+            if (!isJoystickActive && typeof targetPosition !== 'undefined' && targetPosition && !currentState.isSleeping && !currentState.isSitting) {
                 const currentFlatPos = window._v2a.set(currentRoomAvatar.position.x, currentRoomAvatar.position.z);
                 const targetFlatPos = window._v2b.set(targetPosition.x, targetPosition.z);
                 const distance = currentFlatPos.distanceTo(targetFlatPos);
@@ -4769,46 +4743,61 @@
             } catch(e) {}
             const interactableHit = intersects.find(hit => interactableNames.includes(hit.object.name));
             if (interactableHit) {
-                console.log('Raycast hit:', interactableHit.object.name, interactableHit.object);
-                const objName = interactableHit.object.name;
-                const worldPos = new THREE.Vector3();
-                interactableHit.object.getWorldPosition(worldPos);
-                const dist = Math.hypot(worldPos.x - currentRoomAvatar.position.x, worldPos.z - currentRoomAvatar.position.z);
-                
-                let interactDist = INTERACTION_DIST;
-                if (objName === 'bed_mesh') interactDist = 2.8;
-                if (objName === 'pc_mesh') interactDist = 2.4;
-                if (objName === 'achievements_board_mesh') interactDist = 4.0;
-                if (objName === 'sofa_mesh') interactDist = 3.0;
+                // If an object is interacted with, the joystick should not activate.
+                stopJoystick(); // Ensure joystick is off and hidden
 
-                if (dist <= interactDist) {
-                    if (objName === 'pc_mesh') enterPC();
-                    else if (objName === 'achievements_board_mesh') openAchievementsBoard();
-                    else if (objName === 'synth_mesh') openPianoRoll();
-                    else if (objName === 'bed_mesh') {
-                        if (state.energy < 50) goSleep();
-                        else showToast("Tu n'es pas assez fatigué (< 50% NRJ).", "info");
+                // ... (existing interaction logic for interactableHit) ...
+                // The original logic for object interaction is here.
+                // We need to ensure it runs.
+                try {
+                    const objName = interactableHit.object.name;
+                    const worldPos = new THREE.Vector3();
+                    interactableHit.object.getWorldPosition(worldPos);
+                    const dist = Math.hypot(worldPos.x - currentRoomAvatar.position.x, worldPos.z - currentRoomAvatar.position.z);
+                    
+                    let interactDist = INTERACTION_DIST;
+                    if (objName === 'bed_mesh') interactDist = 2.8;
+                    if (objName === 'pc_mesh') interactDist = 2.4;
+                    if (objName === 'achievements_board_mesh') interactDist = 4.0;
+                    if (objName === 'sofa_mesh') interactDist = 3.0;
+
+                    if (dist <= interactDist) {
+                        if (objName === 'pc_mesh') enterPC();
+                        else if (objName === 'achievements_board_mesh') openAchievementsBoard();
+                        else if (objName === 'synth_mesh') openPianoRoll();
+                        else if (objName === 'bed_mesh') { if (state.energy < 50) goSleep(); else showToast("Tu n'es pas assez fatigué (< 50% NRJ).", "info"); }
+                        else if (objName === 'sofa_mesh') goSit();
+                        else if (objName === 'interactiveLamp') togglePixarLamp();
+                        else if (objName === 'speaker_mesh') openAudioSettings();
                     }
-                    else if (objName === 'sofa_mesh') goSit();
-                    else if (objName === 'interactiveLamp') togglePixarLamp();
-                    else if (objName === 'speaker_mesh') openAudioSettings();
-                    return; // On arrête tout si on a interagi
-                }
+                } catch (e) { console.error("Error during object interaction:", e); }
+                return; // Stop processing here if an object was interacted with
             }
 
-            // 2. Si on n'a pas touché d'objet, on active le Joystick sur le sol ou l'avatar
-            const groundHit = intersects.find(hit => hit.object.name === 'floor_mesh' || hit.object.parent?.name === 'RoomAvatarRoot');
-            if (groundHit) {
+            // 2. If no interactable object was hit, proceed with movement logic
+            const isTouchEvent = !!event.changedTouches;
+            if (isTouchEvent && isMobile) { // Activate joystick only for mobile touch on empty space
                 isJoystickActive = true;
-                targetPosition = null; // Annule l'ancien pathfinding par clic
-                
-                window.lastPointerX = clientX;
+                joystickStartX = clientX;
+                joystickStartY = clientY;
+                window.lastPointerX = clientX; // Initial position for knob calculation
                 window.lastPointerY = clientY;
 
                 const jUI = document.getElementById('joystick-ui');
                 if (jUI) {
+                    jUI.style.left = `${joystickStartX}px`;
+                    jUI.style.top = `${joystickStartY}px`;
                     jUI.style.display = 'block';
+                    jUI.style.opacity = '0.3'; // Initial opacity
                 }
+                // Prevent default to avoid native scrolling/zoom when joystick is active
+                event.preventDefault();
+            } else if (!isTouchEvent && !isMobile) { // Desktop mouse click on empty space
+                const groundHit = intersects.find(hit => hit.object.name === 'floor_mesh' || hit.object.parent?.name === 'RoomAvatarRoot');
+                if (groundHit) {
+                    targetPosition = groundHit.point; // Set target for mouse-click movement
+                }
+                // For desktop, isJoystickActive remains false, so keyboard is prioritized.
             }
         }
 
@@ -4818,9 +4807,13 @@
         const joystickKnob = document.getElementById('joystick-knob');
 
         canvasCont.addEventListener('pointermove', (e) => {
-            if (!isJoystickActive) return;
-            window.lastPointerX = e.clientX;
-            window.lastPointerY = e.clientY;
+            if (isJoystickActive) { // Only process if joystick is active (i.e., a touch is ongoing)
+                window.lastPointerX = e.clientX;
+                window.lastPointerY = e.clientY;
+                e.preventDefault(); // Prevent scrolling/native zoom while dragging joystick
+            }
+            // The existing hover logic should only apply if the joystick is NOT active.
+            // This is already handled by the `if (!isJoystickActive)` check in the IIFE below.
         });
 
         // Hover detection for interactables -> outline on hover
@@ -4877,7 +4870,7 @@
             window.joystickVec.x = 0;
             window.joystickVec.z = 0;
             if (joystickUI) joystickUI.style.display = 'none';
-            if (joystickKnob) joystickKnob.style.transform = 'none';
+            if (joystickKnob) joystickKnob.style.transform = 'translate(0px, 0px)'; // Reset knob position
         };
         canvasCont.addEventListener('pointerup', stopJoystick);
         canvasCont.addEventListener('pointercancel', stopJoystick);
@@ -9332,22 +9325,22 @@ function triggerRankUp(oldRank, newRank) {
                     if (alreadyOwned) {
                         // ÉTAPE 1 : Le plugin est déjà dans l'inventaire
                         foundAny = true;
-                        crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex justify-between items-center bg-black/40 rounded-lg opacity-70">
-                            <div class="flex-1 pr-4"><p class="font-bold text-sm text-[var(--retro-green)]">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc}</p></div>
-                            <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] rounded border-gray-600 text-gray-500 cursor-not-allowed" disabled>OWNED</button>
+                         crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/40 rounded-lg opacity-70">
+                            <div class="flex-1 pr-4 mb-3 sm:mb-0"><p class="font-bold text-sm text-[var(--retro-green)]">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc}</p></div>
+                            <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] rounded border-gray-600 text-gray-500 cursor-not-allowed" disabled>OWNED</button>
                         </div>`;
                     } else if (!alreadyDiscovered && state.money < c.reqMoney) {
                         // ÉTAPE 2 : Le joueur n'a pas l'argent requis ET ne l'a jamais téléchargé avant
-                        crackHTML += `<div class="border border-gray-800 p-4 flex justify-between items-center bg-black/60 rounded-lg opacity-50 select-none">
-                            <div class="flex-1"><p class="font-bold text-sm text-gray-500 font-retro">???_LOCKED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: $${formatNum(c.reqMoney)} in Bank</p></div>
-                            <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] rounded opacity-50 cursor-not-allowed" disabled>LOCKED</button>
+                         crackHTML += `<div class="border border-gray-800 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/60 rounded-lg opacity-50 select-none">
+                            <div class="flex-1 mb-3 sm:mb-0"><p class="font-bold text-sm text-gray-500 font-retro">???_LOCKED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: $${formatNum(c.reqMoney)} in Bank</p></div>
+                            <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] rounded opacity-50 cursor-not-allowed" disabled>LOCKED</button>
                         </div>`;
                     } else {
                         // ÉTAPE 3 : Plugin disponible au téléchargement
                         foundAny = true;
-                        crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex justify-between items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group">
-                            <div class="flex-1 pr-4"><p class="font-bold text-sm text-gray-200">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc} | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p></div>
-                            <button class="btn-minimal flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
+                        crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group">
+                            <div class="flex-1 pr-4 mb-3 sm:mb-0"><p class="font-bold text-sm text-gray-200">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc} | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p></div>
+                            <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
                         </div>`;
                     }
                 });
@@ -9361,13 +9354,13 @@ function triggerRankUp(oldRank, newRank) {
                     content.innerHTML = `<div class="p-8 bg-black/30 text-white h-full min-h-[300px] font-sans shadow-inner">
                         <h3 class="font-bold text-xl text-white mb-8 tracking-widest uppercase drop-shadow-md">🛒 AudioStore Pro</h3>
                         <div class="space-y-5">
-                            <div class="border border-[var(--glass-border)] p-6 flex justify-between items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
-                                <div><p class="font-bold text-base">ProEQ Studio Bundle</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +0.5x</p></div>
-                                <button class="btn-action px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(300, 0.5)">BUY ($300)</button>
+                             <div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
+                                <div class="mb-4 sm:mb-0"><p class="font-bold text-base">ProEQ Studio Bundle</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +0.5x</p></div>
+                                <button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(300, 0.5)">BUY ($300)</button>
                             </div>
-                            <div class="border border-[var(--glass-border)] p-6 flex justify-between items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
-                                <div><p class="font-bold text-base">Analog Tape Saturation</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +1.0x</p></div>
-                                <button class="btn-action px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button>
+                            <div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
+                                <div class="mb-4 sm:mb-0"><p class="font-bold text-base">Analog Tape Saturation</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +1.0x</p></div>
+                                <button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button>
                             </div>
                         </div>
                     </div>`;
