@@ -4873,9 +4873,9 @@ const PLAYER_RANKS = [
     { 
         id: 2, 
         name: "SoundNet Hustler",  
-        minFol: 1000,   
-        minRep: 30,
-        minTracks: 3,
+        minFol: 500,   
+        minRep: 20,
+        minTracks: 2,
         icon: "💿", 
         color: "from-[#1e3a8a] to-[#172554]", 
         borderColor: "from-[#60a5fa] to-[#3b82f6]", 
@@ -4885,9 +4885,9 @@ const PLAYER_RANKS = [
     { 
         id: 3, 
         name: "Street Certified",  
-        minFol: 5000,  
-        minRep: 100,
-        minTracks: 10,
+        minFol: 3000,  
+        minRep: 75,
+        minTracks: 8,
         icon: "🔥", 
         color: "from-[#78350f] to-[#451a03]", 
         borderColor: "from-[#fbbf24] to-[#f59e0b]", 
@@ -4897,9 +4897,9 @@ const PLAYER_RANKS = [
     { 
         id: 4, 
         name: "Industry Hitmaker", 
-        minFol: 15000, 
-        minRep: 250,
-        minTracks: 25,
+        minFol: 12000, 
+        minRep: 200,
+        minTracks: 20,
         icon: "🔮", 
         color: "from-[#4a044e] to-[#280137]", 
         borderColor: "from-[#c084fc] to-[#a855f7]", 
@@ -4911,7 +4911,7 @@ const PLAYER_RANKS = [
         name: "Diamond Architect", 
         minFol: 50000, 
         minRep: 500,
-        minTracks: 50,
+        minTracks: 40,
         icon: "💎", 
         color: "from-[#083344] to-[#022c22]", 
         borderColor: "from-[#22d3ee] to-[#06b6d4]", 
@@ -4920,22 +4920,28 @@ const PLAYER_RANKS = [
     }
 ];
 
-function calculateLevelData() {
+function calculateLevelData(isSilentInit = false) {
     if (!state) return null; // Sécurité globale
 
-    // --- SEUILS CALIBRÉS (Avec Optional Chaining) ---
-    const moneyScore  = Math.min(100, ((Number(state?.money) || 0) / 50000) * 100);
-    const repScore    = Math.min(100, ((Number(state?.rep) || 0) / 500) * 100);
-    const follScore   = Math.min(100, ((Number(state?.followers) || 0) / 50000) * 100);
-    const trackScore  = Math.min(100, ((Number(state?.stats?.tracks) || 0) / 50) * 100);
+    // Lecture sécurisée des valeurs
+    const money     = Number(state?.money) || 0;
+    const rep       = Number(state?.rep) || 0;
+    const followers = Number(state?.followers) || 0;
+    const tracks    = Number(state?.stats?.tracks) || 0;
+    const bangers   = Number(state?.stats?.bangers) || 0;
 
-    // Ratio bangers/tracks = skill réel (Sécurisé)
-    const bangerRatio = (state?.stats?.tracks > 0)
-        ? ((Number(state?.stats?.bangers) || 0) / state.stats.tracks)
-        : 0;
-    const skillScore = Math.min(100, (Number(bangerRatio) || 0) * 150);
+    // --- SCALING NON-LIMITÉ (racines carrées / log pour éviter hard-cap) ---
+    // Ces formules croissent avec l'effort mais n'imposent aucune limite maximale.
+    const moneyScore  = Math.sqrt(money / 500);            // slow growth with money
+    const repScore    = Math.sqrt(rep / 2);                // reputation contributes steadily
+    const follScore   = Math.sqrt(followers / 200);        // followers scaled by sqrt
+    const trackScore  = Math.sqrt(Math.max(0, tracks) * 2); // tracks give diminishing returns
 
-    // Moyenne pondérée
+    // Ratio bangers/tracks = skill réel (sécurisé)
+    const bangerRatio = tracks > 0 ? (bangers / tracks) : 0;
+    const skillScore = bangerRatio * Math.sqrt(Math.max(1, tracks)) * 5;
+
+    // Moyenne pondérée (les poids reflètent l'importance relative des axes)
     const avgMastery = (
         moneyScore  * 0.25 +
         follScore   * 0.25 +
@@ -4973,8 +4979,10 @@ function calculateLevelData() {
     if (shouldTriggerNotif) {
         state.lastLevel = level;
         state.lastRankId = currentRank.id;
-        // On envoie des infos supplémentaires à l'animation
-        setTimeout(() => triggerLevelUp(oldLevel, level, isRankUp, currentRank), 800);
+        // Si on initialise silencieusement (chargement de sauvegarde), on NE lance PAS d'animations/toasts
+        if (!isSilentInit) {
+            setTimeout(() => triggerLevelUp(oldLevel, level, isRankUp, currentRank), 800);
+        }
     } else if (level > state.lastLevel) {
         // Mise à jour silencieuse pour les niveaux intermédiaires (ex: 34 -> 35)
         state.lastLevel = level;
@@ -5015,13 +5023,19 @@ function calculateLevelData() {
 
 function getCurrentRank() {
     // Un rang est atteint uniquement si LES 3 CONDITIONS sont remplies
-    // (pas juste les followers comme avant)
+    // On itère sur une copie triée par `id` pour garantir qu'on récupère
+    // toujours la ligue la plus élevée atteinte de manière sûre.
     let current = PLAYER_RANKS[0];
-    for (const rank of PLAYER_RANKS) {
+    const safeFollowers = Number(state?.followers) || 0;
+    const safeRep = Number(state?.rep) || 0;
+    const safeTracks = Number(state?.stats?.tracks) || 0;
+
+    const sortedRanks = PLAYER_RANKS.slice().sort((a, b) => a.id - b.id);
+    for (const rank of sortedRanks) {
         if (
-            state.followers    >= rank.minFol    &&
-            state.rep          >= rank.minRep    &&
-            state.stats.tracks >= rank.minTracks
+            safeFollowers >= (Number(rank.minFol) || 0) &&
+            safeRep       >= (Number(rank.minRep) || 0) &&
+            safeTracks    >= (Number(rank.minTracks) || 0)
         ) {
             current = rank;
         }
@@ -7751,7 +7765,9 @@ function triggerRankUp(oldRank, newRank) {
             updateTopChartsWidget();
             
             // Initialisation silencieuse au boot pour ne pas pop au login
-            state.lastLevel = calculateLevelData().level;
+            const _initLevelData = calculateLevelData(true) || { level: 1, currentRank: PLAYER_RANKS[0] };
+            state.lastLevel = _initLevelData.level;
+            state.lastRankId = _initLevelData.currentRank?.id || state.lastRankId;
 
             // --- AJOUT : Force les couleurs correctes à l'apparition de la 3D ---
             updateThemeColors();
