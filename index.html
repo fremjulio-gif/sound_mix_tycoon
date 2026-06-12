@@ -345,17 +345,30 @@
             .btn-system-red { border-color: rgba(255, 0, 60, 0.3); color: var(--retro-red); }
             .btn-system-red:hover { border-color: var(--retro-red); background: rgba(255, 0, 60, 0.1); }
 
-            #btn-quit-pc {
-                position: absolute;
-                top: 24px;
-                left: 24px;
-                z-index: 5000; /* Toujours au-dessus des fenêtres OS */
-                touch-action: manipulation;
+            /* --- OS GLOBAL INTERFACE HIERARCHY --- */
+            #pc-top-bar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 80px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 32px;
+                pointer-events: none; /* Permet l'interaction avec le bureau dessous */
+                z-index: 9000; /* Priorité sur les fenêtres draggable */
             }
+            #pc-top-bar > * { 
+                pointer-events: auto; 
+                display: flex;
+                align-items: center;
+            }
+            #btn-quit-pc { position: relative; margin: 0; }
 
             .window-close-btn {
-                width: 44px;
-                height: 44px;
+                min-width: 48px;
+                min-height: 48px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -398,8 +411,8 @@
             display: none;
             flex-direction: column;
             overflow: hidden;
-            /* STRATE 1: Les fenêtres vivent entre 100 et 1000 (géré par JS) */
-            z-index: 100; 
+            /* STRATE 1: Les fenêtres vivent entre 100 et 8000 */
+            z-index: 100;
             transition: border-color 0.3s ease;
             resize: both;
             box-sizing: border-box;
@@ -414,8 +427,11 @@
                 background: rgba(0, 0, 0, 0.6);
                 padding: 12px 16px;
                 display: flex;
-                justify-content: space-between;
+                /* Layout: Fermeture à gauche, Titre à droite */
+                flex-direction: row; 
+                justify-content: flex-start;
                 align-items: center;
+                gap: 16px;
                 cursor: grab;
                 border-bottom: 1px solid rgba(255,255,255,0.1);
                 flex-shrink: 0;
@@ -694,6 +710,13 @@
 
                 #hud-name { display: none !important; }
 
+                /* Ajustement top bar OS sur mobile */
+                #pc-top-bar {
+                    top: calc(65px + env(safe-area-inset-top)); /* Sous le HUD */
+                    padding: 0 16px;
+                    height: 60px;
+                }
+
 
                 #btn-quit-pc {
                     top: calc(72px + env(safe-area-inset-top)) !important;
@@ -702,10 +725,12 @@
                     padding: 0 12px !important;
                 }
                 #audio-settings-gear {
-                    top: calc(70px + env(safe-area-inset-top)) !important;
+                    top: calc(68px + env(safe-area-inset-top)) !important;
                     right: 12px !important;
                     padding: 0 12px !important;
+                    z-index: 10001 !important; /* Top absolu */
                 }
+                #hud { z-index: 10000 !important; }
                 
                 /* Navigation OS devient une "Bottom Bar" fixe avec prise en compte Safe Area iOS */
                 #mobile-nav { 
@@ -822,7 +847,7 @@
                     border-radius: 0 !important;
                     resize: none !important;
                     border: none !important;
-                    padding-top: calc(125px + env(safe-area-inset-top)) !important; /* Dégage le HUD et le bouton Quitter */
+                    padding-top: calc(140px + env(safe-area-inset-top)) !important; /* Dégage la nouvelle Top Bar OS */
                     background: rgba(10, 10, 15, 0.98) !important;
                     box-shadow: none !important;
                     display: flex !important;
@@ -863,11 +888,6 @@
                     position: absolute;
                     top: -10px; left: -10px; right: -10px; bottom: -10px;
                     pointer-events: auto;
-                }
-
-                #btn-quit-pc {
-                    top: calc(70px + env(safe-area-inset-top)) !important;
-                    left: 12px !important;
                 }
 
                 .btn-minimal, .btn-action, .seq-pad, .btn-daw-pad, .taskbar-btn { min-height: 44px; }
@@ -1724,12 +1744,12 @@
             <div class="liquid-glass-heavy rounded-2xl w-full max-w-4xl border border-[#8b5cf6] shadow-[0_0_40px_rgba(139,92,246,0.2)] flex flex-col overflow-hidden" style="height: 85dvh;">
                 
                 <div class="window-header bg-black/80 p-4 border-b border-white/10 flex justify-between items-center shrink-0">
-                    <span class="font-retro text-xs md:text-sm text-white tracking-widest uppercase flex items-center gap-3 font-bold">
-                        <span class="w-3 h-3 rounded-full bg-[#8b5cf6] shadow-[0_0_10px_#8b5cf6] animate-pulse"></span> Piano Roll Editor
-                    </span>
                     <button class="window-close-btn" onclick="closePianoRoll()">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
+                    <span class="font-retro text-xs md:text-sm text-white tracking-widest uppercase flex items-center gap-3 font-bold">
+                        <span class="w-3 h-3 rounded-full bg-[#8b5cf6] shadow-[0_0_10px_#8b5cf6] animate-pulse"></span> Piano Roll Editor
+                    </span>
                 </div>
                 
                 <div class="window-content flex flex-col p-0 flex-1 min-h-0 bg-[#09090b]">
@@ -1772,10 +1792,13 @@
             
 
         <div id="pc-ui-layer" style="display: none;">
-            <button id="btn-quit-pc" class="btn-system btn-system-red" onclick="quitPC()">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                <span>DECONNEXION</span>
-            </button>
+            <div id="pc-top-bar">
+                <button id="btn-quit-pc" class="btn-system btn-system-red" onclick="quitPC()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <span>DECONNEXION</span>
+                </button>
+                <div></div> <!-- Zone de secours droite -->
+            </div>
 
             <div id="desktop-content">
             <div class="flex flex-col gap-2 pt-1" id="desktop-icons-container">
@@ -1940,7 +1963,10 @@
             
                     <div id="app-daw" class="os-window flex-col font-sans" style="display:none;">
             
-            <div class="window-header bg-[#18181b] border-b border-[#27272a] px-3 py-2 flex justify-between items-center cursor-grab">
+            <div class="window-header bg-[#18181b] border-b border-[#27272a] px-3 py-2 cursor-grab">
+                <button class="window-close-btn" onclick="closeApp('app-daw')">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
                 <div class="flex items-center gap-3">
                     <div class="flex gap-1.5">
                         <div class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"></div>
@@ -1949,9 +1975,6 @@
                     </div>
                     <span class="text-[10px] text-gray-400 font-mono font-bold tracking-widest uppercase">AbleStudio Pro 11</span>
                 </div>
-                <button class="window-close-btn" onclick="closeApp('app-daw')">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
             </div>
 
             <div class="window-content daw-grid-container bg-[#121214] p-2 md:p-4 gap-3 md:gap-4 flex flex-col md:flex-row">
@@ -2138,10 +2161,10 @@
 
             <div id="app-browser" class="os-window liquid-glass flex-col" style="display:none;">
                 <div class="window-header">
-                    <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"></span> Web_Nav App</span>
                     <button class="window-close-btn" onclick="closeApp('app-browser')">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
+                    <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"></span> Web_Nav App</span>
                 </div>
                 <div class="flex border-b border-[var(--glass-border)] text-[12px] md:text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-black/60 font-bold">
                     <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
@@ -2152,10 +2175,10 @@
 
                     <div id="app-social" class="os-window liquid-glass flex-col" style="display:none;">
             <div class="window-header">
-                <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></span> SoundNet</span>
                 <button class="window-close-btn" onclick="closeApp('app-social')">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
+                <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></span> SoundNet</span>
             </div>
             
             <div class="flex border-b border-[#27272a] text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-[#18181b] font-bold">
@@ -2193,10 +2216,10 @@
 
             <div id="app-stats" class="os-window liquid-glass flex-col" style="display:none;">
                 <div class="window-header">
-                    <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-[var(--retro-green)] shadow-[0_0_10px_var(--retro-green)]"></span> Sys_Stats</span>
                     <button class="window-close-btn" onclick="closeApp('app-stats')">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
+                    <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-[var(--retro-green)] shadow-[0_0_10px_var(--retro-green)]"></span> Sys_Stats</span>
                 </div>
                 <div class="window-content font-retro text-sm text-[var(--retro-green)] bg-black/80 p-6 md:p-8 leading-loose tracking-wider shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
                     <div id="stats-content">Loading metrics...</div>
@@ -9066,6 +9089,7 @@ function triggerRankUp(oldRank, newRank) {
         }
         function bringToFront(id) {
             zIndexCounter++;
+             if (zIndexCounter > 8000) zIndexCounter = 100; // Boucle de sécurité pour z-index
             document.querySelectorAll('.os-window').forEach(w => w.classList.remove('active-window'));
             const win = document.getElementById(id);
             win.style.zIndex = zIndexCounter;
