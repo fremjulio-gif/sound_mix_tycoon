@@ -7240,16 +7240,16 @@ function triggerRankUp(oldRank, newRank) {
             { id: 'crk15', name: "Xray_Antidote.pkg",             risk: 0.95, reqMoney: 100000, desc: "Bypass les algos (+1000% Cash)." }
         ];
 
-        const marketplaceItems = [
-            { id: 'rug',      name: 'Tapis Studio',    desc: 'Délimite ton espace et améliore le confort visuel du studio.', price: 150,  repReq: 0,   folReq: 0 },
-            { id: 'table',    name: 'Table Basse',     desc: 'Un support design pour ton setup TV et tes sessions créatives.', price: 300,  repReq: 10,  folReq: 0 },
-            { id: 'acoustic', name: 'Panneaux Pro',    desc: 'Mousses acoustiques pour une précision de mixage accrue.', price: 500,  repReq: 25,  folReq: 0 },
-            { id: 'sofa',     name: 'Canapé Lounge',   desc: 'Récupère ton énergie beaucoup plus vite lors des pauses chill.', price: 850,  repReq: 30,  folReq: 500 },
-            { id: 'rack',     name: 'Rack Analogique', desc: 'Hardware vintage pour donner du grain et du caractère à tes sons.', price: 1200, repReq: 50,  folReq: 0 },
-            { id: 'tv',       name: 'Écran XXL',       desc: 'Affiche tes clips et tes stats de streaming en haute définition.', price: 2000, repReq: 0,   folReq: 5000 },
-            { id: 'synth',    name: 'Synthétiseur',    desc: 'Débloque de nouvelles textures sonores pour tes mélodies.', price: 3500, repReq: 75,  folReq: 0 },
-            { id: 'guitar',   name: 'Guitare Élec',    desc: 'Ajoute des toplines de guitare organique à tes productions.', price: 1800, repReq: 40,  folReq: 10000 }
-        ];
+const marketplaceItems = [
+    { id: 'sofa', name: 'Canapé en cuir', desc: 'Indispensable pour les longues sessions de sound design. Alternative rapide au lit.', price: 600, repReq: 20 },
+    { id: 'table', name: 'Table basse', desc: 'Parfaite pour poser les cafés lors des exports de 3h du matin.', price: 300, repReq: 10 },
+    { id: 'rug', name: 'Tapis acoustique', desc: 'Traite les premières réflexions au sol tout en apportant du confort.', price: 200, repReq: 5 },
+    { id: 'tv', name: 'TV Cathodique', desc: 'Idéal pour le rétro-gaming et les références visuelles pour la composition à l\'image.', price: 800, repReq: 40 },
+    { id: 'rack', name: 'Rack Analogique', desc: 'Compresseurs et EQ hardware. Le signal gagne en chaleur et le mix prend du punch.', price: 2000, repReq: 60 },
+    { id: 'synth', name: 'Synthétiseur Modulaire', desc: 'Ouvre de nouvelles possibilités de synthèse et de sound design complexe.', price: 3500, folReq: 200 },
+    { id: 'guitar', name: 'Guitare Strat', desc: 'Pour ajouter des riffs organiques au fond du mix. Un vrai atout visuel pour la communauté.', price: 1800, folReq: 3000 },
+    { id: 'acoustic', name: 'Panneaux Pro', desc: 'Mousses acoustiques pour une précision de mixage accrue.', price: 500, repReq: 25 }
+];
 
         const DEFAULT_STATE = {
             username: '', activeCharacter: 0,
@@ -8520,6 +8520,9 @@ function triggerRankUp(oldRank, newRank) {
                     state.achievements = state.achievements || {};
                     state.trackList = state.trackList || [];
                     state.inventory = state.inventory || [];
+                    // Deep merge ownedFurniture to handle new items added in future updates
+                    state.ownedFurniture = { ...DEFAULT_STATE.ownedFurniture, ...(state.ownedFurniture || {}) };
+                    
                     // Weekly challenge initialization - Secure nested object
                     state.activeChallenge = state.activeChallenge || {};
                     const defCH = JSON.parse(JSON.stringify(DEFAULT_STATE.activeChallenge));
@@ -9690,54 +9693,57 @@ function triggerRankUp(oldRank, newRank) {
             renderStore('crackz');
         }
 
-        function buyFurniture(itemId) {
-            const item = marketplaceItems.find(i => i.id === itemId);
-            if (!item || state.ownedFurniture[itemId]) return;
-            
-            const card = document.getElementById(`mkt-${itemId}`);
+function buyFurniture(itemId) {
+    const item = marketplaceItems.find(i => i.id === itemId);
+    if (!item) return;
 
-            // 1. Vérification stricte des conditions (Argent + REP/FOL)
-            const repMet = !item.repReq || state.rep >= item.repReq;
-            const folMet = !item.folReq || state.followers >= item.folReq;
-
-            if (state.money < item.price) {
-                if (card) { card.classList.add('error-shake'); setTimeout(() => card.classList.remove('error-shake'), 400); }
-                showToast("Fonds insuffisants !", "error"); playError(); 
-                return;
-            }
-            
-            if (!repMet || !folMet) {
-                showToast("Prérequis (Réputation ou Fans) non atteints !", "error"); playError();
-                return;
-            }
-
-            // 2. Traitement de la transaction
-            logMoney(-item.price, `Achat Studio+: ${item.name}`);
-            state.ownedFurniture[itemId] = true;
-            
-            // 3. Feedback Audio & Visuel
-            playSuccess();
-            fireConfetti('store');
-
-            // 4. Déclencheur 3D (Lien avec la scène Three.js)
-            switch(itemId) {
-                case 'rug':      revealFurniture(rugGroup); break;
-                case 'rack':     revealFurniture(rackGroup); break;
-                case 'acoustic': revealFurniture(acousticGroup); break;
-                case 'sofa':     revealFurniture(sofaGroup); break;
-                case 'tv':       revealFurniture(tvGroup); break;
-                case 'table':    revealFurniture(sideTableGroup); break;
-                case 'synth':    revealFurniture(synthGroup); break;
-                case 'guitar':   revealFurniture(guitarGroup); break;
-            }
-
-            showToast(`${item.name} débloqué !`, "success");
-            
-            // 5. Persistance et mise à jour de l'UI
-            saveGame(); 
-            updateHUD(); 
-            renderStore('studio');
+    // 1. Vérification stricte des fonds et prérequis
+    const repMet = !item.repReq || state.rep >= item.repReq;
+    const folMet = !item.folReq || state.followers >= item.folReq;
+    
+    if (state.money >= item.price && repMet && folMet && !state.ownedFurniture[itemId]) {
+        
+        // 2. Transaction (Utilisation de logMoney pour l'historique et les particules)
+        logMoney(-item.price, `Achat Studio+: ${item.name}`);
+        state.ownedFurniture[itemId] = true;
+        
+        if (typeof updateHUD === 'function') updateHUD(); 
+        if (typeof saveGame === 'function') saveGame();
+        
+        // 3. Rafraîchissement visuel de la boutique
+        renderStore('studio'); 
+        
+        // 4. Feedback Audio & Visuel
+        if (typeof playTone === 'function') {
+            playTone(600, 'sine', 0.1);
+            setTimeout(() => playTone(800, 'sine', 0.15), 100);
         }
+        if (typeof fireConfetti === 'function') fireConfetti('store');
+
+        // 5. Déclencheur 3D : Liaison avec les groupes de la scène
+        switch(itemId) {
+            case 'sofa': if (typeof sofaGroup !== 'undefined') revealFurniture(sofaGroup); break;
+            case 'table': if (typeof sideTableGroup !== 'undefined') revealFurniture(sideTableGroup); break;
+            case 'rug': if (typeof rugGroup !== 'undefined') revealFurniture(rugGroup); break;
+            case 'tv': if (typeof tvGroup !== 'undefined') revealFurniture(tvGroup); break;
+            case 'rack': if (typeof rackGroup !== 'undefined') revealFurniture(rackGroup); break;
+            case 'synth': if (typeof synthGroup !== 'undefined') revealFurniture(synthGroup); break;
+            case 'guitar': if (typeof guitarGroup !== 'undefined') revealFurniture(guitarGroup); break;
+            case 'acoustic': if (typeof acousticGroup !== 'undefined') revealFurniture(acousticGroup); break;
+        }
+
+        showToast(`${item.name} débloqué !`, "success");
+    } else {
+        // Feedback d'échec : Vibration du conteneur
+        const card = document.getElementById(`mkt-${itemId}`);
+        if (card) {
+            card.classList.add('animate-hud-shake'); 
+            setTimeout(() => card.classList.remove('animate-hud-shake'), 300);
+        }
+        if (state.money < item.price) showToast("Fonds insuffisants !", "error");
+        else showToast("Prérequis non atteints (REP/FOL) !", "error");
+    }
+}
 
         function buyLegit(price, mult) {
             if (state.money >= price) {
