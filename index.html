@@ -2549,7 +2549,7 @@ const DEFAULT_STATE = {
                 });
             }
         }
-
+    function animate3D() {
         // ==========================================
         // 2. THREE.JS SCENE
         // ==========================================
@@ -4451,7 +4451,7 @@ const DEFAULT_STATE = {
 //}
         
         
-        function animate3D() {
+       
         requestAnimationFrame(animate3D);
 
         // Correctif 2 : On ne rend rien tant que les shaders ne sont pas compilés
@@ -7390,7 +7390,13 @@ const marketplaceItems = [
     const m = totalMins % 60;
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 }
-
+    function getTotalMins() {
+    if (typeof state === 'undefined' || !state) return 0;
+    // Calcule le temps total absolu en minutes depuis le début de la carrière (1 jour = 1440 minutes)
+    const days = (parseInt(state.day, 10) || 1) - 1;
+    const mins = parseInt(state.timeMins, 10) || 0;
+    return (days * 1440) + mins;
+}
             function logMoney(amount, reason, customRect = null) {
         state.money = (parseInt(state.money, 10) || 0) + amount;
         if (state.money < 0) state.money = 0;
@@ -8873,6 +8879,8 @@ const marketplaceItems = [
             
             document.getElementById('widget-clock-date').innerText = `Virtual Day ${state.day}`;
         }
+
+        
 
         // ==========================================
         // 15. COOLDOWN UIs
