@@ -988,17 +988,18 @@
                 transition: height 0.6s cubic-bezier(0.33, 1, 0.68, 1);
                 z-index: 1;
             }
-            .vitals-tag {
+            .vitals-label {
                 font-family: 'Share Tech Mono', monospace;
-                font-size: 8px;
-                font-weight: bold;
-                letter-spacing: 2px;
-                writing-mode: vertical-rl;
-                text-orientation: mixed;
-                transform: rotate(180deg);
-                opacity: 0.5;
-                text-transform: uppercase;
+                font-size: 13px;
+                font-weight: 900;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+                text-shadow: 0 0 10px rgba(0,0,0,0.8);
+                margin-bottom: 4px;
             }
+            .vitals-icon { font-size: 16px; margin-bottom: -2px; }
 
             @media (max-width: 767px) {
                 #vitals-ui { right: 12px; transform: translateY(-50%) scale(0.9); gap: 20px; }
@@ -1391,8 +1392,8 @@
             pointer-events: none;
             z-index: 5000; 
             display: none;
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             transform: translate(-50%, -50%);
             opacity: 0;
             transition: opacity 0.2s ease;
@@ -1410,9 +1411,9 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 52px;
-            height: 52px;
-            margin: -26px 0 0 -26px;
+            width: 40px;
+            height: 40px;
+            margin: -20px 0 0 -20px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -1447,16 +1448,22 @@
         <!-- Integrated Vitals Meters -->
         <div id="vitals-ui">
             <div class="vitals-meter-group">
+                <div class="vitals-label text-[var(--retro-red)]">
+                    <span class="vitals-icon">⚡</span>
+                    <span id="meter-energy-val">100%</span>
+                </div>
                 <div class="vitals-meter" title="Énergie">
                     <div id="meter-energy-fill" class="vitals-fill bg-[var(--retro-red)] shadow-[0_0_20px_var(--retro-red)]"></div>
                 </div>
-                <span class="vitals-tag text-[var(--retro-red)]">Energy</span>
             </div>
             <div class="vitals-meter-group">
+                <div class="vitals-label text-[var(--accent)]">
+                    <span class="vitals-icon">💡</span>
+                    <span id="meter-inspi-val">100%</span>
+                </div>
                 <div class="vitals-meter" title="Inspiration">
                     <div id="meter-inspi-fill" class="vitals-fill bg-[var(--accent)] shadow-[0_0_20px_var(--accent)]" style="background-image: linear-gradient(0deg, var(--accent), #7c3aed);"></div>
                 </div>
-                <span class="vitals-tag text-[var(--accent)]">Inspiration</span>
             </div>
         </div>
 
@@ -2364,6 +2371,8 @@
         let isJoystickActive = false;
         let joystickStartX = 0; // Initial touch X position
         let joystickStartY = 0; // Initial touch Y position
+        let joystickAnchorX = 0; // Fixed spawn point for constraint
+        let joystickAnchorY = 0;
         window.lastPointerX = 0;
         window.lastPointerY = 0;
         window.joystickVec = { x: 0, z: 0 };
@@ -4266,16 +4275,37 @@
             
             // --- JOYSTICK LOGIC (DYNAMIC BRAWL STARS STYLE) ---
             if (isJoystickActive && joystickUI && joystickKnob) {
+                // 3. Dynamic scale based on camera zoom (Smaller when zoomed in)
+                const currentZoom = window.targetCamZoom || 1.0;
+                const joyScale = Math.min(1.0, 1.0 / Math.sqrt(currentZoom));
+                joystickUI.style.transform = `translate(-50%, -50%) scale(${joyScale})`;
+
                 const dx = (window.lastPointerX || 0) - joystickStartX;
                 const dy = (window.lastPointerY || 0) - joystickStartY;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                const maxRadius = 50; // Zone de mouvement du knob
+                const maxRadius = 40; // Max movement radius for the knob
 
-                // Effet "Sticky" : Si le pouce s'éloigne trop, la base du joystick glisse pour suivre
+                // 2. Constraint: The base slides to follow but stays within 20% of its size from anchor
                 if (dist > maxRadius) {
                     const angle = Math.atan2(dy, dx);
-                    joystickStartX = window.lastPointerX - Math.cos(angle) * maxRadius;
-                    joystickStartY = window.lastPointerY - Math.sin(angle) * maxRadius;
+                    let targetBaseX = window.lastPointerX - Math.cos(angle) * maxRadius;
+                    let targetBaseY = window.lastPointerY - Math.sin(angle) * maxRadius;
+
+                    // Bridage de la base à 20px (20% de 100px) du point de départ
+                    const maxBaseShift = 20; 
+                    const sDx = targetBaseX - joystickAnchorX;
+                    const sDy = targetBaseY - joystickAnchorY;
+                    const sDist = Math.sqrt(sDx * sDx + sDy * sDy);
+
+                    if (sDist > maxBaseShift) {
+                        const sAngle = Math.atan2(sDy, sDx);
+                        joystickStartX = joystickAnchorX + Math.cos(sAngle) * maxBaseShift;
+                        joystickStartY = joystickAnchorY + Math.sin(sAngle) * maxBaseShift;
+                    } else {
+                        joystickStartX = targetBaseX;
+                        joystickStartY = targetBaseY;
+                    }
+
                     joystickUI.style.left = `${joystickStartX}px`;
                     joystickUI.style.top = `${joystickStartY}px`;
                 }
@@ -4869,6 +4899,8 @@
                 isJoystickActive = true;
                 joystickStartX = event.clientX;
                 joystickStartY = event.clientY;
+                joystickAnchorX = event.clientX;
+                joystickAnchorY = event.clientY;
                 window.lastPointerX = event.clientX;
                 window.lastPointerY = event.clientY;
 
@@ -8585,8 +8617,11 @@ function triggerRankUp(oldRank, newRank) {
             const repNumEl = document.getElementById('hud-rep-num');
             if (repNumEl) repNumEl.innerText = formatNum(state.rep);
             document.getElementById('hud-foll').innerText  = formatNum(state.followers);
+            const iv = Math.max(0, Math.min(100, Math.floor(state.inspi)));
             const inspFillEl = document.getElementById('meter-inspi-fill');
-            if (inspFillEl) inspFillEl.style.height = `${Math.max(0, Math.min(100, Math.floor(state.inspi)))}%`;
+            if (inspFillEl) inspFillEl.style.height = `${iv}%`;
+            const inspValEl = document.getElementById('meter-inspi-val');
+            if (inspValEl) inspValEl.innerText = `${iv}%`;
 
             selectDawGenre();
             selectDawVoice();
@@ -8700,6 +8735,8 @@ function triggerRankUp(oldRank, newRank) {
             const energyVal = Math.floor(state.energy);
             const energyFill = document.getElementById('meter-energy-fill');
             if (energyFill) energyFill.style.height = `${energyVal}%`;
+            const energyValEl = document.getElementById('meter-energy-val');
+            if (energyValEl) energyValEl.innerText = `${energyVal}%`;
             
 
                         // --- SYSTÈME DE FATIGUE VISUELLE (S'active sous les 40% d'énergie) ---
@@ -8772,9 +8809,11 @@ function triggerRankUp(oldRank, newRank) {
             // --- INSPI GAUGE: show creative inspiration (0-100) ---
             try {
                 const inspFill = document.getElementById('meter-inspi-fill');
+                const inspVal = document.getElementById('meter-inspi-val');
                 if (inspFill) {
                     const iv = Math.max(0, Math.min(100, Math.floor(Number(state.inspi) || 0)));
                     inspFill.style.height = iv + '%';
+                    if (inspVal) inspVal.innerText = iv + '%';
                 }
             } catch(e) {}
             
