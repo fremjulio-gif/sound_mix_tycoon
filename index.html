@@ -2485,20 +2485,27 @@ function animate3D() {
             { name: 'matrix', vars: ['#020617', '#064e3b', '#022c22', '#047857'] },
             { name: 'blood',  vars: ['#170000', '#7f1d1d', '#4c0519', '#9f1239'] }
         ];
-        let currentThemeIdx = 0;
+        let currentThemeIdx = 0; // À rajouter au cas où elle aurait aussi disparu
 
-        function cycleTheme() {
-            currentThemeIdx = (currentThemeIdx + 1) % themesList.length;
-            const root = document.documentElement;
-            const t = themesList[currentThemeIdx];
-            root.style.setProperty('--bg-color-1', t.vars[0]);
-            root.style.setProperty('--bg-color-2', t.vars[1]);
-            root.style.setProperty('--bg-color-3', t.vars[2]);
-            root.style.setProperty('--bg-color-4', t.vars[3]);
-            playBleep();
+function cycleTheme() {
+    // 1. Boucle sur ta liste de thèmes perso
+    currentThemeIdx = (currentThemeIdx + 1) % themesList.length;
+    
+    // 2. Application des variables CSS
+    const root = document.documentElement;
+    const t = themesList[currentThemeIdx];
+    
+    root.style.setProperty('--bg-color-1', t.vars[0]);
+    root.style.setProperty('--bg-color-2', t.vars[1]);
+    root.style.setProperty('--bg-color-3', t.vars[2]);
+    root.style.setProperty('--bg-color-4', t.vars[3]);
+    
+    // 3. Feedback sonore
+    if (typeof playBleep === 'function') playBleep();
 
-            updateThemeColors();
-        }
+    // 4. Synchronisation avec le moteur 3D (Leds, Néons)
+    if (typeof updateThemeColors === 'function') updateThemeColors();
+}
 
 
         // ==========================================
@@ -5106,9 +5113,8 @@ function animate3D() {
             }
         }
 
-        // --- LE RENDU FINAL (INDISPENSABLE POUR VOIR LA ROOM) ---
-        renderer.render(scene, camera);
-    }
+    
+
 
         
 
@@ -10821,7 +10827,8 @@ function revealFurniture(mesh) {
 
 
         
-
+renderer.render(scene, camera);
+    }
 
         
     // ====================================================
@@ -10867,6 +10874,8 @@ function revealFurniture(mesh) {
         // Boot
         initUI();
         animate3D();
+        // --- LE RENDU FINAL (INDISPENSABLE POUR VOIR LA ROOM) ---
+        
 
             window.addEventListener('beforeunload', saveGame);
 
