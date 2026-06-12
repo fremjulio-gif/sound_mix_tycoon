@@ -2394,6 +2394,12 @@ const DEFAULT_STATE = {
     // ==========================================
     // GESTION DE L'ÉCRAN DE CHARGEMENT
     // ==========================================
+
+    // Lancement automatique au chargement de la page
+    if (document.readyState === 'complete') simulateLoading();
+    else window.addEventListener('load', simulateLoading);
+
+    
     // Assure que le popup d'achievement n'est pas enfermé dans le loader (qui devient display:none)
     ;(function relocateAchievementPopup(){
         try {
@@ -2405,9 +2411,6 @@ const DEFAULT_STATE = {
         } catch (err) { console.warn('Relocate achievement popup failed', err); }
     })();
 
-
-    
-function animate3D() {
     // Phrases d'immersion (studio vibe)
     const loadingPhrases = [
         "AUDIO: Initializing Core Driver...",
@@ -2464,13 +2467,16 @@ function animate3D() {
             
             // C'est ICI qu'il faut appeler ta fonction qui affiche l'écran de login 
             // ou qui démarre l'animation de la room 3D.
-            // ex: initGame();
+            initUI();
         }, 500);
     }
 
-    // Lancement automatique au chargement de la page
-    if (document.readyState === 'complete') simulateLoading();
-    else window.addEventListener('load', simulateLoading);
+
+    
+function animate3D() {
+    
+
+    
 
         // ==========================================
         // 1. RESPONSIVE & GLOBALS
