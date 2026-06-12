@@ -1663,9 +1663,8 @@
                     </div>
                 </div> 
             </div> 
-         </div> 
-    </div> 
-
+        </div> 
+    </div>
         <!-- Joystick Virtuel Visual Indicator -->
         <div id="joystick-ui">
             <div class="joystick-base"></div>
@@ -1762,8 +1761,8 @@
                         <div class="h-6 w-px bg-white/20 mx-2"></div>
                         <div class="flex items-center gap-2 md:ml-4">
                             <label class="text-[10px] font-retro text-[var(--text-muted)] uppercase tracking-widest">BPM</label>
-                            <input id="daw-bpm" type="range" min="60" max="200" value="120" class="w-40 touch-none" />
-                            <input id="daw-bpm-num" type="number" min="60" max="200" value="120" class="w-16 bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-white" />
+                            <input id="pr-bpm" type="range" min="60" max="200" value="120" class="w-40 touch-none" />
+                            <input id="pr-bpm-num" type="number" min="60" max="200" value="120" class="w-16 bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-white" />
                         </div>
                     </div>
 
@@ -2283,7 +2282,8 @@
         </div>
 
     </div><script type="module">
-
+        
+        import * as THREE from '<https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js>';
 
 
 
@@ -2364,13 +2364,6 @@
     // Lancement automatique au chargement de la page
     if (document.readyState === 'complete') simulateLoading();
     else window.addEventListener('load', simulateLoading);
-
-
-
-
-        
-    //------------------------   
-        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
         // ==========================================
         // 1. RESPONSIVE & GLOBALS
@@ -7666,7 +7659,7 @@ const marketplaceItems = [
 
             // INITIALIZE transport controls (instrument + BPM)
             try {
-                window._currentBpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
+            window._currentBpm = parseInt(document.getElementById('pr-bpm').value, 10) || 120;
             } catch(e) { window._currentBpm = 120; }
 
             const instrSelect = document.getElementById('pr-instrument-select');
@@ -7684,8 +7677,8 @@ const marketplaceItems = [
                 });
             }
 
-            const bpmRange = document.getElementById('daw-bpm');
-            const bpmNum = document.getElementById('daw-bpm-num');
+            const bpmRange = document.getElementById('pr-bpm');
+            const bpmNum = document.getElementById('pr-bpm-num');
             function setBPM(newBpm) {
                 newBpm = Math.max(60, Math.min(200, parseInt(newBpm, 10) || 120));
                 if (!audioCtxUI) window._currentBpm = newBpm;
