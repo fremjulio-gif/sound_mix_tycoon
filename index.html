@@ -74,7 +74,6 @@
                 background-color: #050505;
             }
             .font-retro { font-family: 'Sine', monospace; letter-spacing: 0.05em; }
-            .font-handwriting { font-family: 'Caveat', cursive; letter-spacing: 0.05em; }
             .pixelated { image-rendering: pixelated; }
 
             /* Disable double-tap zoom & delay on critical elements */
@@ -345,13 +344,7 @@
             .btn-system-red { border-color: rgba(255, 0, 60, 0.3); color: var(--retro-red); }
             .btn-system-red:hover { border-color: var(--retro-red); background: rgba(255, 0, 60, 0.1); }
 
-            #btn-quit-pc {
-                position: absolute;
-                top: 24px;
-                left: 24px;
-                z-index: 5000; /* Toujours au-dessus des fenêtres OS */
-                touch-action: manipulation;
-            }
+          
 
             .window-close-btn {
                 width: 44px;
@@ -695,17 +688,6 @@
                 #hud-name { display: none !important; }
 
 
-                #btn-quit-pc {
-                    top: calc(72px + env(safe-area-inset-top)) !important;
-                    left: 12px !important;
-                    transform: none !important;
-                    padding: 0 12px !important;
-                }
-                #audio-settings-gear {
-                    top: calc(70px + env(safe-area-inset-top)) !important;
-                    right: 12px !important;
-                    padding: 0 12px !important;
-                }
                 
                 /* Navigation OS devient une "Bottom Bar" fixe avec prise en compte Safe Area iOS */
                 #mobile-nav { 
@@ -810,6 +792,80 @@
         overflow: visible !important;
         }
     }
+
+
+    /* ── OS TOP-BAR ── */
+#os-topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    background: rgba(5, 5, 10, 0.75);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+#btn-quit-pc {
+    /* Réinitialise le positionnement absolu — il est maintenant dans le flow */
+    position: static;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+}
+
+#audio-settings-gear {
+    /* Idem — plus de fixed/absolute */
+    position: static;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    background: rgba(10,10,15,0.5);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+#audio-settings-gear:hover {
+    border-color: var(--accent);
+    color: white;
+}
+
+.os-topbar-stats {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 0.05em;
+}
+.os-stat { display: flex; align-items: center; gap: 4px; }
+.os-stat-label { font-size: 9px; font-weight: 800; margin-right: 2px; letter-spacing: 0.1em; }
+.os-stat-sep { color: rgba(255,255,255,0.2); }
+
+/* Décale le desktop pour ne pas passer sous la topbar */
+#desktop-content {
+    padding-top: calc(56px + 12px) !important;
+}
+
+@media (max-width: 767px) {
+    #os-topbar { height: 50px; padding: 0 10px; }
+    .os-topbar-stats { font-size: 11px; gap: 6px; }
+    #desktop-content { padding-top: calc(50px + 10px) !important; }
+}
                 
                 /* Les Fenêtres OS s'insèrent exactement entre la barre du haut et celle du bas */
                 .os-window {
@@ -998,6 +1054,7 @@
 
         /* --- SEGMENTED VITALS METERS (RIGHT SIDE) --- */
             #vitals-ui {
+                display: none;
                 position: fixed;
                 right: 20px;
                 top: 50%;
@@ -1007,54 +1064,9 @@
                 gap: 30px;
                 z-index: 1500;
                 pointer-events: none;
-            }
-            .vitals-meter-group {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
-            }
-            .vitals-meter {
-                width: 14px;
-                height: 140px;
-                background: rgba(10, 10, 15, 0.4);
-                backdrop-filter: blur(16px) saturate(180%);
-                -webkit-backdrop-filter: blur(16px) saturate(180%);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 20px;
-                position: relative;
-                overflow: hidden;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.1);
-            }
-            /* LED Segment Overlay Effect */
-            .vitals-meter::after {
-                content: '';
-                position: absolute;
-                inset: 0;
-                background-image: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.6) 3px, rgba(0,0,0,0.6) 5px);
-                z-index: 10;
-                pointer-events: none;
-            }
-            .vitals-fill {
-                position: absolute;
-                bottom: 0;
-                width: 100%;
-                height: 100%;
-                transition: height 0.6s cubic-bezier(0.33, 1, 0.68, 1);
-                z-index: 1;
-            }
-            .vitals-label {
-                font-family: 'Share Tech Mono', monospace;
-                font-size: 13px;
-                font-weight: 900;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 2px;
-                text-shadow: 0 0 10px rgba(0,0,0,0.8);
-                margin-bottom: 4px;
-            }
-            .vitals-icon { font-size: 16px; margin-bottom: -2px; }
+            }#vitals-ui {
+                display: none; /* Caché : les jauges vivent dans le widget CPU */
+}
 
             @media (max-width: 767px) {
                 #vitals-ui { right: 12px; transform: translateY(-50%) scale(0.9); gap: 20px; }
@@ -1617,12 +1629,7 @@
 
         <div id="room-ui"></div>
 
-        <!-- System Settings Button -->
-        <button id="audio-settings-gear" class="btn-system fixed top-3 md:top-6 right-3 md:right-6" onclick="openAudioSettings()" style="z-index: 1000 !important;">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            <span class="hidden md:inline">Paramètres</span>
-        </button>
+        
 
         <!-- Settings Overlay -->
         <div id="audio-settings-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden">
@@ -1773,15 +1780,11 @@
             
 
         <div id="pc-ui-layer" style="display: none;">
-            <button id="btn-quit-pc" class="btn-system btn-system-red" onclick="quitPC()">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                <span>DECONNEXION</span>
-            </button>
 
             <div id="desktop-content">
             <div class="flex flex-col gap-2 pt-1" id="desktop-icons-container">
                     <div class="desktop-icon group" onclick="openApp('app-daw')">
-                        <div class="icon-box"><svg class="w-9 h-9 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>/svg></div>
+                        <div class="icon-box"><svg class="w-9 h-9 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg></div>
                         <span class="text-[11px] font-retro mt-1 text-gray-200 tracking-wider group-hover:text-white group-hover:drop-shadow-[0_0_5px_#fff]">AbleStudio</span>
                     </div>
                     <div class="desktop-icon group" onclick="openApp('app-browser')">
@@ -1804,14 +1807,36 @@
                         <div id="widget-clock-date" class="text-[11px] font-retro text-[var(--accent)] mt-2 uppercase tracking-widest border-t border-white/20 pt-2 w-full drop-shadow-[0_0_5px_var(--accent)]">Virtual Day 1</div>
                     </div>
                     <div class="desktop-widget liquid-glass p-5 flex flex-col">
-                        <div class="flex justify-between items-end mb-3">
-                            <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">CPU Monitor</span>
-                            <span class="text-[10px] font-retro text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] animate-pulse">LIVE</span>
-                        </div>
-                        <div class="w-full h-20 bg-black/50 rounded border border-white/10 overflow-hidden relative shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] cpu-grid flex-1">
-                            <canvas id="sys-canvas" class="absolute inset-0 w-full h-full"></canvas>
-                        </div>
-                    </div>
+        <div class="flex justify-between items-end mb-3">
+        <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">CPU Monitor</span>
+        <span class="text-[10px] font-retro text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] animate-pulse">LIVE</span>
+        </div>
+         <!-- Graphe CPU -->
+         <div class="w-full h-16 bg-black/50 rounded border border-white/10 overflow-hidden relative shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] cpu-grid mb-3">
+        <canvas id="sys-canvas" class="absolute inset-0 w-full h-full"></canvas>
+         </div>
+         <!-- Jauges NRJ + INSPI intégrées -->
+         <div class="flex gap-3 mt-auto">
+        <div class="flex-1">
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-[9px] font-retro text-[var(--retro-red)] tracking-widest font-bold uppercase">⚡ NRJ</span>
+                <span id="meter-energy-val" class="text-[9px] font-retro text-white font-bold">100%</span>
+            </div>
+            <div class="w-full h-2 bg-black/60 rounded-full overflow-hidden border border-white/10">
+                <div id="meter-energy-fill" class="h-full bg-[var(--retro-red)] shadow-[0_0_8px_var(--retro-red)] transition-all duration-500 rounded-full" style="width:100%"></div>
+            </div>
+        </div>
+        <div class="flex-1">
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-[9px] font-retro text-[var(--accent)] tracking-widest font-bold uppercase">💡 INSPI</span>
+                <span id="meter-inspi-val" class="text-[9px] font-retro text-white font-bold">100%</span>
+            </div>
+            <div class="w-full h-2 bg-black/60 rounded-full overflow-hidden border border-white/10">
+                <div id="meter-inspi-fill" class="h-full transition-all duration-500 rounded-full" style="width:100%; background-image: linear-gradient(90deg, var(--accent), #7c3aed); box-shadow: 0 0 8px var(--accent);"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
     <div class="desktop-widget liquid-glass p-5 flex flex-col" id="top-charts-widget">
                 <div class="flex justify-between items-end mb-4 border-b border-[var(--accent)]/30 pb-2 flex-shrink-0">
@@ -1859,7 +1884,7 @@
             </div>
             <div id="challenge-days" class="text-xs font-retro text-yellow-300">7j</div>
         </div>
-        <div id="challenge-desc" class="text-sm font-handwriting text-yellow-100/95 mb-3">Aucun défi actif</div>
+        <div id="challenge-desc" class="text-xs font-sans text-yellow-100/95 mb-3 leading-relaxed">Aucun défi actif</div>        
         <div class="w-full bg-white/5 rounded-full h-3 overflow-hidden mb-2">
             <div id="challenge-bar" class="h-3 bg-gradient-to-r from-yellow-400 to-yellow-300" style="width:0%"></div>
         </div>
@@ -1888,8 +1913,8 @@
     </div>
 
                     <div class="desktop-widget liquid-glass !bg-yellow-500/15 !border-yellow-400/30 rotate-2 p-5 w-full max-h-[210px] overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-                        <h4 class="font-handwriting text-yellow-300/90 text-2xl mb-2 border-b border-yellow-500/40 pb-1">To-Do Liste :</h4>
-                        <ul id="todo-list" class="font-handwriting text-yellow-100/90 text-lg space-y-0.5">
+                        <h4 class="font-retro text-yellow-300/90 text-sm tracking-widest uppercase mb-2 border-b border-yellow-500/40 pb-1">To-Do Liste :</h4>
+                        <ul id="todo-list" class="font-sans text-yellow-100/90 text-sm space-y-1">  
                             <li class="todo-item line-through opacity-40" onclick="toggleTodo(this)">Setup OS</li>
                             <li class="todo-item" onclick="toggleTodo(this)">Check Trends</li>
                             <li class="todo-item" onclick="toggleTodo(this)">Sign Brand Deal</li>
@@ -2129,13 +2154,38 @@
                                     <div id="export-progress" class="h-full bg-white w-0 transition-all duration-100 shadow-[0_0_5px_#fff]"></div>
                                 </div>
                             </div>
-                        </div>
-
-                    </div>
+                    </div>   
                 </div>
 
             </div>
         </div>
+        <div id="os-topbar">
+    <!-- Gauche : Quit -->
+    <button id="btn-quit-pc" class="btn-system btn-system-red" onclick="quitPC()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+        </svg>
+        <span class="hidden md:inline text-[10px] tracking-widest uppercase font-bold">Quitter</span>
+    </button>
+
+    <!-- Centre : Stats rapides -->
+    <div class="os-topbar-stats">
+        <span class="os-stat"><span class="os-stat-label text-[var(--retro-green)]">$</span><span id="os-stat-money">0</span></span>
+        <span class="os-stat-sep">·</span>
+        <span class="os-stat"><span class="os-stat-label text-[var(--retro-orange)]">REP</span><span id="os-stat-rep">0</span></span>
+        <span class="os-stat-sep">·</span>
+        <span class="os-stat"><span class="os-stat-label text-[var(--accent)]">FOL</span><span id="os-stat-fol">0</span></span>
+    </div>
+
+    <!-- Droite : Paramètres -->
+    <button id="audio-settings-gear" onclick="openAudioSettings()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+        <span class="hidden md:inline text-[10px] tracking-widest uppercase font-bold">Paramètres</span>
+    </button>
+</div>
 
             <div id="app-browser" class="os-window liquid-glass flex-col" style="display:none;">
                 <div class="window-header">
@@ -8777,7 +8827,15 @@ function triggerRankUp(oldRank, newRank) {
                     // Délai pour cacher le div proprement après le fade-out
                     setTimeout(() => exhaustOverlay.classList.add('hidden'), 500);
                 }
+                const osMoney = document.getElementById('os-stat-money');
+                const osRep   = document.getElementById('os-stat-rep');
+                const osFol   = document.getElementById('os-stat-fol');
+                if (osMoney) osMoney.textContent = formatNum(state.money);
+                if (osRep)   osRep.textContent   = formatNum(state.rep);
+                if (osFol)   osFol.textContent   = formatNum(state.followers);
+                
             }
+            
             // ----------------------------------------------------------------------
 
             const t = parseInt(state.timeMins, 10) || 0;
