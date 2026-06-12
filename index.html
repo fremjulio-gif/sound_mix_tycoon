@@ -13,9 +13,6 @@
             1. VARIABLES & THEMES
             ========================================= */
             :root {
-                --time-warp-factor: 1;
-                --cloud-opacity: 1;
-                --cz: 1;
                 --glass-bg: rgba(10, 10, 15, 0.45);
                 --glass-border: rgba(255, 255, 255, 0.2);
                 --glass-glow: rgba(129, 140, 248, 0.2);
@@ -74,6 +71,7 @@
                 background-color: #050505;
             }
             .font-retro { font-family: 'Sine', monospace; letter-spacing: 0.05em; }
+            .font-handwriting { font-family: 'Caveat', cursive; letter-spacing: 0.05em; }
             .pixelated { image-rendering: pixelated; }
 
             /* Disable double-tap zoom & delay on critical elements */
@@ -180,49 +178,15 @@
             /* --- 2D CLOUDS BACKGROUND --- */
             .cloud-2d {
                 position: absolute;
-                width: calc(180px * var(--s, 1));
-                height: calc(50px * var(--s, 1));
                 background: rgba(255, 255, 255, 0.06);
                 backdrop-filter: blur(12px);
                 pointer-events: none;
-                border-radius: 50px;
-                opacity: calc(0.5 * var(--cloud-opacity));
-                animation: moveClouds linear infinite;
-                animation-duration: calc(var(--base-dur, 100s) / var(--time-warp-factor));
-                transition: opacity 3s ease-in-out;
-                will-change: transform;
-                transform: translateX(-400px) scale(var(--cz, 1));
-            }
-
-            @keyframes moveClouds {
-                from { transform: translateX(-400px) scale(var(--cz, 1)); }
-                to { transform: translateX(100vw) scale(var(--cz, 1)); }
+                border-radius: 12px;
+                opacity: 0.5;
             }
 
 
-             /* --- LIGHTNING EFFECT (Creative Block Boding) --- */
-            @keyframes lightning-flash-anim {
-                0%, 100% { opacity: 0; }
-                5% { opacity: 0.6; }
-                10% { opacity: 0.2; }
-                15% { opacity: 0.7; }
-                35% { opacity: 0; }
-            }
-            .lightning-flash-overlay {
-                position: absolute;
-                inset: 0;
-                background: #fff;
-                opacity: 0;
-                pointer-events: none;
-                z-index: 5;
-            }
-            .lightning-active {
-                animation: lightning-flash-anim 0.6s ease-out forwards;
-            }
-            .cloud-lightning-boost {
-                filter: brightness(6) saturate(0) !important;
-                transition: filter 0.05s;
-            }
+
 
             /* Animation de l'onde sonore du loader */
             @keyframes soundWave {
@@ -308,83 +272,36 @@
         overflow: hidden;
     }
             
-            /* --- SYSTEM ACTION BUTTONS (MODERN STUDIO OS LOOK) --- */
-            .btn-system {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 8px;
-                padding: 0 16px;
-                background: rgba(15, 15, 20, 0.7);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                backdrop-filter: blur(16px) saturate(180%);
-                -webkit-backdrop-filter: blur(16px) saturate(180%);
-                border-radius: 12px;
-                color: var(--text-main);
-                font-family: 'Outfit', sans-serif;
-                font-weight: 600;
-                font-size: 11px;
-                letter-spacing: 0.05em;
-                text-transform: uppercase;
-                transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-                min-width: 44px;
-                min-height: 44px;
-                cursor: pointer;
-                pointer-events: auto;
-            }
-            .btn-system:hover {
-                border-color: var(--accent);
-                background: rgba(129, 140, 248, 0.15);
-                transform: translateY(-2px);
-                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 15px var(--glass-glow);
-            }
-            .btn-system:active { transform: translateY(0) scale(0.96); }
-            
-            .btn-system-red { border-color: rgba(255, 0, 60, 0.3); color: var(--retro-red); }
-            .btn-system-red:hover { border-color: var(--retro-red); background: rgba(255, 0, 60, 0.1); }
-
-            /* --- OS GLOBAL INTERFACE HEADER (TOP-BAR) --- */
-            #pc-top-bar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 80px;
-                display: flex;
-                align-items: center;
-                justify-content: flex-end; /* Buttons on the right */
-                padding: 0 24px;
-                background: rgba(10, 10, 15, 0.98);
-                backdrop-filter: blur(20px) saturate(180%);
-                -webkit-backdrop-filter: blur(20px) saturate(180%);
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                z-index: 9000;
-                pointer-events: auto;
-                transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            }
-
-            .system-controls-group {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
-
-            #btn-quit-pc { position: relative; margin: 0; }
-
-            .window-close-btn {
-                min-width: 48px;
-                min-height: 48px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 10px;
-                color: #666;
-                transition: all 0.2s;
-                font-size: 20px;
-                background: transparent;
-            }
-            .window-close-btn:hover { background: rgba(255, 0, 60, 0.15); color: var(--retro-red); }
+        #btn-quit-pc {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        transform: none;
+        z-index: 200;
+        padding: 7px 14px;
+        background: rgba(10, 10, 15, 0.8);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: var(--retro-red);
+        font-family: 'Share Tech Mono', monospace;
+        text-transform: uppercase;
+        border-radius: 999px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        transition: all 0.2s;
+        font-size: 10px;
+        white-space: nowrap;
+        min-width: unset;
+        text-align: center;
+        pointer-events: auto;
+        letter-spacing: 0.05em;
+    }
+    #btn-quit-pc:hover {
+        background: rgba(251, 113, 133, 0.2);
+        border-color: var(--retro-red);
+        box-shadow: 0 0 20px rgba(255, 0, 60, 0.3);
+    }
             /* --- LIQUID GLASS --- */
             .liquid-glass {
                 background: var(--glass-bg);
@@ -417,8 +334,8 @@
             display: none;
             flex-direction: column;
             overflow: hidden;
-            /* STRATE 1: Les fenêtres vivent entre 100 et 8000 */
-            z-index: 100;
+            /* STRATE 1: Les fenêtres vivent entre 100 et 1000 (géré par JS) */
+            z-index: 100; 
             transition: border-color 0.3s ease;
             resize: both;
             box-sizing: border-box;
@@ -433,11 +350,8 @@
                 background: rgba(0, 0, 0, 0.6);
                 padding: 12px 16px;
                 display: flex;
-                /* Layout: Fermeture à gauche, Titre à droite */
-                flex-direction: row; 
-                justify-content: flex-start;
+                justify-content: space-between;
                 align-items: center;
-                gap: 16px;
                 cursor: grab;
                 border-bottom: 1px solid rgba(255,255,255,0.1);
                 flex-shrink: 0;
@@ -716,41 +630,16 @@
 
                 #hud-name { display: none !important; }
 
-                 /* OS Header Mobile */
-                #pc-top-bar {
-                    height: 64px;
-                    padding: 0 12px;
-                }
 
-                #hud { 
-                    z-index: 10000 !important; 
+                #btn-quit-pc {
+                    top: calc(78px + env(safe-area-inset-top)) !important;
+                    left: 50% !important;
+                    transform: translateX(-50%) !important;
+                    min-width: unset !important;
+                    font-size: 9px !important;
+                    padding: 6px 14px !important;
                 }
                 
-                /* --- HUD TRANSFORM (ROOM PILL -> OS BAR) --- */
-                body.os-active #hud {
-                position: fixed;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                transform: none !important;
-                border-radius: 0 !important;
-                background: transparent !important;
-                border: none !important;
-                box-shadow: none !important;
-                height: 80px;
-                z-index: 9500 !important; /* Above pc-top-bar (9000) */
-                justify-content: flex-start; /* Stats on the left/center */
-                padding-left: 32px;
-                pointer-events: none; /* Allow interaction with pc-top-bar underneath */
-            }
-                body.os-active #hud > * { pointer-events: auto; }
-                body.os-active #hud #sys-time, body.os-active #hud #hud-day { display: none; } 
-
-                .btn-system {
-                    min-width: 48px !important;
-                    min-height: 48px !important;
-                }
                 
                 /* Navigation OS devient une "Bottom Bar" fixe avec prise en compte Safe Area iOS */
                 #mobile-nav { 
@@ -766,7 +655,7 @@
                     padding-top: 0 !important;
                     background: rgba(10, 10, 15, 0.95) !important;
                     backdrop-filter: blur(20px) !important;
-                    z-index: 6000 !important; /* Priorité maximale sur mobile */
+                    z-index: 100 !important;
                 }
                 #mobile-nav > div { flex: 1 !important; height: 100% !important; }
 
@@ -867,7 +756,7 @@
                     border-radius: 0 !important;
                     resize: none !important;
                     border: none !important;
-                    padding-top: calc(140px + env(safe-area-inset-top)) !important; /* Dégage la nouvelle Top Bar OS */
+                    padding-top: 75px !important; /* Laisse de l'espace pour le HUD en haut */
                     background: rgba(10, 10, 15, 0.98) !important;
                     box-shadow: none !important;
                     display: flex !important;
@@ -878,11 +767,7 @@
                 .os-window[style*="none"] { display: none !important; }
                 .os-window[style*="flex"] { display: flex !important; }
                 
-                .window-header { 
-                    border-top: 1px solid rgba(255,255,255,0.1); 
-                    border-radius: 0; 
-                    padding: 12px 16px !important; /* Plus généreux pour les doigts */
-                }
+                .window-header { border-top: 1px solid rgba(255,255,255,0.1); border-radius: 0; padding: 8px 12px !important; }
                 
                 /* Zone de contenu scrollable protégée */
                 .window-content {
@@ -894,25 +779,16 @@
                     min-height: 0 !important;
                 }            
                 
-                /* --- Hitbox tactile sécurisée (48px min) --- */
-                .window-close-btn, .taskbar-btn, .desktop-icon, #btn-quit-pc, #audio-settings-gear {
-                    min-width: 48px !important;
-                    min-height: 48px !important;
-                    position: relative;
-                    touch-action: manipulation;
-                }
-                
-                /* Pseudo-élément pour agrandir la zone de clic sans changer le visuel */
-                .window-close-btn::after, #btn-quit-pc::after, #audio-settings-gear::after {
-                    content: '';
-                    position: absolute;
-                    top: -10px; left: -10px; right: -10px; bottom: -10px;
-                    pointer-events: auto;
+                .window-header button {
+                    min-width: 44px;
+                    min-height: 44px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                 }
 
-                .btn-minimal, .btn-action, .seq-pad, .btn-daw-pad, .taskbar-btn { min-height: 44px; }
+                .btn-minimal, .btn-action, .seq-pad, .btn-daw-pad { min-height: 44px; }
                 .btn-minimal, .btn-action { padding: 12px 10px !important; }
-
                 .seq-pad, .btn-daw-pad { min-width: 44px; }
                 #bpm-val { font-size: 18px !important; }
 
@@ -1035,61 +911,6 @@
                     height: auto !important;
                     min-height: 0 !important; /* Empêche le bug de débordement du texte interne */
                 }
-
-
-            .vitals-meter {
-                width: 14px;
-                height: 140px;
-                background: rgba(10, 10, 15, 0.4);
-                backdrop-filter: blur(16px) saturate(180%);
-                -webkit-backdrop-filter: blur(16px) saturate(180%);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 20px;
-                position: relative;
-                overflow: hidden;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.1);
-            }
-            /* LED Segment Overlay Effect */
-            .vitals-meter::after {
-                content: '';
-                position: absolute;
-                inset: 0;
-                background-image: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.6) 3px, rgba(0,0,0,0.6) 5px);
-                z-index: 10;
-                pointer-events: none;
-            }
-            .vitals-fill {
-                position: absolute;
-                bottom: 0;
-                width: 100%;
-                height: 100%;
-                transition: height 0.6s cubic-bezier(0.33, 1, 0.68, 1);
-                z-index: 1;
-            }
-
-
-            /* --- MULTIPLIER BADGE --- */
-            .multiplier-badge {
-                font-family: 'Share Tech Mono', monospace;
-                font-size: 9px;
-                font-weight: bold;
-                color: var(--retro-blue);
-                text-shadow: 0 0 5px var(--retro-blue);
-                background: rgba(0, 0, 0, 0.3);
-                border: 1px solid rgba(96, 165, 250, 0.3);
-                padding: 2px 6px;
-                border-radius: 4px;
-                letter-spacing: 1px;
-                text-transform: uppercase;
-            }
-
-            /* --- MARKETPLACE UX --- */
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-                20%, 40%, 60%, 80% { transform: translateX(4px); }
-            }
-            .error-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; border-color: var(--retro-red) !important; }
 
             /* =========================================
             10. SETTINGS / ACHIEVEMENTS
@@ -1475,34 +1296,32 @@
         #joystick-ui {
             position: fixed;
             pointer-events: none;
-            z-index: 5000; 
+            z-index: 5000;
             display: none;
             width: 100px;
-            height: 100px;
+            height: 100px; /* Fixed size for mobile ergonomics */
             transform: translate(-50%, -50%);
-            opacity: 0;
-            transition: opacity 0.2s ease;
         }
         .joystick-base {
             position: absolute;
             inset: 0;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(4px); /* Liquid glass effect */
+            -webkit-backdrop-filter: blur(4px);
         }
         .joystick-knob {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 40px;
-            height: 40px;
-            margin: -20px 0 0 -20px;
+            width: 34px;
+            height: 34px; /* Fixed size for knob */
+            margin: -17px 0 0 -17px; /* Center the knob */
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8);
         }
 
         /* Media query to ensure joystick is hidden on desktop */
@@ -1604,6 +1423,33 @@
                 <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)" onmouseleave="!isMobile && hideTooltip()">
                     <span class="text-[var(--accent)] drop-shadow-[0_0_5px_var(--accent)] text-[10px] md:text-lg">FOL</span> <span id="hud-foll" class="text-white text-[11px] md:text-lg">0</span>
                 </div>
+
+                <div class="flex items-center gap-2 px-1 md:px-4 py-2 border-l border-white/10 ml-1 md:ml-2">
+                    <div class="flex flex-col md:flex-row items-start md:items-center gap-2">
+                        <!-- NRJ column (keeps original structure/classes) -->
+                        <div class="flex flex-col gap-1 w-12 md:w-20 relative">
+                            <div class="flex justify-between text-[10px] md:text-[13px] font-retro text-[var(--retro-red)] font-bold tracking-widest">
+                                <span>NRJ</span>
+                                <span id="hud-energy-val">100%</span>
+                            </div>
+                            <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--retro-red)]/30 rounded-full overflow-hidden shadow-inner">
+                                <div id="hud-energy-bar" class="h-full bg-[var(--retro-red)] shadow-[0_0_5px_var(--retro-red)] transition-all duration-300" style="width: 100%;"></div>
+                            </div>
+                            <div id="energy-warning" class="absolute -bottom-4 md:-bottom-5 left-0 text-[10px] md:text-[9px] text-[var(--retro-red)] whitespace-nowrap animate-pulse hidden font-bold">Fatigue extrême</div>
+                        </div>
+
+                        <!-- INSPI column (mirrors NRJ structure for perfect alignment) -->
+                        <div class="flex flex-col gap-1 w-12 md:w-20 relative">
+                            <div class="flex justify-between text-[10px] md:text-[13px] font-retro text-[var(--accent)] font-bold tracking-widest">
+                                <span>INSPI</span>
+                                <span id="hud-inspi-val">100%</span>
+                            </div>
+                            <div class="w-full h-1.5 md:h-2 bg-black border border-[var(--accent)]/20 rounded-full overflow-hidden shadow-inner">
+                                <div id="hud-inspi-bar" class="h-full bg-[var(--accent)] shadow-[0_0_5px_var(--accent)] transition-all duration-300" style="width: 100%; background-image: linear-gradient(90deg, var(--accent), #7c3aed);"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="font-retro text-right hidden md:flex flex-col justify-center items-end shrink-0 pr-2 pointer-events-none">
@@ -1616,19 +1462,25 @@
             <div class="mesh-blob blob-1"></div>
             <div class="mesh-blob blob-2"></div>
             <div class="mesh-blob blob-3"></div>
-            <div id="lightning-overlay" class="lightning-flash-overlay"></div>
         </div>
         
         <div id="grid-overlay"></div>
 
         <div id="three-canvas-container"></div>
 
-        <div id="room-ui"></div>
+        <div id="room-ui">
+            <div class="bg-black/40 text-[var(--text-muted)] border border-white/10 px-4 py-2 rounded-lg font-retro animate-[pulse_3s_ease-in-out_infinite] tracking-widest text-[10px] mb-6">
+                Clique sur le PC pour compo / Sur le sol pour bouger / Sur le lit pour Dodo
+            </div>
+        </div>
 
-        <button id="audio-settings-gear" class="btn-system" onclick="openAudioSettings()" title="Paramètres">
-            <svg class="w-6 h-6 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-        </button>
+        <!-- Audio Settings Overlay -->
+               <div id="audio-settings-gear" class="fixed top-3 md:top-6 right-3 md:right-6 liquid-glass-heavy p-3 rounded-full cursor-pointer transition-all hover:scale-105 active:scale-95" onclick="openAudioSettings()" style="display: block !important; opacity: 1 !important; z-index: 1000 !important;">
+            <svg class="w-6 h-6 text-white drop-shadow-lg animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+        </div>
 
         <!-- Settings Overlay -->
         <div id="audio-settings-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden">
@@ -1638,9 +1490,7 @@
                         <p class="text-[10px] font-retro text-[var(--accent)] tracking-widest uppercase mb-1">bounce_it v16</p>
                         <h2 class="text-xl md:text-2xl font-retro text-white tracking-widest uppercase drop-shadow-lg">Paramètres</h2>
                     </div>
-                    <button onclick="closeAudioSettings()" class="btn-system !p-0" aria-label="Fermer les paramètres">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
+                    <button onclick="closeAudioSettings()" class="btn-minimal w-12 h-12 !p-0 rounded-lg text-xl leading-none flex items-center justify-center" aria-label="Fermer les paramètres">✕</button>
                 </div>
 
                 <div id="settings-audio-panel" class="flex-1 min-h-0 overflow-y-auto pr-1">
@@ -1664,9 +1514,9 @@
                     </div>
                 </div> 
             </div> 
-        </div> 
-        </div>
-        
+         </div> 
+    </div> 
+
         <!-- Joystick Virtuel Visual Indicator -->
         <div id="joystick-ui">
             <div class="joystick-base"></div>
@@ -1699,9 +1549,7 @@
 <div id="achievements-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden px-4">
         <div class="settings-shell liquid-glass-heavy p-5 md:p-7 rounded-2xl border-2 border-[var(--retro-orange)] shadow-[0_0_60px_rgba(251,191,36,0.15)] flex flex-col relative">
             
-            <button onclick="closeAchievementsBoard()" class="btn-system !p-0 absolute top-4 right-4 z-50">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
+            <button onclick="closeAchievementsBoard()" class="absolute top-4 right-4 btn-minimal w-10 h-10 !p-0 rounded-lg text-lg leading-none flex items-center justify-center z-50">✕</button>
 
             <div id="settings-achievements-panel" class="flex flex-1 min-h-0 flex-col overflow-hidden w-full h-full pt-2">
                 <div class="flex items-center gap-4 mb-4 shrink-0 bg-black/40 p-4 rounded-xl border border-white/10">
@@ -1731,12 +1579,10 @@
             <div class="liquid-glass-heavy rounded-2xl w-full max-w-4xl border border-[#8b5cf6] shadow-[0_0_40px_rgba(139,92,246,0.2)] flex flex-col overflow-hidden" style="height: 85dvh;">
                 
                 <div class="window-header bg-black/80 p-4 border-b border-white/10 flex justify-between items-center shrink-0">
-                    <button class="window-close-btn" onclick="closePianoRoll()">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
                     <span class="font-retro text-xs md:text-sm text-white tracking-widest uppercase flex items-center gap-3 font-bold">
                         <span class="w-3 h-3 rounded-full bg-[#8b5cf6] shadow-[0_0_10px_#8b5cf6] animate-pulse"></span> Piano Roll Editor
                     </span>
+                    <button class="text-gray-400 hover:text-[var(--retro-red)] transition-colors p-1 text-2xl font-bold" onclick="closePianoRoll()">✕</button>
                 </div>
                 
                 <div class="window-content flex flex-col p-0 flex-1 min-h-0 bg-[#09090b]">
@@ -1763,8 +1609,8 @@
                         <div class="h-6 w-px bg-white/20 mx-2"></div>
                         <div class="flex items-center gap-2 md:ml-4">
                             <label class="text-[10px] font-retro text-[var(--text-muted)] uppercase tracking-widest">BPM</label>
-                            <input id="pr-bpm" type="range" min="60" max="200" value="120" class="w-40 touch-none" />
-                            <input id="pr-bpm-num" type="number" min="60" max="200" value="120" class="w-16 bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-white" />
+                            <input id="daw-bpm" type="range" min="60" max="200" value="120" class="w-40 touch-none" />
+                            <input id="daw-bpm-num" type="number" min="60" max="200" value="120" class="w-16 bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-white" />
                         </div>
                     </div>
 
@@ -1779,16 +1625,7 @@
             
 
         <div id="pc-ui-layer" style="display: none;">
-            <div id="pc-top-bar" class="liquid-glass-heavy">
-                <div class="system-controls-group">
-                    <button class="btn-system" onclick="openAudioSettings()" title="Paramètres">
-                        <svg class="w-5 h-5 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    </button>
-                    <button id="btn-quit-pc" class="btn-system btn-system-red" onclick="quitPC()" title="Quitter la session">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                    </button>
-                </div>
-            </div>
+            <button id="btn-quit-pc" onclick="quitPC()">CLOSE OS SESSION</button>
 
             <div id="desktop-content">
             <div class="flex flex-col gap-2 pt-1" id="desktop-icons-container">
@@ -1815,38 +1652,13 @@
                         <div id="widget-clock-time" class="text-4xl font-retro font-bold text-white tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">08<span class="clock-colon">:</span>00</div>
                         <div id="widget-clock-date" class="text-[11px] font-retro text-[var(--accent)] mt-2 uppercase tracking-widest border-t border-white/20 pt-2 w-full drop-shadow-[0_0_5px_var(--accent)]">Virtual Day 1</div>
                     </div>
-                    <div class="desktop-widget liquid-glass p-5 flex flex-col min-h-[160px]">
+                    <div class="desktop-widget liquid-glass p-5 flex flex-col">
                         <div class="flex justify-between items-end mb-3">
-                            <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">System Status</span>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-retro text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] animate-pulse">LIVE</span>
-                                <span id="multiplier-badge" class="multiplier-badge">x1.0</span>
-                            </div>
+                            <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">CPU Monitor</span>
+                            <span class="text-[10px] font-retro text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] animate-pulse">LIVE</span>
                         </div>
-                        <div class="flex gap-4 flex-1 min-h-0">
-                            <!-- Integrated Gauges -->
-                            <div class="flex gap-2 shrink-0">
-                                <div class="flex flex-col items-center">
-                                    <div class="vitals-meter !h-full !w-[8px] !bg-black/60 !rounded-sm" title="Énergie">
-                                        <div id="meter-energy-fill" class="vitals-fill bg-[var(--retro-red)] shadow-[0_0_10px_var(--retro-red)]"></div>
-                                    </div>
-                                    <span class="text-[7px] font-retro text-[var(--retro-red)] mt-1 font-bold">NRJ</span>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <div class="vitals-meter !h-full !w-[8px] !bg-black/60 !rounded-sm" title="Inspiration">
-                                        <div id="meter-inspi-fill" class="vitals-fill bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]" style="background-image: linear-gradient(0deg, var(--accent), #7c3aed);"></div>
-                                    </div>
-                                    <span class="text-[7px] font-retro text-[var(--accent)] mt-1 font-bold">INS</span>
-                                </div>
-                            </div>
-                            <!-- CPU Graph -->
-                            <div class="flex-1 bg-black/50 rounded border border-white/10 overflow-hidden relative shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] cpu-grid h-24">
-                                <canvas id="sys-canvas" class="absolute inset-0 w-full h-full"></canvas>
-                            </div>
-                        </div>
-                        <div class="flex justify-between border-t border-white/5 pt-2 mt-2 px-1">
-                            <div class="text-[8px] font-retro text-gray-400">⚡ <span id="meter-energy-val" class="text-white">100%</span></div>
-                            <div class="text-[8px] font-retro text-gray-400">💡 <span id="meter-inspi-val" class="text-white">100%</span></div>
+                        <div class="w-full h-20 bg-black/50 rounded border border-white/10 overflow-hidden relative shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] cpu-grid flex-1">
+                            <canvas id="sys-canvas" class="absolute inset-0 w-full h-full"></canvas>
                         </div>
                     </div>
 
@@ -1896,7 +1708,7 @@
             </div>
             <div id="challenge-days" class="text-xs font-retro text-yellow-300">7j</div>
         </div>
-        <div id="challenge-desc" class="text-sm font-medium text-yellow-100/95 mb-3">Aucun défi actif</div>
+        <div id="challenge-desc" class="text-sm font-handwriting text-yellow-100/95 mb-3">Aucun défi actif</div>
         <div class="w-full bg-white/5 rounded-full h-3 overflow-hidden mb-2">
             <div id="challenge-bar" class="h-3 bg-gradient-to-r from-yellow-400 to-yellow-300" style="width:0%"></div>
         </div>
@@ -1924,9 +1736,9 @@
         </div>
     </div>
 
-                    <div class="desktop-widget liquid-glass !bg-yellow-500/10 !border-yellow-400/20 p-5 w-full max-h-[210px] overflow-hidden shadow-lg">
-                        <h4 class="text-[10px] font-retro uppercase text-yellow-300 tracking-widest font-bold border-b border-yellow-500/40 pb-2 mb-3">To-Do Liste</h4>
-                        <ul id="todo-list" class="text-sm font-medium text-yellow-100/90 space-y-1">
+                    <div class="desktop-widget liquid-glass !bg-yellow-500/15 !border-yellow-400/30 rotate-2 p-5 w-full max-h-[210px] overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+                        <h4 class="font-handwriting text-yellow-300/90 text-2xl mb-2 border-b border-yellow-500/40 pb-1">To-Do Liste :</h4>
+                        <ul id="todo-list" class="font-handwriting text-yellow-100/90 text-lg space-y-0.5">
                             <li class="todo-item line-through opacity-40" onclick="toggleTodo(this)">Setup OS</li>
                             <li class="todo-item" onclick="toggleTodo(this)">Check Trends</li>
                             <li class="todo-item" onclick="toggleTodo(this)">Sign Brand Deal</li>
@@ -1978,10 +1790,7 @@
             
                     <div id="app-daw" class="os-window flex-col font-sans" style="display:none;">
             
-            <div class="window-header bg-[#18181b] border-b border-[#27272a] px-3 py-2 cursor-grab">
-                <button class="window-close-btn" onclick="closeApp('app-daw')">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
+            <div class="window-header bg-[#18181b] border-b border-[#27272a] px-3 py-2 flex justify-between items-center cursor-grab">
                 <div class="flex items-center gap-3">
                     <div class="flex gap-1.5">
                         <div class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"></div>
@@ -1990,6 +1799,7 @@
                     </div>
                     <span class="text-[10px] text-gray-400 font-mono font-bold tracking-widest uppercase">AbleStudio Pro 11</span>
                 </div>
+                <button class="text-gray-500 hover:text-white transition-colors px-2 text-lg" onclick="closeApp('app-daw')">✕</button>
             </div>
 
             <div class="window-content daw-grid-container bg-[#121214] p-2 md:p-4 gap-3 md:gap-4 flex flex-col md:flex-row">
@@ -2176,25 +1986,20 @@
 
             <div id="app-browser" class="os-window liquid-glass flex-col" style="display:none;">
                 <div class="window-header">
-                    <button class="window-close-btn" onclick="closeApp('app-browser')">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
                     <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"></span> Web_Nav App</span>
+                    <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-browser')">✕</button>
                 </div>
                 <div class="flex border-b border-[var(--glass-border)] text-[12px] md:text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-black/60 font-bold">
                     <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
-                    <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
-                    <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-studio" onclick="switchBrowserTab('studio')">Studio+</button>
+                    <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
                 </div>
                 <div class="window-content" id="browser-content"></div>
             </div>
 
                     <div id="app-social" class="os-window liquid-glass flex-col" style="display:none;">
             <div class="window-header">
-                <button class="window-close-btn" onclick="closeApp('app-social')">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
                 <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></span> SoundNet</span>
+                <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-social')">✕</button>
             </div>
             
             <div class="flex border-b border-[#27272a] text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-[#18181b] font-bold">
@@ -2232,10 +2037,8 @@
 
             <div id="app-stats" class="os-window liquid-glass flex-col" style="display:none;">
                 <div class="window-header">
-                    <button class="window-close-btn" onclick="closeApp('app-stats')">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
                     <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-[var(--retro-green)] shadow-[0_0_10px_var(--retro-green)]"></span> Sys_Stats</span>
+                    <button class="text-gray-400 hover:text-white transition-colors p-2 text-lg" onclick="closeApp('app-stats')">✕</button>
                 </div>
                 <div class="window-content font-retro text-sm text-[var(--retro-green)] bg-black/80 p-6 md:p-8 leading-loose tracking-wider shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
                     <div id="stats-content">Loading metrics...</div>
@@ -2283,243 +2086,14 @@
             <div class="absolute inset-0 rounded-2xl border-2 border-white/10 animate-pulse pointer-events-none"></div>
         </div>
 
-    </div>
-</div>
-    <script type="module">
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-
-const DEFAULT_STATE = {
-            username: '', activeCharacter: 0,
-            money: 100, rep: 10, followers: 0, energy: 100,
-            inspi: 100,
-            lastGenres: [],
-            // --- AJOUT DES VOLUMES PAR DÉFAUT ---
-            masterVolume: 1.0,
-            musicVolume: 0.8,
-            sfxVolume: 0.5,
-            timeMins: 8 * 60,
-            day: 1,
-            multiplier: 1.0, plugins: 0, lastLevel: 1,
-            stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0, consecutiveFlops: 0, sofaChills: 0, lampToggles: 0, awakeDays: 0 },
-            cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, sponsors: {} },
-            inventory: [], ownedCracks: [], downloadedCracks: {},
-            history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
-            isExporting: false, isSleeping: false, isEventActive: false,
-            isSitting: false,
-            isReviewActive: false, // Ajout de l'état pour les revues
-            lastRankId: 1, // Nouveau : ID de la dernière ligue atteinte
-            trackList: [],
-            // Weekly challenge system
-            activeChallenge: {
-                id: null,
-                description: '',
-                type: null,
-                targetValue: 0,
-                currentProgress: 0,
-                rewardType: null,
-                rewardAmount: 0,
-                daysRemaining: 7,
-                isCompleted: false
-            },
-            achievements: { // Nouveau : Système d'achievements
-                'first_blood': { unlocked: false, name: "First Blood", icon: "🩸", description: "Tu as exporté ta toute première prod. Le début de la gloire." },
-                'certifie_classique': { unlocked: false, name: "Certifié Classique", icon: "📀", description: "Obtenir un score parfait (10/10) par les critiques." },
-                'dans_la_sauce': { unlocked: false, name: "Dans la Sauce", icon: "🌶️", description: "Atteindre la barre des 15000 fans. Tu ne peux plus sortir dans la rue tranquille." },
-                'productivite_toxique': { unlocked: false, name: "Productivité Toxique", icon: "🗑️", description: "Enchaîner 5 flops d'affilée. Remets-toi en question." },
-                'alerte_rouge': { unlocked: false, name: "Alerte Rouge", icon: "💀", description: "Te manger ton premier écran bleu (BSOD) à cause d'un plugin cracké." },
-                'hacker_man': { unlocked: false, name: "Hacker Man", icon: "🥷", description: "Télécharger 10 plugins sur CrackZ. Le FBI te cherche." },
-                'cancel_culture': { unlocked: false, name: "Cancel Culture", icon: "📉", description: "Survivre à ton premier Bad Buzz sur les réseaux." },
-                'avocat_du_diable': { unlocked: false, name: "Avocat du Diable", icon: "⚖️", description: "Gagner un procès contre un rappeur qui a volé ta prod." },
-                'let_him_cook': { unlocked: false, name: "Let Him Cook", icon: "🍕", description: "T'asseoir 10 fois sur le canapé pour 'chercher l'inspi'." },
-                'sellout': { unlocked: false, name: "Sellout", icon: "🤝", description: "Accepter ton premier placement de produit (Sponsor). L'argent n'a pas d'odeur." },
-                'inge_son_certifie': { unlocked: false, name: "Ingé Son Certifié", icon: "🎛️", description: "Acheter ton premier plugin légal avec ton propre argent sur AudioStore." },
-                'prix_de_la_paix': { unlocked: false, name: "Le Prix de la Paix", icon: "🕊️", description: "Régler un vol de prod à l'amiable en acceptant de perdre de l'argent." },
-                'toujours_dans_le_rouge': { unlocked: false, name: "Toujours dans le rouge", icon: "🔋", description: "Lancer un export de mixdown avec moins de 5% d'énergie. Danger de mort." },
-                'lumiere_divine': { unlocked: false, name: "Lumière Divine", icon: "💡", description: "Allumer et éteindre la lampe Pixar 20 fois. (Tu t'ennuies ?)" },
-                'vrai_rat_de_studio': { unlocked: false, name: "Vrai Rat de Studio", icon: "🧛‍♂️", description: "Passer 3 jours entiers in-game sans jamais cliquer sur le lit pour dormir." }
-            },
-                ownedFurniture: {
-                acoustic: false,
-                sofa: false,
-                table: false,
-                rug: false,
-                tv: false,
-                rack: false,
-                synth: false,
-                guitar: false
-            }
-        };
-
-        const ACHIEVEMENT_CATEGORIES = [
-            { id: 'music', label: '💿 MUSIQUE' },
-            { id: 'dark', label: '🏴‍☠️ DARK SIDE' },
-            { id: 'studio', label: '🛋️ STUDIO' },
-            { id: 'business', label: '💼 BUSINESS' }
-        ];
-
-        const ACHIEVEMENT_FILTERS = [
-            { id: 'all', label: 'All' },
-            { id: 'unlocked', label: 'Unlocked' },
-            { id: 'locked', label: 'Locked' },
-            { id: 'secret', label: 'Secret' }
-        ];
-
-        const ACHIEVEMENT_DETAILS = {
-        first_blood: { category: 'music', progressPath: 'stats.tracks', target: 1, unit: 'track', reward: { money: 500, rep: 10 } },
-        certifie_classique: { category: 'music', target: 1, unit: 'review', reward: { money: 2000, rep: 50, followers: 1000 } },
-        dans_la_sauce: { category: 'business', progressPath: 'followers', target: 15000, unit: 'followers', reward: { rep: 100, followers: 5000 } },
-        productivite_toxique: { category: 'music', progressPath: 'stats.consecutiveFlops', target: 5, unit: 'flops', reward: { money: 100 } },
-        alerte_rouge: { category: 'dark', progressPath: 'stats.viruses', target: 1, unit: 'virus', reward: { money: 500 } },
-        hacker_man: { category: 'dark', progressPath: 'stats.crackDownloads', target: 5, unit: 'downloads', reward: { money: 1000 } },
-        cancel_culture: { category: 'business', target: 1, unit: 'event', reward: { rep: 50 } },
-        avocat_du_diable: { category: 'business', target: 1, unit: 'case', reward: { money: 2500, rep: 30 } },
-        let_him_cook: { category: 'studio', progressPath: 'stats.sofaChills', target: 10, unit: 'chills', reward: { rep: 15 } },
-        sellout: { category: 'business', target: 1, unit: 'deal', reward: { money: 5000 } },
-        inge_son_certifie: { category: 'business', progressPath: 'plugins', target: 1, unit: 'plugin', reward: { rep: 20, followers: 500 } },
-        prix_de_la_paix: { category: 'business', target: 1, unit: 'deal', reward: { rep: 40 } },
-        toujours_dans_le_rouge: { category: 'studio', target: 1, unit: 'export', secret: true, reward: { money: 300, rep: 5 } },
-        lumiere_divine: { category: 'studio', progressPath: 'stats.lampToggles', target: 20, unit: 'switches', secret: true, reward: { money: 50 } },
-        vrai_rat_de_studio: { category: 'studio', progressPath: 'stats.awakeDays', target: 3, unit: 'days', secret: true, reward: { money: 1000, rep: 20 } }
-    };
-        let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-        normalizeAchievementState();
-
-        let selectedAvatarIndex = 0;
-        let currentDawGenre = 'drill';
-        let currentDawVoice = 'm';
-        let activeSettingsPanel = 'audio';
-        let activeAchievementCategory = 'music';
-        let activeAchievementFilter = 'all';
+    </div><script type="module">
 
 
-         // ==========================================
-        // SYSTÈME D'ACHIEVEMENTS PRO (VISIBLE PARTOUT)
-        // ==========================================
-                function normalizeAchievementState() {
-            if (!state) return;
-            const existing = (state?.achievements && typeof state.achievements === 'object') ? state.achievements : {};
-            const normalized = {};
 
-            Object.keys(DEFAULT_STATE?.achievements || {}).forEach(id => {
-                const template = DEFAULT_STATE.achievements[id] || {};
-                const technical = ACHIEVEMENT_DETAILS?.[id] || {};
-                const saved = existing[id] || {};
 
-                normalized[id] = { 
-                    ...template, 
-                    ...technical, 
-                    ...(typeof saved === 'object' ? saved : {}), 
-                    unlocked: Boolean(saved?.unlocked || saved === true) 
-                };
-            });
-            state.achievements = normalized;
-        }
-
-        function getAchievementOrder() {
-            const baseIds = Object.keys(DEFAULT_STATE.achievements);
-            const extraIds = Object.keys(state.achievements || {}).filter(id => !baseIds.includes(id));
-            return [...baseIds, ...extraIds];
-        }
-
-        function getNestedStateValue(path) {
-            if (!path) return 0;
-            return path.split('.').reduce((obj, key) => (obj && obj[key] !== undefined ? obj[key] : undefined), state);
-        }
-
-        function escapeHTML(value) {
-            return String(value ?? '').replace(/[&<>"']/g, char => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
-            })[char]);
-        }
-
-        function getInGameTimeLabel(mins = state.timeMins) {
-            const total = parseInt(mins, 10) || 0;
-            const h = Math.floor(total / 60);
-            const m = total % 60;
-            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-        }
-
-        function stampAchievementUnlock(achievement) {
-            if (!achievement.unlockedDay) achievement.unlockedDay = parseInt(state.day, 10) || 1;
-            if (!achievement.unlockedTime) achievement.unlockedTime = getInGameTimeLabel();
-        }
-
-        function getAchievementProgress(id, achievement) {
-            const detail = ACHIEVEMENT_DETAILS[id] || achievement || {};
-            const target = Math.max(1, parseInt(detail.target || achievement.target || 1, 10));
-            let current = detail.progressPath ? Number(getNestedStateValue(detail.progressPath)) || 0 : (achievement.unlocked ? target : 0);
-
-            if (achievement.unlocked) current = Math.max(current, target);
-            const capped = Math.max(0, Math.min(current, target));
-
-            return {
-                current: capped,
-                target,
-                unit: detail.unit || achievement.unit || 'step',
-                percent: Math.round((capped / target) * 100),
-                progressive: Boolean(detail.progressPath && target > 1)
-            };
-        }
-
-        function getAchievementEntries() {
-            normalizeAchievementState();
-            return getAchievementOrder().map(id => ({
-                id,
-                ...(state.achievements[id] || {}),
-                detail: ACHIEVEMENT_DETAILS[id] || {}
-            }));
-        }
-
-        function migrateCompletedAchievementProgress() {
-            if (!state) return; // Sécurité anti-crash
-            normalizeAchievementState();
-            
-            Object.keys(state.achievements || {}).forEach(id => {
-                const achievement = state.achievements[id];
-                const detail = ACHIEVEMENT_DETAILS?.[id] || {};
-                
-                if (!achievement || achievement.unlocked || !detail.progressPath) return;
-
-                const progress = getAchievementProgress(id, achievement);
-                if (progress?.current >= progress?.target) {
-                    achievement.unlocked = true;
-                    achievement.legacyUnlocked = true;
-                }
-            });
-        }
-
-        function getAchievementUnlockLabel(achievement) {
-            if (!achievement.unlocked) return 'LOCKED';
-            if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant v17';
-            if (achievement.unlockedDay) return `JOUR ${achievement.unlockedDay}${achievement.unlockedTime ? ' · ' + achievement.unlockedTime : ''}`;
-            return 'Débloqué avant v16';
-        }
-
-        function initAchievementsUI() {
-            const categoryHost = document.getElementById('achievement-category-tabs');
-            const filterHost = document.getElementById('achievement-filter-tabs');
-
-            if (filterHost) {
-                filterHost.innerHTML = ACHIEVEMENT_FILTERS.map(filter => `
-                    <button id="achievement-filter-${filter.id}" class="achievement-filter-btn rounded-lg px-2 py-3" onclick="setAchievementFilter('${filter.id}')">${filter.label}</button>
-                `).join('');
-            }
-
-            renderAchievementsPanel();
-        }
     // ==========================================
     // GESTION DE L'ÉCRAN DE CHARGEMENT
     // ==========================================
-
-    // Lancement automatique au chargement de la page
-    if (document.readyState === 'complete') simulateLoading();
-    else window.addEventListener('load', simulateLoading);
-
-
     // Assure que le popup d'achievement n'est pas enfermé dans le loader (qui devient display:none)
     ;(function relocateAchievementPopup(){
         try {
@@ -2587,11 +2161,25 @@ const DEFAULT_STATE = {
             
             // C'est ICI qu'il faut appeler ta fonction qui affiche l'écran de login 
             // ou qui démarre l'animation de la room 3D.
-            initUI();
+            // ex: initGame();
         }, 500);
     }
 
-// FIX: Breakpoint isMobile ajusté à 767px (Smartphones Portrait)
+    // Lancement automatique au chargement de la page
+    if (document.readyState === 'complete') simulateLoading();
+    else window.addEventListener('load', simulateLoading);
+
+
+
+
+        
+    //------------------------   
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+        // ==========================================
+        // 1. RESPONSIVE & GLOBALS
+        // ==========================================
+        // FIX: Breakpoint isMobile ajusté à 767px (Smartphones Portrait)
         let isMobile = window.innerWidth <= 767;
         window.isMobile = isMobile;
 
@@ -2601,27 +2189,20 @@ const DEFAULT_STATE = {
             { name: 'matrix', vars: ['#020617', '#064e3b', '#022c22', '#047857'] },
             { name: 'blood',  vars: ['#170000', '#7f1d1d', '#4c0519', '#9f1239'] }
         ];
-        let currentThemeIdx = 0; // À rajouter au cas où elle aurait aussi disparu
+        let currentThemeIdx = 0;
 
-function cycleTheme() {
-    // 1. Boucle sur ta liste de thèmes perso
-    currentThemeIdx = (currentThemeIdx + 1) % themesList.length;
-    
-    // 2. Application des variables CSS
-    const root = document.documentElement;
-    const t = themesList[currentThemeIdx];
-    
-    root.style.setProperty('--bg-color-1', t.vars[0]);
-    root.style.setProperty('--bg-color-2', t.vars[1]);
-    root.style.setProperty('--bg-color-3', t.vars[2]);
-    root.style.setProperty('--bg-color-4', t.vars[3]);
-    
-    // 3. Feedback sonore
-    if (typeof playBleep === 'function') playBleep();
+        function cycleTheme() {
+            currentThemeIdx = (currentThemeIdx + 1) % themesList.length;
+            const root = document.documentElement;
+            const t = themesList[currentThemeIdx];
+            root.style.setProperty('--bg-color-1', t.vars[0]);
+            root.style.setProperty('--bg-color-2', t.vars[1]);
+            root.style.setProperty('--bg-color-3', t.vars[2]);
+            root.style.setProperty('--bg-color-4', t.vars[3]);
+            playBleep();
 
-    // 4. Synchronisation avec le moteur 3D (Leds, Néons)
-    if (typeof updateThemeColors === 'function') updateThemeColors();
-}
+            updateThemeColors();
+        }
 
 
         // ==========================================
@@ -2675,16 +2256,7 @@ function cycleTheme() {
                 });
             }
         }
-    
-function animate3D() {
-    
 
-    
-
-        // ==========================================
-        // 1. RESPONSIVE & GLOBALS
-        // ==========================================
-        
         // ==========================================
         // 2. THREE.JS SCENE
         // ==========================================
@@ -2697,9 +2269,6 @@ function animate3D() {
         let isJoystickActive = false;
         let joystickStartX = 0; // Initial touch X position
         let joystickStartY = 0; // Initial touch Y position
-        let joystickAnchorX = 0; // Fixed spawn point for constraint
-        let joystickAnchorY = 0;
-        window.lastPointerX = 0;
         window.lastPointerY = 0;
         window.joystickVec = { x: 0, z: 0 };
         
@@ -2739,10 +2308,6 @@ function animate3D() {
 
         const listener = new THREE.AudioListener();
         camera.add(listener);
-
-
-        renderer.render(scene, camera);
-}
 
 
 
@@ -3023,15 +2588,15 @@ function animate3D() {
 
         const frameGeo = new THREE.BoxGeometry(2.4, 0.4, 4.2);
         const frameMat = new THREE.MeshStandardMaterial({ color: '#262626', roughness: 0.8 });
-        const bedFrame = new THREE.Mesh(frameGeo, frameMat);
-        bedFrame.castShadow = true;
-        bedFrame.receiveShadow = true;
-        bedFrame.name = 'bed_mesh'; // Assignation pour le Raycaster
+        const frame = new THREE.Mesh(frameGeo, frameMat);
+        frame.castShadow = true;
+        frame.receiveShadow = true;
+        frame.name = 'bed_mesh'; // Assignation pour le Raycaster
         
         const bedFrameEdges = new THREE.EdgesGeometry(frameGeo);
         const bedFrameLines = new THREE.LineSegments(bedFrameEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
-        bedFrame.add(bedFrameLines);
-        bedGroup.add(bedFrame);
+        frame.add(bedFrameLines);
+        bedGroup.add(frame);
 
         const mattressGeo = new THREE.BoxGeometry(2.2, 0.3, 4.0);
         const mattressMat = new THREE.MeshStandardMaterial({ color: '#e7e5e4', roughness: 0.9 });
@@ -3104,11 +2669,46 @@ function animate3D() {
         crateFront.position.set(0, 0.125, 0.31);
 
         [crateBase, crateSideL, crateSideR, crateBack, crateFront].forEach(mesh => {
-            mesh.name = 'achievements_board_mesh'; // Nom d'interaction pour le Raycaster et Proximité
             mesh.castShadow = true; mesh.receiveShadow = true;
             mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), crateEdgeMat));
             crateGroup.add(mesh);
         });
+
+        // Hitbox plus large pour faciliter le clic + collision
+        const hitbox = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.0, 1.0), new THREE.MeshBasicMaterial({ visible: false }));
+        hitbox.position.y = 0.4;
+        // Name must match raycast interactable list so clicks open Achievements
+        hitbox.name = 'achievements_board_mesh';
+        crateGroup.add(hitbox);
+        // register into global collision objects for avatar movement checks
+        window.collisionObjects = window.collisionObjects || [];
+        window.collisionObjects.push(hitbox);
+
+        // --- Outline for the whole crateGroup (box around group) ---
+        try {
+            const bbox = new THREE.Box3().setFromObject(crateGroup);
+            const size = bbox.getSize(new THREE.Vector3());
+            const center = bbox.getCenter(new THREE.Vector3());
+            const boxGeo = new THREE.BoxGeometry(size.x || 1, size.y || 1, size.z || 1);
+            // create a line material cloned from crateEdgeMat so opacity/color can be animated independently
+            const groupEdgeMat = crateEdgeMat.clone();
+            groupEdgeMat.color = groupEdgeMat.color.clone();
+            groupEdgeMat.transparent = true;
+            groupEdgeMat.opacity = 0.0;
+            const groupEdges = new THREE.LineSegments(new THREE.EdgesGeometry(boxGeo), groupEdgeMat);
+            // convert world center to crateGroup local space
+            crateGroup.worldToLocal(center);
+            groupEdges.position.copy(center);
+            groupEdges.userData = groupEdges.userData || {};
+            groupEdges.userData.isGroupOutline = true;
+            crateGroup.add(groupEdges);
+
+            // Ensure the hitbox is treated as the interactable mesh but the edges represent the whole group
+            window.highlightItems = window.highlightItems || [];
+            window.highlightItems.push({ mesh: hitbox, edges: groupEdges });
+        } catch (e) {
+            console.warn('Failed to create crate group outline', e);
+        }
 
         const vinylsContainer = new THREE.Group();
         vinylsContainer.position.set(0, 0.08, -0.25);
@@ -3279,7 +2879,6 @@ function animate3D() {
         
         rugGroup.add(rug, stripe);
         scene.add(rugGroup);
-        rugGroup.visible = state.ownedFurniture.rug;
 
         // ==========================================
         // RACK HARDWARE ANALOGIQUE
@@ -3521,7 +3120,6 @@ function animate3D() {
         rackGroup.add(lampGroup);
         window.pixarLamp = lampGroup;
         scene.add(rackGroup);
-        rackGroup.visible = state.ownedFurniture.rack;
 
         // --- OPTIMISATION : OBJETS RÉUTILISABLES (ÉVITE LES FUITES MÉMOIRE) ---
         const rippleGeoShared = new THREE.RingGeometry(0.2, 0.25, 32);
@@ -3613,7 +3211,7 @@ function animate3D() {
 
             const tubeGeoH = new THREE.BoxGeometry(gridW, 0.02, 0.02);
             const tubeGeoV = new THREE.BoxGeometry(0.02, gridH, 0.02);
-            const neonFrame = new THREE.Group();
+            const frame = new THREE.Group();
 
             if (!isLeftWall) {
                 // Mur du fond (Cadre aligné sur l'axe X/Y)
@@ -3625,7 +3223,7 @@ function animate3D() {
                 left.position.set(centerX - gridW/2 - 0.05, centerY, centerZ + 0.04);
                 const right = new THREE.Mesh(tubeGeoV, neonMat);
                 right.position.set(centerX + gridW/2 + 0.05, centerY, centerZ + 0.04);
-                neonFrame.add(top, bottom, left, right);
+                frame.add(top, bottom, left, right);
             } else {
                 // Mur de gauche (Cadre aligné sur l'axe Z/Y)
                 const top = new THREE.Mesh(tubeGeoH, neonMat);
@@ -3638,7 +3236,7 @@ function animate3D() {
                 left.position.set(startX + 0.04, centerY, centerZ - gridW/2 - 0.05);
                 const right = new THREE.Mesh(tubeGeoV, neonMat);
                 right.position.set(startX + 0.04, centerY, centerZ + gridW/2 + 0.05);
-                neonFrame.add(top, bottom, left, right);
+                frame.add(top, bottom, left, right);
             }
 
             // Lumière omnidirectionnelle très douce pour l'effet de halo diffusé sur le mur
@@ -3648,8 +3246,8 @@ function animate3D() {
                 centerY,
                 isLeftWall ? centerZ : startZ + 0.15
             );
-            neonFrame.add(neonLight);
-            acousticGroup.add(neonFrame);
+            frame.add(neonLight);
+            acousticGroup.add(frame);
 
             // Enregistrement global pour l'interrupteur
             if (!window.acousticNeons) window.acousticNeons = [];
@@ -3663,7 +3261,6 @@ function animate3D() {
         createAcousticWall(-4.95, 2.2, 0.5, true);
 
         scene.add(acousticGroup);
-        acousticGroup.visible = state.ownedFurniture.acoustic;
 
 
         // ==========================================
@@ -3700,7 +3297,6 @@ function animate3D() {
         });
 
         scene.add(sofaGroup);
-        sofaGroup.visible = state.ownedFurniture.sofa;
 
 
         // ==========================================
@@ -3825,7 +3421,6 @@ function animate3D() {
 
         
         scene.add(sideTableGroup);
-        sideTableGroup.visible = state.ownedFurniture.table;
 
 
         // --- JUICY HUD COUNTER LOGIC ---
@@ -4037,7 +3632,6 @@ function animate3D() {
     });
 
     scene.add(synthGroup);
-    synthGroup.visible = state.ownedFurniture.synth;
 
         // ==========================================
         // GUITARE ÉLECTRIQUE RÉALISTE AU MUR (Proportions corrigées, Sans ombres)
@@ -4252,7 +3846,6 @@ function animate3D() {
         });
 
         scene.add(guitarGroup);
-        guitarGroup.visible = state.ownedFurniture.guitar;
         
         
 
@@ -4363,9 +3956,6 @@ function animate3D() {
 
             // 6. NOUVEAU : Grande Table basse devant le canapé (décalée pour laisser le passage)
             if (x > -1.9 - r && x < -0.9 + r && z > 0.3 - r && z < 2.7 + r) return true;
-
-             // 7. NOUVEAU : Bac de disquaire (x: 3.0 à 4.6, z: -0.1 à 1.1)
-            if (x > 3.0 - r && x < 4.6 + r && z > -0.1 - r && z < 1.1 + r) return true;
             
             // 7. Dynamic collision objects (three.js hitboxes)
             try {
@@ -4565,32 +4155,9 @@ function animate3D() {
                 window.highlightItems = [];
             }
         } catch(e) {}
-
-
-    let frame = 0;
-    const maxFrames = 20;
-    const targetScale = 1; // Ajuste si le scale de base de tes objets n'est pas 1
-
-    function animatePop() {
-        if (frame <= maxFrames) {
-            // Calcul du smoothstep : t * t * (3 - 2 * t)
-            let t = frame / maxFrames;
-            let smoothT = t * t * (3 - 2 * t); 
-            
-            let currentScale = smoothT * targetScale;
-            mesh.scale.set(currentScale, currentScale, currentScale);
-            
-            frame++;
-            requestAnimationFrame(animatePop);
-        }
-    }
-    
-    // Jouer un son ici plus tard !
-    animatePop();
-//}
         
         
-       function animate3D() {
+        function animate3D() {
         requestAnimationFrame(animate3D);
 
         // Correctif 2 : On ne rend rien tant que les shaders ne sont pas compilés
@@ -4631,62 +4198,9 @@ function animate3D() {
         let isNearSomething = false; 
 
         // Vérification de l'avatar principal
-        if (currentRoomAvatar) {
+        if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar) {
             
-            // --- JOYSTICK LOGIC (DYNAMIC BRAWL STARS STYLE) ---
-            if (isJoystickActive && joystickUI && joystickKnob) {
-                // 3. Dynamic scale based on camera zoom (Smaller when zoomed in)
-                const currentZoom = window.targetCamZoom || 1.0;
-                const joyScale = Math.min(1.0, 1.0 / Math.sqrt(currentZoom));
-                joystickUI.style.transform = `translate(-50%, -50%) scale(${joyScale})`;
-
-                const dx = (window.lastPointerX || 0) - joystickStartX;
-                const dy = (window.lastPointerY || 0) - joystickStartY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const maxRadius = 40; // Max movement radius for the knob
-
-                // 2. Constraint: The base slides to follow but stays within 20% of its size from anchor
-                if (dist > maxRadius) {
-                    const angle = Math.atan2(dy, dx);
-                    let targetBaseX = window.lastPointerX - Math.cos(angle) * maxRadius;
-                    let targetBaseY = window.lastPointerY - Math.sin(angle) * maxRadius;
-
-                    // Bridage de la base à 20px (20% de 100px) du point de départ
-                    const maxBaseShift = 20; 
-                    const sDx = targetBaseX - joystickAnchorX;
-                    const sDy = targetBaseY - joystickAnchorY;
-                    const sDist = Math.sqrt(sDx * sDx + sDy * sDy);
-
-                    if (sDist > maxBaseShift) {
-                        const sAngle = Math.atan2(sDy, sDx);
-                        joystickStartX = joystickAnchorX + Math.cos(sAngle) * maxBaseShift;
-                        joystickStartY = joystickAnchorY + Math.sin(sAngle) * maxBaseShift;
-                    } else {
-                        joystickStartX = targetBaseX;
-                        joystickStartY = targetBaseY;
-                    }
-
-                    joystickUI.style.left = `${joystickStartX}px`;
-                    joystickUI.style.top = `${joystickStartY}px`;
-                }
-
-                // Recalcul du déplacement visuel après le potentiel glissement de la base
-                const finalDx = (window.lastPointerX || 0) - joystickStartX;
-                const finalDy = (window.lastPointerY || 0) - joystickStartY;
-                const finalDist = Math.sqrt(finalDx * finalDx + finalDy * finalDy);
-                const angle = Math.atan2(finalDy, finalDx);
-                
-                const clampedDist = Math.min(finalDist, maxRadius);
-                const vx = Math.cos(angle) * clampedDist;
-                const vy = Math.sin(angle) * clampedDist;
-                joystickKnob.style.transform = `translate(${vx}px, ${vy}px)`;
-
-                // Mise à jour du vecteur de mouvement normalisé (0 à 1)
-                const factor = clampedDist / maxRadius;
-                window.joystickVec.x = Math.cos(angle) * factor;
-                window.joystickVec.z = Math.sin(angle) * factor;
-            }
-            
+        
             // ==========================================
             // --- LOGIQUE DE LA TÉLÉVISION ---
             // ==========================================
@@ -4711,44 +4225,33 @@ function animate3D() {
             // ==========================================
             window.velX = window.velX || 0;
             window.velZ = window.velZ || 0;
+            window.kbdState = window.kbdState || {};
+
+            const prevX = currentRoomAvatar.position.x;
+            const prevZ = currentRoomAvatar.position.z;
             
             let targetDirX = 0;
             let targetDirZ = 0;
 
-            // Capture de la position initiale pour détecter le mouvement réel (isMoving)
-            const prevX = currentRoomAvatar.position.x;
-            const prevZ = currentRoomAvatar.position.z;
-
             if (!currentState.isSleeping && !currentState.isEventActive && !currentState.isSitting) {
-                 let moveX = 0;
-                 let moveY = 0;
-
                 if (isJoystickActive) { // Joystick is active (mobile touch)
-                    moveX = window.joystickVec.x;
-                    moveY = window.joystickVec.z;
-                } else { // Keyboard input (desktop, or mobile without active joystick)
-                    if (window.kbdState.up)    moveY -= 1;
-                    if (window.kbdState.down)  moveY += 1;
-                    if (window.kbdState.left)  moveX -= 1;
-                    if (window.kbdState.right) moveX += 1;
-                }
-
-                if (moveX !== 0 || moveY !== 0) {
-                    // Projection Isométrique (Camera-Relative)
-                    // On transforme les directions écran en diagonales du monde 3D (Z-X)
-                    targetDirX = moveX + moveY;
-                    targetDirZ = moveY - moveX;
-
-                    // Normalisation : On conserve la magnitude de l'input (max 1.0) 
-                    // pour garantir une vitesse fluide et gérer les sticks analogiques.
-                    const inputMag = Math.min(1.0, Math.sqrt(moveX * moveX + moveY * moveY));
-                    const projectedMag = Math.sqrt(targetDirX * targetDirX + targetDirZ * targetDirZ);
-                    
-                    targetDirX = (targetDirX / projectedMag) * inputMag;
-                    targetDirZ = (targetDirZ / projectedMag) * inputMag;
-
+                    targetDirX = window.joystickVec.x;
+                    targetDirZ = window.joystickVec.z;
+                    // If joystick is active, disable mouse-click movement
                     targetPosition = null;
+                } else { // Keyboard input (desktop, or mobile without active joystick)
+                    if (window.kbdState.up) targetDirZ -= 1;
+                    if (window.kbdState.down) targetDirZ += 1;
+                    if (window.kbdState.left) targetDirX -= 1;
+                    if (window.kbdState.right) targetDirX += 1;
                 }
+            }
+
+            // Normalisation pour garder une vitesse constante
+            const inputMag = Math.sqrt(targetDirX * targetDirX + targetDirZ * targetDirZ);
+            if (inputMag > 1) {
+                targetDirX /= inputMag;
+                targetDirZ /= inputMag;
             }
 
             const acceleration = 0.15; 
@@ -4757,7 +4260,7 @@ function animate3D() {
 
             // Utilisation de safeEnergy pour empêcher l'infection NaN
             const energySpeedMult = 0.7 + (Math.max(0, safeEnergy) / 100) * 0.3;
-            const maxSpeed = 0.04 * energySpeedMult;
+            const maxSpeed = 0.025 * energySpeedMult;
             
             if (Math.abs(window.velX) > 0.005 || Math.abs(window.velZ) > 0.005) {
                 if (typeof targetPosition !== 'undefined' && targetPosition) targetPosition = null; // Clear mouse target if moving by keyboard/joystick
@@ -4910,41 +4413,7 @@ function animate3D() {
                     const keepAnimatingAfterStop = !isMoving && (typeof stoppedMovingAt !== 'undefined') && (now - stoppedMovingAt < 1000);
                     if (isMoving || keepAnimatingAfterStop) {
                         const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 1000));
-                        walkTime += isMoving ? (0.16 * energySpeedMult) : 0.05;
-
-                        // --- SYSTÈME DE PAS SONORES ---
-                        const currentSin = Math.sin(walkTime);
-                        if (window._prevStepSin === undefined) window._prevStepSin = 0;
-                        // On déclenche le son au moment de l'impact (changement de signe de la sinusoïde)
-                        if (isMoving && Math.sign(currentSin) !== Math.sign(window._prevStepSin)) {
-                            const pos = currentRoomAvatar.position;
-                            
-                            // --- LOGIQUE DE PANORAMIQUE SPATIALE & ALTERNÉE ---
-                            if (window._stepSide === undefined) window._stepSide = 1;
-                            
-                            // 1. Panoramique basé sur la position dans la room (Axe horizontal écran = Z - X)
-                            // On divise par 10 car la room fait 10 unités de large (de -5 à 5)
-                            const spatialPan = (pos.z - pos.x) / 10;
-                            
-                            // 2. Ajout du petit décalage pour simuler l'écart entre les deux pieds
-                            const footOffset = window._stepSide * 0.12;
-                            const panVal = Math.max(-1, Math.min(1, spatialPan + footOffset));
-                            
-                            window._stepSide *= -1; // Alterne pour le prochain pas
-
-                            // Détection de la surface (Tapis Central X: [-3.0, 2.0], Z: [-0.5, 3.5])
-                            const isOnRug = (pos.x >= -3.0 && pos.x <= 2.0 && pos.z >= -0.5 && pos.z <= 3.5);
-
-                            if (isOnRug) {
-                                // Son sourd et étouffé pour le tapis (Basse fréquence)
-                                playTone(65 + Math.random() * 10, 'sine', 0.05, 0.012, panVal);
-                            } else {
-                                // Son parquet standard
-                                playTone(115 + Math.random() * 15, 'sine', 0.03, 0.008, panVal);
-                            }
-                        }
-                        window._prevStepSin = currentSin;
-
+                        walkTime += isMoving ? (0.10 * energySpeedMult) : 0.05;
                         innerModel.rotation.z = Math.sin(walkTime) * 0.012 * fade;
                         innerModel.position.y = Math.abs(Math.sin(walkTime)) * 0.012 * fade;
                         if (legL && legR) {
@@ -5093,10 +4562,6 @@ function animate3D() {
                     window.camShakeIntensity *= 0.85; // Easing : le shake diminue de 15% à chaque frame
                 }
             }
-
-            // --- SYNC BACKGROUND CLOUDS ZOOM (Subtle Parallax depth) ---
-            const cz = 1 + (camera.zoom - 1) * 0.12; 
-            document.documentElement.style.setProperty('--cz', cz);
         }
 
             // --- SURLIGNAGE SMOOTH PAR PROXIMITÉ ---
@@ -5118,7 +4583,6 @@ function animate3D() {
                     if (item.mesh.name === 'bed_mesh') customDist = 2.8; 
                     if (item.mesh.name === 'pc_mesh') customDist = 2.4;  
                     if (item.mesh.name === 'sofa_mesh') customDist = 3.0; 
-                    if (item.mesh.name === 'achievements_board_mesh') customDist = 2.5;
                     
                     item.mesh.userData = item.mesh.userData || { baseEmissiveIntensity: 0 };
 
@@ -5243,8 +4707,9 @@ function animate3D() {
             }
         }
 
-    
-
+        // --- LE RENDU FINAL (INDISPENSABLE POUR VOIR LA ROOM) ---
+        renderer.render(scene, camera);
+    }
 
         
 
@@ -5261,14 +4726,21 @@ function animate3D() {
 
         function onPointerDown(event) {
             if (document.getElementById('room-ui').style.display !== 'flex') return;
+            let clientX, clientY;
+            if (event.changedTouches) { clientX = event.changedTouches[0].clientX; clientY = event.changedTouches[0].clientY; }
+            else { clientX = event.clientX; clientY = event.clientY; }
             
-            mousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            mousePos.x = (clientX / window.innerWidth) * 2 - 1;
+            mousePos.y = -(clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mousePos, camera);
 
             const intersects = raycaster.intersectObjects(scene.children, true);
             
             // 1. Priorité aux interactions objets (PC, Lit, etc.)
+            // Debug each intersect for easier tracing
+            try {
+                intersects.forEach(i => { if (i && i.object) console.log('Raycast candidate:', i.object.name); });
+            } catch(e) {}
             const interactableHit = intersects.find(hit => interactableNames.includes(hit.object.name));
             if (interactableHit) {
                 // If an object is interacted with, the joystick should not activate.
@@ -5286,7 +4758,7 @@ function animate3D() {
                     let interactDist = INTERACTION_DIST;
                     if (objName === 'bed_mesh') interactDist = 2.8;
                     if (objName === 'pc_mesh') interactDist = 2.4;
-                if (objName === 'achievements_board_mesh') interactDist = 2.5;
+                    if (objName === 'achievements_board_mesh') interactDist = 4.0;
                     if (objName === 'sofa_mesh') interactDist = 3.0;
 
                     if (dist <= interactDist) {
@@ -5303,27 +4775,24 @@ function animate3D() {
             }
 
             // 2. If no interactable object was hit, proceed with movement logic
-            if (event.pointerType === 'touch') { 
+            const isTouchEvent = !!event.changedTouches;
+            if (isTouchEvent && isMobile) { // Activate joystick only for mobile touch on empty space
                 isJoystickActive = true;
-                joystickStartX = event.clientX;
-                joystickStartY = event.clientY;
-                joystickAnchorX = event.clientX;
-                joystickAnchorY = event.clientY;
-                window.lastPointerX = event.clientX;
-                window.lastPointerY = event.clientY;
+                joystickStartX = clientX;
+                joystickStartY = clientY;
+                window.lastPointerX = clientX; // Initial position for knob calculation
+                window.lastPointerY = clientY;
 
                 const jUI = document.getElementById('joystick-ui');
                 if (jUI) {
                     jUI.style.left = `${joystickStartX}px`;
                     jUI.style.top = `${joystickStartY}px`;
                     jUI.style.display = 'block';
-                    // Forcer un reflow pour déclencher la transition d'opacité
-                    void jUI.offsetWidth;
-                    jUI.style.opacity = '1';
+                    jUI.style.opacity = '0.3'; // Initial opacity
                 }
-                // Capture le pointeur pour assurer le suivi du mouvement
-                if (event.target.setPointerCapture) event.target.setPointerCapture(event.pointerId);
-            } else if (event.pointerType === 'mouse') { // Desktop mouse click on empty space
+                // Prevent default to avoid native scrolling/zoom when joystick is active
+                event.preventDefault();
+            } else if (!isTouchEvent && !isMobile) { // Desktop mouse click on empty space
                 const groundHit = intersects.find(hit => hit.object.name === 'floor_mesh' || hit.object.parent?.name === 'RoomAvatarRoot');
                 if (groundHit) {
                     targetPosition = groundHit.point; // Set target for mouse-click movement
@@ -5400,13 +4869,8 @@ function animate3D() {
             isJoystickActive = false;
             window.joystickVec.x = 0;
             window.joystickVec.z = 0;
-            if (joystickUI) {
-            joystickUI.style.opacity = '0';
-                setTimeout(() => {
-                    if (!isJoystickActive) joystickUI.style.display = 'none';
-                }, 200);
-            }
-            if (joystickKnob) joystickKnob.style.transform = 'translate(0, 0)';
+            if (joystickUI) joystickUI.style.display = 'none';
+            if (joystickKnob) joystickKnob.style.transform = 'translate(0px, 0px)'; // Reset knob position
         };
         canvasCont.addEventListener('pointerup', stopJoystick);
         canvasCont.addEventListener('pointercancel', stopJoystick);
@@ -5457,12 +4921,12 @@ function animate3D() {
         function enterPC() {
             document.getElementById('room-ui').style.display = 'none';
             document.getElementById('pc-ui-layer').style.display = 'flex';
-            document.body.classList.add('os-active');
             playTone(600, 'square', 0.1, 0.05);
         }
         function quitPC() {
             document.getElementById('pc-ui-layer').style.display = 'none';
             document.getElementById('room-ui').style.display = 'flex';
+            document.body.classList.add('os-active');
             document.body.classList.remove('os-active');
             playTone(300, 'sawtooth', 0.1, 0.05);
         }
@@ -5744,6 +5208,190 @@ function calculateLevelData(isSilentInit = false) {
             skill:  Math.round(skillScore),
         }
     };
+
+    // ==========================================
+    // Weekly Challenge Pool
+    // ==========================================
+    const CHALLENGE_POOL = [
+        { type: 'specific_track', title: 'Produce a specific track', desc: 'Produce a {genre} track at {bpm} BPM today.', rewardType: 'rep_boost', rewardAmount: 25 },
+        { type: 'specific_track', title: 'Produce a specific track', desc: 'Produce a {genre} track at {bpm} BPM today.', rewardType: 'followers', rewardAmount: 1500 },
+        { type: 'social_streak', title: 'Social Streak', desc: 'Post {target} stories in total.', rewardType: 'followers', rewardAmount: 800 },
+        { type: 'pure_skill', title: 'Pure Skill Banger', desc: 'Make {target} Banger(s) without plugins.', rewardType: 'rep_boost', rewardAmount: 40 }
+    ];
+
+    function pickRandomGenreForChallenge() {
+        const available = DAW_GENRES || [];
+        if (!available.length) return 'Amapiano';
+        const pick = available[Math.floor(Math.random() * available.length)];
+        return pick ? pick.name : 'Amapiano';
+    }
+    function pickRandomBpmForChallenge(genreId) {
+        const g = DAW_GENRES.find(x => x.name === genreId || x.id === genreId);
+        if (!g) return 120;
+        // return targetBpm +/- small variation
+        const variance = Math.floor(Math.random() * 9) - 4; // -4..+4
+        return Math.max(60, g.targetBpm + variance);
+    }
+
+    function generateNewChallenge(force) {
+        try {
+            const pool = CHALLENGE_POOL.slice();
+            const base = pool[Math.floor(Math.random() * pool.length)];
+            const now = Date.now();
+            const id = `ch_${now}_${Math.floor(Math.random()*9999)}`;
+            const ch = JSON.parse(JSON.stringify(base));
+            ch.id = id;
+            ch.currentProgress = 0;
+            ch.daysRemaining = 7;
+            ch.isCompleted = false;
+
+            if (ch.type === 'specific_track') {
+                const genre = pickRandomGenreForChallenge();
+                const bpm = pickRandomBpmForChallenge(genre);
+                ch.description = ch.desc.replace('{genre}', genre).replace('{bpm}', bpm);
+                ch.targetValue = 1;
+                ch.meta = { genre: genre.toLowerCase(), bpm };
+            } else if (ch.type === 'social_streak') {
+                const t = 3 + Math.floor(Math.random() * 3); // 3..5
+                ch.description = ch.desc.replace('{target}', t);
+                ch.targetValue = t;
+            } else if (ch.type === 'pure_skill') {
+                const t = 1 + Math.floor(Math.random() * 2); // 1..2
+                ch.description = ch.desc.replace('{target}', t);
+                ch.targetValue = t;
+            }
+
+            state.activeChallenge = ch;
+            saveGame();
+            showToast(`Nouveau défi: ${ch.description}`, 'info');
+            return ch;
+        } catch (e) { return null; }
+    }
+
+    function updateChallengeProgress(event, payload) {
+        try {
+            const ch = state.activeChallenge || {};
+            if (!ch || !ch.type || ch.isCompleted) return;
+
+            if (ch.type === 'specific_track' && event === 'export') {
+                const meta = ch.meta || {};
+                const gotGenre = (payload.genre || '').toString().toLowerCase();
+                const gotBpm = Number(payload.bpm) || 0;
+                if (meta.genre && gotGenre.includes(meta.genre) && Math.abs(gotBpm - (meta.bpm || 0)) <= 4) {
+                    ch.currentProgress = (ch.currentProgress || 0) + 1;
+                }
+            } else if (ch.type === 'social_streak' && event === 'story') {
+                ch.currentProgress = (ch.currentProgress || 0) + 1;
+            } else if (ch.type === 'pure_skill' && event === 'export') {
+                // payload: {score, pluginId}
+                if ((payload.score || 0) >= 7 && !(payload.pluginId)) {
+                    ch.currentProgress = (ch.currentProgress || 0) + 1;
+                }
+            }
+
+            // Check completion
+            if (ch.currentProgress >= ch.targetValue) {
+                ch.isCompleted = true;
+                // delegate to completeChallenge to apply rewards and block next week
+                completeChallenge(ch);
+            } else {
+                saveGame(); updateHUD();
+            }
+        } catch(e) {}
+    }
+
+    // Apply rewards and finalize the challenge
+    function completeChallenge(chObj) {
+        try {
+            const ch = chObj || state.activeChallenge || {};
+            if (!ch || ch.isCompleted === false) ch.isCompleted = true;
+
+            // Block progression until next week
+            ch.daysRemaining = 7;
+
+            // Apply reward
+            if (ch.rewardType === 'followers') {
+                const amount = parseInt(ch.rewardAmount || 0, 10) || 0;
+                state.followers = (state.followers || 0) + amount;
+            } else if (ch.rewardType === 'rep_boost') {
+                // Apply a temporary reputation multiplier boost (default x2 for 3 days)
+                const boostMult = 2;
+                const boostDays = 3;
+                state.multiplier = (parseFloat(state.multiplier) || 1) * boostMult;
+                state.activeBoost = { type: 'rep', multiplier: boostMult, expiresDay: (parseInt(state.day || 0, 10) + boostDays) };
+                // Also give a small flat REP immediate bonus if rewardAmount given
+                const immediate = parseInt(ch.rewardAmount || 0, 10) || 0;
+                if (immediate > 0) state.rep = Math.max(0, (state.rep || 0) + immediate);
+            }
+
+            // Visual feedback
+            showToast(`Défi complété ! ${ch.rewardType === 'followers' ? ('+' + (ch.rewardAmount || 0) + ' fans') : 'Boost REP activé !'}`, 'success');
+            fireConfetti('achievement');
+
+            // Persist and refresh
+            state.activeChallenge = ch;
+            saveGame(); updateHUD(); updateChallengeUI();
+        } catch (e) { console.error(e); }
+    }
+
+    // Validate an action against the active challenge, then update progress if valid
+    function checkChallengeProgress(actionType, actionData) {
+        try {
+            const ch = state.activeChallenge || {};
+            if (!ch || !ch.type || ch.isCompleted) return false;
+
+            let matched = false;
+            if (ch.type === 'specific_track' && actionType === 'export') {
+                const meta = ch.meta || {};
+                const gotGenre = (actionData.genre || '').toString().toLowerCase();
+                const gotBpm = Number(actionData.bpm) || 0;
+                if (meta.genre && gotGenre.includes(meta.genre) && Math.abs(gotBpm - (meta.bpm || 0)) <= 4) matched = true;
+            } else if (ch.type === 'social_streak' && actionType === 'story') {
+                matched = true;
+            } else if (ch.type === 'pure_skill' && actionType === 'export') {
+                if ((actionData.score || 0) >= 7 && !(actionData.pluginId)) matched = true;
+            }
+
+            if (matched) {
+                updateChallengeProgress(actionType, actionData);
+                updateChallengeUI();
+                return true;
+            }
+            return false;
+        } catch (e) { return false; }
+    }
+
+    function updateChallengeUI() {
+        try {
+            const elDesc = document.getElementById('challenge-desc');
+            const elBar = document.getElementById('challenge-bar');
+            const elProg = document.getElementById('challenge-progress');
+            const elDays = document.getElementById('challenge-days');
+            const elReward = document.getElementById('challenge-reward');
+            const ch = state.activeChallenge || null;
+            if (!ch || !ch.id) {
+                if (elDesc) elDesc.innerText = 'Aucun défi actif';
+                if (elBar) elBar.style.width = '0%';
+                if (elProg) elProg.innerText = '0/0';
+                if (elDays) elDays.innerText = '';
+                if (elReward) elReward.innerText = '';
+                return;
+            }
+
+            if (elDesc) elDesc.innerText = ch.description || ch.title || 'Défi actif';
+            const cur = Number(ch.currentProgress || 0);
+            const tgt = Number(ch.targetValue || 0) || 0;
+            const pct = tgt > 0 ? Math.min(100, Math.round((cur / tgt) * 100)) : 0;
+            if (elBar) elBar.style.width = `${pct}%`;
+            if (elProg) elProg.innerText = `${cur}/${tgt}`;
+            if (elDays) elDays.innerText = `${Math.max(0, parseInt(ch.daysRemaining || 0, 10))}j`;
+            if (elReward) {
+                if (ch.rewardType === 'rep_boost') elReward.innerText = `+${ch.rewardAmount || 0} REP`;
+                else if (ch.rewardType === 'followers') elReward.innerText = `+${ch.rewardAmount || 0} FANS`;
+                else elReward.innerText = '';
+            }
+        } catch(e){}
+    }
 }
 
 function getCurrentRank() {
@@ -6051,7 +5699,125 @@ function triggerRankUp(oldRank, newRank) {
         }
 
 
-       
+        // ==========================================
+        // SYSTÈME D'ACHIEVEMENTS PRO (VISIBLE PARTOUT)
+        // ==========================================
+                function normalizeAchievementState() {
+            if (!state) return;
+            const existing = (state?.achievements && typeof state.achievements === 'object') ? state.achievements : {};
+            const normalized = {};
+
+            Object.keys(DEFAULT_STATE?.achievements || {}).forEach(id => {
+                const template = DEFAULT_STATE.achievements[id] || {};
+                const technical = ACHIEVEMENT_DETAILS?.[id] || {};
+                const saved = existing[id] || {};
+
+                normalized[id] = { 
+                    ...template, 
+                    ...technical, 
+                    ...(typeof saved === 'object' ? saved : {}), 
+                    unlocked: Boolean(saved?.unlocked || saved === true) 
+                };
+            });
+            state.achievements = normalized;
+        }
+
+        function getAchievementOrder() {
+            const baseIds = Object.keys(DEFAULT_STATE.achievements);
+            const extraIds = Object.keys(state.achievements || {}).filter(id => !baseIds.includes(id));
+            return [...baseIds, ...extraIds];
+        }
+
+        function getNestedStateValue(path) {
+            if (!path) return 0;
+            return path.split('.').reduce((obj, key) => (obj && obj[key] !== undefined ? obj[key] : undefined), state);
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[char]);
+        }
+
+        function getInGameTimeLabel(mins = state.timeMins) {
+            const total = parseInt(mins, 10) || 0;
+            const h = Math.floor(total / 60);
+            const m = total % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        function stampAchievementUnlock(achievement) {
+            if (!achievement.unlockedDay) achievement.unlockedDay = parseInt(state.day, 10) || 1;
+            if (!achievement.unlockedTime) achievement.unlockedTime = getInGameTimeLabel();
+        }
+
+        function getAchievementProgress(id, achievement) {
+            const detail = ACHIEVEMENT_DETAILS[id] || achievement || {};
+            const target = Math.max(1, parseInt(detail.target || achievement.target || 1, 10));
+            let current = detail.progressPath ? Number(getNestedStateValue(detail.progressPath)) || 0 : (achievement.unlocked ? target : 0);
+
+            if (achievement.unlocked) current = Math.max(current, target);
+            const capped = Math.max(0, Math.min(current, target));
+
+            return {
+                current: capped,
+                target,
+                unit: detail.unit || achievement.unit || 'step',
+                percent: Math.round((capped / target) * 100),
+                progressive: Boolean(detail.progressPath && target > 1)
+            };
+        }
+
+        function getAchievementEntries() {
+            normalizeAchievementState();
+            return getAchievementOrder().map(id => ({
+                id,
+                ...(state.achievements[id] || {}),
+                detail: ACHIEVEMENT_DETAILS[id] || {}
+            }));
+        }
+
+        function migrateCompletedAchievementProgress() {
+            if (!state) return; // Sécurité anti-crash
+            normalizeAchievementState();
+            
+            Object.keys(state.achievements || {}).forEach(id => {
+                const achievement = state.achievements[id];
+                const detail = ACHIEVEMENT_DETAILS?.[id] || {};
+                
+                if (!achievement || achievement.unlocked || !detail.progressPath) return;
+
+                const progress = getAchievementProgress(id, achievement);
+                if (progress?.current >= progress?.target) {
+                    achievement.unlocked = true;
+                    achievement.legacyUnlocked = true;
+                }
+            });
+        }
+
+        function getAchievementUnlockLabel(achievement) {
+            if (!achievement.unlocked) return 'LOCKED';
+            if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant v17';
+            if (achievement.unlockedDay) return `JOUR ${achievement.unlockedDay}${achievement.unlockedTime ? ' · ' + achievement.unlockedTime : ''}`;
+            return 'Débloqué avant v16';
+        }
+
+        function initAchievementsUI() {
+            const categoryHost = document.getElementById('achievement-category-tabs');
+            const filterHost = document.getElementById('achievement-filter-tabs');
+
+            if (filterHost) {
+                filterHost.innerHTML = ACHIEVEMENT_FILTERS.map(filter => `
+                    <button id="achievement-filter-${filter.id}" class="achievement-filter-btn rounded-lg px-2 py-3" onclick="setAchievementFilter('${filter.id}')">${filter.label}</button>
+                `).join('');
+            }
+
+            renderAchievementsPanel();
+        }
 
 
 
@@ -7353,35 +7119,99 @@ function triggerRankUp(oldRank, newRank) {
             { id: 'crk15', name: "Xray_Antidote.pkg",             risk: 0.95, reqMoney: 100000, desc: "Bypass les algos (+1000% Cash)." }
         ];
 
-const marketplaceItems = [
-    { id: 'sofa', name: 'Canapé en cuir', desc: 'Indispensable pour les longues sessions de sound design. Alternative rapide au lit.', price: 600, repReq: 20 },
-    { id: 'table', name: 'Table basse', desc: 'Parfaite pour poser les cafés lors des exports de 3h du matin.', price: 300, repReq: 10 },
-    { id: 'rug', name: 'Tapis acoustique', desc: 'Traite les premières réflexions au sol tout en apportant du confort.', price: 200, repReq: 5 },
-    { id: 'tv', name: 'TV Cathodique', desc: 'Idéal pour le rétro-gaming et les références visuelles pour la composition à l\'image.', price: 800, repReq: 40 },
-    { id: 'rack', name: 'Rack Analogique', desc: 'Compresseurs et EQ hardware. Le signal gagne en chaleur et le mix prend du punch.', price: 2000, repReq: 60 },
-    { id: 'synth', name: 'Synthétiseur Modulaire', desc: 'Ouvre de nouvelles possibilités de synthèse et de sound design complexe.', price: 3500, folReq: 200 },
-    { id: 'guitar', name: 'Guitare Strat', desc: 'Pour ajouter des riffs organiques au fond du mix. Un vrai atout visuel pour la communauté.', price: 1800, folReq: 3000 },
-    { id: 'acoustic', name: 'Panneaux Pro', desc: 'Mousses acoustiques pour une précision de mixage accrue.', price: 500, repReq: 25 }
-];
+        const DEFAULT_STATE = {
+            username: '', activeCharacter: 0,
+            money: 100, rep: 10, followers: 0, energy: 100,
+            inspi: 100,
+            lastGenres: [],
+            // --- AJOUT DES VOLUMES PAR DÉFAUT ---
+            masterVolume: 1.0,
+            musicVolume: 0.8,
+            sfxVolume: 0.5,
+            timeMins: 8 * 60,
+            day: 1,
+            multiplier: 1.0, plugins: 0, lastLevel: 1,
+            stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0, consecutiveFlops: 0, sofaChills: 0, lampToggles: 0, awakeDays: 0 },
+            cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, sponsors: {} },
+            inventory: [], ownedCracks: [], downloadedCracks: {},
+            history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
+            isExporting: false, isSleeping: false, isEventActive: false,
+            isSitting: false,
+            isReviewActive: false, // Ajout de l'état pour les revues
+            lastRankId: 1, // Nouveau : ID de la dernière ligue atteinte
+            trackList: [],
+            // Weekly challenge system
+            activeChallenge: {
+                id: null,
+                description: '',
+                type: null,
+                targetValue: 0,
+                currentProgress: 0,
+                rewardType: null,
+                rewardAmount: 0,
+                daysRemaining: 7,
+                isCompleted: false
+            },
+            achievements: { // Nouveau : Système d'achievements
+                'first_blood': { unlocked: false, name: "First Blood", icon: "🩸", description: "Tu as exporté ta toute première prod. Le début de la gloire." },
+                'certifie_classique': { unlocked: false, name: "Certifié Classique", icon: "📀", description: "Obtenir un score parfait (10/10) par les critiques." },
+                'dans_la_sauce': { unlocked: false, name: "Dans la Sauce", icon: "🌶️", description: "Atteindre la barre des 15000 fans. Tu ne peux plus sortir dans la rue tranquille." },
+                'productivite_toxique': { unlocked: false, name: "Productivité Toxique", icon: "🗑️", description: "Enchaîner 5 flops d'affilée. Remets-toi en question." },
+                'alerte_rouge': { unlocked: false, name: "Alerte Rouge", icon: "💀", description: "Te manger ton premier écran bleu (BSOD) à cause d'un plugin cracké." },
+                'hacker_man': { unlocked: false, name: "Hacker Man", icon: "🥷", description: "Télécharger 10 plugins sur CrackZ. Le FBI te cherche." },
+                'cancel_culture': { unlocked: false, name: "Cancel Culture", icon: "📉", description: "Survivre à ton premier Bad Buzz sur les réseaux." },
+                'avocat_du_diable': { unlocked: false, name: "Avocat du Diable", icon: "⚖️", description: "Gagner un procès contre un rappeur qui a volé ta prod." },
+                'let_him_cook': { unlocked: false, name: "Let Him Cook", icon: "🍕", description: "T'asseoir 10 fois sur le canapé pour 'chercher l'inspi'." },
+                'sellout': { unlocked: false, name: "Sellout", icon: "🤝", description: "Accepter ton premier placement de produit (Sponsor). L'argent n'a pas d'odeur." },
+                'inge_son_certifie': { unlocked: false, name: "Ingé Son Certifié", icon: "🎛️", description: "Acheter ton premier plugin légal avec ton propre argent sur AudioStore." },
+                'prix_de_la_paix': { unlocked: false, name: "Le Prix de la Paix", icon: "🕊️", description: "Régler un vol de prod à l'amiable en acceptant de perdre de l'argent." },
+                'toujours_dans_le_rouge': { unlocked: false, name: "Toujours dans le rouge", icon: "🔋", description: "Lancer un export de mixdown avec moins de 5% d'énergie. Danger de mort." },
+                'lumiere_divine': { unlocked: false, name: "Lumière Divine", icon: "💡", description: "Allumer et éteindre la lampe Pixar 20 fois. (Tu t'ennuies ?)" },
+                'vrai_rat_de_studio': { unlocked: false, name: "Vrai Rat de Studio", icon: "🧛‍♂️", description: "Passer 3 jours entiers in-game sans jamais cliquer sur le lit pour dormir." }
+            }
+        };
 
-        
+        const ACHIEVEMENT_CATEGORIES = [
+            { id: 'music', label: '💿 MUSIQUE' },
+            { id: 'dark', label: '🏴‍☠️ DARK SIDE' },
+            { id: 'studio', label: '🛋️ STUDIO' },
+            { id: 'business', label: '💼 BUSINESS' }
+        ];
 
+        const ACHIEVEMENT_FILTERS = [
+            { id: 'all', label: 'All' },
+            { id: 'unlocked', label: 'Unlocked' },
+            { id: 'locked', label: 'Locked' },
+            { id: 'secret', label: 'Secret' }
+        ];
 
+        const ACHIEVEMENT_DETAILS = {
+        first_blood: { category: 'music', progressPath: 'stats.tracks', target: 1, unit: 'track', reward: { money: 500, rep: 10 } },
+        certifie_classique: { category: 'music', target: 1, unit: 'review', reward: { money: 2000, rep: 50, followers: 1000 } },
+        dans_la_sauce: { category: 'business', progressPath: 'followers', target: 15000, unit: 'followers', reward: { rep: 100, followers: 5000 } },
+        productivite_toxique: { category: 'music', progressPath: 'stats.consecutiveFlops', target: 5, unit: 'flops', reward: { money: 100 } },
+        alerte_rouge: { category: 'dark', progressPath: 'stats.viruses', target: 1, unit: 'virus', reward: { money: 500 } },
+        hacker_man: { category: 'dark', progressPath: 'stats.crackDownloads', target: 5, unit: 'downloads', reward: { money: 1000 } },
+        cancel_culture: { category: 'business', target: 1, unit: 'event', reward: { rep: 50 } },
+        avocat_du_diable: { category: 'business', target: 1, unit: 'case', reward: { money: 2500, rep: 30 } },
+        let_him_cook: { category: 'studio', progressPath: 'stats.sofaChills', target: 10, unit: 'chills', reward: { rep: 15 } },
+        sellout: { category: 'business', target: 1, unit: 'deal', reward: { money: 5000 } },
+        inge_son_certifie: { category: 'business', progressPath: 'plugins', target: 1, unit: 'plugin', reward: { rep: 20, followers: 500 } },
+        prix_de_la_paix: { category: 'business', target: 1, unit: 'deal', reward: { rep: 40 } },
+        toujours_dans_le_rouge: { category: 'studio', target: 1, unit: 'export', secret: true, reward: { money: 300, rep: 5 } },
+        lumiere_divine: { category: 'studio', progressPath: 'stats.lampToggles', target: 20, unit: 'switches', secret: true, reward: { money: 50 } },
+        vrai_rat_de_studio: { category: 'studio', progressPath: 'stats.awakeDays', target: 3, unit: 'days', secret: true, reward: { money: 1000, rep: 20 } }
+    };
+        let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        normalizeAchievementState();
 
+        let selectedAvatarIndex = 0;
+        let currentDawGenre = 'drill';
+        let currentDawVoice = 'm';
+        let activeSettingsPanel = 'audio';
+        let activeAchievementCategory = 'music';
+        let activeAchievementFilter = 'all';
 
-
-        // Fonction de synchronisation globale (utilisée au boot et au login)
-        function updateFurnitureVisibility() {
-            if (!state || !state.ownedFurniture) return;
-            if (typeof rugGroup !== 'undefined') rugGroup.visible = !!state.ownedFurniture.rug;
-            if (typeof rackGroup !== 'undefined') rackGroup.visible = !!state.ownedFurniture.rack;
-            if (typeof acousticGroup !== 'undefined') acousticGroup.visible = !!state.ownedFurniture.acoustic;
-            if (typeof sofaGroup !== 'undefined') sofaGroup.visible = !!state.ownedFurniture.sofa;
-            if (typeof tvGroup !== 'undefined') tvGroup.visible = !!state.ownedFurniture.tv;
-            if (typeof sideTableGroup !== 'undefined') sideTableGroup.visible = !!state.ownedFurniture.table;
-            if (typeof synthGroup !== 'undefined') synthGroup.visible = !!state.ownedFurniture.synth;
-            if (typeof guitarGroup !== 'undefined') guitarGroup.visible = !!state.ownedFurniture.guitar;
-        }
         // ==========================================
         // 9. STORAGE
         // ==========================================
@@ -7402,21 +7232,21 @@ const marketplaceItems = [
             return Math.floor(n).toString();
         }
 
+        function getTotalMins() {
+            const d = parseInt(state.day, 10) || 1;
+            const t = parseInt(state.timeMins, 10) || 0;
+            return (d * 1440) + t;
+        }
 
+        function formatTimeLeft(mins) {
+            mins = parseInt(mins, 10) || 0;
+            if (mins <= 0) return "0 MIN";
+            if (mins < 60) return `${mins} MIN`;
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return m > 0 ? `${h}H ${m}M` : `${h}H`;
+        }
 
-        function formatTimeLeft(totalMins) {
-    if (totalMins <= 0) return "00:00";
-    const h = Math.floor(totalMins / 60);
-    const m = totalMins % 60;
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-}
-    function getTotalMins() {
-    if (typeof state === 'undefined' || !state) return 0;
-    // Calcule le temps total absolu en minutes depuis le début de la carrière (1 jour = 1440 minutes)
-    const days = (parseInt(state.day, 10) || 1) - 1;
-    const mins = parseInt(state.timeMins, 10) || 0;
-    return (days * 1440) + mins;
-}
             function logMoney(amount, reason, customRect = null) {
         state.money = (parseInt(state.money, 10) || 0) + amount;
         if (state.money < 0) state.money = 0;
@@ -7535,6 +7365,10 @@ const marketplaceItems = [
                         rowDiv.appendChild(cell);
                     }
                     gridWrapper.appendChild(rowDiv);
+
+                    let prNotes = []; // Stocke les blocs MIDI { id, note, startStep, duration }
+                    let prNoteIdCounter = 0;
+                    let prDragState = { active: false, type: null, noteId: null, startX: 0, initialStep: 0, initialDur: 0 };
                 });
             });
             
@@ -7672,7 +7506,7 @@ const marketplaceItems = [
 
             // INITIALIZE transport controls (instrument + BPM)
             try {
-            window._currentBpm = parseInt(document.getElementById('pr-bpm').value, 10) || 120;
+                window._currentBpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
             } catch(e) { window._currentBpm = 120; }
 
             const instrSelect = document.getElementById('pr-instrument-select');
@@ -7690,8 +7524,8 @@ const marketplaceItems = [
                 });
             }
 
-            const bpmRange = document.getElementById('pr-bpm');
-            const bpmNum = document.getElementById('pr-bpm-num');
+            const bpmRange = document.getElementById('daw-bpm');
+            const bpmNum = document.getElementById('daw-bpm-num');
             function setBPM(newBpm) {
                 newBpm = Math.max(60, Math.min(200, parseInt(newBpm, 10) || 120));
                 if (!audioCtxUI) window._currentBpm = newBpm;
@@ -8186,32 +8020,12 @@ const marketplaceItems = [
                 cloud.style.setProperty('--s', scale);
                 cloud.style.top = `${top}%`;
                 cloud.style.opacity = opacity;
-                cloud.style.setProperty('--base-dur', `${duration}s`);
+                cloud.style.animationDuration = `${duration}s`;
                 cloud.style.animationDelay = `${delay}s`;
                 
                 container.appendChild(cloud);
                 window._bgClouds.push(cloud);
             }
-        }
-
-        function triggerLightningEffect() {
-            const overlay = document.getElementById('lightning-overlay');
-            const clouds = window._bgClouds || [];
-            if (!overlay) return;
-
-            // Reset animation (force reflow)
-            overlay.classList.remove('lightning-active');
-            void overlay.offsetWidth; 
-            overlay.classList.add('lightning-active');
-
-            clouds.forEach(c => {
-                c.classList.add('cloud-lightning-boost');
-                setTimeout(() => c.classList.remove('cloud-lightning-boost'), 400);
-            });
-
-            // Tonnerre synthétique (Grondement basse fréquence)
-            playTone(55, 'sawtooth', 0.6, 0.05);
-            setTimeout(() => playTone(40, 'sine', 0.8, 0.03), 100);
         }
 
         function generateRandomTimelineClips() {
@@ -8517,22 +8331,20 @@ const marketplaceItems = [
             if (savedData && savedData !== "undefined" && savedData !== "null") {
                 try {
                     const parsed = JSON.parse(savedData);
-                    
-                    // Fonction utilitaire de fusion profonde pour préserver les valeurs par défaut des nouvelles features
-                    const mergeDeep = (target, source) => {
-                        for (const key in source) {
-                            if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-                                if (!target[key]) target[key] = {};
-                                mergeDeep(target[key], source[key]);
-                            } else {
-                                target[key] = source[key];
-                            }
-                        }
-                    };
-
-                    state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-                    mergeDeep(state, parsed);
+                    state = { ...JSON.parse(JSON.stringify(DEFAULT_STATE)), ...parsed };
                     state.username = username;
+
+                    // 2. Sécurisation TOTALE des objets imbriqués AVANT toute lecture
+                    state.stats = state.stats || {};
+                    state.cooldowns = state.cooldowns || {};
+                    state.cooldowns.sponsors = state.cooldowns.sponsors || {};
+                    state.history = state.history || { money: [], followers: [] };
+                    state.achievements = state.achievements || {};
+                    state.trackList = state.trackList || [];
+                    state.inventory = state.inventory || [];
+                    state.ownedCracks = Array.isArray(state.ownedCracks) ? state.ownedCracks : [];
+                    state.downloadedCracks = state.downloadedCracks && typeof state.downloadedCracks === 'object' ? state.downloadedCracks : {};
+                    state.dms = state.dms || [];
 
                     // --- CHARGEMENT ET SYNC DES VOLUMES AUDIO ---
                     state.masterVolume = state.masterVolume !== undefined ? parseFloat(state.masterVolume) : 1.0;
@@ -8556,8 +8368,8 @@ const marketplaceItems = [
                     state.money           = parseInt(state.money, 10) || 0;
                     state.rep             = parseInt(state.rep, 10) || 0;
                     state.followers       = parseInt(state.followers, 10) || 0;
-                    // Inspiration (creative fatigue) - Chargement sécurisé
-                    state.inspi           = (state.inspi !== undefined && state.inspi !== null) ? parseFloat(state.inspi) : 100;
+                    // Inspiration (creative fatigue)
+                    state.inspi           = state.inspi !== undefined ? parseFloat(state.inspi) : 100;
                     if (isNaN(state.inspi)) state.inspi = 100;
                     // lastGenres migration: ensure array
                     state.lastGenres = Array.isArray(state.lastGenres) ? state.lastGenres : [];
@@ -8677,11 +8489,11 @@ const marketplaceItems = [
             const repNumEl = document.getElementById('hud-rep-num');
             if (repNumEl) repNumEl.innerText = formatNum(state.rep);
             document.getElementById('hud-foll').innerText  = formatNum(state.followers);
-            const iv = Math.max(0, Math.min(100, Math.floor(state.inspi)));
-            const inspFillEl = document.getElementById('meter-inspi-fill');
-            if (inspFillEl) inspFillEl.style.height = `${iv}%`;
-            const inspValEl = document.getElementById('meter-inspi-val');
-            if (inspValEl) inspValEl.innerText = `${iv}%`;
+            // init inspi HUD
+            const inspValEl = document.getElementById('hud-inspi-val');
+            const inspBarEl = document.getElementById('hud-inspi-bar');
+            if (inspValEl) inspValEl.innerText = `${Math.floor(state.inspi)}%`;
+            if (inspBarEl) inspBarEl.style.width = `${Math.max(0, Math.min(100, Math.floor(state.inspi)))}%`;
 
             selectDawGenre();
             selectDawVoice();
@@ -8693,10 +8505,11 @@ const marketplaceItems = [
             updateMoodRingWidget();
             updateTopChartsWidget();
             // Ensure there's an active weekly challenge and update UI
-            if (!state.activeChallenge || !state.activeChallenge.id) generateNewChallenge();
-            updateFurnitureVisibility();
-            updateChallengeUI();
-
+            try {
+                if (!state.activeChallenge || !state.activeChallenge.id) generateNewChallenge();
+                try { updateChallengeUI(); } catch(e) {}
+            } catch(e) {}
+            
             // Initialisation silencieuse au boot pour ne pas pop au login
             const _initLevelData = calculateLevelData(true) || { level: 1, currentRank: PLAYER_RANKS[0] };
             state.lastLevel = _initLevelData.level;
@@ -8749,13 +8562,6 @@ const marketplaceItems = [
             updateHUD();
             updateCooldownUIs();
 
-            // --- LIGHTNING STRIKE LOGIC (RARE WHEN INSPI IS CRITICALLY LOW) ---
-            if (state.inspi <= 5 && !state.isSleeping && !state.isSitting && !state.isExporting) {
-                if (Math.random() < 0.015) { // Env. 1.5% de chance par seconde
-                    triggerLightningEffect();
-                }
-            }
-
             // --- SÉCURITÉ RNG : Vérification de la période de grâce ---
             const eventGracePeriod = parseInt(state.cooldowns.eventGracePeriod, 10) || 0;
             const currentTime = getTotalMins();
@@ -8799,11 +8605,15 @@ const marketplaceItems = [
             document.getElementById('hud-day').innerText   = `JOUR ${state.day}`;
 
             const energyVal = Math.floor(state.energy);
-            const energyFill = document.getElementById('meter-energy-fill');
-            if (energyFill) energyFill.style.height = `${energyVal}%`;
-            const energyValEl = document.getElementById('meter-energy-val');
-            if (energyValEl) energyValEl.innerText = `${energyVal}%`;
+            document.getElementById('hud-energy-val').innerText = `${energyVal}%`;
+            document.getElementById('hud-energy-bar').style.width = `${energyVal}%`;
             
+            const warning = document.getElementById('energy-warning');
+            if (energyVal < 20) {
+                warning.classList.remove('hidden');
+            } else {
+                warning.classList.add('hidden');
+            }
 
                         // --- SYSTÈME DE FATIGUE VISUELLE (S'active sous les 40% d'énergie) ---
             const gameContainer = document.getElementById('game-container');
@@ -8847,13 +8657,6 @@ const marketplaceItems = [
             const hs = String(h).padStart(2, '0');
             const ms = String(m).padStart(2, '0');
             
-            // --- CLOUD SYSTEM SYNC (Day/Night & Time Warp) ---
-            const isDay = (t >= 360 && t <= 1200); // 06:00 to 20:00
-            document.documentElement.style.setProperty('--cloud-opacity', isDay ? '1' : '0');
-            
-            const speedFactor = (state.isSleeping || state.isSitting) ? 1.5 : 1.0;
-            document.documentElement.style.setProperty('--time-warp-factor', speedFactor);
-
             const timeStrSystem = `${hs}:${ms}`;
             const timeStrWidget = `${hs}<span class="clock-colon">:</span>${ms}`;
 
@@ -8881,26 +8684,22 @@ const marketplaceItems = [
             } catch(e) {}
             // --- INSPI GAUGE: show creative inspiration (0-100) ---
             try {
-                const inspFill = document.getElementById('meter-inspi-fill');
-                const inspVal = document.getElementById('meter-inspi-val');
-                if (inspFill) {
+                const inspBar = document.getElementById('hud-inspi-bar');
+                const inspVal = document.getElementById('hud-inspi-val');
+                if (inspBar && inspVal) {
                     const iv = Math.max(0, Math.min(100, Math.floor(Number(state.inspi) || 0)));
-                    inspFill.style.height = iv + '%';
-                    if (inspVal) inspVal.innerText = iv + '%';
+                    inspBar.style.width = iv + '%';
+                    inspVal.innerText = iv + '%';
+                    // subtle title
+                    inspBar.parentElement && inspBar.parentElement.setAttribute('title', `Inspiration: ${iv}%`);
                 }
             } catch(e) {}
             
             const widgetClock = document.getElementById('widget-clock-time');
             if(widgetClock) widgetClock.innerHTML = timeStrWidget;
-
-            // Update Multiplier Badge
-            const multiplierBadge = document.getElementById('multiplier-badge');
-            if (multiplierBadge) multiplierBadge.innerText = `x${(parseFloat(state.multiplier) || 1.0).toFixed(1)}`;
             
             document.getElementById('widget-clock-date').innerText = `Virtual Day ${state.day}`;
         }
-
-        
 
         // ==========================================
         // 15. COOLDOWN UIs
@@ -8974,10 +8773,16 @@ const marketplaceItems = [
             refreshSocial();
             refreshStats();
             // Decrement challenge daysRemaining and auto-generate when expired
-            state.activeChallenge = state.activeChallenge || { daysRemaining: 7 };
-            state.activeChallenge.daysRemaining = (parseInt(state.activeChallenge.daysRemaining, 10) || 0) - 1;
-            if (state.activeChallenge.daysRemaining <= 0) generateNewChallenge();
-            updateChallengeUI();
+            try {
+                state.activeChallenge = state.activeChallenge || { daysRemaining: 7 };
+                state.activeChallenge.daysRemaining = (parseInt(state.activeChallenge.daysRemaining, 10) || 0) - 1;
+                if (state.activeChallenge.daysRemaining <= 0) {
+                    generateNewChallenge();
+                    try { updateChallengeUI(); } catch(e) {}
+                } else {
+                    saveGame();
+                }
+            } catch(e) {}
 
             // Expire temporary boosts if needed
             try {
@@ -9031,95 +8836,6 @@ const marketplaceItems = [
             </div>
             `;
         }).join('');
-    }
-
-
-    // ==========================================
-    // Weekly Challenge System (Fix: Relocated from Dead Code area)
-    // ==========================================
-    const CHALLENGE_POOL = [
-        { type: 'specific_track', title: 'Produce a specific track', desc: 'Produce a {genre} track at {bpm} BPM today.', rewardType: 'rep_boost', rewardAmount: 25 },
-        { type: 'specific_track', title: 'Produce a specific track', desc: 'Produce a {genre} track at {bpm} BPM today.', rewardType: 'followers', rewardAmount: 1500 },
-        { type: 'social_streak', title: 'Social Streak', desc: 'Post {target} stories in total.', rewardType: 'followers', rewardAmount: 800 },
-        { type: 'pure_skill', title: 'Pure Skill Banger', desc: 'Make {target} Banger(s) without plugins.', rewardType: 'rep_boost', rewardAmount: 40 }
-    ];
-
-    function pickRandomGenreForChallenge() {
-        const available = DAW_GENRES || [];
-        if (!available.length) return 'UK Drill';
-        const pick = available[Math.floor(Math.random() * available.length)];
-        return pick ? pick.name : 'UK Drill';
-    }
-    function pickRandomBpmForChallenge(genreName) {
-        const g = DAW_GENRES.find(x => x.name === genreName);
-        if (!g) return 120;
-        return Math.max(60, g.targetBpm + (Math.floor(Math.random() * 11) - 5));
-    }
-
-    function generateNewChallenge() {
-        const pool = CHALLENGE_POOL.slice();
-        const base = pool[Math.floor(Math.random() * pool.length)];
-        const ch = JSON.parse(JSON.stringify(base));
-        ch.id = `ch_${Date.now()}_${Math.floor(Math.random()*999)}`;
-        ch.currentProgress = 0; ch.daysRemaining = 7; ch.isCompleted = false;
-
-        if (ch.type === 'specific_track') {
-            const genre = pickRandomGenreForChallenge();
-            const bpm = pickRandomBpmForChallenge(genre);
-            ch.description = ch.desc.replace('{genre}', genre).replace('{bpm}', bpm);
-            ch.targetValue = 1; ch.meta = { genre: genre.toLowerCase(), bpm };
-        } else if (ch.type === 'social_streak') {
-            const t = 3 + Math.floor(Math.random() * 3);
-            ch.description = ch.desc.replace('{target}', t); ch.targetValue = t;
-        } else if (ch.type === 'pure_skill') {
-            const t = 1 + Math.floor(Math.random() * 2);
-            ch.description = ch.desc.replace('{target}', t); ch.targetValue = t;
-        }
-
-        state.activeChallenge = ch;
-        saveGame(); updateChallengeUI();
-        showToast(`Nouveau défi: ${ch.description}`, 'info');
-    }
-
-    function checkChallengeProgress(type, data) {
-        const ch = state.activeChallenge;
-        if (!ch || !ch.id || ch.isCompleted) return;
-        let matched = false;
-        if (ch.type === 'specific_track' && type === 'export') {
-            if ((data.genre || '').toLowerCase() === (ch.meta.genre || '').toLowerCase() && Math.abs(data.bpm - ch.meta.bpm) <= 5) matched = true;
-        } else if (ch.type === 'social_streak' && type === 'story') matched = true;
-        else if (ch.type === 'pure_skill' && type === 'export') {
-            if (data.score >= 7 && !data.pluginId) matched = true;
-        }
-
-        if (matched) {
-            ch.currentProgress++;
-            if (ch.currentProgress >= ch.targetValue) {
-                ch.isCompleted = true;
-                ch.daysRemaining = 7; 
-                if (ch.rewardType === 'followers') state.followers += ch.rewardAmount;
-                else if (ch.rewardType === 'rep_boost') state.rep += ch.rewardAmount;
-                showToast(`Défi complété !`, 'success'); fireConfetti('achievement');
-            }
-            saveGame(); updateHUD(); updateChallengeUI();
-        }
-    }
-
-    function updateChallengeUI() {
-        const ch = state.activeChallenge;
-        const elDesc = document.getElementById('challenge-desc');
-        const elBar = document.getElementById('challenge-bar');
-        const elProg = document.getElementById('challenge-progress');
-        const elDays = document.getElementById('challenge-days');
-        const elReward = document.getElementById('challenge-reward');
-        if (!ch || !ch.id || !elDesc) return;
-
-        elDesc.innerText = ch.isCompleted ? "DÉFI TERMINÉ ! ✓" : (ch.description || ch.title);
-        const pct = ch.isCompleted ? 100 : Math.round((ch.currentProgress / ch.targetValue) * 100);
-        if (elBar) elBar.style.width = pct + '%';
-        if (elProg) elProg.innerText = ch.isCompleted ? 'DONE' : `${ch.currentProgress}/${ch.targetValue}`;
-        if (elDays) elDays.innerText = ch.daysRemaining + 'j';
-        if (elReward) elReward.innerText = ch.rewardType === 'rep_boost' ? `+${ch.rewardAmount} REP` : `+${ch.rewardAmount} FANS`;
     }
         
         // ==========================================
@@ -9188,7 +8904,6 @@ const marketplaceItems = [
         }
         function bringToFront(id) {
             zIndexCounter++;
-             if (zIndexCounter > 8000) zIndexCounter = 100; // Boucle de sécurité pour z-index
             document.querySelectorAll('.os-window').forEach(w => w.classList.remove('active-window'));
             const win = document.getElementById(id);
             win.style.zIndex = zIndexCounter;
@@ -9470,9 +9185,6 @@ const marketplaceItems = [
 
             // --- Creative fatigue: record last genres and apply inspi penalty for repetition ---
             try {
-                 // CONSOMMATION DE BASE : Créer un morceau coûte de l'énergie créative
-                state.inspi = Math.max(0, (Number(state.inspi) || 0) - 20);
-
                 state.lastGenres = Array.isArray(state.lastGenres) ? state.lastGenres : [];
                 const prevGenre = state.lastGenres.length ? state.lastGenres[state.lastGenres.length - 1] : null;
                 const newGenre = (genre || '').toString().toLowerCase();
@@ -9482,7 +9194,7 @@ const marketplaceItems = [
                 // Variety bonus: if new track genre differs from previous, grant +15 inspi (capped at 100)
                 try {
                     if (prevGenre && prevGenre !== newGenre) {
-                        state.inspi = Math.min(100, state.inspi + 15);
+                        state.inspi = Math.min(100, (Number(state.inspi) || 0) + 15);
                         showToast('Inspi: nouvelle vibe — +15 inspiration', 'success');
                     }
                 } catch(e) {}
@@ -9491,7 +9203,7 @@ const marketplaceItems = [
                     if (state.lastGenres.length === 3) {
                         if (state.lastGenres[0] === state.lastGenres[1] && state.lastGenres[1] === state.lastGenres[2]) {
                             state.inspi = Math.max(0, (Number(state.inspi) || 0) - 35);
-                            showToast("Inspi: redondance créative — grosse perte d'inspiration (-35)", 'error');
+                            showToast("Inspi: répétition détectée — perte d'inspiration (-35)", 'error');
                         }
                     }
                 } catch(e) {}
@@ -9510,7 +9222,6 @@ const marketplaceItems = [
             // Update challenge progress for exports (validated)
             try { checkChallengeProgress('export', { genre: genre, bpm: bpm, score: finalTrackScore, pluginId: consumedPluginId }); } catch(e) {}
 
-            updateHUD(); // Forcer la mise à jour visuelle de la barre d'Inspiration
             showTrackReview(trackScore, trackTitle, null);
             saveGame(); updateHUD(); updateCooldownUIs();
         }
@@ -9574,97 +9285,88 @@ const marketplaceItems = [
         function switchBrowserTab(tab) {
             const btnC = document.getElementById('tab-crackz');
             const btnA = document.getElementById('tab-audio');
-            const btnS = document.getElementById('tab-studio');
-            
-            [btnC, btnA, btnS].forEach(b => {
-                if (b) b.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white font-bold";
-            });
-            if (btnS) btnS.classList.remove('border-r');
-
-            const activeBtn = document.getElementById('tab-' + tab);
-            if (activeBtn) activeBtn.className = `flex-1 py-4 transition-colors ${tab === 'studio' ? '' : 'border-r border-[var(--glass-border)]'} bg-white/10 text-white shadow-inner font-bold`;
-            
+            if (tab === 'crackz') {
+                btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] bg-white/10 text-white shadow-inner";
+                btnA.className = "flex-1 py-4 transition-colors text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
+            } else {
+                btnA.className = "flex-1 py-4 transition-colors bg-white/10 text-white shadow-inner";
+                btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
+            }
             renderStore(tab);
             playBleep();
         }
 
     function renderStore(tab) {
-    const content = document.getElementById('browser-content');
-    
-    if (tab === 'crackz') {
-        const total      = getTotalMins();
-        const crackReady = parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
-        
-        if (total < crackReady) {
-            const left = crackReady - total;
-            content.innerHTML = `<div class="p-8 text-center text-[var(--retro-red)] font-retro h-full min-h-[300px] flex flex-col items-center justify-center bg-[#050505] shadow-inner"><p class="mb-3 text-2xl tracking-widest font-bold">⚠️ VPN COOLDOWN ⚠️</p><p class="text-xs text-[var(--text-muted)] uppercase tracking-wider">Your IP is flagged. Next safe download window in:</p><p class="text-4xl mt-6 font-bold drop-shadow-[0_0_10px_var(--retro-red)]" id="crackz-cd-text">${formatTimeLeft(left)}</p></div>`;
-            return;
-        }
-        
-        let crackHTML = `<h3 class="font-bold text-xl mb-5 text-[var(--retro-green)] tracking-widest uppercase drop-shadow-[0_0_5px_var(--retro-green)]">💀 CrackZ_World_2026</h3><p class="text-[10px] mb-8 text-[var(--text-muted)] border-b border-gray-800 pb-3 uppercase">Attention à ce que tu télécharges...</p><div class="space-y-4">`;
+            const content = document.getElementById('browser-content');
+            if (tab === 'crackz') {
+                const total      = getTotalMins();
+                const crackReady = parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
+                if (total < crackReady) {
+                    const left = crackReady - total;
+                    content.innerHTML = `
+                        <div class="p-8 text-center text-[var(--retro-red)] font-retro h-full min-h-[300px] flex flex-col items-center justify-center bg-[#050505] shadow-inner">
+                            <p class="mb-3 text-2xl tracking-widest font-bold">⚠️ VPN COOLDOWN ⚠️</p>
+                            <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider">Your IP is flagged. Next safe download window in:</p>
+                            <p class="text-4xl mt-6 font-bold drop-shadow-[0_0_10px_var(--retro-red)]" id="crackz-cd-text">${formatTimeLeft(left)}</p>
+                        </div>`;
+                    return;
+                }
+                let crackHTML = `<h3 class="font-bold text-xl mb-5 text-[var(--retro-green)] tracking-widest uppercase drop-shadow-[0_0_5px_var(--retro-green)]">💀 CrackZ_World_2026</h3>
+                                <p class="text-[10px] mb-8 text-[var(--text-muted)] border-b border-gray-800 pb-3 uppercase">Attention à ce que tu télécharges...</p>
+                                <div class="space-y-4">`;
+                let foundAny = false;
+                cracks.forEach(c => {
+                    // 🛠️ CORRECTION 1 : On vérifie à la fois la nouvelle variable (ownedCracks) et l'ancienne (inventory)
+                    const alreadyOwned = (state.ownedCracks && state.ownedCracks.includes(c.id)) || (state.inventory && state.inventory.includes(c.id));
+                    
+                    // 🛠️ CORRECTION 2 : Si le joueur l'a déjà téléchargé dans le passé, le lien reste visible à vie !
+                    const alreadyDiscovered = state.downloadedCracks && state.downloadedCracks[c.id] !== undefined;
 
-        let foundAny = false;
-        cracks.forEach(c => {
-            const alreadyOwned = (state.ownedCracks && state.ownedCracks.includes(c.id)) || (state.inventory && state.inventory.includes(c.id));
-            const alreadyDiscovered = state.downloadedCracks && state.downloadedCracks[c.id] !== undefined;
-
-            if (alreadyOwned) {
-                foundAny = true;
-                crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/40 rounded-lg opacity-70"><div class="flex-1 pr-4 mb-3 sm:mb-0"><p class="font-bold text-sm text-[var(--retro-green)]">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc}</p></div><button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] rounded border-gray-600 text-gray-500 cursor-not-allowed" disabled>OWNED</button></div>`;
-
-            } else if (!alreadyDiscovered && state.money < c.reqMoney) {
-                crackHTML += `<div class="border border-gray-800 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/60 rounded-lg opacity-50 select-none"><div class="flex-1 mb-3 sm:mb-0"><p class="font-bold text-sm text-gray-500 font-retro">???_LOCKED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: $${formatNum(c.reqMoney)} in Bank</p></div><button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] rounded opacity-50 cursor-not-allowed" disabled>LOCKED</button></div>`;
-
+                    if (alreadyOwned) {
+                        // ÉTAPE 1 : Le plugin est déjà dans l'inventaire
+                        foundAny = true;
+                         crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/40 rounded-lg opacity-70">
+                            <div class="flex-1 pr-4 mb-3 sm:mb-0"><p class="font-bold text-sm text-[var(--retro-green)]">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc}</p></div>
+                            <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] rounded border-gray-600 text-gray-500 cursor-not-allowed" disabled>OWNED</button>
+                        </div>`;
+                    } else if (!alreadyDiscovered && state.money < c.reqMoney) {
+                        // ÉTAPE 2 : Le joueur n'a pas l'argent requis ET ne l'a jamais téléchargé avant
+                         crackHTML += `<div class="border border-gray-800 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/60 rounded-lg opacity-50 select-none">
+                            <div class="flex-1 mb-3 sm:mb-0"><p class="font-bold text-sm text-gray-500 font-retro">???_LOCKED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: $${formatNum(c.reqMoney)} in Bank</p></div>
+                            <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] rounded opacity-50 cursor-not-allowed" disabled>LOCKED</button>
+                        </div>`;
+                    } else {
+                        // ÉTAPE 3 : Plugin disponible au téléchargement
+                        foundAny = true;
+                        crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group">
+                            <div class="flex-1 pr-4 mb-3 sm:mb-0"><p class="font-bold text-sm text-gray-200">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc} | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p></div>
+                            <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
+                        </div>`;
+                    }
+                });
+                if (!foundAny) crackHTML += `<p class="text-sm text-gray-500 text-center py-10 font-retro">Make some money to access deep web links.</p>`;
+                crackHTML += '</div>';
+                content.innerHTML = `<div class="p-8 bg-[#050505] font-sans h-full min-h-[300px] overflow-y-auto shadow-inner">${crackHTML}</div>`;
             } else {
-                foundAny = true;
-                crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group"><div class="flex-1 pr-4 mb-3 sm:mb-0"><p class="font-bold text-sm text-gray-200">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc} | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p></div><button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button></div>`;
+                if (state.rep < 100) {
+                    content.innerHTML = `<div class="p-10 text-center text-[var(--text-muted)] font-retro h-full min-h-[300px] flex items-center justify-center bg-black/30 shadow-inner"><p class="leading-loose text-sm uppercase tracking-widest">🔒 ACCESS DENIED.<br>AudioStore requires 100 REP.<br>(Who are you bro?)</p></div>`;
+                } else {
+                    content.innerHTML = `<div class="p-8 bg-black/30 text-white h-full min-h-[300px] font-sans shadow-inner">
+                        <h3 class="font-bold text-xl text-white mb-8 tracking-widest uppercase drop-shadow-md">🛒 AudioStore Pro</h3>
+                        <div class="space-y-5">
+                             <div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
+                                <div class="mb-4 sm:mb-0"><p class="font-bold text-base">ProEQ Studio Bundle</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +0.5x</p></div>
+                                <button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(300, 0.5)">BUY ($300)</button>
+                            </div>
+                            <div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
+                                <div class="mb-4 sm:mb-0"><p class="font-bold text-base">Analog Tape Saturation</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +1.0x</p></div>
+                                <button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button>
+                            </div>
+                        </div>
+                    </div>`;
+                }
             }
-        });
-        
-        if (!foundAny) crackHTML += `<p class="text-sm text-gray-500 text-center py-10 font-retro">Make some money to access deep web links.</p>`;
-
-        content.innerHTML = `<div class="p-8 bg-[#050505] font-sans h-full min-h-[300px] overflow-y-auto shadow-inner">${crackHTML}</div>`;
-    } // 🛠️ CORRECTION 1 : L'accolade fermante du tab 'crackz' manquait ici.
-
-    else if (tab === 'audio') {
-        // 🛠️ CORRECTION 2 : Refonte logique. On affiche un message bloquant en dessous de 100 de REP, sinon la boutique.
-        if (state.rep < 100) {
-            content.innerHTML = `<div class="p-8 bg-[#050505] text-center text-gray-500 h-full min-h-[300px] flex items-center justify-center font-retro shadow-inner">🔒 AUDIOSTORE PRO<br><br><span class="text-xs">Requires 100 REP to access.</span></div>`;
-        } else {
-            content.innerHTML = `<div class="p-8 bg-black/30 text-white h-full min-h-[300px] font-sans shadow-inner"><h3 class="font-bold text-xl text-white mb-8 tracking-widest uppercase drop-shadow-md">🛒 AudioStore Pro</h3><div class="space-y-5"><div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors"><div class="mb-4 sm:mb-0"><p class="font-bold text-base">ProEQ Studio Bundle</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +0.5x</p></div><button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(300, 0.5)">BUY ($300)</button></div><div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors"><div class="mb-4 sm:mb-0"><p class="font-bold text-base">Analog Tape Saturation</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +1.0x</p></div><button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button></div></div></div>`;
         }
-    }
-
-    else if (tab === 'studio') {
-        let html = `<h3 class="font-bold text-xl mb-5 text-[var(--accent)] tracking-widest uppercase drop-shadow-[0_0_5px_var(--accent)]">🛋️ Studio+ Marketplace</h3><p class="text-[10px] mb-8 text-[var(--text-muted)] border-b border-white/10 pb-3 uppercase">Équipe ton studio pour booster ta carrière</p><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">`;
-        
-        marketplaceItems.forEach(item => {
-            const isOwned = state.ownedFurniture[item.id];
-            const repMet = !item.repReq || state.rep >= item.repReq;
-            const folMet = !item.folReq || state.followers >= item.folReq;
-            const locked = !repMet || !folMet;
-            
-            let btnClass = "btn-action w-full py-3 rounded-lg text-[10px] font-bold tracking-widest";
-            let btnText = `ACHETER ($${item.price})`;
-            let btnAttr = `onclick="buyFurniture('${item.id}')"`;
-            
-            if (isOwned) {
-                btnText = "POSSÉDÉ ✓"; 
-                btnClass = "btn-minimal w-full py-3 rounded-lg text-[10px] opacity-50 cursor-not-allowed"; 
-                btnAttr = "disabled";
-            } else if (locked) {
-                btnText = `LOCKED (${item.repReq ? item.repReq + ' REP' : item.folReq + ' FOL'})`;
-                btnClass = "btn-minimal w-full py-3 rounded-lg text-[10px] opacity-50 cursor-not-allowed"; 
-                btnAttr = "disabled";
-            }
-            
-            html += `<div id="mkt-${item.id}" class="liquid-glass p-5 flex flex-col justify-between border-white/5 hover:border-[var(--accent)] transition-all"><div><div class="flex justify-between items-start mb-2"><h4 class="font-bold text-gray-200 uppercase text-xs tracking-wider">${item.name}</h4><span class="text-[var(--retro-green)] font-bold text-xs">$${item.price}</span></div><p class="text-[10px] text-gray-400 font-sans leading-relaxed mb-4">${item.desc}</p></div><button class="${btnClass}" ${btnAttr}>${btnText}</button></div>`;
-        });
-        
-        html += `</div>`;
-        content.innerHTML = `<div class="p-8 bg-[#050505] h-full min-h-[300px] overflow-y-auto shadow-inner">${html}</div>`;
-    }
-}
 
         function downloadCrack(id) {
             const crack = cracks.find(c => c.id === id);
@@ -9697,80 +9399,6 @@ const marketplaceItems = [
             saveGame();
             renderStore('crackz');
         }
-
-function buyFurniture(itemId) {
-    const item = marketplaceItems.find(i => i.id === itemId);
-    if (!item) return;
-
-    // 1. Vérification stricte des fonds et prérequis
-    const repMet = !item.repReq || state.rep >= item.repReq;
-    const folMet = !item.folReq || state.followers >= item.folReq;
-    
-    if (state.money >= item.price && repMet && folMet && !state.ownedFurniture[itemId]) {
-        
-        // 2. Transaction (Utilisation de logMoney pour l'historique et les particules)
-        logMoney(-item.price, `Achat Studio+: ${item.name}`);
-        state.ownedFurniture[itemId] = true;
-        
-        if (typeof updateHUD === 'function') updateHUD(); 
-        if (typeof saveGame === 'function') saveGame();
-        
-        // 3. Rafraîchissement visuel de la boutique
-        renderStore('studio'); 
-        
-        // 4. Feedback Audio & Visuel
-        if (typeof playTone === 'function') {
-            playTone(600, 'sine', 0.1);
-            setTimeout(() => playTone(800, 'sine', 0.15), 100);
-        }
-        if (typeof fireConfetti === 'function') fireConfetti('store');
-
-        // 5. Déclencheur 3D : Liaison avec les groupes de la scène
-        switch(itemId) {
-            case 'sofa': if (typeof sofaGroup !== 'undefined') revealFurniture(sofaGroup); break;
-            case 'table': if (typeof sideTableGroup !== 'undefined') revealFurniture(sideTableGroup); break;
-            case 'rug': if (typeof rugGroup !== 'undefined') revealFurniture(rugGroup); break;
-            case 'tv': if (typeof tvGroup !== 'undefined') revealFurniture(tvGroup); break;
-            case 'rack': if (typeof rackGroup !== 'undefined') revealFurniture(rackGroup); break;
-            case 'synth': if (typeof synthGroup !== 'undefined') revealFurniture(synthGroup); break;
-            case 'guitar': if (typeof guitarGroup !== 'undefined') revealFurniture(guitarGroup); break;
-            case 'acoustic': if (typeof acousticGroup !== 'undefined') revealFurniture(acousticGroup); break;
-        }
-
-        showToast(`${item.name} débloqué !`, "success");
-    } else {
-        // Feedback d'échec : Vibration du conteneur
-        const card = document.getElementById(`mkt-${itemId}`);
-        if (card) {
-            card.classList.add('animate-hud-shake'); 
-            setTimeout(() => card.classList.remove('animate-hud-shake'), 300);
-        }
-        if (state.money < item.price) showToast("Fonds insuffisants !", "error");
-        else showToast("Prérequis non atteints (REP/FOL) !", "error");
-    }
-}
-
-function revealFurniture(mesh) {
-    if (!mesh) return;
-    mesh.scale.set(0, 0, 0);
-    mesh.visible = true;
-
-    let frame = 0;
-    const maxFrames = 20;
-    const targetScale = 1;
-
-    function animatePop() {
-        if (frame <= maxFrames) {
-            let t = frame / maxFrames;
-            let smoothT = t * t * (3 - 2 * t);
-            let currentScale = smoothT * targetScale;
-            mesh.scale.set(currentScale, currentScale, currentScale);
-            frame++;
-            requestAnimationFrame(animatePop);
-        }
-    }
-    animatePop();
-}
 
         function buyLegit(price, mult) {
             if (state.money >= price) {
@@ -10595,7 +10223,7 @@ function revealFurniture(mesh) {
         function scheduleNoteInstance(note, stepStart, durationSteps) {
             if (!audioCtxUI) initAudio();
             if (!audioCtxUI) return;
-            const bpm = parseInt(document.getElementById('pr-bpm').value, 10) || 120;
+            const bpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
             const stepDuration = (15 / bpm); // seconds per sixteenth (as before)
 
             // Swing: apply slight delay to every other eighth (i.e., odd steps)
@@ -10628,7 +10256,7 @@ function revealFurniture(mesh) {
             if (!prIsPlaying) return;
             if (!audioCtxUI) initAudio();
             const now = audioCtxUI.currentTime;
-            const bpm = parseInt(document.getElementById('pr-bpm').value, 10) || 120;
+            const bpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
             const stepDuration = (15 / bpm);
 
             // compute how many steps have elapsed since prStartTime
@@ -10761,7 +10389,7 @@ function revealFurniture(mesh) {
             }
 
             // Determine float position
-            const bpm = parseInt(document.getElementById('pr-bpm').value, 10) || 120;
+            const bpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
             const stepDuration = (15 / bpm);
             let posSteps = prCurrentStep;
             if (currentStepFloat !== null) posSteps = currentStepFloat;
@@ -10840,6 +10468,7 @@ function revealFurniture(mesh) {
 
         
 
+
         
     // ====================================================
         
@@ -10879,20 +10508,16 @@ function revealFurniture(mesh) {
         window.closeAchievementsBoard = closeAchievementsBoard;
         window.switchSocialTab    = switchSocialTab;
         window.answerDM           = answerDM;
-        window.buyFurniture       = buyFurniture;
         
         // Boot
         initUI();
         animate3D();
-       
-        
 
             window.addEventListener('beforeunload', saveGame);
 
                 document.addEventListener('visibilitychange', () => {
                         if (document.visibilityState === 'hidden') saveGame();
     });
-    
     </script>
         </body>
             </html>
