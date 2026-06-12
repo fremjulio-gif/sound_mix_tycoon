@@ -7405,6 +7405,13 @@ const marketplaceItems = [
             return m > 0 ? `${h}H ${m}M` : `${h}H`;
         }
 
+        function formatTimeLeft(totalMins) {
+    if (totalMins <= 0) return "00:00";
+    const h = Math.floor(totalMins / 60);
+    const m = totalMins % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+}
+
             function logMoney(amount, reason, customRect = null) {
         state.money = (parseInt(state.money, 10) || 0) + amount;
         if (state.money < 0) state.money = 0;
@@ -9743,6 +9750,28 @@ function buyFurniture(itemId) {
         if (state.money < item.price) showToast("Fonds insuffisants !", "error");
         else showToast("Prérequis non atteints (REP/FOL) !", "error");
     }
+}
+
+function revealFurniture(mesh) {
+    if (!mesh) return;
+    mesh.scale.set(0, 0, 0);
+    mesh.visible = true;
+
+    let frame = 0;
+    const maxFrames = 20;
+    const targetScale = 1;
+
+    function animatePop() {
+        if (frame <= maxFrames) {
+            let t = frame / maxFrames;
+            let smoothT = t * t * (3 - 2 * t);
+            let currentScale = smoothT * targetScale;
+            mesh.scale.set(currentScale, currentScale, currentScale);
+            frame++;
+            requestAnimationFrame(animatePop);
+        }
+    }
+    animatePop();
 }
 
         function buyLegit(price, mult) {
