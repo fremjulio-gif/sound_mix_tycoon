@@ -1664,7 +1664,8 @@
                 </div> 
             </div> 
         </div> 
-    </div>
+        </div>
+        
         <!-- Joystick Virtuel Visual Indicator -->
         <div id="joystick-ui">
             <div class="joystick-base"></div>
@@ -7518,10 +7519,6 @@ const marketplaceItems = [
                         rowDiv.appendChild(cell);
                     }
                     gridWrapper.appendChild(rowDiv);
-
-                    let prNotes = []; // Stocke les blocs MIDI { id, note, startStep, duration }
-                    let prNoteIdCounter = 0;
-                    let prDragState = { active: false, type: null, noteId: null, startX: 0, initialStep: 0, initialDur: 0 };
                 });
             });
             
@@ -10580,7 +10577,7 @@ function revealFurniture(mesh) {
         function scheduleNoteInstance(note, stepStart, durationSteps) {
             if (!audioCtxUI) initAudio();
             if (!audioCtxUI) return;
-            const bpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
+            const bpm = parseInt(document.getElementById('pr-bpm').value, 10) || 120;
             const stepDuration = (15 / bpm); // seconds per sixteenth (as before)
 
             // Swing: apply slight delay to every other eighth (i.e., odd steps)
@@ -10613,7 +10610,7 @@ function revealFurniture(mesh) {
             if (!prIsPlaying) return;
             if (!audioCtxUI) initAudio();
             const now = audioCtxUI.currentTime;
-            const bpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
+            const bpm = parseInt(document.getElementById('pr-bpm').value, 10) || 120;
             const stepDuration = (15 / bpm);
 
             // compute how many steps have elapsed since prStartTime
@@ -10746,7 +10743,7 @@ function revealFurniture(mesh) {
             }
 
             // Determine float position
-            const bpm = parseInt(document.getElementById('daw-bpm').value, 10) || 120;
+            const bpm = parseInt(document.getElementById('pr-bpm').value, 10) || 120;
             const stepDuration = (15 / bpm);
             let posSteps = prCurrentStep;
             if (currentStepFloat !== null) posSteps = currentStepFloat;
