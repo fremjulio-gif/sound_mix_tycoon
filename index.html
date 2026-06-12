@@ -7241,14 +7241,14 @@ function triggerRankUp(oldRank, newRank) {
         ];
 
         const marketplaceItems = [
-            { id: 'rug',      name: 'Tapis Studio',    desc: 'Améliore l\'acoustique et le confort visuel.', price: 150,  repReq: 0,  folReq: 0, meshVar: 'rugGroup' },
-            { id: 'table',    name: 'Table Basse',     desc: 'Un support élégant pour ton setup TV.', price: 300,  repReq: 10, folReq: 0, meshVar: 'sideTableGroup' },
-            { id: 'acoustic', name: 'Panneaux Pro',    desc: 'Traitement acoustique pour de meilleurs mix.', price: 500,  repReq: 25, folReq: 0, meshVar: 'acousticGroup' },
-            { id: 'sofa',     name: 'Canapé Lounge',   desc: 'Récupération d\'énergie accrue lors des pauses.', price: 850,  repReq: 30, folReq: 500, meshVar: 'sofaGroup' },
-            { id: 'rack',     name: 'Rack Analogique', desc: 'Matériel vintage pour une saturation chaude.', price: 1200, repReq: 50, folReq: 0, meshVar: 'rackGroup' },
-            { id: 'tv',       name: 'Écran XXL',       desc: 'Visualisation de tes clips en temps réel.', price: 2000, repReq: 0,  folReq: 5000, meshVar: 'tvGroup' },
-            { id: 'synth',    name: 'Synthétiseur',    desc: 'Débloque des textures sonores de pointe.', price: 3500, repReq: 75, folReq: 0, meshVar: 'synthGroup' },
-            { id: 'guitar',   name: 'Guitare Élec',    desc: 'Ajoute des toplines organiques à tes prods.', price: 1800, repReq: 40, folReq: 10000, meshVar: 'guitarGroup' }
+            { id: 'rug',      name: 'Tapis Studio',    desc: 'Délimite ton espace et améliore le confort visuel du studio.', price: 150,  repReq: 0,   folReq: 0 },
+            { id: 'table',    name: 'Table Basse',     desc: 'Un support design pour ton setup TV et tes sessions créatives.', price: 300,  repReq: 10,  folReq: 0 },
+            { id: 'acoustic', name: 'Panneaux Pro',    desc: 'Mousses acoustiques pour une précision de mixage accrue.', price: 500,  repReq: 25,  folReq: 0 },
+            { id: 'sofa',     name: 'Canapé Lounge',   desc: 'Récupère ton énergie beaucoup plus vite lors des pauses chill.', price: 850,  repReq: 30,  folReq: 500 },
+            { id: 'rack',     name: 'Rack Analogique', desc: 'Hardware vintage pour donner du grain et du caractère à tes sons.', price: 1200, repReq: 50,  folReq: 0 },
+            { id: 'tv',       name: 'Écran XXL',       desc: 'Affiche tes clips et tes stats de streaming en haute définition.', price: 2000, repReq: 0,   folReq: 5000 },
+            { id: 'synth',    name: 'Synthétiseur',    desc: 'Débloque de nouvelles textures sonores pour tes mélodies.', price: 3500, repReq: 75,  folReq: 0 },
+            { id: 'guitar',   name: 'Guitare Élec',    desc: 'Ajoute des toplines de guitare organique à tes productions.', price: 1800, repReq: 40,  folReq: 10000 }
         ];
 
         const DEFAULT_STATE = {
@@ -9692,28 +9692,51 @@ function triggerRankUp(oldRank, newRank) {
 
         function buyFurniture(itemId) {
             const item = marketplaceItems.find(i => i.id === itemId);
-            if (!item || state.ownedFurniture[item.id]) return;
+            if (!item || state.ownedFurniture[itemId]) return;
+            
             const card = document.getElementById(`mkt-${itemId}`);
+
+            // 1. Vérification stricte des conditions (Argent + REP/FOL)
+            const repMet = !item.repReq || state.rep >= item.repReq;
+            const folMet = !item.folReq || state.followers >= item.folReq;
+
             if (state.money < item.price) {
                 if (card) { card.classList.add('error-shake'); setTimeout(() => card.classList.remove('error-shake'), 400); }
-                showToast("Fonds insuffisants !", "error"); playError(); return;
+                showToast("Fonds insuffisants !", "error"); playError(); 
+                return;
             }
+            
+            if (!repMet || !folMet) {
+                showToast("Prérequis (Réputation ou Fans) non atteints !", "error"); playError();
+                return;
+            }
+
+            // 2. Traitement de la transaction
             logMoney(-item.price, `Achat Studio+: ${item.name}`);
-            state.ownedFurniture[item.id] = true;
-            playSuccess(); fireConfetti('store');
-            const meshMap = {
-                'rugGroup': rugGroup,
-                'rackGroup': rackGroup,
-                'acousticGroup': acousticGroup,
-                'sofaGroup': sofaGroup,
-                'tvGroup': tvGroup,
-                'sideTableGroup': sideTableGroup,
-                'synthGroup': synthGroup,
-                'guitarGroup': guitarGroup
-            };
-            if (meshMap[item.meshVar]) revealFurniture(meshMap[item.meshVar]);
+            state.ownedFurniture[itemId] = true;
+            
+            // 3. Feedback Audio & Visuel
+            playSuccess();
+            fireConfetti('store');
+
+            // 4. Déclencheur 3D (Lien avec la scène Three.js)
+            switch(itemId) {
+                case 'rug':      revealFurniture(rugGroup); break;
+                case 'rack':     revealFurniture(rackGroup); break;
+                case 'acoustic': revealFurniture(acousticGroup); break;
+                case 'sofa':     revealFurniture(sofaGroup); break;
+                case 'tv':       revealFurniture(tvGroup); break;
+                case 'table':    revealFurniture(sideTableGroup); break;
+                case 'synth':    revealFurniture(synthGroup); break;
+                case 'guitar':   revealFurniture(guitarGroup); break;
+            }
+
             showToast(`${item.name} débloqué !`, "success");
-            saveGame(); updateHUD(); renderStore('studio');
+            
+            // 5. Persistance et mise à jour de l'UI
+            saveGame(); 
+            updateHUD(); 
+            renderStore('studio');
         }
 
         function buyLegit(price, mult) {
