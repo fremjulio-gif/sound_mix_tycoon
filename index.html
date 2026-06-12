@@ -1401,11 +1401,10 @@
             position: absolute;
             inset: 0;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
         }
         .joystick-knob {
             position: absolute;
@@ -1415,9 +1414,9 @@
             height: 52px;
             margin: -26px 0 0 -26px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1.5px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.4);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.2);
         }
 
         /* Media query to ensure joystick is hidden on desktop */
@@ -2365,6 +2364,7 @@
         let isJoystickActive = false;
         let joystickStartX = 0; // Initial touch X position
         let joystickStartY = 0; // Initial touch Y position
+        window.lastPointerX = 0;
         window.lastPointerY = 0;
         window.joystickVec = { x: 0, z: 0 };
         
@@ -4823,21 +4823,14 @@
 
         function onPointerDown(event) {
             if (document.getElementById('room-ui').style.display !== 'flex') return;
-            let clientX, clientY;
-            if (event.changedTouches) { clientX = event.changedTouches[0].clientX; clientY = event.changedTouches[0].clientY; }
-            else { clientX = event.clientX; clientY = event.clientY; }
             
-            mousePos.x = (clientX / window.innerWidth) * 2 - 1;
-            mousePos.y = -(clientY / window.innerHeight) * 2 + 1;
+            mousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mousePos, camera);
 
             const intersects = raycaster.intersectObjects(scene.children, true);
             
             // 1. Priorité aux interactions objets (PC, Lit, etc.)
-            // Debug each intersect for easier tracing
-            try {
-                intersects.forEach(i => { if (i && i.object) console.log('Raycast candidate:', i.object.name); });
-            } catch(e) {}
             const interactableHit = intersects.find(hit => interactableNames.includes(hit.object.name));
             if (interactableHit) {
                 // If an object is interacted with, the joystick should not activate.
@@ -4872,13 +4865,12 @@
             }
 
             // 2. If no interactable object was hit, proceed with movement logic
-            const isTouchEvent = !!event.changedTouches;
-            if (isTouchEvent && isMobile) { // Activate joystick only for mobile touch on empty space
+            if (event.pointerType === 'touch') { 
                 isJoystickActive = true;
-                joystickStartX = clientX;
-                joystickStartY = clientY;
-                window.lastPointerX = clientX; // Initial position for knob calculation
-                window.lastPointerY = clientY;
+                joystickStartX = event.clientX;
+                joystickStartY = event.clientY;
+                window.lastPointerX = event.clientX;
+                window.lastPointerY = event.clientY;
 
                 const jUI = document.getElementById('joystick-ui');
                 if (jUI) {
@@ -4889,9 +4881,9 @@
                     void jUI.offsetWidth;
                     jUI.style.opacity = '1';
                 }
-                // Prevent default to avoid native scrolling/zoom when joystick is active
-                event.preventDefault();
-            } else if (!isTouchEvent && !isMobile) { // Desktop mouse click on empty space
+                // Capture le pointeur pour assurer le suivi du mouvement
+                if (event.target.setPointerCapture) event.target.setPointerCapture(event.pointerId);
+            } else if (event.pointerType === 'mouse') { // Desktop mouse click on empty space
                 const groundHit = intersects.find(hit => hit.object.name === 'floor_mesh' || hit.object.parent?.name === 'RoomAvatarRoot');
                 if (groundHit) {
                     targetPosition = groundHit.point; // Set target for mouse-click movement
