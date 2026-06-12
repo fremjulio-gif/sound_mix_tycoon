@@ -1083,6 +1083,14 @@
                 text-transform: uppercase;
             }
 
+            /* --- MARKETPLACE UX --- */
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+                20%, 40%, 60%, 80% { transform: translateX(4px); }
+            }
+            .error-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; border-color: var(--retro-red) !important; }
+
             /* =========================================
             10. SETTINGS / ACHIEVEMENTS
             ========================================= */
@@ -2174,7 +2182,8 @@
                 </div>
                 <div class="flex border-b border-[var(--glass-border)] text-[12px] md:text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-black/60 font-bold">
                     <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
-                    <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
+                    <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
+                    <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-studio" onclick="switchBrowserTab('studio')">Studio+</button>
                 </div>
                 <div class="window-content" id="browser-content"></div>
             </div>
@@ -3034,6 +3043,7 @@
         
         rugGroup.add(rug, stripe);
         scene.add(rugGroup);
+        rugGroup.visible = state.ownedFurniture.rug;
 
         // ==========================================
         // RACK HARDWARE ANALOGIQUE
@@ -3275,6 +3285,7 @@
         rackGroup.add(lampGroup);
         window.pixarLamp = lampGroup;
         scene.add(rackGroup);
+        rackGroup.visible = state.ownedFurniture.rack;
 
         // --- OPTIMISATION : OBJETS RÉUTILISABLES (ÉVITE LES FUITES MÉMOIRE) ---
         const rippleGeoShared = new THREE.RingGeometry(0.2, 0.25, 32);
@@ -3416,6 +3427,7 @@
         createAcousticWall(-4.95, 2.2, 0.5, true);
 
         scene.add(acousticGroup);
+        acousticGroup.visible = state.ownedFurniture.acoustic;
 
 
         // ==========================================
@@ -3452,6 +3464,7 @@
         });
 
         scene.add(sofaGroup);
+        sofaGroup.visible = state.ownedFurniture.sofa;
 
 
         // ==========================================
@@ -3576,6 +3589,7 @@
 
         
         scene.add(sideTableGroup);
+        sideTableGroup.visible = state.ownedFurniture.table;
 
 
         // --- JUICY HUD COUNTER LOGIC ---
@@ -3787,6 +3801,7 @@
     });
 
     scene.add(synthGroup);
+    synthGroup.visible = state.ownedFurniture.synth;
 
         // ==========================================
         // GUITARE ÉLECTRIQUE RÉALISTE AU MUR (Proportions corrigées, Sans ombres)
@@ -4001,6 +4016,7 @@
         });
 
         scene.add(guitarGroup);
+        guitarGroup.visible = state.ownedFurniture.guitar;
         
         
 
@@ -4313,6 +4329,33 @@
                 window.highlightItems = [];
             }
         } catch(e) {}
+
+        // Fonction pour faire pop un meuble (Marketplace Studio +)
+    function revealFurniture(mesh) {
+    mesh.scale.set(0, 0, 0); // On part de zéro
+    mesh.visible = true;     // On rend l'objet visible
+
+    let frame = 0;
+    const maxFrames = 20;
+    const targetScale = 1; // Ajuste si le scale de base de tes objets n'est pas 1
+
+    function animatePop() {
+        if (frame <= maxFrames) {
+            // Calcul du smoothstep : t * t * (3 - 2 * t)
+            let t = frame / maxFrames;
+            let smoothT = t * t * (3 - 2 * t); 
+            
+            let currentScale = smoothT * targetScale;
+            mesh.scale.set(currentScale, currentScale, currentScale);
+            
+            frame++;
+            requestAnimationFrame(animatePop);
+        }
+    }
+    
+    // Jouer un son ici plus tard !
+    animatePop();
+}
         
         
         function animate3D() {
@@ -7197,6 +7240,17 @@ function triggerRankUp(oldRank, newRank) {
             { id: 'crk15', name: "Xray_Antidote.pkg",             risk: 0.95, reqMoney: 100000, desc: "Bypass les algos (+1000% Cash)." }
         ];
 
+        const marketplaceItems = [
+            { id: 'rug',      name: 'Tapis Studio',    desc: 'Améliore l\'acoustique et le confort visuel.', price: 150,  repReq: 0,  folReq: 0, meshVar: 'rugGroup' },
+            { id: 'table',    name: 'Table Basse',     desc: 'Un support élégant pour ton setup TV.', price: 300,  repReq: 10, folReq: 0, meshVar: 'sideTableGroup' },
+            { id: 'acoustic', name: 'Panneaux Pro',    desc: 'Traitement acoustique pour de meilleurs mix.', price: 500,  repReq: 25, folReq: 0, meshVar: 'acousticGroup' },
+            { id: 'sofa',     name: 'Canapé Lounge',   desc: 'Récupération d\'énergie accrue lors des pauses.', price: 850,  repReq: 30, folReq: 500, meshVar: 'sofaGroup' },
+            { id: 'rack',     name: 'Rack Analogique', desc: 'Matériel vintage pour une saturation chaude.', price: 1200, repReq: 50, folReq: 0, meshVar: 'rackGroup' },
+            { id: 'tv',       name: 'Écran XXL',       desc: 'Visualisation de tes clips en temps réel.', price: 2000, repReq: 0,  folReq: 5000, meshVar: 'tvGroup' },
+            { id: 'synth',    name: 'Synthétiseur',    desc: 'Débloque des textures sonores de pointe.', price: 3500, repReq: 75, folReq: 0, meshVar: 'synthGroup' },
+            { id: 'guitar',   name: 'Guitare Élec',    desc: 'Ajoute des toplines organiques à tes prods.', price: 1800, repReq: 40, folReq: 10000, meshVar: 'guitarGroup' }
+        ];
+
         const DEFAULT_STATE = {
             username: '', activeCharacter: 0,
             money: 100, rep: 10, followers: 0, energy: 100,
@@ -7246,6 +7300,16 @@ function triggerRankUp(oldRank, newRank) {
                 'toujours_dans_le_rouge': { unlocked: false, name: "Toujours dans le rouge", icon: "🔋", description: "Lancer un export de mixdown avec moins de 5% d'énergie. Danger de mort." },
                 'lumiere_divine': { unlocked: false, name: "Lumière Divine", icon: "💡", description: "Allumer et éteindre la lampe Pixar 20 fois. (Tu t'ennuies ?)" },
                 'vrai_rat_de_studio': { unlocked: false, name: "Vrai Rat de Studio", icon: "🧛‍♂️", description: "Passer 3 jours entiers in-game sans jamais cliquer sur le lit pour dormir." }
+            },
+                ownedFurniture: {
+                acoustic: false,
+                sofa: false,
+                table: false,
+                rug: false,
+                tv: false,
+                rack: false,
+                synth: false,
+                guitar: false
             }
         };
 
@@ -7290,6 +7354,22 @@ function triggerRankUp(oldRank, newRank) {
         let activeAchievementCategory = 'music';
         let activeAchievementFilter = 'all';
 
+
+
+
+
+        // Fonction de synchronisation globale (utilisée au boot et au login)
+        function updateFurnitureVisibility() {
+            if (!state || !state.ownedFurniture) return;
+            if (typeof rugGroup !== 'undefined') rugGroup.visible = !!state.ownedFurniture.rug;
+            if (typeof rackGroup !== 'undefined') rackGroup.visible = !!state.ownedFurniture.rack;
+            if (typeof acousticGroup !== 'undefined') acousticGroup.visible = !!state.ownedFurniture.acoustic;
+            if (typeof sofaGroup !== 'undefined') sofaGroup.visible = !!state.ownedFurniture.sofa;
+            if (typeof tvGroup !== 'undefined') tvGroup.visible = !!state.ownedFurniture.tv;
+            if (typeof sideTableGroup !== 'undefined') sideTableGroup.visible = !!state.ownedFurniture.table;
+            if (typeof synthGroup !== 'undefined') synthGroup.visible = !!state.ownedFurniture.synth;
+            if (typeof guitarGroup !== 'undefined') guitarGroup.visible = !!state.ownedFurniture.guitar;
+        }
         // ==========================================
         // 9. STORAGE
         // ==========================================
@@ -8608,6 +8688,7 @@ function triggerRankUp(oldRank, newRank) {
             updateTopChartsWidget();
             // Ensure there's an active weekly challenge and update UI
             if (!state.activeChallenge || !state.activeChallenge.id) generateNewChallenge();
+            updateFurnitureVisibility();
             updateChallengeUI();
 
             // Initialisation silencieuse au boot pour ne pas pop au login
@@ -9485,88 +9566,97 @@ function triggerRankUp(oldRank, newRank) {
         function switchBrowserTab(tab) {
             const btnC = document.getElementById('tab-crackz');
             const btnA = document.getElementById('tab-audio');
-            if (tab === 'crackz') {
-                btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] bg-white/10 text-white shadow-inner";
-                btnA.className = "flex-1 py-4 transition-colors text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
-            } else {
-                btnA.className = "flex-1 py-4 transition-colors bg-white/10 text-white shadow-inner";
-                btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
-            }
+            const btnS = document.getElementById('tab-studio');
+            
+            [btnC, btnA, btnS].forEach(b => {
+                if (b) b.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white font-bold";
+            });
+            if (btnS) btnS.classList.remove('border-r');
+
+            const activeBtn = document.getElementById('tab-' + tab);
+            if (activeBtn) activeBtn.className = `flex-1 py-4 transition-colors ${tab === 'studio' ? '' : 'border-r border-[var(--glass-border)]'} bg-white/10 text-white shadow-inner font-bold`;
+            
             renderStore(tab);
             playBleep();
         }
 
     function renderStore(tab) {
-            const content = document.getElementById('browser-content');
-            if (tab === 'crackz') {
-                const total      = getTotalMins();
-                const crackReady = parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
-                if (total < crackReady) {
-                    const left = crackReady - total;
-                    content.innerHTML = `
-                        <div class="p-8 text-center text-[var(--retro-red)] font-retro h-full min-h-[300px] flex flex-col items-center justify-center bg-[#050505] shadow-inner">
-                            <p class="mb-3 text-2xl tracking-widest font-bold">⚠️ VPN COOLDOWN ⚠️</p>
-                            <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider">Your IP is flagged. Next safe download window in:</p>
-                            <p class="text-4xl mt-6 font-bold drop-shadow-[0_0_10px_var(--retro-red)]" id="crackz-cd-text">${formatTimeLeft(left)}</p>
-                        </div>`;
-                    return;
-                }
-                let crackHTML = `<h3 class="font-bold text-xl mb-5 text-[var(--retro-green)] tracking-widest uppercase drop-shadow-[0_0_5px_var(--retro-green)]">💀 CrackZ_World_2026</h3>
-                                <p class="text-[10px] mb-8 text-[var(--text-muted)] border-b border-gray-800 pb-3 uppercase">Attention à ce que tu télécharges...</p>
-                                <div class="space-y-4">`;
-                let foundAny = false;
-                cracks.forEach(c => {
-                    // 🛠️ CORRECTION 1 : On vérifie à la fois la nouvelle variable (ownedCracks) et l'ancienne (inventory)
-                    const alreadyOwned = (state.ownedCracks && state.ownedCracks.includes(c.id)) || (state.inventory && state.inventory.includes(c.id));
-                    
-                    // 🛠️ CORRECTION 2 : Si le joueur l'a déjà téléchargé dans le passé, le lien reste visible à vie !
-                    const alreadyDiscovered = state.downloadedCracks && state.downloadedCracks[c.id] !== undefined;
-
-                    if (alreadyOwned) {
-                        // ÉTAPE 1 : Le plugin est déjà dans l'inventaire
-                        foundAny = true;
-                         crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/40 rounded-lg opacity-70">
-                            <div class="flex-1 pr-4 mb-3 sm:mb-0"><p class="font-bold text-sm text-[var(--retro-green)]">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc}</p></div>
-                            <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] rounded border-gray-600 text-gray-500 cursor-not-allowed" disabled>OWNED</button>
-                        </div>`;
-                    } else if (!alreadyDiscovered && state.money < c.reqMoney) {
-                        // ÉTAPE 2 : Le joueur n'a pas l'argent requis ET ne l'a jamais téléchargé avant
-                         crackHTML += `<div class="border border-gray-800 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/60 rounded-lg opacity-50 select-none">
-                            <div class="flex-1 mb-3 sm:mb-0"><p class="font-bold text-sm text-gray-500 font-retro">???_LOCKED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: $${formatNum(c.reqMoney)} in Bank</p></div>
-                            <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] rounded opacity-50 cursor-not-allowed" disabled>LOCKED</button>
-                        </div>`;
-                    } else {
-                        // ÉTAPE 3 : Plugin disponible au téléchargement
-                        foundAny = true;
-                        crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group">
-                            <div class="flex-1 pr-4 mb-3 sm:mb-0"><p class="font-bold text-sm text-gray-200">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc} | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p></div>
-                            <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
-                        </div>`;
-                    }
-                });
-                if (!foundAny) crackHTML += `<p class="text-sm text-gray-500 text-center py-10 font-retro">Make some money to access deep web links.</p>`;
-                crackHTML += '</div>';
-                content.innerHTML = `<div class="p-8 bg-[#050505] font-sans h-full min-h-[300px] overflow-y-auto shadow-inner">${crackHTML}</div>`;
-            } else {
-                if (state.rep < 100) {
-                    content.innerHTML = `<div class="p-10 text-center text-[var(--text-muted)] font-retro h-full min-h-[300px] flex items-center justify-center bg-black/30 shadow-inner"><p class="leading-loose text-sm uppercase tracking-widest">🔒 ACCESS DENIED.<br>AudioStore requires 100 REP.<br>(Who are you bro?)</p></div>`;
-                } else {
-                    content.innerHTML = `<div class="p-8 bg-black/30 text-white h-full min-h-[300px] font-sans shadow-inner">
-                        <h3 class="font-bold text-xl text-white mb-8 tracking-widest uppercase drop-shadow-md">🛒 AudioStore Pro</h3>
-                        <div class="space-y-5">
-                             <div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
-                                <div class="mb-4 sm:mb-0"><p class="font-bold text-base">ProEQ Studio Bundle</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +0.5x</p></div>
-                                <button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(300, 0.5)">BUY ($300)</button>
-                            </div>
-                            <div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
-                                <div class="mb-4 sm:mb-0"><p class="font-bold text-base">Analog Tape Saturation</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +1.0x</p></div>
-                                <button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button>
-                            </div>
-                        </div>
-                    </div>`;
-                }
-            }
+    const content = document.getElementById('browser-content');
+    
+    if (tab === 'crackz') {
+        const total      = getTotalMins();
+        const crackReady = parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
+        
+        if (total < crackReady) {
+            const left = crackReady - total;
+            content.innerHTML = `<div class="p-8 text-center text-[var(--retro-red)] font-retro h-full min-h-[300px] flex flex-col items-center justify-center bg-[#050505] shadow-inner"><p class="mb-3 text-2xl tracking-widest font-bold">⚠️ VPN COOLDOWN ⚠️</p><p class="text-xs text-[var(--text-muted)] uppercase tracking-wider">Your IP is flagged. Next safe download window in:</p><p class="text-4xl mt-6 font-bold drop-shadow-[0_0_10px_var(--retro-red)]" id="crackz-cd-text">${formatTimeLeft(left)}</p></div>`;
+            return;
         }
+        
+        let crackHTML = `<h3 class="font-bold text-xl mb-5 text-[var(--retro-green)] tracking-widest uppercase drop-shadow-[0_0_5px_var(--retro-green)]">💀 CrackZ_World_2026</h3><p class="text-[10px] mb-8 text-[var(--text-muted)] border-b border-gray-800 pb-3 uppercase">Attention à ce que tu télécharges...</p><div class="space-y-4">`;
+
+        let foundAny = false;
+        cracks.forEach(c => {
+            const alreadyOwned = (state.ownedCracks && state.ownedCracks.includes(c.id)) || (state.inventory && state.inventory.includes(c.id));
+            const alreadyDiscovered = state.downloadedCracks && state.downloadedCracks[c.id] !== undefined;
+
+            if (alreadyOwned) {
+                foundAny = true;
+                crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/40 rounded-lg opacity-70"><div class="flex-1 pr-4 mb-3 sm:mb-0"><p class="font-bold text-sm text-[var(--retro-green)]">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc}</p></div><button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] rounded border-gray-600 text-gray-500 cursor-not-allowed" disabled>OWNED</button></div>`;
+
+            } else if (!alreadyDiscovered && state.money < c.reqMoney) {
+                crackHTML += `<div class="border border-gray-800 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/60 rounded-lg opacity-50 select-none"><div class="flex-1 mb-3 sm:mb-0"><p class="font-bold text-sm text-gray-500 font-retro">???_LOCKED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: $${formatNum(c.reqMoney)} in Bank</p></div><button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] rounded opacity-50 cursor-not-allowed" disabled>LOCKED</button></div>`;
+
+            } else {
+                foundAny = true;
+                crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group"><div class="flex-1 pr-4 mb-3 sm:mb-0"><p class="font-bold text-sm text-gray-200">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc} | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p></div><button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button></div>`;
+            }
+        });
+        
+        if (!foundAny) crackHTML += `<p class="text-sm text-gray-500 text-center py-10 font-retro">Make some money to access deep web links.</p>`;
+
+        content.innerHTML = `<div class="p-8 bg-[#050505] font-sans h-full min-h-[300px] overflow-y-auto shadow-inner">${crackHTML}</div>`;
+    } // 🛠️ CORRECTION 1 : L'accolade fermante du tab 'crackz' manquait ici.
+
+    else if (tab === 'audio') {
+        // 🛠️ CORRECTION 2 : Refonte logique. On affiche un message bloquant en dessous de 100 de REP, sinon la boutique.
+        if (state.rep < 100) {
+            content.innerHTML = `<div class="p-8 bg-[#050505] text-center text-gray-500 h-full min-h-[300px] flex items-center justify-center font-retro shadow-inner">🔒 AUDIOSTORE PRO<br><br><span class="text-xs">Requires 100 REP to access.</span></div>`;
+        } else {
+            content.innerHTML = `<div class="p-8 bg-black/30 text-white h-full min-h-[300px] font-sans shadow-inner"><h3 class="font-bold text-xl text-white mb-8 tracking-widest uppercase drop-shadow-md">🛒 AudioStore Pro</h3><div class="space-y-5"><div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors"><div class="mb-4 sm:mb-0"><p class="font-bold text-base">ProEQ Studio Bundle</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +0.5x</p></div><button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(300, 0.5)">BUY ($300)</button></div><div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors"><div class="mb-4 sm:mb-0"><p class="font-bold text-base">Analog Tape Saturation</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +1.0x</p></div><button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button></div></div></div>`;
+        }
+    }
+
+    else if (tab === 'studio') {
+        let html = `<h3 class="font-bold text-xl mb-5 text-[var(--accent)] tracking-widest uppercase drop-shadow-[0_0_5px_var(--accent)]">🛋️ Studio+ Marketplace</h3><p class="text-[10px] mb-8 text-[var(--text-muted)] border-b border-white/10 pb-3 uppercase">Équipe ton studio pour booster ta carrière</p><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">`;
+        
+        marketplaceItems.forEach(item => {
+            const isOwned = state.ownedFurniture[item.id];
+            const repMet = !item.repReq || state.rep >= item.repReq;
+            const folMet = !item.folReq || state.followers >= item.folReq;
+            const locked = !repMet || !folMet;
+            
+            let btnClass = "btn-action w-full py-3 rounded-lg text-[10px] font-bold tracking-widest";
+            let btnText = `ACHETER ($${item.price})`;
+            let btnAttr = `onclick="buyFurniture('${item.id}')"`;
+            
+            if (isOwned) {
+                btnText = "POSSÉDÉ ✓"; 
+                btnClass = "btn-minimal w-full py-3 rounded-lg text-[10px] opacity-50 cursor-not-allowed"; 
+                btnAttr = "disabled";
+            } else if (locked) {
+                btnText = `LOCKED (${item.repReq ? item.repReq + ' REP' : item.folReq + ' FOL'})`;
+                btnClass = "btn-minimal w-full py-3 rounded-lg text-[10px] opacity-50 cursor-not-allowed"; 
+                btnAttr = "disabled";
+            }
+            
+            html += `<div id="mkt-${item.id}" class="liquid-glass p-5 flex flex-col justify-between border-white/5 hover:border-[var(--accent)] transition-all"><div><div class="flex justify-between items-start mb-2"><h4 class="font-bold text-gray-200 uppercase text-xs tracking-wider">${item.name}</h4><span class="text-[var(--retro-green)] font-bold text-xs">$${item.price}</span></div><p class="text-[10px] text-gray-400 font-sans leading-relaxed mb-4">${item.desc}</p></div><button class="${btnClass}" ${btnAttr}>${btnText}</button></div>`;
+        });
+        
+        html += `</div>`;
+        content.innerHTML = `<div class="p-8 bg-[#050505] h-full min-h-[300px] overflow-y-auto shadow-inner">${html}</div>`;
+    }
+}
 
         function downloadCrack(id) {
             const crack = cracks.find(c => c.id === id);
@@ -9598,6 +9688,32 @@ function triggerRankUp(oldRank, newRank) {
             
             saveGame();
             renderStore('crackz');
+        }
+
+        function buyFurniture(itemId) {
+            const item = marketplaceItems.find(i => i.id === itemId);
+            if (!item || state.ownedFurniture[item.id]) return;
+            const card = document.getElementById(`mkt-${itemId}`);
+            if (state.money < item.price) {
+                if (card) { card.classList.add('error-shake'); setTimeout(() => card.classList.remove('error-shake'), 400); }
+                showToast("Fonds insuffisants !", "error"); playError(); return;
+            }
+            logMoney(-item.price, `Achat Studio+: ${item.name}`);
+            state.ownedFurniture[item.id] = true;
+            playSuccess(); fireConfetti('store');
+            const meshMap = {
+                'rugGroup': rugGroup,
+                'rackGroup': rackGroup,
+                'acousticGroup': acousticGroup,
+                'sofaGroup': sofaGroup,
+                'tvGroup': tvGroup,
+                'sideTableGroup': sideTableGroup,
+                'synthGroup': synthGroup,
+                'guitarGroup': guitarGroup
+            };
+            if (meshMap[item.meshVar]) revealFurniture(meshMap[item.meshVar]);
+            showToast(`${item.name} débloqué !`, "success");
+            saveGame(); updateHUD(); renderStore('studio');
         }
 
         function buyLegit(price, mult) {
@@ -10708,6 +10824,7 @@ function triggerRankUp(oldRank, newRank) {
         window.closeAchievementsBoard = closeAchievementsBoard;
         window.switchSocialTab    = switchSocialTab;
         window.answerDM           = answerDM;
+        window.buyFurniture       = buyFurniture;
         
         // Boot
         initUI();
