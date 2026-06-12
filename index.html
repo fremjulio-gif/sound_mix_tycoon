@@ -2782,15 +2782,15 @@
 
         const frameGeo = new THREE.BoxGeometry(2.4, 0.4, 4.2);
         const frameMat = new THREE.MeshStandardMaterial({ color: '#262626', roughness: 0.8 });
-        const frame = new THREE.Mesh(frameGeo, frameMat);
-        frame.castShadow = true;
-        frame.receiveShadow = true;
-        frame.name = 'bed_mesh'; // Assignation pour le Raycaster
+        const bedFrame = new THREE.Mesh(frameGeo, frameMat);
+        bedFrame.castShadow = true;
+        bedFrame.receiveShadow = true;
+        bedFrame.name = 'bed_mesh'; // Assignation pour le Raycaster
         
         const bedFrameEdges = new THREE.EdgesGeometry(frameGeo);
         const bedFrameLines = new THREE.LineSegments(bedFrameEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
-        frame.add(bedFrameLines);
-        bedGroup.add(frame);
+        bedFrame.add(bedFrameLines);
+        bedGroup.add(bedFrame);
 
         const mattressGeo = new THREE.BoxGeometry(2.2, 0.3, 4.0);
         const mattressMat = new THREE.MeshStandardMaterial({ color: '#e7e5e4', roughness: 0.9 });
@@ -3372,7 +3372,7 @@
 
             const tubeGeoH = new THREE.BoxGeometry(gridW, 0.02, 0.02);
             const tubeGeoV = new THREE.BoxGeometry(0.02, gridH, 0.02);
-            const frame = new THREE.Group();
+            const neonFrame = new THREE.Group();
 
             if (!isLeftWall) {
                 // Mur du fond (Cadre aligné sur l'axe X/Y)
@@ -3384,7 +3384,7 @@
                 left.position.set(centerX - gridW/2 - 0.05, centerY, centerZ + 0.04);
                 const right = new THREE.Mesh(tubeGeoV, neonMat);
                 right.position.set(centerX + gridW/2 + 0.05, centerY, centerZ + 0.04);
-                frame.add(top, bottom, left, right);
+                neonFrame.add(top, bottom, left, right);
             } else {
                 // Mur de gauche (Cadre aligné sur l'axe Z/Y)
                 const top = new THREE.Mesh(tubeGeoH, neonMat);
@@ -3397,7 +3397,7 @@
                 left.position.set(startX + 0.04, centerY, centerZ - gridW/2 - 0.05);
                 const right = new THREE.Mesh(tubeGeoV, neonMat);
                 right.position.set(startX + 0.04, centerY, centerZ + gridW/2 + 0.05);
-                frame.add(top, bottom, left, right);
+                neonFrame.add(top, bottom, left, right);
             }
 
             // Lumière omnidirectionnelle très douce pour l'effet de halo diffusé sur le mur
@@ -4345,8 +4345,8 @@
     }
     
     // Jouer un son ici plus tard !
-    animatePop();
-}
+    // animatePop();
+//}
         
         
         function animate3D() {
@@ -10865,4 +10865,3 @@ function revealFurniture(mesh) {
     </script>
         </body>
             </html>
-        
