@@ -199,8 +199,7 @@
             }
 
 
-
-            /* --- LIGHTNING EFFECT (Creative Block Boding) --- */
+             /* --- LIGHTNING EFFECT (Creative Block Boding) --- */
             @keyframes lightning-flash-anim {
                 0%, 100% { opacity: 0; }
                 5% { opacity: 0.6; }
@@ -223,9 +222,6 @@
                 filter: brightness(6) saturate(0) !important;
                 transition: filter 0.05s;
             }
-
-
-
 
             /* Animation de l'onde sonore du loader */
             @keyframes soundWave {
@@ -4391,31 +4387,40 @@
             // ==========================================
             window.velX = window.velX || 0;
             window.velZ = window.velZ || 0;
-            window.kbdState = window.kbdState || {};
-
-            const prevX = currentRoomAvatar.position.x;
-            const prevZ = currentRoomAvatar.position.z;
             
             let targetDirX = 0;
             let targetDirZ = 0;
 
+            // Capture de la position initiale pour détecter le mouvement réel (isMoving)
+            const prevX = currentRoomAvatar.position.x;
+            const prevZ = currentRoomAvatar.position.z;
+
             if (!currentState.isSleeping && !currentState.isEventActive && !currentState.isSitting) {
+                 let moveX = 0;
+                 let moveY = 0;
+
                 if (isJoystickActive) { // Joystick is active (mobile touch)
-                    targetDirX = window.joystickVec.x;
-                    targetDirZ = window.joystickVec.z;
-                    // If joystick is active, disable mouse-click movement
+                    moveX = window.joystickVec.x;
+                    moveY = window.joystickVec.z;
                     targetPosition = null;
                 } else { // Keyboard input (desktop, or mobile without active joystick)
-                    if (window.kbdState.up) targetDirZ -= 1;
-                    if (window.kbdState.down) targetDirZ += 1;
-                    if (window.kbdState.left) targetDirX -= 1;
-                    if (window.kbdState.right) targetDirX += 1;
+                    if (window.kbdState.up)    moveY -= 1;
+                    if (window.kbdState.down)  moveY += 1;
+                    if (window.kbdState.left)  moveX -= 1;
+                    if (window.kbdState.right) moveX += 1;
                 }
+
+                // MOUVEMENT ORTHOGONAL ABSOLU : On mappe les touches directement aux axes mondiaux
+                // Haut/Bas (moveY) agit sur l'axe Z (profondeur), Gauche/Droite (moveX) sur l'axe X.
+                targetDirX = moveX;
+                targetDirZ = moveY;
+
+                if (moveX !== 0 || moveY !== 0) targetPosition = null;
             }
 
-            // Normalisation pour garder une vitesse constante
+            // NORMALISATION : On bride la magnitude du vecteur pour que les diagonales ne soient pas plus rapides
             const inputMag = Math.sqrt(targetDirX * targetDirX + targetDirZ * targetDirZ);
-            if (inputMag > 1) {
+            if (inputMag > 1.0) {
                 targetDirX /= inputMag;
                 targetDirZ /= inputMag;
             }
