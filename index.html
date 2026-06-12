@@ -7390,11 +7390,6 @@ const marketplaceItems = [
             return Math.floor(n).toString();
         }
 
-        function getTotalMins() {
-            const d = parseInt(state.day, 10) || 1;
-            const t = parseInt(state.timeMins, 10) || 0;
-            return (d * 1440) + t;
-        }
 
         function formatTimeLeft(mins) {
             mins = parseInt(mins, 10) || 0;
@@ -8516,27 +8511,22 @@ const marketplaceItems = [
             if (savedData && savedData !== "undefined" && savedData !== "null") {
                 try {
                     const parsed = JSON.parse(savedData);
-                    state = { ...JSON.parse(JSON.stringify(DEFAULT_STATE)), ...parsed };
-                    state.username = username;
-
-                    // 2. Sécurisation TOTALE des objets imbriqués AVANT toute lecture
-                    state.stats = state.stats || {};
-                    state.cooldowns = state.cooldowns || {};
-                    state.cooldowns.sponsors = state.cooldowns.sponsors || {};
-                    state.history = state.history || { money: [], followers: [] };
-                    state.achievements = state.achievements || {};
-                    state.trackList = state.trackList || [];
-                    state.inventory = state.inventory || [];
-                    // Deep merge ownedFurniture to handle new items added in future updates
-                    state.ownedFurniture = { ...DEFAULT_STATE.ownedFurniture, ...(state.ownedFurniture || {}) };
                     
-                    // Weekly challenge initialization - Secure nested object
-                    state.activeChallenge = state.activeChallenge || {};
-                    const defCH = JSON.parse(JSON.stringify(DEFAULT_STATE.activeChallenge));
-                    state.activeChallenge = { ...defCH, ...state.activeChallenge };
-                    state.ownedCracks = Array.isArray(state.ownedCracks) ? state.ownedCracks : [];
-                    state.downloadedCracks = state.downloadedCracks && typeof state.downloadedCracks === 'object' ? state.downloadedCracks : {};
-                    state.dms = state.dms || [];
+                    // Fonction utilitaire de fusion profonde pour préserver les valeurs par défaut des nouvelles features
+                    const mergeDeep = (target, source) => {
+                        for (const key in source) {
+                            if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+                                if (!target[key]) target[key] = {};
+                                mergeDeep(target[key], source[key]);
+                            } else {
+                                target[key] = source[key];
+                            }
+                        }
+                    };
+
+                    state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+                    mergeDeep(state, parsed);
+                    state.username = username;
 
                     // --- CHARGEMENT ET SYNC DES VOLUMES AUDIO ---
                     state.masterVolume = state.masterVolume !== undefined ? parseFloat(state.masterVolume) : 1.0;
