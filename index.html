@@ -2285,9 +2285,109 @@
 
     </div><script type="module">
         
-        import * as THREE from '<https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js>';
 
+const DEFAULT_STATE = {
+            username: '', activeCharacter: 0,
+            money: 100, rep: 10, followers: 0, energy: 100,
+            inspi: 100,
+            lastGenres: [],
+            // --- AJOUT DES VOLUMES PAR DÉFAUT ---
+            masterVolume: 1.0,
+            musicVolume: 0.8,
+            sfxVolume: 0.5,
+            timeMins: 8 * 60,
+            day: 1,
+            multiplier: 1.0, plugins: 0, lastLevel: 1,
+            stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0, consecutiveFlops: 0, sofaChills: 0, lampToggles: 0, awakeDays: 0 },
+            cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, sponsors: {} },
+            inventory: [], ownedCracks: [], downloadedCracks: {},
+            history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
+            isExporting: false, isSleeping: false, isEventActive: false,
+            isSitting: false,
+            isReviewActive: false, // Ajout de l'état pour les revues
+            lastRankId: 1, // Nouveau : ID de la dernière ligue atteinte
+            trackList: [],
+            // Weekly challenge system
+            activeChallenge: {
+                id: null,
+                description: '',
+                type: null,
+                targetValue: 0,
+                currentProgress: 0,
+                rewardType: null,
+                rewardAmount: 0,
+                daysRemaining: 7,
+                isCompleted: false
+            },
+            achievements: { // Nouveau : Système d'achievements
+                'first_blood': { unlocked: false, name: "First Blood", icon: "🩸", description: "Tu as exporté ta toute première prod. Le début de la gloire." },
+                'certifie_classique': { unlocked: false, name: "Certifié Classique", icon: "📀", description: "Obtenir un score parfait (10/10) par les critiques." },
+                'dans_la_sauce': { unlocked: false, name: "Dans la Sauce", icon: "🌶️", description: "Atteindre la barre des 15000 fans. Tu ne peux plus sortir dans la rue tranquille." },
+                'productivite_toxique': { unlocked: false, name: "Productivité Toxique", icon: "🗑️", description: "Enchaîner 5 flops d'affilée. Remets-toi en question." },
+                'alerte_rouge': { unlocked: false, name: "Alerte Rouge", icon: "💀", description: "Te manger ton premier écran bleu (BSOD) à cause d'un plugin cracké." },
+                'hacker_man': { unlocked: false, name: "Hacker Man", icon: "🥷", description: "Télécharger 10 plugins sur CrackZ. Le FBI te cherche." },
+                'cancel_culture': { unlocked: false, name: "Cancel Culture", icon: "📉", description: "Survivre à ton premier Bad Buzz sur les réseaux." },
+                'avocat_du_diable': { unlocked: false, name: "Avocat du Diable", icon: "⚖️", description: "Gagner un procès contre un rappeur qui a volé ta prod." },
+                'let_him_cook': { unlocked: false, name: "Let Him Cook", icon: "🍕", description: "T'asseoir 10 fois sur le canapé pour 'chercher l'inspi'." },
+                'sellout': { unlocked: false, name: "Sellout", icon: "🤝", description: "Accepter ton premier placement de produit (Sponsor). L'argent n'a pas d'odeur." },
+                'inge_son_certifie': { unlocked: false, name: "Ingé Son Certifié", icon: "🎛️", description: "Acheter ton premier plugin légal avec ton propre argent sur AudioStore." },
+                'prix_de_la_paix': { unlocked: false, name: "Le Prix de la Paix", icon: "🕊️", description: "Régler un vol de prod à l'amiable en acceptant de perdre de l'argent." },
+                'toujours_dans_le_rouge': { unlocked: false, name: "Toujours dans le rouge", icon: "🔋", description: "Lancer un export de mixdown avec moins de 5% d'énergie. Danger de mort." },
+                'lumiere_divine': { unlocked: false, name: "Lumière Divine", icon: "💡", description: "Allumer et éteindre la lampe Pixar 20 fois. (Tu t'ennuies ?)" },
+                'vrai_rat_de_studio': { unlocked: false, name: "Vrai Rat de Studio", icon: "🧛‍♂️", description: "Passer 3 jours entiers in-game sans jamais cliquer sur le lit pour dormir." }
+            },
+                ownedFurniture: {
+                acoustic: false,
+                sofa: false,
+                table: false,
+                rug: false,
+                tv: false,
+                rack: false,
+                synth: false,
+                guitar: false
+            }
+        };
 
+        const ACHIEVEMENT_CATEGORIES = [
+            { id: 'music', label: '💿 MUSIQUE' },
+            { id: 'dark', label: '🏴‍☠️ DARK SIDE' },
+            { id: 'studio', label: '🛋️ STUDIO' },
+            { id: 'business', label: '💼 BUSINESS' }
+        ];
+
+        const ACHIEVEMENT_FILTERS = [
+            { id: 'all', label: 'All' },
+            { id: 'unlocked', label: 'Unlocked' },
+            { id: 'locked', label: 'Locked' },
+            { id: 'secret', label: 'Secret' }
+        ];
+
+        const ACHIEVEMENT_DETAILS = {
+        first_blood: { category: 'music', progressPath: 'stats.tracks', target: 1, unit: 'track', reward: { money: 500, rep: 10 } },
+        certifie_classique: { category: 'music', target: 1, unit: 'review', reward: { money: 2000, rep: 50, followers: 1000 } },
+        dans_la_sauce: { category: 'business', progressPath: 'followers', target: 15000, unit: 'followers', reward: { rep: 100, followers: 5000 } },
+        productivite_toxique: { category: 'music', progressPath: 'stats.consecutiveFlops', target: 5, unit: 'flops', reward: { money: 100 } },
+        alerte_rouge: { category: 'dark', progressPath: 'stats.viruses', target: 1, unit: 'virus', reward: { money: 500 } },
+        hacker_man: { category: 'dark', progressPath: 'stats.crackDownloads', target: 5, unit: 'downloads', reward: { money: 1000 } },
+        cancel_culture: { category: 'business', target: 1, unit: 'event', reward: { rep: 50 } },
+        avocat_du_diable: { category: 'business', target: 1, unit: 'case', reward: { money: 2500, rep: 30 } },
+        let_him_cook: { category: 'studio', progressPath: 'stats.sofaChills', target: 10, unit: 'chills', reward: { rep: 15 } },
+        sellout: { category: 'business', target: 1, unit: 'deal', reward: { money: 5000 } },
+        inge_son_certifie: { category: 'business', progressPath: 'plugins', target: 1, unit: 'plugin', reward: { rep: 20, followers: 500 } },
+        prix_de_la_paix: { category: 'business', target: 1, unit: 'deal', reward: { rep: 40 } },
+        toujours_dans_le_rouge: { category: 'studio', target: 1, unit: 'export', secret: true, reward: { money: 300, rep: 5 } },
+        lumiere_divine: { category: 'studio', progressPath: 'stats.lampToggles', target: 20, unit: 'switches', secret: true, reward: { money: 50 } },
+        vrai_rat_de_studio: { category: 'studio', progressPath: 'stats.awakeDays', target: 3, unit: 'days', secret: true, reward: { money: 1000, rep: 20 } }
+    };
+        let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        normalizeAchievementState();
+
+        let selectedAvatarIndex = 0;
+        let currentDawGenre = 'drill';
+        let currentDawVoice = 'm';
+        let activeSettingsPanel = 'audio';
+        let activeAchievementCategory = 'music';
+        let activeAchievementFilter = 'all';
 
     // ==========================================
     // GESTION DE L'ÉCRAN DE CHARGEMENT
@@ -7242,108 +7342,7 @@ const marketplaceItems = [
     { id: 'acoustic', name: 'Panneaux Pro', desc: 'Mousses acoustiques pour une précision de mixage accrue.', price: 500, repReq: 25 }
 ];
 
-        const DEFAULT_STATE = {
-            username: '', activeCharacter: 0,
-            money: 100, rep: 10, followers: 0, energy: 100,
-            inspi: 100,
-            lastGenres: [],
-            // --- AJOUT DES VOLUMES PAR DÉFAUT ---
-            masterVolume: 1.0,
-            musicVolume: 0.8,
-            sfxVolume: 0.5,
-            timeMins: 8 * 60,
-            day: 1,
-            multiplier: 1.0, plugins: 0, lastLevel: 1,
-            stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0, consecutiveFlops: 0, sofaChills: 0, lampToggles: 0, awakeDays: 0 },
-            cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, sponsors: {} },
-            inventory: [], ownedCracks: [], downloadedCracks: {},
-            history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
-            isExporting: false, isSleeping: false, isEventActive: false,
-            isSitting: false,
-            isReviewActive: false, // Ajout de l'état pour les revues
-            lastRankId: 1, // Nouveau : ID de la dernière ligue atteinte
-            trackList: [],
-            // Weekly challenge system
-            activeChallenge: {
-                id: null,
-                description: '',
-                type: null,
-                targetValue: 0,
-                currentProgress: 0,
-                rewardType: null,
-                rewardAmount: 0,
-                daysRemaining: 7,
-                isCompleted: false
-            },
-            achievements: { // Nouveau : Système d'achievements
-                'first_blood': { unlocked: false, name: "First Blood", icon: "🩸", description: "Tu as exporté ta toute première prod. Le début de la gloire." },
-                'certifie_classique': { unlocked: false, name: "Certifié Classique", icon: "📀", description: "Obtenir un score parfait (10/10) par les critiques." },
-                'dans_la_sauce': { unlocked: false, name: "Dans la Sauce", icon: "🌶️", description: "Atteindre la barre des 15000 fans. Tu ne peux plus sortir dans la rue tranquille." },
-                'productivite_toxique': { unlocked: false, name: "Productivité Toxique", icon: "🗑️", description: "Enchaîner 5 flops d'affilée. Remets-toi en question." },
-                'alerte_rouge': { unlocked: false, name: "Alerte Rouge", icon: "💀", description: "Te manger ton premier écran bleu (BSOD) à cause d'un plugin cracké." },
-                'hacker_man': { unlocked: false, name: "Hacker Man", icon: "🥷", description: "Télécharger 10 plugins sur CrackZ. Le FBI te cherche." },
-                'cancel_culture': { unlocked: false, name: "Cancel Culture", icon: "📉", description: "Survivre à ton premier Bad Buzz sur les réseaux." },
-                'avocat_du_diable': { unlocked: false, name: "Avocat du Diable", icon: "⚖️", description: "Gagner un procès contre un rappeur qui a volé ta prod." },
-                'let_him_cook': { unlocked: false, name: "Let Him Cook", icon: "🍕", description: "T'asseoir 10 fois sur le canapé pour 'chercher l'inspi'." },
-                'sellout': { unlocked: false, name: "Sellout", icon: "🤝", description: "Accepter ton premier placement de produit (Sponsor). L'argent n'a pas d'odeur." },
-                'inge_son_certifie': { unlocked: false, name: "Ingé Son Certifié", icon: "🎛️", description: "Acheter ton premier plugin légal avec ton propre argent sur AudioStore." },
-                'prix_de_la_paix': { unlocked: false, name: "Le Prix de la Paix", icon: "🕊️", description: "Régler un vol de prod à l'amiable en acceptant de perdre de l'argent." },
-                'toujours_dans_le_rouge': { unlocked: false, name: "Toujours dans le rouge", icon: "🔋", description: "Lancer un export de mixdown avec moins de 5% d'énergie. Danger de mort." },
-                'lumiere_divine': { unlocked: false, name: "Lumière Divine", icon: "💡", description: "Allumer et éteindre la lampe Pixar 20 fois. (Tu t'ennuies ?)" },
-                'vrai_rat_de_studio': { unlocked: false, name: "Vrai Rat de Studio", icon: "🧛‍♂️", description: "Passer 3 jours entiers in-game sans jamais cliquer sur le lit pour dormir." }
-            },
-                ownedFurniture: {
-                acoustic: false,
-                sofa: false,
-                table: false,
-                rug: false,
-                tv: false,
-                rack: false,
-                synth: false,
-                guitar: false
-            }
-        };
-
-        const ACHIEVEMENT_CATEGORIES = [
-            { id: 'music', label: '💿 MUSIQUE' },
-            { id: 'dark', label: '🏴‍☠️ DARK SIDE' },
-            { id: 'studio', label: '🛋️ STUDIO' },
-            { id: 'business', label: '💼 BUSINESS' }
-        ];
-
-        const ACHIEVEMENT_FILTERS = [
-            { id: 'all', label: 'All' },
-            { id: 'unlocked', label: 'Unlocked' },
-            { id: 'locked', label: 'Locked' },
-            { id: 'secret', label: 'Secret' }
-        ];
-
-        const ACHIEVEMENT_DETAILS = {
-        first_blood: { category: 'music', progressPath: 'stats.tracks', target: 1, unit: 'track', reward: { money: 500, rep: 10 } },
-        certifie_classique: { category: 'music', target: 1, unit: 'review', reward: { money: 2000, rep: 50, followers: 1000 } },
-        dans_la_sauce: { category: 'business', progressPath: 'followers', target: 15000, unit: 'followers', reward: { rep: 100, followers: 5000 } },
-        productivite_toxique: { category: 'music', progressPath: 'stats.consecutiveFlops', target: 5, unit: 'flops', reward: { money: 100 } },
-        alerte_rouge: { category: 'dark', progressPath: 'stats.viruses', target: 1, unit: 'virus', reward: { money: 500 } },
-        hacker_man: { category: 'dark', progressPath: 'stats.crackDownloads', target: 5, unit: 'downloads', reward: { money: 1000 } },
-        cancel_culture: { category: 'business', target: 1, unit: 'event', reward: { rep: 50 } },
-        avocat_du_diable: { category: 'business', target: 1, unit: 'case', reward: { money: 2500, rep: 30 } },
-        let_him_cook: { category: 'studio', progressPath: 'stats.sofaChills', target: 10, unit: 'chills', reward: { rep: 15 } },
-        sellout: { category: 'business', target: 1, unit: 'deal', reward: { money: 5000 } },
-        inge_son_certifie: { category: 'business', progressPath: 'plugins', target: 1, unit: 'plugin', reward: { rep: 20, followers: 500 } },
-        prix_de_la_paix: { category: 'business', target: 1, unit: 'deal', reward: { rep: 40 } },
-        toujours_dans_le_rouge: { category: 'studio', target: 1, unit: 'export', secret: true, reward: { money: 300, rep: 5 } },
-        lumiere_divine: { category: 'studio', progressPath: 'stats.lampToggles', target: 20, unit: 'switches', secret: true, reward: { money: 50 } },
-        vrai_rat_de_studio: { category: 'studio', progressPath: 'stats.awakeDays', target: 3, unit: 'days', secret: true, reward: { money: 1000, rep: 20 } }
-    };
-        let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-        normalizeAchievementState();
-
-        let selectedAvatarIndex = 0;
-        let currentDawGenre = 'drill';
-        let currentDawVoice = 'm';
-        let activeSettingsPanel = 'audio';
-        let activeAchievementCategory = 'music';
-        let activeAchievementFilter = 'all';
+        
 
 
 
