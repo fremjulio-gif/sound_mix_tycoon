@@ -200,6 +200,32 @@
 
 
 
+            /* --- LIGHTNING EFFECT (Creative Block Boding) --- */
+            @keyframes lightning-flash-anim {
+                0%, 100% { opacity: 0; }
+                5% { opacity: 0.6; }
+                10% { opacity: 0.2; }
+                15% { opacity: 0.7; }
+                35% { opacity: 0; }
+            }
+            .lightning-flash-overlay {
+                position: absolute;
+                inset: 0;
+                background: #fff;
+                opacity: 0;
+                pointer-events: none;
+                z-index: 5;
+            }
+            .lightning-active {
+                animation: lightning-flash-anim 0.6s ease-out forwards;
+            }
+            .cloud-lightning-boost {
+                filter: brightness(6) saturate(0) !important;
+                transition: filter 0.05s;
+            }
+
+
+
 
             /* Animation de l'onde sonore du loader */
             @keyframes soundWave {
@@ -1566,6 +1592,7 @@
             <div class="mesh-blob blob-1"></div>
             <div class="mesh-blob blob-2"></div>
             <div class="mesh-blob blob-3"></div>
+            <div id="lightning-overlay" class="lightning-flash-overlay"></div>
         </div>
         
         <div id="grid-overlay"></div>
@@ -7985,6 +8012,26 @@ function triggerRankUp(oldRank, newRank) {
             }
         }
 
+        function triggerLightningEffect() {
+            const overlay = document.getElementById('lightning-overlay');
+            const clouds = window._bgClouds || [];
+            if (!overlay) return;
+
+            // Reset animation (force reflow)
+            overlay.classList.remove('lightning-active');
+            void overlay.offsetWidth; 
+            overlay.classList.add('lightning-active');
+
+            clouds.forEach(c => {
+                c.classList.add('cloud-lightning-boost');
+                setTimeout(() => c.classList.remove('cloud-lightning-boost'), 400);
+            });
+
+            // Tonnerre synthétique (Grondement basse fréquence)
+            playTone(55, 'sawtooth', 0.6, 0.05);
+            setTimeout(() => playTone(40, 'sine', 0.8, 0.03), 100);
+        }
+
         function generateRandomTimelineClips() {
             const tracks = document.querySelectorAll('.tl-track');
             tracks.forEach(track => {
@@ -8520,6 +8567,13 @@ function triggerRankUp(oldRank, newRank) {
 
             updateHUD();
             updateCooldownUIs();
+
+            // --- LIGHTNING STRIKE LOGIC (RARE WHEN INSPI IS CRITICALLY LOW) ---
+            if (state.inspi <= 5 && !state.isSleeping && !state.isSitting && !state.isExporting) {
+                if (Math.random() < 0.015) { // Env. 1.5% de chance par seconde
+                    triggerLightningEffect();
+                }
+            }
 
             // --- SÉCURITÉ RNG : Vérification de la période de grâce ---
             const eventGracePeriod = parseInt(state.cooldowns.eventGracePeriod, 10) || 0;
