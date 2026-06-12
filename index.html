@@ -2391,6 +2391,126 @@ const DEFAULT_STATE = {
         let activeAchievementCategory = 'music';
         let activeAchievementFilter = 'all';
 
+
+         // ==========================================
+        // SYSTÈME D'ACHIEVEMENTS PRO (VISIBLE PARTOUT)
+        // ==========================================
+                function normalizeAchievementState() {
+            if (!state) return;
+            const existing = (state?.achievements && typeof state.achievements === 'object') ? state.achievements : {};
+            const normalized = {};
+
+            Object.keys(DEFAULT_STATE?.achievements || {}).forEach(id => {
+                const template = DEFAULT_STATE.achievements[id] || {};
+                const technical = ACHIEVEMENT_DETAILS?.[id] || {};
+                const saved = existing[id] || {};
+
+                normalized[id] = { 
+                    ...template, 
+                    ...technical, 
+                    ...(typeof saved === 'object' ? saved : {}), 
+                    unlocked: Boolean(saved?.unlocked || saved === true) 
+                };
+            });
+            state.achievements = normalized;
+        }
+
+        function getAchievementOrder() {
+            const baseIds = Object.keys(DEFAULT_STATE.achievements);
+            const extraIds = Object.keys(state.achievements || {}).filter(id => !baseIds.includes(id));
+            return [...baseIds, ...extraIds];
+        }
+
+        function getNestedStateValue(path) {
+            if (!path) return 0;
+            return path.split('.').reduce((obj, key) => (obj && obj[key] !== undefined ? obj[key] : undefined), state);
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[char]);
+        }
+
+        function getInGameTimeLabel(mins = state.timeMins) {
+            const total = parseInt(mins, 10) || 0;
+            const h = Math.floor(total / 60);
+            const m = total % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        function stampAchievementUnlock(achievement) {
+            if (!achievement.unlockedDay) achievement.unlockedDay = parseInt(state.day, 10) || 1;
+            if (!achievement.unlockedTime) achievement.unlockedTime = getInGameTimeLabel();
+        }
+
+        function getAchievementProgress(id, achievement) {
+            const detail = ACHIEVEMENT_DETAILS[id] || achievement || {};
+            const target = Math.max(1, parseInt(detail.target || achievement.target || 1, 10));
+            let current = detail.progressPath ? Number(getNestedStateValue(detail.progressPath)) || 0 : (achievement.unlocked ? target : 0);
+
+            if (achievement.unlocked) current = Math.max(current, target);
+            const capped = Math.max(0, Math.min(current, target));
+
+            return {
+                current: capped,
+                target,
+                unit: detail.unit || achievement.unit || 'step',
+                percent: Math.round((capped / target) * 100),
+                progressive: Boolean(detail.progressPath && target > 1)
+            };
+        }
+
+        function getAchievementEntries() {
+            normalizeAchievementState();
+            return getAchievementOrder().map(id => ({
+                id,
+                ...(state.achievements[id] || {}),
+                detail: ACHIEVEMENT_DETAILS[id] || {}
+            }));
+        }
+
+        function migrateCompletedAchievementProgress() {
+            if (!state) return; // Sécurité anti-crash
+            normalizeAchievementState();
+            
+            Object.keys(state.achievements || {}).forEach(id => {
+                const achievement = state.achievements[id];
+                const detail = ACHIEVEMENT_DETAILS?.[id] || {};
+                
+                if (!achievement || achievement.unlocked || !detail.progressPath) return;
+
+                const progress = getAchievementProgress(id, achievement);
+                if (progress?.current >= progress?.target) {
+                    achievement.unlocked = true;
+                    achievement.legacyUnlocked = true;
+                }
+            });
+        }
+
+        function getAchievementUnlockLabel(achievement) {
+            if (!achievement.unlocked) return 'LOCKED';
+            if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant v17';
+            if (achievement.unlockedDay) return `JOUR ${achievement.unlockedDay}${achievement.unlockedTime ? ' · ' + achievement.unlockedTime : ''}`;
+            return 'Débloqué avant v16';
+        }
+
+        function initAchievementsUI() {
+            const categoryHost = document.getElementById('achievement-category-tabs');
+            const filterHost = document.getElementById('achievement-filter-tabs');
+
+            if (filterHost) {
+                filterHost.innerHTML = ACHIEVEMENT_FILTERS.map(filter => `
+                    <button id="achievement-filter-${filter.id}" class="achievement-filter-btn rounded-lg px-2 py-3" onclick="setAchievementFilter('${filter.id}')">${filter.label}</button>
+                `).join('');
+            }
+
+            renderAchievementsPanel();
+        }
     // ==========================================
     // GESTION DE L'ÉCRAN DE CHARGEMENT
     // ==========================================
@@ -2399,7 +2519,7 @@ const DEFAULT_STATE = {
     if (document.readyState === 'complete') simulateLoading();
     else window.addEventListener('load', simulateLoading);
 
-    
+
     // Assure que le popup d'achievement n'est pas enfermé dans le loader (qui devient display:none)
     ;(function relocateAchievementPopup(){
         try {
@@ -5927,125 +6047,7 @@ function triggerRankUp(oldRank, newRank) {
         }
 
 
-        // ==========================================
-        // SYSTÈME D'ACHIEVEMENTS PRO (VISIBLE PARTOUT)
-        // ==========================================
-                function normalizeAchievementState() {
-            if (!state) return;
-            const existing = (state?.achievements && typeof state.achievements === 'object') ? state.achievements : {};
-            const normalized = {};
-
-            Object.keys(DEFAULT_STATE?.achievements || {}).forEach(id => {
-                const template = DEFAULT_STATE.achievements[id] || {};
-                const technical = ACHIEVEMENT_DETAILS?.[id] || {};
-                const saved = existing[id] || {};
-
-                normalized[id] = { 
-                    ...template, 
-                    ...technical, 
-                    ...(typeof saved === 'object' ? saved : {}), 
-                    unlocked: Boolean(saved?.unlocked || saved === true) 
-                };
-            });
-            state.achievements = normalized;
-        }
-
-        function getAchievementOrder() {
-            const baseIds = Object.keys(DEFAULT_STATE.achievements);
-            const extraIds = Object.keys(state.achievements || {}).filter(id => !baseIds.includes(id));
-            return [...baseIds, ...extraIds];
-        }
-
-        function getNestedStateValue(path) {
-            if (!path) return 0;
-            return path.split('.').reduce((obj, key) => (obj && obj[key] !== undefined ? obj[key] : undefined), state);
-        }
-
-        function escapeHTML(value) {
-            return String(value ?? '').replace(/[&<>"']/g, char => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
-            })[char]);
-        }
-
-        function getInGameTimeLabel(mins = state.timeMins) {
-            const total = parseInt(mins, 10) || 0;
-            const h = Math.floor(total / 60);
-            const m = total % 60;
-            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-        }
-
-        function stampAchievementUnlock(achievement) {
-            if (!achievement.unlockedDay) achievement.unlockedDay = parseInt(state.day, 10) || 1;
-            if (!achievement.unlockedTime) achievement.unlockedTime = getInGameTimeLabel();
-        }
-
-        function getAchievementProgress(id, achievement) {
-            const detail = ACHIEVEMENT_DETAILS[id] || achievement || {};
-            const target = Math.max(1, parseInt(detail.target || achievement.target || 1, 10));
-            let current = detail.progressPath ? Number(getNestedStateValue(detail.progressPath)) || 0 : (achievement.unlocked ? target : 0);
-
-            if (achievement.unlocked) current = Math.max(current, target);
-            const capped = Math.max(0, Math.min(current, target));
-
-            return {
-                current: capped,
-                target,
-                unit: detail.unit || achievement.unit || 'step',
-                percent: Math.round((capped / target) * 100),
-                progressive: Boolean(detail.progressPath && target > 1)
-            };
-        }
-
-        function getAchievementEntries() {
-            normalizeAchievementState();
-            return getAchievementOrder().map(id => ({
-                id,
-                ...(state.achievements[id] || {}),
-                detail: ACHIEVEMENT_DETAILS[id] || {}
-            }));
-        }
-
-        function migrateCompletedAchievementProgress() {
-            if (!state) return; // Sécurité anti-crash
-            normalizeAchievementState();
-            
-            Object.keys(state.achievements || {}).forEach(id => {
-                const achievement = state.achievements[id];
-                const detail = ACHIEVEMENT_DETAILS?.[id] || {};
-                
-                if (!achievement || achievement.unlocked || !detail.progressPath) return;
-
-                const progress = getAchievementProgress(id, achievement);
-                if (progress?.current >= progress?.target) {
-                    achievement.unlocked = true;
-                    achievement.legacyUnlocked = true;
-                }
-            });
-        }
-
-        function getAchievementUnlockLabel(achievement) {
-            if (!achievement.unlocked) return 'LOCKED';
-            if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant v17';
-            if (achievement.unlockedDay) return `JOUR ${achievement.unlockedDay}${achievement.unlockedTime ? ' · ' + achievement.unlockedTime : ''}`;
-            return 'Débloqué avant v16';
-        }
-
-        function initAchievementsUI() {
-            const categoryHost = document.getElementById('achievement-category-tabs');
-            const filterHost = document.getElementById('achievement-filter-tabs');
-
-            if (filterHost) {
-                filterHost.innerHTML = ACHIEVEMENT_FILTERS.map(filter => `
-                    <button id="achievement-filter-${filter.id}" class="achievement-filter-btn rounded-lg px-2 py-3" onclick="setAchievementFilter('${filter.id}')">${filter.label}</button>
-                `).join('');
-            }
-
-            renderAchievementsPanel();
-        }
+       
 
 
 
