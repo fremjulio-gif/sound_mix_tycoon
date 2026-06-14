@@ -1824,25 +1824,27 @@
                             </div>
                         </div>
                         <div class="flex gap-4 flex-1 min-h-0">
+
+
                             <!-- Integrated Gauges -->
-                            <div class="flex gap-2 shrink-0">
-                                <div class="flex flex-col items-center">
-                                    <div class="vitals-meter !h-full !w-[8px] !bg-black/60 !rounded-sm" title="Énergie">
-                                        <div id="meter-energy-fill" class="vitals-fill bg-[var(--retro-red)] shadow-[0_0_10px_var(--retro-red)]"></div>
-                                    </div>
-                                    <span class="text-[7px] font-retro text-[var(--retro-red)] mt-1 font-bold">NRJ</span>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <div class="vitals-meter !h-full !w-[8px] !bg-black/60 !rounded-sm" title="Inspiration">
-                                        <div id="meter-inspi-fill" class="vitals-fill bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]" style="background-image: linear-gradient(0deg, var(--accent), #7c3aed);"></div>
-                                    </div>
-                                    <span class="text-[7px] font-retro text-[var(--accent)] mt-1 font-bold">INS</span>
-                                </div>
-                            </div>
-                            <!-- CPU Graph -->
-                            <div class="flex-1 bg-black/50 rounded border border-white/10 overflow-hidden relative shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] cpu-grid h-24">
-                                <canvas id="sys-canvas" class="absolute inset-0 w-full h-full"></canvas>
-                            </div>
+            <div class="flex gap-3 md:gap-4 shrink-0">
+                <div class="flex flex-col items-center">
+                        <div class="vitals-meter !h-full !w-[14px] md:!w-[18px] !bg-black/60 !rounded-md border border-white/10 shadow-inner" title="Énergie">
+                            <div id="meter-energy-fill" class="vitals-fill bg-[var(--retro-red)] shadow-[0_0_12px_var(--retro-red)]"></div>
+                        </div>
+                        <span class="text-[8px] md:text-[10px] font-retro text-[var(--retro-red)] mt-1.5 font-bold tracking-widest">NRJ</span>
+                    </div>
+                <div class="flex flex-col items-center">
+                    <div class="vitals-meter !h-full !w-[14px] md:!w-[18px] !bg-black/60 !rounded-md border border-white/10 shadow-inner" title="Inspiration">
+                        <div id="meter-inspi-fill" class="vitals-fill bg-[var(--accent)] shadow-[0_0_12px_var(--accent)]" style="background-image: linear-gradient(0deg, var(--accent), #7c3aed);"></div>
+                    </div>
+                    <span class="text-[8px] md:text-[10px] font-retro text-[var(--accent)] mt-1.5 font-bold tracking-widest">INS</span>
+                    </div>
+                </div>
+
+<div class="flex-1 bg-black/50 rounded-lg border border-white/10 overflow-hidden relative shadow-[inset_0_0_20px_rgba(0,0,0,0.9)] cpu-grid h-24 md:h-28">
+    <canvas id="sys-canvas" class="absolute inset-0 w-full h-full"></canvas>
+</div>
                         </div>
                         <div class="flex justify-between border-t border-white/5 pt-2 mt-2 px-1">
                             <div class="text-[8px] font-retro text-gray-400">⚡ <span id="meter-energy-val" class="text-white">100%</span></div>
@@ -9288,6 +9290,18 @@ function triggerRankUp(oldRank, newRank) {
                 return;
             }
 
+                if (state.inspi < 20) {
+            showToast("Le mix manque de vie... Exporter sans inspiration détruit tes prods.", "error");
+            // Pénalité brutale sur le score final (ex: trackScore -= 2)
+            // À adapter selon le nom exact de ta variable de score
+            
+            }
+
+                // Chaque export consomme un gros bloc de créativité
+            state.inspi = Math.max(0, state.inspi - 30);
+            
+            }
+
             // Achievement: Toujours dans le rouge
             checkAchievement('toujours_dans_le_rouge', () => state.energy < 5);
 
@@ -9364,7 +9378,7 @@ function triggerRankUp(oldRank, newRank) {
                 finishExport(genre, bpm, voice, activePads, consumedPluginId, trackTitle);
             }
             }, 60);
-        }
+        
 
                 function finishExport(genre, bpm, voice, pads, pluginId, trackTitle) {
             const result = calculateSuccess(genre, bpm, voice);
@@ -9787,6 +9801,10 @@ function triggerRankUp(oldRank, newRank) {
             // Feedback visuel
             showToast(`Story posted! +${followerGain} Fans | +${repGain} REP`, "info");
             
+            // Poster draine un peu l'inspiration
+            state.inspi = Math.max(0, state.inspi - 5);
+            
+
             playSuccess(); 
             saveGame(); 
             updateHUD(); 
