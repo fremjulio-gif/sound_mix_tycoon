@@ -387,6 +387,8 @@
         .os-window {
             position: absolute;
             width: min(900px, 94vw);
+            pointer-events: auto; /* <-- Force l'activation des clics */
+             width: min(900px, 94vw);
             min-width: 320px;
             min-width: 320px;
             height: auto;
@@ -1776,13 +1778,7 @@
         
         <div class="flex flex-col gap-2" id="desktop-icons-container">
             <div class="desktop-icon group" onclick="openApp('app-daw')">...</div>
-                    
-                    
-                    
-                    <div class="desktop-widget liquid-glass p-5 flex flex-col">
-
-
-                        
+                    <div class="desktop-widget liquid-glass p-5 flex flex-col">      
         <div class="flex justify-between items-end mb-3">
         <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">CPU Monitor</span>
         <span class="text-[10px] font-retro text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] animate-pulse">LIVE</span>
@@ -1812,7 +1808,7 @@
             </div>
         </div>
     </div>
-</div>
+
 
     <div class="desktop-widget liquid-glass p-5 flex flex-col" id="top-charts-widget">
                 <div class="flex justify-between items-end mb-4 border-b border-[var(--accent)]/30 pb-2 flex-shrink-0">
@@ -1935,6 +1931,7 @@
                     <svg class="w-5 h-5 text-[var(--accent)] group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                     <span class="text-[8px] mt-1 font-retro text-[var(--accent)]">THEME</span>
                 </div>
+            </div>
             </div>
 
 
@@ -2132,6 +2129,8 @@
                             </div>
                     </div>   
                 </div>
+            </div>
+        
 
    
             <div id="app-browser" class="os-window liquid-glass flex-col" style="display:none;">
@@ -8732,6 +8731,11 @@ function triggerRankUp(oldRank, newRank) {
             animateHUDNumber('hud-money', state.money, 'money');
             animateHUDNumber('hud-rep-num', state.rep, 'rep');
             animateHUDNumber('hud-foll', state.followers, 'foll');
+
+            // NOUVEAU : Synchronisation avec la Top-bar de l'OS
+            animateHUDNumber('os-stat-money', state.money, 'money');
+            animateHUDNumber('os-stat-rep', state.rep, 'rep');
+            animateHUDNumber('os-stat-fol', state.followers, 'foll');
 
             document.getElementById('hud-day').innerText   = `JOUR ${state.day}`;
 
