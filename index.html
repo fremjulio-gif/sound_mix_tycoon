@@ -301,12 +301,15 @@
             #pc-ui-layer {
         position: absolute;
         inset: 0;
-        z-index: 10;
         display: none;
         flex-direction: column;
         height: 100dvh;
         overflow: hidden;
-            z-index: 1000;
+        z-index: 1000;    
+        }       
+       
+
+
             
             /* --- SYSTEM ACTION BUTTONS (MODERN STUDIO OS LOOK) --- */
             .btn-system {
@@ -388,7 +391,7 @@
             min-width: 320px;
             height: auto;
             height: calc(100dvh - 112px) !important;
-            max-height: calc(100dvh - 112px) !important;
+             max-height: calc(100dvh - 112px) !important;
             top: 52px !important;
             display: flex !important;
             flex-direction: column !important;
@@ -511,15 +514,15 @@
                 bottom: 18px;
                 left: 50%;
                 transform: translateX(-50%);
-                height: 62px; /* z-index: 3000; */
+                height: 62px;
                 border-radius: 24px;
                 padding: 0 14px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                z-index: 50;
+                z-index: 3000;
                 width: min(70vw, 980px);
-                background: rgba(10,12,20,0.62); /* z-index: 3000; */
+                background: rgba(10,12,20,0.62);
                 backdrop-filter: blur(34px) saturate(200%);
                 -webkit-backdrop-filter: blur(34px) saturate(200%);
     }
@@ -679,10 +682,9 @@
         #hud {
             min-height: 50px !important;
             top: env(safe-area-inset-top, 5px) !important;
-            border-radius: 16px !important; /* z-index: 100; */
+            border-radius: 16px !important;
             width: 96% !important;
-            /* STRATE 2: Le HUD est toujours au-dessus des fenêtres (2000+) */
-            z-index: 2000 !important; 
+            z-index: 100 !important; 
         }
                     #hud-avatar { 
                 /* Supprimer le width/height 100% pour laisser Tailwind gérer la taille fixe de 38px */
@@ -708,8 +710,8 @@
                     padding-bottom: env(safe-area-inset-bottom) !important;
                     padding-top: 0 !important;
                     background: rgba(10, 10, 15, 0.95) !important;
-                    backdrop-filter: blur(20px) !important; /* z-index: 3000; */
-                    z-index: 6000 !important; /* Priorité maximale sur mobile */
+                    backdrop-filter: blur(20px) !important;
+                    z-index: 3000 !important;
                 }
                 #mobile-nav > div { flex: 1 !important; height: 100% !important; }
 
@@ -803,7 +805,7 @@
     /* ── OS TOP-BAR ── */
 #os-topbar {
     position: fixed;
-    top: 0; left: 0; right: 0; /* z-index: 5000; */
+    top: 0; left: 0; right: 0;
     height: 56px;
     z-index: 5000;
     display: flex;
@@ -1015,14 +1017,14 @@
 #vitals-ui {
     display: none;  /* First declaration - but has display:none AND position:fixed below */
     position: fixed;
-    right: 20px; /* z-index: 100; */
+    right: 20px;
     top: 50%;
     transform: translateY(-50%);
     display: flex;  /* Second display in same rule! */
     flex-direction: column;
     gap: 30px;
     z-index: 1500;
-    pointer-events: none; /* z-index: 100; */
+    pointer-events: none;
 }
 #vitals-ui {
     display: none; /* Caché : les jauges vivent dans le widget CPU */
@@ -1303,7 +1305,7 @@
         }
         .digital-confetti {
             position: fixed;
-            z-index: 9999999; /* Par-dessus tout, même les modales */
+            z-index: 9999; 
             pointer-events: none; /* Pour ne pas bloquer les clics */
             border-radius: 1px;
             animation: confettiFall linear forwards;
@@ -1500,13 +1502,13 @@
         <div id="exhaustion-overlay" class="absolute inset-0 z-[900] opacity-0 hidden w-full h-full"></div>
 
         <div id="sleep-overlay">
-            <div class="text-4xl animate-pulse mb-4">Zzz...</div> /* z-index: 9000; */
+            <div class="text-4xl animate-pulse mb-4">Zzz...</div>
             <div class="text-xl tracking-widest uppercase">Récupération d'inspi</div>
             <div id="sleep-progress-text" class="mt-4 text-sm text-gray-400">Réveil dans 15s...</div>
         </div>
 
 
-        <div id="event-overlay" class="fixed inset-0 bg-black/90 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden"> 
+        <div id="event-overlay" class="fixed inset-0 bg-black/90 z-[9000] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden"> 
             <div class="liquid-glass-heavy p-6 md:p-10 rounded-2xl w-[90%] max-w-lg border border-[var(--accent)] text-center shadow-[0_0_60px_rgba(0,0,0,0.8)] max-h-[90dvh] overflow-y-auto flex flex-col"> 
                 <h2 id="event-title" class="text-3xl font-retro mb-4 tracking-widest uppercase drop-shadow-lg shrink-0">ÉVÈNEMENT !</h2> 
                 <p id="event-desc" class="text-sm text-gray-200 mb-6 font-sans leading-relaxed shrink-0">Description de l'évènement ici...</p> 
@@ -1516,8 +1518,8 @@
         </div>
 
 
-                <div id="review-overlay" class="fixed inset-0 bg-black/90 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 hidden px-4" style="z-index: 9999999 !important;">
-            <div class="liquid-glass-heavy rounded-2xl w-full max-w-lg border border-[var(--accent)] text-center overflow-hidden" style="max-height: 90dvh; display: flex; flex-direction: column;"> /* z-index: 9000; */
+                <div id="review-overlay" class="fixed inset-0 bg-black/90 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 hidden px-4" style="z-index: 9000 !important;">
+            <div class="liquid-glass-heavy rounded-2xl w-full max-w-lg border border-[var(--accent)] text-center overflow-hidden" style="max-height: 90dvh; display: flex; flex-direction: column;">
                 
                 <div id="review-phase-suspense" class="flex flex-col items-center justify-center p-8 flex-1">
                     <div id="suspense-title" class="text-xl font-retro text-white tracking-widest mb-2 uppercase"></div>
@@ -1634,10 +1636,10 @@
         <!-- Joystick Virtuel Visual Indicator -->
         <div id="joystick-ui">
             <div class="joystick-base"></div>
-            <div class="joystick-knob" id="joystick-knob"></div> /* z-index: 5000; */
+            <div class="joystick-knob" id="joystick-knob"></div>
         </div>
 
-<div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
+<div id="login-screen" class="absolute inset-0 z-[10000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
             <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
                 <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it</h1>
                 <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">v17</p>
@@ -1744,7 +1746,7 @@
 
         <div id="pc-ui-layer" style="display: none;">
 
-    <div id="os-topbar" class="fixed top-0 left-0 right-0 h-[52px] z-[5000] flex items-center justify-between px-4 md:px-5 bg-black/80 backdrop-blur-xl border-b border-white/10"> /* z-index: 5000; */
+    <div id="os-topbar" class="fixed top-0 left-0 right-0 h-[52px] z-[5000] flex items-center justify-between px-4 md:px-5 bg-black/80 backdrop-blur-xl border-b border-white/10">
         
         <button id="btn-quit-pc" class="btn-system btn-system-red flex items-center gap-2 min-w-[44px] min-h-[44px] px-3 shrink-0" onclick="quitPC()">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1770,7 +1772,7 @@
         </button>
     </div>
 
-    <div id="desktop-content" class="pt-[68px] h-full w-full relative"> /* z-index: 1000; */
+    <div id="desktop-content" class="pt-[68px] h-full w-full relative">
         
         <div class="flex flex-col gap-2" id="desktop-icons-container">
             <div class="desktop-icon group" onclick="openApp('app-daw')">...</div>
@@ -2211,7 +2213,7 @@
 
         <div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[9999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
 
-        <div id="studio-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500" style="background: radial-gradient(circle at center, #1e1b4b 0%, #050508 100%);">
+        <div id="studio-loader" class="fixed inset-0 z-[99999] flex flex-col items-center justify-center transition-opacity duration-500" style="background: radial-gradient(circle at center, #1e1b4b 0%, #050508 100%);">
             <div class="splash-card">
                 <h1 class="font-retro text-2xl md:text-3xl text-white tracking-[0.3em] uppercase mb-10 drop-shadow-2xl">bounce_it <span class="text-[var(--accent)] opacity-60">v17</span></h1>
                 
@@ -2241,8 +2243,6 @@
             <div class="absolute inset-0 rounded-2xl border-2 border-white/10 animate-pulse pointer-events-none"></div>
         </div>
 
-    </div>
-    </div>
     </div>
 
     <script type="module">
