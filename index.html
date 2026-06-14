@@ -6221,6 +6221,7 @@ function triggerRankUp(oldRank, newRank) {
         }
 
         function checkAchievement(id, condition) {
+             if (window.isBooting) return; // Évite l'avalanche au démarrage
             if (!state.achievements[id] || state.achievements[id].unlocked) return;
             if (condition()) {
                 state.achievements[id].unlocked = true;
@@ -8487,6 +8488,7 @@ function triggerRankUp(oldRank, newRank) {
         // 12. LOGIN
         // ==========================================
         async function attemptLogin() {
+            window.isBooting = true; //
             initAudio();
             const username = document.getElementById('login-username').value.trim();
             if (!username) { document.getElementById('login-error').classList.remove('hidden'); playError(); return; }
@@ -8645,6 +8647,16 @@ function triggerRankUp(oldRank, newRank) {
             document.getElementById('room-ui').style.display = 'flex';
             document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="pixelated w-full h-full object-cover object-center scale-[1.6] origin-center" />`;
             document.getElementById('hud-name').innerText = state.username;
+
+            // --- AJOUT ICI : Sécurité anti-popups fantômes ---
+            const reviewOverlay = document.getElementById('review-overlay');
+            if (reviewOverlay) {
+            reviewOverlay.classList.add('hidden');
+            reviewOverlay.style.opacity = '0';
+            reviewOverlay.style.pointerEvents = 'none';
+        }
+    state.isReviewing = false; // Force la donnée à l'arrêt
+    // --------------------------------------------------
             
             // Sync initial values to prevent counting from 0 on login
             hudDisplayValues.money = state.money;
@@ -8695,17 +8707,24 @@ function triggerRankUp(oldRank, newRank) {
 
             if (window.gameInterval) { clearInterval(window.gameInterval); window.gameInterval = null; }
             window.gameInterval = setInterval(gameTick, 1000);
+            // --- AJOUT ICI : Fin du chargement ---
+            setTimeout(() => {
+            window.isBooting = false; // Réactive les Toasts et Pop-ups une fois que le DOM est stable
+            },      500); // Un petit délai de 500ms assure que toutes les jauges ont fini de s'animer
+
+            // Sécurisation de la boucle temporelle
+        window.updateCooldownUIs = function() {
+        // Logique de rafraîchissement des cooldowns de l'interface (à étoffer selon les besoins)
+        };
+        window.dailyReset = function() {
+        showToast("Nouveau jour ! Les compteurs sont remis à zéro.", "info");
+        saveGame();
+        };
+
         }
         
 
-                // Sécurisation de la boucle temporelle
-        window.updateCooldownUIs = function() {
-        // Logique de rafraîchissement des cooldowns de l'interface (à étoffer selon les besoins)
-    };
-        window.dailyReset = function() {
-    showToast("Nouveau jour ! Les compteurs sont remis à zéro.", "info");
-    saveGame();
-};
+                
 
         // ==========================================
         // 13. GAME TICK
@@ -9848,6 +9867,7 @@ function triggerRankUp(oldRank, newRank) {
         // 21. TOASTS
         // ==========================================
         function showToast(msg, type = 'info', onClick = null) {
+             if (window.isBooting) return; // Si la session charge, on bloque 
             const zone = document.getElementById('toast-zone');
             if (!zone) return;
             const t = document.createElement('div');
