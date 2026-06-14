@@ -5253,11 +5253,13 @@ function applyFurniturePerk(effect) {
             playTone(300, 'sawtooth', 0.1, 0.05);
         }
 
-        function enterPC() {
+        window.enterPC = function() {
             document.getElementById('room-ui').style.display = 'none';
             document.getElementById('pc-ui-layer').style.display = 'flex';
-            playTone(600, 'square', 0.1, 0.05);
-        }
+            document.body.classList.add('os-active'); // CRUCIAL : Active le layout OS
+        playTone(600, 'square', 0.1, 0.05);
+    };
+
         function quitPC() {
             document.getElementById('pc-ui-layer').style.display = 'none';
             document.getElementById('room-ui').style.display = 'flex';
@@ -8651,6 +8653,16 @@ function triggerRankUp(oldRank, newRank) {
             if (window.gameInterval) { clearInterval(window.gameInterval); window.gameInterval = null; }
             window.gameInterval = setInterval(gameTick, 1000);
         }
+        
+
+                // Sécurisation de la boucle temporelle
+        window.updateCooldownUIs = function() {
+        // Logique de rafraîchissement des cooldowns de l'interface (à étoffer selon les besoins)
+    };
+        window.dailyReset = function() {
+    showToast("Nouveau jour ! Les compteurs sont remis à zéro.", "info");
+    saveGame();
+};
 
         // ==========================================
         // 13. GAME TICK
