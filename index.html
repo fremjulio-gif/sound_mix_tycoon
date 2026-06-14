@@ -306,7 +306,7 @@
         flex-direction: column;
         height: 100dvh;
         overflow: hidden;
-    }
+            z-index: 1000;
             
             /* --- SYSTEM ACTION BUTTONS (MODERN STUDIO OS LOOK) --- */
             .btn-system {
@@ -387,12 +387,14 @@
             min-width: 320px;
             min-width: 320px;
             height: auto;
-            max-height: calc(100dvh - 130px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
+            height: calc(100dvh - 112px) !important;
+            max-height: calc(100dvh - 112px) !important;
+            top: 52px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
             /* STRATE 1: Les fenêtres vivent entre 100 et 1000 (géré par JS) */
-            z-index: 100; 
+            z-index: 2000;
             transition: border-color 0.3s ease;
             resize: both;
             box-sizing: border-box;
@@ -410,8 +412,11 @@
                 justify-content: space-between;
                 align-items: center;
                 cursor: grab;
+                position: relative;
+                z-index: 50;
                 border-bottom: 1px solid rgba(255,255,255,0.1);
                 flex-shrink: 0;
+                overflow: visible;
             }
             .window-header:active { cursor: grabbing; }
             .window-content {
@@ -506,7 +511,7 @@
                 bottom: 18px;
                 left: 50%;
                 transform: translateX(-50%);
-                height: 62px;
+                height: 62px; /* z-index: 3000; */
                 border-radius: 24px;
                 padding: 0 14px;
                 display: flex;
@@ -514,7 +519,7 @@
                 justify-content: space-between;
                 z-index: 50;
                 width: min(70vw, 980px);
-                background: rgba(10,12,20,0.62);
+                background: rgba(10,12,20,0.62); /* z-index: 3000; */
                 backdrop-filter: blur(34px) saturate(200%);
                 -webkit-backdrop-filter: blur(34px) saturate(200%);
     }
@@ -674,7 +679,7 @@
         #hud {
             min-height: 50px !important;
             top: env(safe-area-inset-top, 5px) !important;
-            border-radius: 16px !important;
+            border-radius: 16px !important; /* z-index: 100; */
             width: 96% !important;
             /* STRATE 2: Le HUD est toujours au-dessus des fenêtres (2000+) */
             z-index: 2000 !important; 
@@ -703,7 +708,7 @@
                     padding-bottom: env(safe-area-inset-bottom) !important;
                     padding-top: 0 !important;
                     background: rgba(10, 10, 15, 0.95) !important;
-                    backdrop-filter: blur(20px) !important;
+                    backdrop-filter: blur(20px) !important; /* z-index: 3000; */
                     z-index: 6000 !important; /* Priorité maximale sur mobile */
                 }
                 #mobile-nav > div { flex: 1 !important; height: 100% !important; }
@@ -797,8 +802,8 @@
 
     /* ── OS TOP-BAR ── */
 #os-topbar {
-    position: absolute;
-    top: 0; left: 0; right: 0;
+    position: fixed;
+    top: 0; left: 0; right: 0; /* z-index: 5000; */
     height: 56px;
     z-index: 5000;
     display: flex;
@@ -845,29 +850,6 @@
     #desktop-content { padding-top: 60px !important; }
 }
 
-/* Les Fenêtres OS s'insèrent entre la barre du haut et la barre des tâches */
-.os-window {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    
-    /* Calcul strict : 100% de l'écran - TopBar(52px) - TaskBar(60px) */
-    height: calc(100dvh - 112px - env(safe-area-inset-bottom)) !important; 
-    max-height: calc(100dvh - 112px - env(safe-area-inset-bottom)) !important;
-    
-    /* La fenêtre commence exactement sous la Top-bar */
-    top: 52px !important; 
-    left: 0 !important;
-    
-    border-radius: 0 !important;
-    resize: none !important;
-    border: none !important;
-    padding-top: 0 !important; /* On supprime l'ancien padding énorme */
-    background: rgba(10, 10, 15, 0.98) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important;
-    z-index: 4000;
-}
                 
                 .window-header { 
                     border-top: 1px solid rgba(255,255,255,0.1); 
@@ -1033,14 +1015,14 @@
 #vitals-ui {
     display: none;  /* First declaration - but has display:none AND position:fixed below */
     position: fixed;
-    right: 20px;
+    right: 20px; /* z-index: 100; */
     top: 50%;
     transform: translateY(-50%);
     display: flex;  /* Second display in same rule! */
     flex-direction: column;
     gap: 30px;
     z-index: 1500;
-    pointer-events: none;
+    pointer-events: none; /* z-index: 100; */
 }
 #vitals-ui {
     display: none; /* Caché : les jauges vivent dans le widget CPU */
@@ -1518,7 +1500,7 @@
         <div id="exhaustion-overlay" class="absolute inset-0 z-[900] opacity-0 hidden w-full h-full"></div>
 
         <div id="sleep-overlay">
-            <div class="text-4xl animate-pulse mb-4">Zzz...</div>
+            <div class="text-4xl animate-pulse mb-4">Zzz...</div> /* z-index: 9000; */
             <div class="text-xl tracking-widest uppercase">Récupération d'inspi</div>
             <div id="sleep-progress-text" class="mt-4 text-sm text-gray-400">Réveil dans 15s...</div>
         </div>
@@ -1535,7 +1517,7 @@
 
 
                 <div id="review-overlay" class="fixed inset-0 bg-black/90 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 hidden px-4" style="z-index: 9999999 !important;">
-            <div class="liquid-glass-heavy rounded-2xl w-full max-w-lg border border-[var(--accent)] text-center overflow-hidden" style="max-height: 90dvh; display: flex; flex-direction: column;">
+            <div class="liquid-glass-heavy rounded-2xl w-full max-w-lg border border-[var(--accent)] text-center overflow-hidden" style="max-height: 90dvh; display: flex; flex-direction: column;"> /* z-index: 9000; */
                 
                 <div id="review-phase-suspense" class="flex flex-col items-center justify-center p-8 flex-1">
                     <div id="suspense-title" class="text-xl font-retro text-white tracking-widest mb-2 uppercase"></div>
@@ -1565,7 +1547,7 @@
             </div>
         </div>
         
-        <div id="hud" class="liquid-glass-heavy min-h-[52px] md:min-h-[76px] fixed top-[max(8px,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 rounded-[16px] md:rounded-[30px] flex items-center justify-between px-2 md:px-8 transition-all w-[96vw] md:w-max max-w-6xl border border-white/10 shadow-2xl gap-1 md:gap-8" style="z-index: 2000 !important;">
+        <div id="hud" class="liquid-glass-heavy min-h-[52px] md:min-h-[76px] fixed top-[max(8px,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 rounded-[16px] md:rounded-[30px] flex items-center justify-between px-2 md:px-8 transition-all w-[96vw] md:w-max max-w-6xl border border-white/10 shadow-2xl gap-1 md:gap-8" style="z-index: 100 !important;">
             <div class="flex items-center gap-3 shrink-0">
                 <div id="hud-avatar" class="w-[48px] h-[48px] md:w-[64px] md:h-[64px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shadow-[0_0_15px_rgba(129,140,248,0.5)]"
                 onclick="toggleTooltip('avatar', this)" onmouseenter="!isMobile && showTooltip('avatar', this)" onmouseleave="!isMobile && hideTooltip()"></div>
@@ -1609,11 +1591,11 @@
         <div id="three-canvas-container"></div>
 
         <div id="room-ui"></div>
-
+        
         
 
         <!-- Settings Overlay -->
-        <div id="audio-settings-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden">
+        <div id="audio-settings-overlay" class="fixed inset-0 z-[9000] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden">
             <div class="settings-shell liquid-glass-heavy p-5 md:p-7 rounded-2xl border border-[var(--accent)] shadow-[0_0_60px_rgba(0,0,0,0.8)] flex flex-col">
                 <div class="flex items-center justify-between gap-3 shrink-0 mb-4">
                     <div>
@@ -1652,7 +1634,7 @@
         <!-- Joystick Virtuel Visual Indicator -->
         <div id="joystick-ui">
             <div class="joystick-base"></div>
-            <div class="joystick-knob" id="joystick-knob"></div>
+            <div class="joystick-knob" id="joystick-knob"></div> /* z-index: 5000; */
         </div>
 
 <div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
@@ -1678,7 +1660,7 @@
         </div>
     </div>
 
-<div id="achievements-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden px-4">
+<div id="achievements-overlay" class="fixed inset-0 z-[9000] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden px-4">
         <div class="settings-shell liquid-glass-heavy p-5 md:p-7 rounded-2xl border-2 border-[var(--retro-orange)] shadow-[0_0_60px_rgba(251,191,36,0.15)] flex flex-col relative">
             
             <button onclick="closeAchievementsBoard()" class="btn-system !p-0 absolute top-4 right-4 z-50">
@@ -1709,7 +1691,7 @@
             </div>
     </div>
 
-        <div id="standalone-pianoroll" class="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 hidden px-4">
+        <div id="standalone-pianoroll" class="fixed inset-0 z-[2000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 hidden px-4">
             <div class="liquid-glass-heavy rounded-2xl w-full max-w-4xl border border-[#8b5cf6] shadow-[0_0_40px_rgba(139,92,246,0.2)] flex flex-col overflow-hidden" style="height: 85dvh;">
                 
                 <div class="window-header bg-black/80 p-4 border-b border-white/10 flex justify-between items-center shrink-0">
@@ -1762,7 +1744,7 @@
 
         <div id="pc-ui-layer" style="display: none;">
 
-    <div id="os-topbar" class="fixed top-0 left-0 right-0 h-[52px] z-[5000] flex items-center justify-between px-4 md:px-5 bg-black/80 backdrop-blur-xl border-b border-white/10">
+    <div id="os-topbar" class="fixed top-0 left-0 right-0 h-[52px] z-[5000] flex items-center justify-between px-4 md:px-5 bg-black/80 backdrop-blur-xl border-b border-white/10"> /* z-index: 5000; */
         
         <button id="btn-quit-pc" class="btn-system btn-system-red flex items-center gap-2 min-w-[44px] min-h-[44px] px-3 shrink-0" onclick="quitPC()">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1788,7 +1770,7 @@
         </button>
     </div>
 
-    <div id="desktop-content" class="pt-[68px] h-full w-full relative">
+    <div id="desktop-content" class="pt-[68px] h-full w-full relative"> /* z-index: 1000; */
         
         <div class="flex flex-col gap-2" id="desktop-icons-container">
             <div class="desktop-icon group" onclick="openApp('app-daw')">...</div>
@@ -2149,67 +2131,6 @@
                     </div>   
                 </div>
 
-            </div>
-        </div>
-        <div id="os-topbar">
-    <!-- Gauche : Quit -->
-   <div id="pc-ui-layer" style="display: none;">
-
-    <!-- ── TOP-BAR OS ── -->
-    <div id="os-topbar" style="
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 52px;
-        z-index: 5000;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 20px;
-        background: rgba(5,5,10,0.80);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border-bottom: 1px solid rgba(255,255,255,0.07);
-        gap: 12px;
-    ">
-        <!-- Gauche : Déconnexion -->
-        <button id="btn-quit-pc" class="btn-system btn-system-red" onclick="quitPC()" style="min-width:44px; min-height:44px; display:flex; align-items:center; gap:6px; padding:0 14px; flex-shrink:0;">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-            </svg>
-            <span class="hidden md:inline" style="font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;">Quitter</span>
-        </button>
-
-        <!-- Centre : Stats rapides -->
-        <div style="display:flex; align-items:center; gap:16px; font-family:'Outfit',sans-serif; font-size:12px; font-weight:600; color:white; letter-spacing:0.05em; flex:1; justify-content:center;">
-            <span style="display:flex;align-items:center;gap:4px;">
-                <span style="font-size:9px;font-weight:800;color:var(--retro-green);letter-spacing:0.1em;">$</span>
-                <span id="os-stat-money">0</span>
-            </span>
-            <span style="color:rgba(255,255,255,0.2);">·</span>
-            <span style="display:flex;align-items:center;gap:4px;">
-                <span style="font-size:9px;font-weight:800;color:var(--retro-orange);letter-spacing:0.1em;">REP</span>
-                <span id="os-stat-rep">0</span>
-            </span>
-            <span style="color:rgba(255,255,255,0.2);">·</span>
-            <span style="display:flex;align-items:center;gap:4px;">
-                <span style="font-size:9px;font-weight:800;color:var(--accent);letter-spacing:0.1em;">FOL</span>
-                <span id="os-stat-fol">0</span>
-            </span>
-        </div>
-
-        <!-- Droite : Paramètres (unique, ici seulement) -->
-        <button id="audio-settings-gear" onclick="openAudioSettings()" style="min-width:44px; min-height:44px; display:flex; align-items:center; gap:6px; padding:0 14px; flex-shrink:0; background:rgba(10,10,15,0.5); border:1px solid rgba(255,255,255,0.12); border-radius:10px; color:var(--text-muted); cursor:pointer; transition:all 0.2s;">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
-            <span class="hidden md:inline" style="font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;">Paramètres</span>
-        </button>
-    </div>
-
-    
-    <!-- ── FIN TOP-BAR OS ── -->
-
    
             <div id="app-browser" class="os-window liquid-glass flex-col" style="display:none;">
                 <div class="window-header">
@@ -2280,7 +2201,7 @@
 
         </div>
 
-    <div id="bsod" class="absolute inset-0 z-[2000] bg-[#0000AA] text-white p-8 md:p-16 flex-col hidden font-retro">
+    <div id="bsod" class="absolute inset-0 z-[9000] bg-[#0000AA] text-white p-8 md:p-16 flex-col hidden font-retro">
             <h1 class="text-3xl md:text-5xl font-bold bg-white text-[#0000AA] inline-block px-5 py-2 mb-8 md:mb-10 mt-10">CRITICAL_SYSTEM_ERROR</h1>
             <p class="mb-6 text-lg md:text-xl tracking-wider">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
             <p class="mb-12 md:mb-16 text-base md:text-lg text-gray-300">Unlicensed software execution caused a memory leak. Restoring system state...</p>
@@ -2288,7 +2209,7 @@
             <p class="mt-12 text-sm md:text-base glitch text-gray-400">Do not turn off your workstation.</p>
         </div>
 
-        <div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[999999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
+        <div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[9999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
 
         <div id="studio-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500" style="background: radial-gradient(circle at center, #1e1b4b 0%, #050508 100%);">
             <div class="splash-card">
@@ -2307,9 +2228,10 @@
 
                 <div id="loader-text" class="text-[#34d399] font-mono text-[10px] tracking-[0.15em] uppercase mt-4 w-full text-left h-4 loader-glitch">Initializing Kernel...</div>
             </div>
+        </div>
 
             <!-- Achievement Popup (Z-INDEX MAXIMUM) -->
-        <div id="achievement-popup" class="fixed top-[-150px] left-1/2 -translate-x-1/2 z-[1000000] w-[90%] max-w-md liquid-glass-heavy border-2 border-[var(--accent)] rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(129,140,248,0.5)] transition-all duration-500 pointer-events-none">
+        <div id="achievement-popup" class="fixed top-[-150px] left-1/2 -translate-x-1/2 z-[9999] w-[90%] max-w-md liquid-glass-heavy border-2 border-[var(--accent)] rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(129,140,248,0.5)] transition-all duration-500 pointer-events-none">
             <div id="achievement-icon" class="text-4xl shrink-0 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">🏆</div>
             <div class="flex flex-col">
                 <div class="text-[var(--accent)] font-retro text-[10px] tracking-widest uppercase mb-1">Success Unlocked</div>
@@ -2319,6 +2241,8 @@
             <div class="absolute inset-0 rounded-2xl border-2 border-white/10 animate-pulse pointer-events-none"></div>
         </div>
 
+    </div>
+    </div>
     </div>
 
     <script type="module">
