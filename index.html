@@ -301,15 +301,12 @@
             #pc-ui-layer {
         position: absolute;
         inset: 0;
+        z-index: 10;
         display: none;
         flex-direction: column;
         height: 100dvh;
         overflow: hidden;
-        z-index: 1000;    
-        }       
-       
-
-
+    }
             
             /* --- SYSTEM ACTION BUTTONS (MODERN STUDIO OS LOOK) --- */
             .btn-system {
@@ -347,11 +344,37 @@
             .btn-system-red { border-color: rgba(255, 0, 60, 0.3); color: var(--retro-red); }
             .btn-system-red:hover { border-color: var(--retro-red); background: rgba(255, 0, 60, 0.1); }
 
-          
+            /* --- OS GLOBAL INTERFACE HEADER (TOP-BAR) --- */
+            #pc-top-bar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 80px;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end; /* Buttons on the right */
+                padding: 0 24px;
+                background: rgba(10, 10, 15, 0.98);
+                backdrop-filter: blur(20px) saturate(180%);
+                -webkit-backdrop-filter: blur(20px) saturate(180%);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                z-index: 9000;
+                pointer-events: auto;
+                transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            .system-controls-group {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            #btn-quit-pc { position: relative; margin: 0; }
 
             .window-close-btn {
-                width: 44px;
-                height: 44px;
+                min-width: 48px;
+                min-height: 48px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -387,19 +410,15 @@
         .os-window {
             position: absolute;
             width: min(900px, 94vw);
-            pointer-events: auto; /* <-- Force l'activation des clics */
-             width: min(900px, 94vw);
             min-width: 320px;
             min-width: 320px;
             height: auto;
-            height: calc(100dvh - 112px) !important;
-             max-height: calc(100dvh - 112px) !important;
-            top: 52px !important;
-            display: flex !important;
-            flex-direction: column !important;
-            overflow: hidden !important;
-            /* STRATE 1: Les fenêtres vivent entre 100 et 1000 (géré par JS) */
-            z-index: 2000;
+            max-height: calc(100dvh - 130px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            /* STRATE 1: Les fenêtres vivent entre 100 et 8000 */
+            z-index: 100;
             transition: border-color 0.3s ease;
             resize: both;
             box-sizing: border-box;
@@ -414,14 +433,14 @@
                 background: rgba(0, 0, 0, 0.6);
                 padding: 12px 16px;
                 display: flex;
-                justify-content: space-between;
+                /* Layout: Fermeture à gauche, Titre à droite */
+                flex-direction: row; 
+                justify-content: flex-start;
                 align-items: center;
+                gap: 16px;
                 cursor: grab;
-                position: relative;
-                z-index: 50;
                 border-bottom: 1px solid rgba(255,255,255,0.1);
                 flex-shrink: 0;
-                overflow: visible;
             }
             .window-header:active { cursor: grabbing; }
             .window-content {
@@ -452,10 +471,9 @@
         overflow: hidden;
     }
 
-    #desktop-content {
-    padding-top: 68px !important;
-}
-
+    #desktop-content > div {
+        pointer-events: auto;
+    }
 
     #desktop-icons-container {
         grid-column: 1;
@@ -522,7 +540,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                z-index: 3000;
+                z-index: 50;
                 width: min(70vw, 980px);
                 background: rgba(10,12,20,0.62);
                 backdrop-filter: blur(34px) saturate(200%);
@@ -686,7 +704,8 @@
             top: env(safe-area-inset-top, 5px) !important;
             border-radius: 16px !important;
             width: 96% !important;
-            z-index: 100 !important; 
+            /* STRATE 2: Le HUD est toujours au-dessus des fenêtres (2000+) */
+            z-index: 2000 !important; 
         }
                     #hud-avatar { 
                 /* Supprimer le width/height 100% pour laisser Tailwind gérer la taille fixe de 38px */
@@ -697,7 +716,41 @@
 
                 #hud-name { display: none !important; }
 
+                 /* OS Header Mobile */
+                #pc-top-bar {
+                    height: 64px;
+                    padding: 0 12px;
+                }
 
+                #hud { 
+                    z-index: 10000 !important; 
+                }
+                
+                /* --- HUD TRANSFORM (ROOM PILL -> OS BAR) --- */
+                body.os-active #hud {
+                position: fixed;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                transform: none !important;
+                border-radius: 0 !important;
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                height: 80px;
+                z-index: 9500 !important; /* Above pc-top-bar (9000) */
+                justify-content: flex-start; /* Stats on the left/center */
+                padding-left: 32px;
+                pointer-events: none; /* Allow interaction with pc-top-bar underneath */
+            }
+                body.os-active #hud > * { pointer-events: auto; }
+                body.os-active #hud #sys-time, body.os-active #hud #hud-day { display: none; } 
+
+                .btn-system {
+                    min-width: 48px !important;
+                    min-height: 48px !important;
+                }
                 
                 /* Navigation OS devient une "Bottom Bar" fixe avec prise en compte Safe Area iOS */
                 #mobile-nav { 
@@ -713,7 +766,7 @@
                     padding-top: 0 !important;
                     background: rgba(10, 10, 15, 0.95) !important;
                     backdrop-filter: blur(20px) !important;
-                    z-index: 3000 !important;
+                    z-index: 6000 !important; /* Priorité maximale sur mobile */
                 }
                 #mobile-nav > div { flex: 1 !important; height: 100% !important; }
 
@@ -802,58 +855,28 @@
         overflow: visible !important;
         }
     }
+                
+                /* Les Fenêtres OS s'insèrent exactement entre la barre du haut et celle du bas */
+                .os-window {
+                    width: 100vw !important;
+                    height: calc(100dvh - 60px - env(safe-area-inset-bottom)) !important;
+                    max-width: 100vw !important;
+                    max-height: calc(100dvh - 60px - env(safe-area-inset-bottom)) !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    border-radius: 0 !important;
+                    resize: none !important;
+                    border: none !important;
+                    padding-top: calc(140px + env(safe-area-inset-top)) !important; /* Dégage la nouvelle Top Bar OS */
+                    background: rgba(10, 10, 15, 0.98) !important;
+                    box-shadow: none !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    overflow: hidden !important;
+                }
 
-
-    /* ── OS TOP-BAR ── */
-#os-topbar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 56px;
-    z-index: 5000;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    background: rgba(5, 5, 10, 0.75);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-bottom: 1px solid rgba(255,255,255,0.07);
-}
-
-#btn-quit-pc {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 5000;
-    touch-action: manipulation;
-}
-
-
-
-.os-topbar-stats {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: 'Outfit', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    color: white;
-    letter-spacing: 0.05em;
-}
-.os-stat { display: flex; align-items: center; gap: 4px; }
-.os-stat-label { font-size: 9px; font-weight: 800; margin-right: 2px; letter-spacing: 0.1em; }
-.os-stat-sep { color: rgba(255,255,255,0.2); }
-
-/* Sécurisation de l'espace sous la Top-bar */
-#desktop-content {
-    padding-top: 68px !important;
-}
-
-@media (max-width: 767px) {
-    #os-topbar { height: 50px; }
-    #desktop-content { padding-top: 60px !important; }
-}
-
+                .os-window[style*="none"] { display: none !important; }
+                .os-window[style*="flex"] { display: flex !important; }
                 
                 .window-header { 
                     border-top: 1px solid rgba(255,255,255,0.1); 
@@ -887,10 +910,9 @@
                     pointer-events: auto;
                 }
 
-    
-
                 .btn-minimal, .btn-action, .seq-pad, .btn-daw-pad, .taskbar-btn { min-height: 44px; }
                 .btn-minimal, .btn-action { padding: 12px 10px !important; }
+
                 .seq-pad, .btn-daw-pad { min-width: 44px; }
                 #bpm-val { font-size: 18px !important; }
 
@@ -1015,27 +1037,59 @@
                 }
 
 
-        /* --- SEGMENTED VITALS METERS (RIGHT SIDE) --- */
-#vitals-ui {
-    display: none;  /* First declaration - but has display:none AND position:fixed below */
-    position: fixed;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;  /* Second display in same rule! */
-    flex-direction: column;
-    gap: 30px;
-    z-index: 1500;
-    pointer-events: none;
-}
-#vitals-ui {
-    display: none; /* Caché : les jauges vivent dans le widget CPU */
-}
-
-            @media (max-width: 767px) {
-                #vitals-ui { right: 12px; transform: translateY(-50%) scale(0.9); gap: 20px; }
-                .vitals-meter { height: 110px; width: 12px; }
+            .vitals-meter {
+                width: 14px;
+                height: 140px;
+                background: rgba(10, 10, 15, 0.4);
+                backdrop-filter: blur(16px) saturate(180%);
+                -webkit-backdrop-filter: blur(16px) saturate(180%);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.1);
             }
+            /* LED Segment Overlay Effect */
+            .vitals-meter::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background-image: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.6) 3px, rgba(0,0,0,0.6) 5px);
+                z-index: 10;
+                pointer-events: none;
+            }
+            .vitals-fill {
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+                height: 100%;
+                transition: height 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+                z-index: 1;
+            }
+
+
+            /* --- MULTIPLIER BADGE --- */
+            .multiplier-badge {
+                font-family: 'Share Tech Mono', monospace;
+                font-size: 9px;
+                font-weight: bold;
+                color: var(--retro-blue);
+                text-shadow: 0 0 5px var(--retro-blue);
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(96, 165, 250, 0.3);
+                padding: 2px 6px;
+                border-radius: 4px;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+            }
+
+            /* --- MARKETPLACE UX --- */
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+                20%, 40%, 60%, 80% { transform: translateX(4px); }
+            }
+            .error-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; border-color: var(--retro-red) !important; }
 
             /* =========================================
             10. SETTINGS / ACHIEVEMENTS
@@ -1307,7 +1361,7 @@
         }
         .digital-confetti {
             position: fixed;
-            z-index: 9999; 
+            z-index: 9999999; /* Par-dessus tout, même les modales */
             pointer-events: none; /* Pour ne pas bloquer les clics */
             border-radius: 1px;
             animation: confettiFall linear forwards;
@@ -1469,59 +1523,12 @@
             82% { opacity: 1; }
         }
         .loader-glitch { animation: loaderTextFlicker 2.5s infinite; }
-
-
-        
         </style>
     </head>
 
-    <div id="login-screen" class="absolute inset-0 z-[10000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
-            <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
-                <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it</h1>
-                <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">v17</p>
-                <div class="mb-6 flex justify-center">
-                    <img src="logo.jpeg" alt="Logo bounce_it" 
-                        class="w-32 h-32 md:w-40 md:h-40 object-cover rounded-2xl border border-white/10 shadow-[0_0_25px_rgba(129,140,248,0.2)] pixelated" />
-                </div>
-                <div class="w-full mb-4 md:mb-6">
-                    <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
-                    <input type="text" id="login-username" class="w-full bg-black/60 border border-gray-600 rounded-lg px-4 py-2 md:py-3 text-white font-retro text-sm focus:outline-none focus:border-[var(--accent)] transition-all shadow-inner" placeholder="Enter Alias...">
-                </div>
-                <div class="w-full mb-6 md:mb-8">
-                    <label class="block text-[10px] font-retro text-gray-300 mb-2 md:mb-4 uppercase tracking-widest">Select_Avatar</label>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-6" id="avatar-container"></div>
-                </div>
-                <div class="w-full mb-4 md:mb-6">
-                <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-2 shrink-0">Boot Studio Environment</button>
-                <p id="login-error" class="text-[var(--retro-red)] font-retro text-xs mt-4 hidden text-center">Error: Missing ID</p>
-            </div>
-        </div>
-    </div>
-
+        
     <body data-theme="neon">
     <div id="game-container">
-
-        <!-- Integrated Vitals Meters -->
-        <div id="vitals-ui">
-            <div class="vitals-meter-group">
-                <div class="vitals-label text-[var(--retro-red)]">
-                    <span class="vitals-icon">⚡</span>
-                    <span id="meter-energy-val">100%</span>
-                </div>
-                <div class="vitals-meter" title="Énergie">
-                    <div id="meter-energy-fill" class="vitals-fill bg-[var(--retro-red)] shadow-[0_0_20px_var(--retro-red)]"></div>
-                </div>
-            </div>
-            <div class="vitals-meter-group">
-                <div class="vitals-label text-[var(--accent)]">
-                    <span class="vitals-icon">💡</span>
-                    <span id="meter-inspi-val">100%</span>
-                </div>
-                <div class="vitals-meter" title="Inspiration">
-                    <div id="meter-inspi-fill" class="vitals-fill bg-[var(--accent)] shadow-[0_0_20px_var(--accent)]" style="background-image: linear-gradient(0deg, var(--accent), #7c3aed);"></div>
-                </div>
-            </div>
-        </div>
 
         <div id="exhaustion-overlay" class="absolute inset-0 z-[900] opacity-0 hidden w-full h-full"></div>
 
@@ -1532,7 +1539,7 @@
         </div>
 
 
-        <div id="event-overlay" class="fixed inset-0 bg-black/90 z-[9000] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden"> 
+        <div id="event-overlay" class="fixed inset-0 bg-black/90 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden"> 
             <div class="liquid-glass-heavy p-6 md:p-10 rounded-2xl w-[90%] max-w-lg border border-[var(--accent)] text-center shadow-[0_0_60px_rgba(0,0,0,0.8)] max-h-[90dvh] overflow-y-auto flex flex-col"> 
                 <h2 id="event-title" class="text-3xl font-retro mb-4 tracking-widest uppercase drop-shadow-lg shrink-0">ÉVÈNEMENT !</h2> 
                 <p id="event-desc" class="text-sm text-gray-200 mb-6 font-sans leading-relaxed shrink-0">Description de l'évènement ici...</p> 
@@ -1542,7 +1549,7 @@
         </div>
 
 
-                <div id="review-overlay" class="fixed inset-0 bg-black/90 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 hidden px-4" style="z-index: 9000 !important;">
+                <div id="review-overlay" class="fixed inset-0 bg-black/90 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 hidden px-4" style="z-index: 9999999 !important;">
             <div class="liquid-glass-heavy rounded-2xl w-full max-w-lg border border-[var(--accent)] text-center overflow-hidden" style="max-height: 90dvh; display: flex; flex-direction: column;">
                 
                 <div id="review-phase-suspense" class="flex flex-col items-center justify-center p-8 flex-1">
@@ -1573,7 +1580,7 @@
             </div>
         </div>
         
-        <div id="hud" class="liquid-glass-heavy min-h-[52px] md:min-h-[76px] fixed top-[max(8px,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 rounded-[16px] md:rounded-[30px] flex items-center justify-between px-2 md:px-8 transition-all w-[96vw] md:w-max max-w-6xl border border-white/10 shadow-2xl gap-1 md:gap-8" style="z-index: 100 !important;">
+        <div id="hud" class="liquid-glass-heavy min-h-[52px] md:min-h-[76px] fixed top-[max(8px,env(safe-area-inset-top))] left-1/2 -translate-x-1/2 rounded-[16px] md:rounded-[30px] flex items-center justify-between px-2 md:px-8 transition-all w-[96vw] md:w-max max-w-6xl border border-white/10 shadow-2xl gap-1 md:gap-8" style="z-index: 2000 !important;">
             <div class="flex items-center gap-3 shrink-0">
                 <div id="hud-avatar" class="w-[48px] h-[48px] md:w-[64px] md:h-[64px] rounded-full bg-black border-2 border-[var(--accent)] overflow-hidden flex items-center justify-center p-0.5 shadow-[0_0_15px_rgba(129,140,248,0.5)]"
                 onclick="toggleTooltip('avatar', this)" onmouseenter="!isMobile && showTooltip('avatar', this)" onmouseleave="!isMobile && hideTooltip()"></div>
@@ -1617,11 +1624,14 @@
         <div id="three-canvas-container"></div>
 
         <div id="room-ui"></div>
-        
-        
+
+        <button id="audio-settings-gear" class="btn-system" onclick="openAudioSettings()" title="Paramètres">
+            <svg class="w-6 h-6 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        </button>
 
         <!-- Settings Overlay -->
-        <div id="audio-settings-overlay" class="fixed inset-0 z-[9000] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden">
+        <div id="audio-settings-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden">
             <div class="settings-shell liquid-glass-heavy p-5 md:p-7 rounded-2xl border border-[var(--accent)] shadow-[0_0_60px_rgba(0,0,0,0.8)] flex flex-col">
                 <div class="flex items-center justify-between gap-3 shrink-0 mb-4">
                     <div>
@@ -1654,16 +1664,39 @@
                     </div>
                 </div> 
             </div> 
-         </div> 
-    </div> 
-
+        </div> 
+        </div>
+        
         <!-- Joystick Virtuel Visual Indicator -->
         <div id="joystick-ui">
             <div class="joystick-base"></div>
             <div class="joystick-knob" id="joystick-knob"></div>
         </div>
 
-<div id="achievements-overlay" class="fixed inset-0 z-[9000] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden px-4">
+<div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
+            <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
+                <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it</h1>
+                <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">v17</p>
+                <div class="mb-6 flex justify-center">
+                    <img src="logo.jpeg" alt="Logo bounce_it" 
+                        class="w-32 h-32 md:w-40 md:h-40 object-cover rounded-2xl border border-white/10 shadow-[0_0_25px_rgba(129,140,248,0.2)] pixelated" />
+                </div>
+                <div class="w-full mb-4 md:mb-6">
+                    <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
+                    <input type="text" id="login-username" class="w-full bg-black/60 border border-gray-600 rounded-lg px-4 py-2 md:py-3 text-white font-retro text-sm focus:outline-none focus:border-[var(--accent)] transition-all shadow-inner" placeholder="Enter Alias...">
+                </div>
+                <div class="w-full mb-6 md:mb-8">
+                    <label class="block text-[10px] font-retro text-gray-300 mb-2 md:mb-4 uppercase tracking-widest">Select_Avatar</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-6" id="avatar-container"></div>
+                </div>
+                <div class="w-full mb-4 md:mb-6">
+                <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-2 shrink-0">Boot Studio Environment</button>
+                <p id="login-error" class="text-[var(--retro-red)] font-retro text-xs mt-4 hidden text-center">Error: Missing ID</p>
+            </div>
+        </div>
+    </div>
+
+<div id="achievements-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden px-4">
         <div class="settings-shell liquid-glass-heavy p-5 md:p-7 rounded-2xl border-2 border-[var(--retro-orange)] shadow-[0_0_60px_rgba(251,191,36,0.15)] flex flex-col relative">
             
             <button onclick="closeAchievementsBoard()" class="btn-system !p-0 absolute top-4 right-4 z-50">
@@ -1694,16 +1727,16 @@
             </div>
     </div>
 
-        <div id="standalone-pianoroll" class="fixed inset-0 z-[2000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 hidden px-4">
+        <div id="standalone-pianoroll" class="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 hidden px-4">
             <div class="liquid-glass-heavy rounded-2xl w-full max-w-4xl border border-[#8b5cf6] shadow-[0_0_40px_rgba(139,92,246,0.2)] flex flex-col overflow-hidden" style="height: 85dvh;">
                 
                 <div class="window-header bg-black/80 p-4 border-b border-white/10 flex justify-between items-center shrink-0">
-                    <span class="font-retro text-xs md:text-sm text-white tracking-widest uppercase flex items-center gap-3 font-bold">
-                        <span class="w-3 h-3 rounded-full bg-[#8b5cf6] shadow-[0_0_10px_#8b5cf6] animate-pulse"></span> Piano Roll Editor
-                    </span>
                     <button class="window-close-btn" onclick="closePianoRoll()">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
+                    <span class="font-retro text-xs md:text-sm text-white tracking-widest uppercase flex items-center gap-3 font-bold">
+                        <span class="w-3 h-3 rounded-full bg-[#8b5cf6] shadow-[0_0_10px_#8b5cf6] animate-pulse"></span> Piano Roll Editor
+                    </span>
                 </div>
                 
                 <div class="window-content flex flex-col p-0 flex-1 min-h-0 bg-[#09090b]">
@@ -1730,8 +1763,8 @@
                         <div class="h-6 w-px bg-white/20 mx-2"></div>
                         <div class="flex items-center gap-2 md:ml-4">
                             <label class="text-[10px] font-retro text-[var(--text-muted)] uppercase tracking-widest">BPM</label>
-                            <input id="daw-bpm" type="range" min="60" max="200" value="120" class="w-40 touch-none" />
-                            <input id="daw-bpm-num" type="number" min="60" max="200" value="120" class="w-16 bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-white" />
+                            <input id="pr-bpm" type="range" min="60" max="200" value="120" class="w-40 touch-none" />
+                            <input id="pr-bpm-num" type="number" min="60" max="200" value="120" class="w-16 bg-black/40 border border-white/10 rounded px-2 py-1 text-sm text-white" />
                         </div>
                     </div>
 
@@ -1745,69 +1778,77 @@
         </div>
             
 
-    <div id="pc-ui-layer" style="display: none;">
-
-    <div id="os-topbar" class="fixed top-0 left-0 right-0 h-[52px] z-[5000] flex items-center justify-between px-4 md:px-5 bg-black/80 backdrop-blur-xl border-b border-white/10">
-        
-        <button id="btn-quit-pc" class="btn-system btn-system-red flex items-center gap-2 min-w-[44px] min-h-[44px] px-3 shrink-0" onclick="quitPC()">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-            </svg>
-            <span class="hidden md:inline text-[10px] font-bold tracking-widest uppercase">Quitter</span>
-        </button>
-
-        <div class="flex items-center gap-4 font-sans text-xs font-semibold text-white tracking-wider flex-1 justify-center">
-            <span class="flex items-center gap-1"><span class="text-[10px] font-extrabold text-[var(--retro-green)]">$$$</span> <span id="os-stat-money">0</span></span>
-            <span class="text-white/20">·</span>
-            <span class="flex items-center gap-1"><span class="text-[10px] font-extrabold text-[var(--retro-orange)]">REP</span> <span id="os-stat-rep">0</span></span>
-            <span class="text-white/20">·</span>
-            <span class="flex items-center gap-1"><span class="text-[10px] font-extrabold text-[var(--accent)]">FOL</span> <span id="os-stat-fol">0</span></span>
-        </div>
-
-        <button id="audio-settings-gear" class="flex items-center gap-2 min-w-[44px] min-h-[44px] px-3 shrink-0 bg-black/50 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-colors" onclick="openAudioSettings()">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
-            <span class="hidden md:inline text-[10px] font-bold tracking-widest uppercase">Paramètres</span>
-        </button>
-    </div>
-
-    <div id="desktop-content" class="pt-[68px] h-full w-full relative">
-        
-        <div class="flex flex-col gap-2" id="desktop-icons-container">
-            <div class="desktop-icon group" onclick="openApp('app-daw')">...</div>
-                    <div class="desktop-widget liquid-glass p-5 flex flex-col">      
-        <div class="flex justify-between items-end mb-3">
-        <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">CPU Monitor</span>
-        <span class="text-[10px] font-retro text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] animate-pulse">LIVE</span>
-        </div>
-         <!-- Graphe CPU -->
-         <div class="w-full h-16 bg-black/50 rounded border border-white/10 overflow-hidden relative shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] cpu-grid mb-3">
-        <canvas id="sys-canvas" class="absolute inset-0 w-full h-full"></canvas>
-         </div>
-         <!-- Jauges NRJ + INSPI intégrées -->
-         <div class="flex gap-3 mt-auto">
-        <div class="flex-1">
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-[9px] font-retro text-[var(--retro-red)] tracking-widest font-bold uppercase">⚡ NRJ</span>
-                <span id="meter-energy-val" class="text-[9px] font-retro text-white font-bold">100%</span>
+        <div id="pc-ui-layer" style="display: none;">
+            <div id="pc-top-bar" class="liquid-glass-heavy">
+                <div class="system-controls-group">
+                    <button class="btn-system" onclick="openAudioSettings()" title="Paramètres">
+                        <svg class="w-5 h-5 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </button>
+                    <button id="btn-quit-pc" class="btn-system btn-system-red" onclick="quitPC()" title="Quitter la session">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    </button>
+                </div>
             </div>
-            <div class="w-full h-2 bg-black/60 rounded-full overflow-hidden border border-white/10">
-                <div id="meter-energy-fill" class="h-full bg-[var(--retro-red)] shadow-[0_0_8px_var(--retro-red)] transition-all duration-500 rounded-full" style="width:100%"></div>
-            </div>
-        </div>
-        <div class="flex-1">
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-[9px] font-retro text-[var(--accent)] tracking-widest font-bold uppercase">💡 INSPI</span>
-                <span id="meter-inspi-val" class="text-[9px] font-retro text-white font-bold">100%</span>
-            </div>
-            <div class="w-full h-2 bg-black/60 rounded-full overflow-hidden border border-white/10">
-                <div id="meter-inspi-fill" class="h-full transition-all duration-500 rounded-full" style="width:100%; background-image: linear-gradient(90deg, var(--accent), #7c3aed); box-shadow: 0 0 8px var(--accent);"></div>
-            </div>
-        </div>
-    </div>
 
+            <div id="desktop-content">
+            <div class="flex flex-col gap-2 pt-1" id="desktop-icons-container">
+                    <div class="desktop-icon group" onclick="openApp('app-daw')">
+                        <div class="icon-box"><svg class="w-9 h-9 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg></div>
+                        <span class="text-[11px] font-retro mt-1 text-gray-200 tracking-wider group-hover:text-white group-hover:drop-shadow-[0_0_5px_#fff]">AbleStudio</span>
+                    </div>
+                    <div class="desktop-icon group" onclick="openApp('app-browser')">
+                        <div class="icon-box"><svg class="w-9 h-9 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg></div>
+                        <span class="text-[11px] font-retro mt-1 text-gray-200 tracking-wider group-hover:text-white">Web_Nav</span>
+                    </div>
+                    <div class="desktop-icon group" onclick="openApp('app-social')">
+                        <div class="icon-box"><svg class="w-9 h-9 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg></div>
+                        <span class="text-[11px] font-retro mt-1 text-gray-200 tracking-wider group-hover:text-white">SoundNet</span>
+                    </div>
+                    <div class="desktop-icon group" onclick="openApp('app-stats')">
+                        <div class="icon-box"><svg class="w-9 h-9 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg></div>
+                        <span class="text-[11px] font-retro mt-1 text-gray-200 tracking-wider group-hover:text-white">Sys_Stats</span>
+                    </div>
+                </div>
+
+                <div class="widgets-container">
+                    <div class="desktop-widget liquid-glass p-5 flex flex-col items-center justify-center text-center">
+                        <div id="widget-clock-time" class="text-4xl font-retro font-bold text-white tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">08<span class="clock-colon">:</span>00</div>
+                        <div id="widget-clock-date" class="text-[11px] font-retro text-[var(--accent)] mt-2 uppercase tracking-widest border-t border-white/20 pt-2 w-full drop-shadow-[0_0_5px_var(--accent)]">Virtual Day 1</div>
+                    </div>
+                    <div class="desktop-widget liquid-glass p-5 flex flex-col min-h-[160px]">
+                        <div class="flex justify-between items-end mb-3">
+                            <span class="text-[10px] font-retro uppercase text-gray-300 tracking-widest font-bold">System Status</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-retro text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] animate-pulse">LIVE</span>
+                                <span id="multiplier-badge" class="multiplier-badge">x1.0</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 flex-1 min-h-0">
+                            <!-- Integrated Gauges -->
+                            <div class="flex gap-2 shrink-0">
+                                <div class="flex flex-col items-center">
+                                    <div class="vitals-meter !h-full !w-[8px] !bg-black/60 !rounded-sm" title="Énergie">
+                                        <div id="meter-energy-fill" class="vitals-fill bg-[var(--retro-red)] shadow-[0_0_10px_var(--retro-red)]"></div>
+                                    </div>
+                                    <span class="text-[7px] font-retro text-[var(--retro-red)] mt-1 font-bold">NRJ</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="vitals-meter !h-full !w-[8px] !bg-black/60 !rounded-sm" title="Inspiration">
+                                        <div id="meter-inspi-fill" class="vitals-fill bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]" style="background-image: linear-gradient(0deg, var(--accent), #7c3aed);"></div>
+                                    </div>
+                                    <span class="text-[7px] font-retro text-[var(--accent)] mt-1 font-bold">INS</span>
+                                </div>
+                            </div>
+                            <!-- CPU Graph -->
+                            <div class="flex-1 bg-black/50 rounded border border-white/10 overflow-hidden relative shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] cpu-grid h-24">
+                                <canvas id="sys-canvas" class="absolute inset-0 w-full h-full"></canvas>
+                            </div>
+                        </div>
+                        <div class="flex justify-between border-t border-white/5 pt-2 mt-2 px-1">
+                            <div class="text-[8px] font-retro text-gray-400">⚡ <span id="meter-energy-val" class="text-white">100%</span></div>
+                            <div class="text-[8px] font-retro text-gray-400">💡 <span id="meter-inspi-val" class="text-white">100%</span></div>
+                        </div>
+                    </div>
 
     <div class="desktop-widget liquid-glass p-5 flex flex-col" id="top-charts-widget">
                 <div class="flex justify-between items-end mb-4 border-b border-[var(--accent)]/30 pb-2 flex-shrink-0">
@@ -1855,7 +1896,7 @@
             </div>
             <div id="challenge-days" class="text-xs font-retro text-yellow-300">7j</div>
         </div>
-        <div id="challenge-desc" class="text-xs font-sans text-yellow-100/95 mb-3 leading-relaxed">Aucun défi actif</div>        
+        <div id="challenge-desc" class="text-sm font-medium text-yellow-100/95 mb-3">Aucun défi actif</div>
         <div class="w-full bg-white/5 rounded-full h-3 overflow-hidden mb-2">
             <div id="challenge-bar" class="h-3 bg-gradient-to-r from-yellow-400 to-yellow-300" style="width:0%"></div>
         </div>
@@ -1883,9 +1924,9 @@
         </div>
     </div>
 
-                    <div class="desktop-widget liquid-glass !bg-yellow-500/15 !border-yellow-400/30 rotate-2 p-5 w-full max-h-[210px] overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-                        <h4 class="font-retro text-yellow-300/90 text-sm tracking-widest uppercase mb-2 border-b border-yellow-500/40 pb-1">To-Do Liste :</h4>
-                        <ul id="todo-list" class="font-sans text-yellow-100/90 text-sm space-y-1">  
+                    <div class="desktop-widget liquid-glass !bg-yellow-500/10 !border-yellow-400/20 p-5 w-full max-h-[210px] overflow-hidden shadow-lg">
+                        <h4 class="text-[10px] font-retro uppercase text-yellow-300 tracking-widest font-bold border-b border-yellow-500/40 pb-2 mb-3">To-Do Liste</h4>
+                        <ul id="todo-list" class="text-sm font-medium text-yellow-100/90 space-y-1">
                             <li class="todo-item line-through opacity-40" onclick="toggleTodo(this)">Setup OS</li>
                             <li class="todo-item" onclick="toggleTodo(this)">Check Trends</li>
                             <li class="todo-item" onclick="toggleTodo(this)">Sign Brand Deal</li>
@@ -1935,21 +1976,21 @@
 
 
             
-     <div id="app-daw" class="os-window flex-col font-sans" style="display:none;">
+                    <div id="app-daw" class="os-window flex-col font-sans" style="display:none;">
             
-    <div class="window-header bg-[#18181b] border-b border-[#27272a] px-3 py-2 flex justify-between items-center cursor-grab">
-        <div class="flex items-center gap-3">
-            <div class="flex gap-1.5">
-                <div class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"></div>
-                <div class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
-                <div class="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50"></div>
+            <div class="window-header bg-[#18181b] border-b border-[#27272a] px-3 py-2 cursor-grab">
+                <button class="window-close-btn" onclick="closeApp('app-daw')">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <div class="flex items-center gap-3">
+                    <div class="flex gap-1.5">
+                        <div class="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50"></div>
+                    </div>
+                    <span class="text-[10px] text-gray-400 font-mono font-bold tracking-widest uppercase">AbleStudio Pro 11</span>
+                </div>
             </div>
-            <span class="text-[10px] text-gray-400 font-mono font-bold tracking-widest uppercase">AbleStudio Pro 11</span>
-        </div>
-        <button class="window-close-btn" onclick="closeApp('app-daw')">
-            <svg class="w-5 h-5 text-gray-400 hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-        </button>
-    </div>
 
             <div class="window-content daw-grid-container bg-[#121214] p-2 md:p-4 gap-3 md:gap-4 flex flex-col md:flex-row">
                 
@@ -2125,33 +2166,35 @@
                                     <div id="export-progress" class="h-full bg-white w-0 transition-all duration-100 shadow-[0_0_5px_#fff]"></div>
                                 </div>
                             </div>
-                    </div>   
+                        </div>
+
+                    </div>
                 </div>
+
             </div>
         </div>
-        
 
-   
             <div id="app-browser" class="os-window liquid-glass flex-col" style="display:none;">
                 <div class="window-header">
-                    <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"></span> Web_Nav App</span>
                     <button class="window-close-btn" onclick="closeApp('app-browser')">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
+                    <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"></span> Web_Nav App</span>
                 </div>
                 <div class="flex border-b border-[var(--glass-border)] text-[12px] md:text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-black/60 font-bold">
                     <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
-                    <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
+                    <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
+                    <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-studio" onclick="switchBrowserTab('studio')">Studio+</button>
                 </div>
                 <div class="window-content" id="browser-content"></div>
             </div>
 
                     <div id="app-social" class="os-window liquid-glass flex-col" style="display:none;">
             <div class="window-header">
-                <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></span> SoundNet</span>
                 <button class="window-close-btn" onclick="closeApp('app-social')">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
+                <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-pink-500 shadow-[0_0_10px_#ec4899]"></span> SoundNet</span>
             </div>
             
             <div class="flex border-b border-[#27272a] text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-[#18181b] font-bold">
@@ -2189,35 +2232,19 @@
 
             <div id="app-stats" class="os-window liquid-glass flex-col" style="display:none;">
                 <div class="window-header">
-                    <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-[var(--retro-green)] shadow-[0_0_10px_var(--retro-green)]"></span> Sys_Stats</span>
                     <button class="window-close-btn" onclick="closeApp('app-stats')">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
+                    <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-[var(--retro-green)] shadow-[0_0_10px_var(--retro-green)]"></span> Sys_Stats</span>
                 </div>
                 <div class="window-content font-retro text-sm text-[var(--retro-green)] bg-black/80 p-6 md:p-8 leading-loose tracking-wider shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
                     <div id="stats-content">Loading metrics...</div>
-
-<div id="stats-content" class="flex flex-col gap-4 w-full">
-    <div class="flex justify-between items-center border-b border-white/10 pb-3">
-        <span class="text-white font-bold tracking-widest uppercase text-xs">💰 Trésorerie :</span>
-        <span id="app-stat-money" class="text-[var(--retro-green)] text-lg">0</span>
-    </div>
-    <div class="flex justify-between items-center border-b border-white/10 pb-3">
-        <span class="text-white font-bold tracking-widest uppercase text-xs">🔥 Réputation :</span>
-        <span id="app-stat-rep" class="text-[var(--retro-orange)] text-lg">0</span>
-    </div>
-    <div class="flex justify-between items-center pb-3">
-        <span class="text-white font-bold tracking-widest uppercase text-xs">👥 Followers :</span>
-        <span id="app-stat-fol" class="text-[var(--accent)] text-lg">0</span>
-    </div>
-</div>
                 </div>
             </div>
+
         </div>
 
-        
-
-    <div id="bsod" class="absolute inset-0 z-[9000] bg-[#0000AA] text-white p-8 md:p-16 flex-col hidden font-retro">
+    <div id="bsod" class="absolute inset-0 z-[2000] bg-[#0000AA] text-white p-8 md:p-16 flex-col hidden font-retro">
             <h1 class="text-3xl md:text-5xl font-bold bg-white text-[#0000AA] inline-block px-5 py-2 mb-8 md:mb-10 mt-10">CRITICAL_SYSTEM_ERROR</h1>
             <p class="mb-6 text-lg md:text-xl tracking-wider">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
             <p class="mb-12 md:mb-16 text-base md:text-lg text-gray-300">Unlicensed software execution caused a memory leak. Restoring system state...</p>
@@ -2225,9 +2252,9 @@
             <p class="mt-12 text-sm md:text-base glitch text-gray-400">Do not turn off your workstation.</p>
         </div>
 
-        <div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[9999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
+        <div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[999999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
 
-        <div id="studio-loader" class="fixed inset-0 z-[99999] flex flex-col items-center justify-center transition-opacity duration-500" style="background: radial-gradient(circle at center, #1e1b4b 0%, #050508 100%);">
+        <div id="studio-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500" style="background: radial-gradient(circle at center, #1e1b4b 0%, #050508 100%);">
             <div class="splash-card">
                 <h1 class="font-retro text-2xl md:text-3xl text-white tracking-[0.3em] uppercase mb-10 drop-shadow-2xl">bounce_it <span class="text-[var(--accent)] opacity-60">v17</span></h1>
                 
@@ -2244,10 +2271,9 @@
 
                 <div id="loader-text" class="text-[#34d399] font-mono text-[10px] tracking-[0.15em] uppercase mt-4 w-full text-left h-4 loader-glitch">Initializing Kernel...</div>
             </div>
-        </div>
 
             <!-- Achievement Popup (Z-INDEX MAXIMUM) -->
-        <div id="achievement-popup" class="fixed top-[-150px] left-1/2 -translate-x-1/2 z-[9999] w-[90%] max-w-md liquid-glass-heavy border-2 border-[var(--accent)] rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(129,140,248,0.5)] transition-all duration-500 pointer-events-none">
+        <div id="achievement-popup" class="fixed top-[-150px] left-1/2 -translate-x-1/2 z-[1000000] w-[90%] max-w-md liquid-glass-heavy border-2 border-[var(--accent)] rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(129,140,248,0.5)] transition-all duration-500 pointer-events-none">
             <div id="achievement-icon" class="text-4xl shrink-0 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">🏆</div>
             <div class="flex flex-col">
                 <div class="text-[var(--accent)] font-retro text-[10px] tracking-widest uppercase mb-1">Success Unlocked</div>
@@ -2258,7 +2284,7 @@
         </div>
 
     </div>
-
+</div>
     <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
