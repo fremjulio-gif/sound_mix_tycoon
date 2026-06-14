@@ -2273,6 +2273,7 @@
 
                 <div id="loader-text" class="text-[#34d399] font-mono text-[10px] tracking-[0.15em] uppercase mt-4 w-full text-left h-4 loader-glitch">Initializing Kernel...</div>
             </div>
+        </div>
 
             <!-- Achievement Popup (Z-INDEX MAXIMUM) -->
         <div id="achievement-popup" class="fixed top-[-150px] left-1/2 -translate-x-1/2 z-[1000000] w-[90%] max-w-md liquid-glass-heavy border-2 border-[var(--accent)] rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(129,140,248,0.5)] transition-all duration-500 pointer-events-none">
@@ -2285,11 +2286,12 @@
             <div class="absolute inset-0 rounded-2xl border-2 border-white/10 animate-pulse pointer-events-none"></div>
         </div>
 
-    </div>
+    <div>
 </div>
     <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-
+    // 🛑 COUPE-CIRCUIT ABSOLU : On bloque tout l'affichage dynamique au lancement
+window.isBooting = true;
 
 const DEFAULT_STATE = {
             username: '', activeCharacter: 0,
@@ -10831,6 +10833,18 @@ function triggerRankUp(oldRank, newRank) {
         window.closeAchievementsBoard = closeAchievementsBoard;
         window.switchSocialTab    = switchSocialTab;
         window.answerDM           = answerDM;
+
+
+// ==========================================
+// BOOT SEQUENCE (Tout en bas du script)
+// ==========================================
+
+// On nettoie l'interface visuellement AVANT de l'initialiser
+const reviewOverlay = document.getElementById('review-overlay');
+if (reviewOverlay) {
+    reviewOverlay.classList.add('hidden');
+    reviewOverlay.style.opacity = '0';
+}
         
         // Boot
         initUI();
