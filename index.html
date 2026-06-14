@@ -8707,12 +8707,7 @@ function triggerRankUp(oldRank, newRank) {
                 drawSysGraphUI(performance.now());
             }
 
-            if (window.gameInterval) { clearInterval(window.gameInterval); window.gameInterval = null; }
-            window.gameInterval = setInterval(gameTick, 1000);
-            // --- AJOUT ICI : Fin du chargement ---
-            setTimeout(() => {
-            window.isBooting = false; // Réactive les Toasts et Pop-ups une fois que le DOM est stable
-            },      500); // Un petit délai de 500ms assure que toutes les jauges ont fini de s'animer
+            
 
             // Sécurisation de la boucle temporelle
         window.updateCooldownUIs = function() {
@@ -8723,7 +8718,16 @@ function triggerRankUp(oldRank, newRank) {
         saveGame();
         };
 
-        }
+        if (window.gameInterval) { clearInterval(window.gameInterval); window.gameInterval = null; }
+    window.gameInterval = setInterval(gameTick, 1000);
+    
+    // Libération du verrou SEULEMENT ici, avec un léger délai pour laisser le DOM respirer
+    setTimeout(() => {
+        window.isBooting = false;
+    }, 1000);
+}
+
+    
         
 
                 
