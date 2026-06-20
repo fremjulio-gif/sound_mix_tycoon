@@ -1559,6 +1559,39 @@
             border-color: rgba(239,68,68,1);
             animation: lowBattBlinkCritical 0.5s ease-in-out infinite;
         }
+
+        /* LOW INSPIRATION BADGE */
+        @keyframes lowInspiBlink {
+            0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(168,85,247,0.6), 0 0 20px rgba(168,85,247,0.2); }
+            50%       { opacity: 0.35; box-shadow: none; }
+        }
+        @keyframes lowInspiBlinkCritical {
+            0%, 100% { opacity: 1; box-shadow: 0 0 14px rgba(168,85,247,0.9), 0 0 30px rgba(168,85,247,0.4); }
+            50%       { opacity: 0.15; box-shadow: none; }
+        }
+        #floating-inspi-warning { transition: opacity 0.4s ease; }
+        .low-inspi-inner {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: rgba(10,10,10,0.85);
+            border: 1px solid rgba(168,85,247,0.7); /* Violet / Purple-500 */
+            color: #a855f7;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            backdrop-filter: blur(6px);
+            animation: lowInspiBlink 1.2s ease-in-out infinite;
+            white-space: nowrap;
+        }
+        .low-inspi-inner svg { flex-shrink: 0; color: #a855f7; }
+        #floating-inspi-warning.critical .low-inspi-inner {
+            border-color: rgba(168,85,247,1);
+            animation: lowInspiBlinkCritical 0.5s ease-in-out infinite;
+        }
         </style>
     </head>
 
@@ -1660,14 +1693,7 @@
         <div id="three-canvas-container"></div>
 
         <!-- LOW BATTERY WARNING — positionné par projection 3D→2D dans animate3D() -->
-        <div id="floating-energy-warning" style="
-            display: none;
-            position: fixed;
-            z-index: 50;
-            pointer-events: none;
-            transform: translate(-50%, -100%);
-            margin-top: -18px;
-        ">
+        <div id="floating-energy-warning" style="display: none; position: fixed; z-index: 50; pointer-events: none; transform: translate(-50%, -100%); margin-top: -18px;">
             <div class="low-batt-inner">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="7" width="16" height="10" rx="2" ry="2"></rect>
@@ -1675,6 +1701,16 @@
                     <line x1="7" y1="10" x2="7" y2="14" stroke="var(--retro-red)" stroke-width="2"></line>
                 </svg>
                 <span id="floating-energy-pct">--</span>
+            </div>
+        </div>
+
+        <!-- LOW INSPIRATION WARNING -->
+        <div id="floating-inspi-warning" style="display: none; position: fixed; z-index: 50; pointer-events: none; transform: translate(-50%, -100%); margin-top: -18px;">
+            <div class="low-inspi-inner">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2v1"></path><path d="M12 7a5 5 0 0 0-5 5c0 2 1.5 3 2 5a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1c.5-2 2-3 2-5a5 5 0 0 0-5-5Z"></path>
+                </svg>
+                <span id="floating-inspi-pct">--</span>
             </div>
         </div>
 
@@ -5142,34 +5178,47 @@ function applyFurniturePerk(effect) {
 }
 
         // ==========================================
-        // --- LOW BATTERY FLOATING BADGE (3D → 2D projection) ---
+        // --- FLOATING VITALS BADGES (3D → 2D projection) ---
         // ==========================================
-        (function updateFloatingEnergyBadge() {
-            const badge = document.getElementById('floating-energy-warning');
-            const pctEl = document.getElementById('floating-energy-pct');
-            if (!badge || !pctEl) return;
+        if (typeof window.mouseX === 'undefined') {
+            window.mouseX = 0; window.mouseY = 0;
+            document.addEventListener('mousemove', e => { window.mouseX = e.clientX; window.mouseY = e.clientY; }, {passive:true});
+        }
+
+        (function updateFloatingVitalsBadges() {
+            const badgeEnergy = document.getElementById('floating-energy-warning');
+            const pctEnergy = document.getElementById('floating-energy-pct');
+            const badgeInspi = document.getElementById('floating-inspi-warning');
+            const pctInspi = document.getElementById('floating-inspi-pct');
+            
+            if (!badgeEnergy || !pctEnergy || !badgeInspi || !pctInspi) return;
 
             const energy = (typeof safeEnergy === 'number') ? safeEnergy : 100;
-            const isRoomVisible = document.getElementById('room-ui') &&
-                                  document.getElementById('room-ui').style.display === 'flex';
+            const inspiVal = (typeof state !== 'undefined' && state && typeof state.inspi === 'number') ? state.inspi : 100;
+            const isRoomVisible = document.getElementById('room-ui') && document.getElementById('room-ui').style.display === 'flex';
 
-            // Masquer si énergie OK ou room non visible ou avatar absent
-            if (energy > 40 || !isRoomVisible || !currentRoomAvatar || !camera || !renderer) {
-                badge.style.display = 'none';
+            if (!isRoomVisible || !currentRoomAvatar || !camera || !renderer) {
+                badgeEnergy.style.display = 'none';
+                badgeInspi.style.display = 'none';
                 return;
             }
 
-            // --- Projection 3D → 2D ---
-            // On projette la tête de l'avatar (position + hauteur estimée)
-            const headOffset = 1.1 * (currentRoomAvatar.scale.y || 1.6); // hauteur avatar en world units
+            // Projection 3D → 2D de la tête
+            const headOffset = 1.1 * (currentRoomAvatar.scale.y || 1.6);
             const avatarWorldPos = new THREE.Vector3(
                 currentRoomAvatar.position.x,
                 currentRoomAvatar.position.y + headOffset,
                 currentRoomAvatar.position.z
             );
-
-            // Projection NDC (-1 à +1) → pixels écran
+            
             avatarWorldPos.project(camera);
+            
+            // Ne pas afficher si derrière la caméra
+            if (avatarWorldPos.z > 1) {
+                badgeEnergy.style.display = 'none';
+                badgeInspi.style.display = 'none';
+                return;
+            }
 
             const canvasW = renderer.domElement.clientWidth  || window.innerWidth;
             const canvasH = renderer.domElement.clientHeight || window.innerHeight;
@@ -5178,23 +5227,35 @@ function applyFurniturePerk(effect) {
             const screenX = Math.round((avatarWorldPos.x * 0.5 + 0.5) * canvasW + canvasRect.left);
             const screenY = Math.round((-avatarWorldPos.y * 0.5 + 0.5) * canvasH + canvasRect.top);
 
-            // Ne pas afficher si derrière la caméra (z > 1 en NDC)
-            if (avatarWorldPos.z > 1) {
-                badge.style.display = 'none';
-                return;
+            // Survol de la souris ? (Rayon de 100px autour du centre de l'avatar projeté)
+            // screenY pointe sur la tête, le corps est un peu plus bas, donc on décale le centre vers le bas.
+            const distToMouse = Math.hypot(window.mouseX - screenX, window.mouseY - (screenY + 50));
+            const isHovered = (distToMouse < 80);
+
+            // -- ENERGY BADGE --
+            if (energy <= 40 || isHovered) {
+                badgeEnergy.style.display = 'block';
+                badgeEnergy.style.left    = screenX + 'px';
+                badgeEnergy.style.top     = screenY + 'px';
+                pctEnergy.textContent     = Math.floor(energy) + '%';
+                if (energy <= 15) badgeEnergy.classList.add('critical');
+                else badgeEnergy.classList.remove('critical');
+            } else {
+                badgeEnergy.style.display = 'none';
             }
 
-            // --- Mise à jour de la position et du texte ---
-            badge.style.display = 'block';
-            badge.style.left    = screenX + 'px';
-            badge.style.top     = screenY + 'px';
-            pctEl.textContent   = Math.floor(energy) + '%';
-
-            // --- Etat critique vs. normal ---
-            if (energy <= 15) {
-                badge.classList.add('critical');
+            // -- INSPI BADGE --
+            if (inspiVal <= 40 || isHovered) {
+                badgeInspi.style.display = 'block';
+                badgeInspi.style.left    = screenX + 'px';
+                // Décalage pour ne pas superposer (au-dessus du badge d'énergie si affiché)
+                const offsetY = (badgeEnergy.style.display === 'block') ? -30 : 0;
+                badgeInspi.style.top     = (screenY + offsetY) + 'px';
+                pctInspi.textContent     = Math.floor(inspiVal) + '%';
+                if (inspiVal <= 15) badgeInspi.classList.add('critical');
+                else badgeInspi.classList.remove('critical');
             } else {
-                badge.classList.remove('critical');
+                badgeInspi.style.display = 'none';
             }
         })();
 
@@ -5398,6 +5459,13 @@ function applyFurniturePerk(effect) {
             const prWindow = document.getElementById('standalone-pianoroll');
             prWindow.style.opacity = '0';
             prWindow.style.pointerEvents = 'none';
+            
+            // Jouer au synthé redonne de l'inspiration
+            try {
+                state.inspi = Math.min(100, (Number(state.inspi) || 0) + 15);
+                updateHUD();
+                showToast("Inspi boostée (Piano Roll)", "success");
+            } catch(e) {}
             
             setTimeout(() => {
                 prWindow.classList.add('hidden');
@@ -9627,22 +9695,15 @@ function triggerRankUp(oldRank, newRank) {
 
             // --- Creative fatigue: record last genres and apply inspi penalty for repetition ---
             try {
-                 // CONSOMMATION DE BASE : Créer un morceau coûte de l'énergie créative
-                state.inspi = Math.max(0, (Number(state.inspi) || 0) - 20);
-
+                // NOTE: La consommation de base d'inspiration (-30) a déjà été prélevée dans exportTrack() au démarrage du bounce.
+                // L'export ne redonne JAMAIS d'inspiration !
+                
                 state.lastGenres = Array.isArray(state.lastGenres) ? state.lastGenres : [];
-                const prevGenre = state.lastGenres.length ? state.lastGenres[state.lastGenres.length - 1] : null;
                 const newGenre = (genre || '').toString().toLowerCase();
                 state.lastGenres.push(newGenre);
                 // keep only last 3
                 while (state.lastGenres.length > 3) state.lastGenres.shift();
-                // Variety bonus: if new track genre differs from previous, grant +15 inspi (capped at 100)
-                try {
-                    if (prevGenre && prevGenre !== newGenre) {
-                        state.inspi = Math.min(100, state.inspi + 15);
-                        showToast('Inspi: nouvelle vibe — +15 inspiration', 'success');
-                    }
-                } catch(e) {}
+
                 // Repetition penalty: if the last 3 are identical, apply -35 inspi
                 try {
                     if (state.lastGenres.length === 3) {
@@ -9951,8 +10012,8 @@ function triggerRankUp(oldRank, newRank) {
             // Feedback visuel
             showToast(`Story posted! +${followerGain} Fans | +${repGain} REP`, "info");
             
-            // Poster draine un peu l'inspiration
-            state.inspi = Math.max(0, state.inspi - 5);
+            // Poster draine l'inspiration
+            state.inspi = Math.max(0, state.inspi - 10);
             
 
             playSuccess(); 
@@ -9968,6 +10029,10 @@ function triggerRankUp(oldRank, newRank) {
             logMoney(s.reward, 'Sponsor: ' + s.name);
             state.rep = Math.max(0, (parseInt(state.rep, 10) || 0) - s.repCost);
             state.cooldowns.sponsors[s.id] = (parseInt(state.day, 10) || 1) + s.cooldownDays;
+            
+            // Le sellout draine modérément l'inspiration
+            state.inspi = Math.max(0, (Number(state.inspi) || 0) - 15);
+            
             checkAchievement('sellout', () => true);
             showToast(`Contract signed with ${s.name}! Cash in, sell out...`, "success");
             playBleep(); saveGame(); updateHUD(); refreshSocial();
