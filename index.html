@@ -1523,6 +1523,42 @@
             82% { opacity: 1; }
         }
         .loader-glitch { animation: loaderTextFlicker 2.5s infinite; }
+
+        /* ==========================================
+           LOW BATTERY FLOATING BADGE
+           ========================================== */
+        @keyframes lowBattBlink {
+            0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(239,68,68,0.6), 0 0 20px rgba(239,68,68,0.2); }
+            50%       { opacity: 0.35; box-shadow: none; }
+        }
+        @keyframes lowBattBlinkCritical {
+            0%, 100% { opacity: 1; box-shadow: 0 0 14px rgba(239,68,68,0.9), 0 0 30px rgba(239,68,68,0.4); }
+            50%       { opacity: 0.15; box-shadow: none; }
+        }
+        #floating-energy-warning { transition: opacity 0.4s ease; }
+        .low-batt-inner {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: rgba(10,10,10,0.85);
+            border: 1px solid rgba(239,68,68,0.7);
+            color: #ef4444;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            backdrop-filter: blur(6px);
+            animation: lowBattBlink 1.2s ease-in-out infinite;
+            white-space: nowrap;
+        }
+        .low-batt-inner svg { flex-shrink: 0; color: #ef4444; }
+        /* Etat critique (< 15%) : clignotement plus rapide + rouge vif */
+        #floating-energy-warning.critical .low-batt-inner {
+            border-color: rgba(239,68,68,1);
+            animation: lowBattBlinkCritical 0.5s ease-in-out infinite;
+        }
         </style>
     </head>
 
@@ -1622,6 +1658,25 @@
         <div id="grid-overlay"></div>
 
         <div id="three-canvas-container"></div>
+
+        <!-- LOW BATTERY WARNING — positionné par projection 3D→2D dans animate3D() -->
+        <div id="floating-energy-warning" style="
+            display: none;
+            position: fixed;
+            z-index: 50;
+            pointer-events: none;
+            transform: translate(-50%, -100%);
+            margin-top: -18px;
+        ">
+            <div class="low-batt-inner">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="7" width="16" height="10" rx="2" ry="2"></rect>
+                    <line x1="22" y1="11" x2="22" y2="13"></line>
+                    <line x1="7" y1="10" x2="7" y2="14" stroke="var(--retro-red)" stroke-width="2"></line>
+                </svg>
+                <span id="floating-energy-pct">--</span>
+            </div>
+        </div>
 
         <div id="room-ui"></div>
 
@@ -5085,6 +5140,63 @@ function applyFurniturePerk(effect) {
         // ils seront vérifiés à la volée avec ownedFurniture.includes()
     }
 }
+
+        // ==========================================
+        // --- LOW BATTERY FLOATING BADGE (3D → 2D projection) ---
+        // ==========================================
+        (function updateFloatingEnergyBadge() {
+            const badge = document.getElementById('floating-energy-warning');
+            const pctEl = document.getElementById('floating-energy-pct');
+            if (!badge || !pctEl) return;
+
+            const energy = (typeof safeEnergy === 'number') ? safeEnergy : 100;
+            const isRoomVisible = document.getElementById('room-ui') &&
+                                  document.getElementById('room-ui').style.display === 'flex';
+
+            // Masquer si énergie OK ou room non visible ou avatar absent
+            if (energy > 40 || !isRoomVisible || !currentRoomAvatar || !camera || !renderer) {
+                badge.style.display = 'none';
+                return;
+            }
+
+            // --- Projection 3D → 2D ---
+            // On projette la tête de l'avatar (position + hauteur estimée)
+            const headOffset = 1.7 * (currentRoomAvatar.scale.y || 1.6); // hauteur avatar en world units
+            const avatarWorldPos = new THREE.Vector3(
+                currentRoomAvatar.position.x,
+                currentRoomAvatar.position.y + headOffset,
+                currentRoomAvatar.position.z
+            );
+
+            // Projection NDC (-1 à +1) → pixels écran
+            avatarWorldPos.project(camera);
+
+            const canvasW = renderer.domElement.clientWidth  || window.innerWidth;
+            const canvasH = renderer.domElement.clientHeight || window.innerHeight;
+            const canvasRect = renderer.domElement.getBoundingClientRect();
+
+            const screenX = Math.round((avatarWorldPos.x * 0.5 + 0.5) * canvasW + canvasRect.left);
+            const screenY = Math.round((-avatarWorldPos.y * 0.5 + 0.5) * canvasH + canvasRect.top);
+
+            // Ne pas afficher si derrière la caméra (z > 1 en NDC)
+            if (avatarWorldPos.z > 1) {
+                badge.style.display = 'none';
+                return;
+            }
+
+            // --- Mise à jour de la position et du texte ---
+            badge.style.display = 'block';
+            badge.style.left    = screenX + 'px';
+            badge.style.top     = screenY + 'px';
+            pctEl.textContent   = Math.floor(energy) + '%';
+
+            // --- Etat critique vs. normal ---
+            if (energy <= 15) {
+                badge.classList.add('critical');
+            } else {
+                badge.classList.remove('critical');
+            }
+        })();
 
         // --- LE RENDU FINAL (INDISPENSABLE POUR VOIR LA ROOM) ---
         renderer.render(scene, camera);
