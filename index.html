@@ -5947,12 +5947,26 @@ function triggerRankUp(oldRank, newRank) {
             canvas.style.height = rect.height + 'px';
         }
 
-        // Limiter la mise à jour des données à ~15 FPS pour le style "monitoring",
-        // mais le rendu Canvas reste appelé pour garder l'interface fluide.
-        if (timestamp - lastCpuTick > 80) {
+        // 3. Vitesse de défilement liée à l'accélération du temps (sommeil/repos)
+        const timeSpeed = (state.isSleeping || state.isSitting) ? 2.5 : 1.0;
+        const tickDelay = 80 / timeSpeed;
+
+        if (timestamp - lastCpuTick > tickDelay) {
             let last = cpuDataUI[cpuDataUI.length - 1];
-            let next = last + (Math.random() * 30 - 15);
+            
+            // 1. Amplitude liée à l'énergie : basse = plat, haute = nerveux
+            const energyRatio = Math.max(0.05, state.energy / 100);
+            const agitation = (Math.random() * 50 - 25) * energyRatio;
+            
+            // 2. Niveau de base (hauteur) lié à la réputation et au multiplicateur
+            const baseline = Math.min(85, 20 + (state.rep * 0.3) + ((state.multiplier - 1) * 15));
+            
+            let next = last + agitation;
+            // Retour élastique vers la ligne de base
+            next += (baseline - next) * 0.2;
+
             if (state.isExporting) next = 95 + Math.random() * 5;
+            
             next = Math.max(5, Math.min(100, next));
             
             cpuDataUI.shift();
