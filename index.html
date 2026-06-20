@@ -182,15 +182,15 @@
                 position: absolute;
                 width: calc(180px * var(--s, 1));
                 height: calc(50px * var(--s, 1));
-                background: rgba(255, 255, 255, 0.06);
+                background: var(--cloud-bg, rgba(255, 255, 255, 0.06));
                 backdrop-filter: blur(12px);
                 pointer-events: none;
                 border-radius: 50px;
-                opacity: calc(0.5 * var(--cloud-opacity));
+                opacity: calc(var(--base-opacity, 0.5) * var(--cloud-alpha, 1));
                 animation: moveClouds linear infinite;
                 animation-duration: calc(var(--base-dur, 100s) / var(--time-warp-factor));
                 transition: opacity 3s ease-in-out;
-                will-change: transform;
+                will-change: transform, opacity, background;
                 transform: translateX(-400px) scale(var(--cz, 1));
             }
 
@@ -1591,6 +1591,14 @@
         #floating-inspi-warning.critical .low-inspi-inner {
             border-color: rgba(168,85,247,1);
             animation: lowInspiBlinkCritical 0.5s ease-in-out infinite;
+        }
+
+        /* ETAT HOVER-ONLY (PAS EN DANGER) */
+        #floating-energy-warning.hover-only .low-batt-inner,
+        #floating-inspi-warning.hover-only .low-inspi-inner {
+            animation: none !important;
+            opacity: 0.7;
+            box-shadow: none;
         }
         </style>
     </head>
@@ -5052,6 +5060,30 @@ const DEFAULT_STATE = {
         // --- LOGIQUE GLOBALE (SANS BESOIN D'AVATAR) ---
         // ==================================================
 
+        // --- MÉTÉO DYNAMIQUE : NUAGES VS INSPIRATION ---
+        if (window._bgClouds && typeof state !== 'undefined' && typeof state.inspi === 'number') {
+            const inspiRatio = Math.max(0, Math.min(1, state.inspi / 100));
+            // Opacité : très faible (0.05) quand inspi=100%, forte (1.8) quand inspi=0%
+            const targetOpacity = THREE.MathUtils.lerp(1.8, 0.05, inspiRatio);
+            
+            // Teinte : Orageux sombre (0x0f0f15) à 0%, Blanc éclatant (0xffffff) à 100%
+            if (!window._cloudColorDark) window._cloudColorDark = new THREE.Color(0x0f0f15);
+            if (!window._cloudColorLight) window._cloudColorLight = new THREE.Color(0xffffff);
+            if (!window._currentCloudColor) window._currentCloudColor = new THREE.Color(0xffffff);
+            
+            const targetColor = window._cloudColorDark.clone().lerp(window._cloudColorLight, inspiRatio);
+            window._currentCloudColor.lerp(targetColor, 0.02); // Lissage doux
+            
+            if (typeof window._currentCloudOpacity === 'undefined') window._currentCloudOpacity = targetOpacity;
+            window._currentCloudOpacity += (targetOpacity - window._currentCloudOpacity) * 0.02;
+
+            const bgLayer = document.getElementById('room-bg-layer');
+            if (bgLayer) {
+                bgLayer.style.setProperty('--cloud-alpha', window._currentCloudOpacity);
+                bgLayer.style.setProperty('--cloud-bg', `rgba(${Math.floor(window._currentCloudColor.r*255)}, ${Math.floor(window._currentCloudColor.g*255)}, ${Math.floor(window._currentCloudColor.b*255)}, 0.1)`);
+            }
+        }
+
         // --- EFFET DE DISTORSION VISUELLE ---
         if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar && typeof scene !== 'undefined' && (currentState.isSleeping || currentState.isSitting) && Math.random() < 0.25) {
             if (!window.timeRipples) window.timeRipples = [];
@@ -5238,8 +5270,16 @@ function applyFurniturePerk(effect) {
                 badgeEnergy.style.left    = screenX + 'px';
                 badgeEnergy.style.top     = screenY + 'px';
                 pctEnergy.textContent     = Math.floor(energy) + '%';
-                if (energy <= 15) badgeEnergy.classList.add('critical');
-                else badgeEnergy.classList.remove('critical');
+                
+                if (energy <= 15) {
+                    badgeEnergy.classList.add('critical');
+                    badgeEnergy.classList.remove('hover-only');
+                } else if (energy > 40) {
+                    badgeEnergy.classList.add('hover-only');
+                    badgeEnergy.classList.remove('critical');
+                } else {
+                    badgeEnergy.classList.remove('critical', 'hover-only');
+                }
             } else {
                 badgeEnergy.style.display = 'none';
             }
@@ -5252,8 +5292,16 @@ function applyFurniturePerk(effect) {
                 const offsetY = (badgeEnergy.style.display === 'block') ? -30 : 0;
                 badgeInspi.style.top     = (screenY + offsetY) + 'px';
                 pctInspi.textContent     = Math.floor(inspiVal) + '%';
-                if (inspiVal <= 15) badgeInspi.classList.add('critical');
-                else badgeInspi.classList.remove('critical');
+                
+                if (inspiVal <= 15) {
+                    badgeInspi.classList.add('critical');
+                    badgeInspi.classList.remove('hover-only');
+                } else if (inspiVal > 40) {
+                    badgeInspi.classList.add('hover-only');
+                    badgeInspi.classList.remove('critical');
+                } else {
+                    badgeInspi.classList.remove('critical', 'hover-only');
+                }
             } else {
                 badgeInspi.style.display = 'none';
             }
@@ -8362,7 +8410,7 @@ function triggerRankUp(oldRank, newRank) {
                 
                 cloud.style.setProperty('--s', scale);
                 cloud.style.top = `${top}%`;
-                cloud.style.opacity = opacity;
+                cloud.style.setProperty('--base-opacity', opacity);
                 cloud.style.setProperty('--base-dur', `${duration}s`);
                 cloud.style.animationDelay = `${delay}s`;
                 
