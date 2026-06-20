@@ -5235,8 +5235,9 @@ function applyFurniturePerk(effect) {
                 return;
             }
 
-            // Projection 3D → 2D de la tête
-            const headOffset = 1.1 * (currentRoomAvatar.scale.y || 1.6);
+            // Création d'un point d'ancrage 3D strictement au-dessus de l'avatar
+            // En augmentant ce décalage en 3D, l'écart visuel en 2D s'agrandit naturellement avec le zoom (perspective)
+            const headOffset = (currentRoomAvatar.scale.y || 1.6) * 1.7; // Ancrage bien au-dessus du crâne
             const avatarWorldPos = new THREE.Vector3(
                 currentRoomAvatar.position.x,
                 currentRoomAvatar.position.y + headOffset,
@@ -5245,8 +5246,10 @@ function applyFurniturePerk(effect) {
             
             avatarWorldPos.project(camera);
             
-            // Ne pas afficher si derrière la caméra
-            if (avatarWorldPos.z > 1) {
+            // Ne pas afficher si le point est derrière la caméra (clipping) ou totalement hors écran
+            if (avatarWorldPos.z > 1 || avatarWorldPos.z < -1 || 
+                avatarWorldPos.x < -1.5 || avatarWorldPos.x > 1.5 || 
+                avatarWorldPos.y < -1.5 || avatarWorldPos.y > 1.5) {
                 badgeEnergy.style.display = 'none';
                 badgeInspi.style.display = 'none';
                 return;
