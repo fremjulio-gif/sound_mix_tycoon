@@ -1390,11 +1390,14 @@
            EXHAUSTION SYSTEM (Fatigue visuelle)
            ========================================= */
         #exhaustion-overlay {
-            /* Un dégradé radial qui assombrit fortement les bords mais laisse le centre visible */
-            background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.95) 100%);
-            pointer-events: none; /* Laisse passer les clics */
-            mix-blend-mode: multiply; /* Assombrit de manière plus réaliste */
+            /* Voile subtil : le centre est clair, les bords sont légèrement assombris (max 0.7 d'opacité) */
+            background: radial-gradient(circle at center, transparent 50%, rgba(0, 0, 0, 0.7) 100%);
+            pointer-events: none;
+            mix-blend-mode: multiply;
             transition: opacity 0.5s ease;
+        }
+        #game-container {
+            transition: filter 0.5s ease-in-out; /* Lissage de la désaturation */
         }
 
         /* Un vrai rythme de battement de cœur (Double pulsation) */
@@ -9077,16 +9080,17 @@ function triggerRankUp(oldRank, newRank) {
             const exhaustOverlay = document.getElementById('exhaustion-overlay');
             
             if (energyVal <= 40) {
-                // 1. Calcul du ratio : À 40%, ratio = 1 (Normal). À 0%, ratio = 0 (Noir & Blanc, Noir total)
+                // 1. Calcul du ratio : À 40%, ratio = 1 (Normal). À 0%, ratio = 0
                 const ratio = Math.max(0, energyVal / 40); 
                 
-                // On désature totalement les couleurs du jeu
-                gameContainer.style.filter = `saturate(${ratio})`;
+                // On désature partiellement (max 50% de désaturation pour ne pas perdre toute couleur)
+                const saturation = 0.5 + (0.5 * ratio); 
+                gameContainer.style.filter = `saturate(${saturation})`;
                 
                 if (exhaustOverlay) {
                     exhaustOverlay.classList.remove('hidden');
-                    // L'opacité de l'écran noir augmente quand l'énergie approche de zéro
-                    exhaustOverlay.style.opacity = (1 - ratio).toString();
+                    // L'opacité max du voile noir est bridée à 0.6 pour rester subtile
+                    exhaustOverlay.style.opacity = ((1 - ratio) * 0.6).toString();
                     
                     // Le cœur bat de plus en plus vite (de 1.5s à 0.5s par cycle)
                     const heartbeatSpeed = Math.max(0.5, 1.5 * ratio);
