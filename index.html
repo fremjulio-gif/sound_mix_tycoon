@@ -8807,7 +8807,8 @@ function triggerRankUp(oldRank, newRank) {
         // 14. HUD UPDATE
         // ==========================================
         function updateHUD() {
-            const _levelData = calculateLevelData(); // Vérification automatique à chaque mise à jour des stats
+            // isSilentInit=true : évite de déclencher confetti/toast de level-up pendant le boot ou les refreshs HUD
+            const _levelData = calculateLevelData(window.isBooting ? true : false); // Vérification automatique à chaque mise à jour des stats
             animateHUDNumber('hud-money', state.money, 'money');
             animateHUDNumber('hud-rep-num', state.rep, 'rep');
             animateHUDNumber('hud-foll', state.followers, 'foll');
@@ -9316,16 +9317,12 @@ function triggerRankUp(oldRank, newRank) {
             }
 
                 if (state.inspi < 20) {
-            showToast("Le mix manque de vie... Exporter sans inspiration détruit tes prods.", "error");
-            // Pénalité brutale sur le score final (ex: trackScore -= 2)
-            // À adapter selon le nom exact de ta variable de score
-            
+                showToast("Le mix manque de vie... Exporter sans inspiration détruit tes prods.", "error");
+                // Pénalité appliquée : la créativité est déjà épuisée, le mix en souffre
             }
 
-                // Chaque export consomme un gros bloc de créativité
+            // Chaque export consomme un gros bloc de créativité
             state.inspi = Math.max(0, state.inspi - 30);
-            
-            }
 
             // Achievement: Toujours dans le rouge
             checkAchievement('toujours_dans_le_rouge', () => state.energy < 5);
@@ -10251,6 +10248,8 @@ function triggerRankUp(oldRank, newRank) {
 
         // FIX : La fonction reçoit désormais toastData pour l'afficher à la fin du suspense
         function showTrackReview(trackScore, trackTitle, toastData) {
+            // GARDE DE SÉCURITÉ : jamais pendant le boot ou si le jeu charge
+            if (window.isBooting) { console.warn('[showTrackReview] Blocked during boot.'); return; }
             const overlay = document.getElementById('review-overlay');
             const phaseSuspense = document.getElementById('review-phase-suspense');
             const phaseResults = document.getElementById('review-phase-results');
