@@ -1782,6 +1782,26 @@
             </div>
         </div>
 
+        <div id="studio-buy-tooltip" class="fixed z-[100] bg-[var(--glass-bg)] backdrop-blur-[20px] border border-[var(--glass-border)] rounded-2xl p-5 w-[300px] opacity-0 pointer-events-none transition-all duration-300 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.2)] font-sans text-white flex flex-col gap-3 transform -translate-x-1/2 -translate-y-full mt-[-20px]">
+    <div class="flex justify-between items-start border-b border-white/10 pb-2">
+        <h4 id="tt-name" class="font-bold text-base text-white tracking-wide">Nom Objet</h4>
+        <span id="tt-cat" class="text-[9px] font-retro text-[var(--accent)] px-2 py-1 bg-[var(--accent)]/10 border border-[var(--accent)]/20 rounded">CAT</span>
+    </div>
+    <p id="tt-desc" class="text-xs text-gray-300 leading-snug">Description du bonus...</p>
+    
+    <div class="space-y-1.5 mb-2 text-[10px] font-retro text-gray-400 border-t border-white/5 pt-3">
+        <div class="flex justify-between items-center">
+            <span>Req:</span>
+            <span id="tt-req" class="text-white font-bold">Aucun</span>
+        </div>
+        <div class="flex justify-between items-center">
+            <span>Prix:</span>
+            <span id="tt-price" class="text-[var(--retro-green)] text-sm drop-shadow-[0_0_5px_var(--retro-green)]">$0</span>
+        </div>
+    </div>
+    <button id="tt-buy-btn" class="w-full btn-action py-3 text-[11px] rounded-lg shadow-lg pointer-events-auto tracking-widest font-bold">INSTALLER</button>
+</div>
+
         <div id="room-ui"></div>
 
         <button id="audio-settings-gear" class="btn-system" onclick="openAudioSettings()" title="Paramètres">
@@ -2345,7 +2365,6 @@
                 <div class="flex border-b border-[var(--glass-border)] text-[12px] md:text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-black/60 font-bold">
                     <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
                     <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
-                    <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-studio" onclick="switchBrowserTab('studio')">Studio+</button>
                 </div>
                 <div class="window-content" id="browser-content"></div>
             </div>
@@ -8354,6 +8373,133 @@ function triggerRankUp(oldRank, newRank) {
                 }
             }, { passive: false });
         }
+
+
+        // ==========================================
+// UI DIÉGÉTIQUE : RAYCASTER POUR STUDIO+
+// ==========================================
+const diegeticRaycaster = new THREE.Raycaster();
+const diegeticMouse = new THREE.Vector2();
+const tooltipEl = document.getElementById('studio-buy-tooltip');
+let currentHoveredItemId = null;
+
+function onPointerMoveDiegetic(event) {
+    // Si un menu PC est ouvert ou qu'on est sur le tooltip lui-même, on ne fait rien
+    if (document.getElementById('pc-ui-layer').style.display === 'flex' || window.isIntroAnimating) {
+        hideStudioTooltip();
+        return;
+    }
+    if (event.target && event.target.closest('#studio-buy-tooltip')) return;
+
+    let cx, cy;
+    if (event.touches) {
+        cx = event.touches[0].clientX;
+        cy = event.touches[0].clientY;
+    } else {
+        cx = event.clientX;
+        cy = event.clientY;
+    }
+
+    diegeticMouse.x = (cx / window.innerWidth) * 2 - 1;
+    diegeticMouse.y = -(cy / window.innerHeight) * 2 + 1;
+
+    diegeticRaycaster.setFromCamera(diegeticMouse, camera);
+
+    const intersects = diegeticRaycaster.intersectObjects(scene.children, true);
+    let hitSilhouette = null;
+    let hitId = null;
+
+    for (let i = 0; i < intersects.length; i++) {
+        const mesh = intersects[i].object;
+        
+        // On vérifie si c'est bien une silhouette non achetée
+        if (mesh.userData && mesh.userData.originalMaterial) {
+            // Cherche dans le catalogue à qui appartient ce mesh (via son nom ou celui de son groupe parent)
+            const catalogItem = FURNITURE_CATALOG.find(f => 
+                f.sceneObject === mesh.name || 
+                f.sceneObject === mesh.parent?.name || 
+                mesh.name.includes(f.id)
+            );
+            
+            if (catalogItem && (!state.ownedFurniture || !state.ownedFurniture.includes(catalogItem.id))) {
+                hitSilhouette = mesh;
+                hitId = catalogItem.id;
+                break;
+            }
+        }
+    }
+
+    if (hitSilhouette && hitId) {
+        showStudioTooltip(hitSilhouette, hitId);
+    } else {
+        hideStudioTooltip();
+    }
+}
+
+function showStudioTooltip(mesh, itemId) {
+    if (currentHoveredItemId === itemId) return; // Évite de recalculer si déjà affiché
+    
+    const item = FURNITURE_CATALOG.find(f => f.id === itemId);
+    if (!item || !tooltipEl) return;
+
+    currentHoveredItemId = itemId;
+
+    // Conversion 3D -> 2D
+    const vector = new THREE.Vector3();
+    mesh.getWorldPosition(vector);
+    vector.y += 0.8; // Léger offset vers le haut pour ne pas cacher l'objet
+    vector.project(camera);
+
+    const x = (vector.x * .5 + .5) * window.innerWidth;
+    const y = (vector.y * -.5 + .5) * window.innerHeight;
+
+    tooltipEl.style.left = `${x}px`;
+    tooltipEl.style.top = `${y}px`;
+
+    // Remplissage des données HTML
+    document.getElementById('tt-name').innerText = item.name;
+    document.getElementById('tt-cat').innerText = item.category.toUpperCase();
+    document.getElementById('tt-desc').innerText = item.perk;
+    
+    let reqs = [];
+    if (item.reqRep > 0) reqs.push(`${item.reqRep} REP`);
+    if (item.reqFollowers > 0) reqs.push(`${formatNum(item.reqFollowers)} FANS`);
+    document.getElementById('tt-req').innerText = reqs.length > 0 ? reqs.join(' & ') : 'Aucun';
+    
+    const canAfford = state.money >= item.price;
+    const meetsReqs = (state.rep >= (item.reqRep || 0)) && (state.followers >= (item.reqFollowers || 0));
+    
+    const btn = document.getElementById('tt-buy-btn');
+    btn.onclick = () => buyFurniture(itemId);
+    
+    if (!canAfford || !meetsReqs) {
+        document.getElementById('tt-price').innerText = `$${item.price}`;
+        document.getElementById('tt-price').className = "text-[var(--retro-red)] text-lg font-bold drop-shadow-[0_0_5px_var(--retro-red)]";
+        btn.disabled = true;
+        btn.innerText = !meetsReqs ? "PRÉREQUIS MANQUANTS" : "FONDS INSUFFISANTS";
+        btn.className = "w-full mt-3 btn-minimal py-3 text-[10px] rounded border-[var(--retro-red)] text-[var(--retro-red)] opacity-50 cursor-not-allowed uppercase font-bold pointer-events-auto";
+    } else {
+        document.getElementById('tt-price').innerText = `$${item.price}`;
+        document.getElementById('tt-price').className = "text-[var(--retro-green)] text-lg font-bold drop-shadow-[0_0_5px_var(--retro-green)]";
+        btn.disabled = false;
+        btn.innerText = `ACHETER ($${item.price})`;
+        btn.className = "w-full mt-3 btn-action py-3 text-[11px] rounded-lg shadow-[0_0_15px_rgba(129,140,248,0.4)] pointer-events-auto tracking-widest font-bold";
+    }
+
+    tooltipEl.classList.remove('opacity-0', 'pointer-events-none');
+    tooltipEl.classList.add('opacity-100'); // Note: Les events pointer sont gérés sur le bouton
+}
+
+function hideStudioTooltip() {
+    if (!tooltipEl || tooltipEl.classList.contains('opacity-0')) return;
+    tooltipEl.classList.remove('opacity-100');
+    tooltipEl.classList.add('opacity-0', 'pointer-events-none');
+    currentHoveredItemId = null;
+}
+
+// Listeners
+window.addEventListener('mousemove', onPointerMoveDiegetic);
+window.addEventListener('touchstart', onPointerMoveDiegetic, {passive: true});
         
         // ==========================================
         // 11. INIT UI
@@ -8549,6 +8695,8 @@ function triggerRankUp(oldRank, newRank) {
             };
             tlContainer.addEventListener('mousedown', (e) => onTlClick(e.clientX));
             tlContainer.addEventListener('touchstart', (e) => onTlClick(e.touches[0].clientX), { passive: true });
+
+            
 
             // Pré-calcul immédiat des matrices pour éviter les pics de calcul au premier input
             scene.updateMatrixWorld(true);
@@ -10081,18 +10229,15 @@ function triggerRankUp(oldRank, newRank) {
         function switchBrowserTab(tab) {
             const btnC = document.getElementById('tab-crackz');
             const btnA = document.getElementById('tab-audio');
-            const btnS = document.getElementById('tab-studio');
 
             if (btnC) btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
             if (btnA) btnA.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
-            if (btnS) btnS.className = "flex-1 py-4 transition-colors text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
+
 
             if (tab === 'crackz') {
                 if (btnC) btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] bg-white/10 text-white shadow-inner";
             } else if (tab === 'audio') {
                 if (btnA) btnA.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] bg-white/10 text-white shadow-inner";
-            } else if (tab === 'studio') {
-                if (btnS) btnS.className = "flex-1 py-4 transition-colors bg-white/10 text-white shadow-inner";
             }
 
             renderStore(tab);
@@ -10173,132 +10318,51 @@ function triggerRankUp(oldRank, newRank) {
             }
         }
 
-        function renderStudioStore() {
-            const content = document.getElementById('browser-content');
-            if (!content) return;
-
-            let html = `
-                <div class="p-6 md:p-8 bg-black/30 text-white h-full min-h-[300px] overflow-y-auto custom-scrollbar font-sans shadow-inner">
-                    <div class="flex justify-between items-center mb-8 border-b border-[var(--accent)]/30 pb-4">
-                        <div>
-                            <h3 class="font-bold text-xl text-white tracking-widest uppercase drop-shadow-md">🛋️ STUDIO+ UPGRADES</h3>
-                            <p class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-wider mt-1">Améliore ton studio physique pour booster ta production</p>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-wider">Bank Balance</div>
-                            <div class="text-lg font-retro font-bold text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)]">$${formatNum(state.money)}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            `;
-
-            FURNITURE_CATALOG.forEach(item => {
-                const alreadyOwned = state.ownedFurniture && state.ownedFurniture.includes(item.id);
-                
-                const missingRep = state.rep < (item.reqRep || 0);
-                const missingFollowers = state.followers < (item.reqFollowers || 0);
-                const isLocked = !alreadyOwned && (missingRep || missingFollowers);
-                const canAfford = state.money >= item.price;
-                
-                let prereqTexts = [];
-                if (item.reqRep > 0) prereqTexts.push(`${item.reqRep} REP`);
-                if (item.reqFollowers > 0) prereqTexts.push(`${formatNum(item.reqFollowers)} Fans`);
-                const prereqStr = prereqTexts.length > 0 ? prereqTexts.join(" & ") : "Aucun";
-
-                let buttonHTML = '';
-                if (alreadyOwned) {
-                    buttonHTML = `<button class="w-full btn-minimal py-3 text-xs rounded-lg border-gray-600 text-gray-500 cursor-not-allowed uppercase font-bold" disabled>OWNED</button>`;
-                } else if (isLocked) {
-                    buttonHTML = `<button class="w-full btn-minimal py-3 text-xs rounded-lg opacity-50 cursor-not-allowed uppercase font-bold" disabled>LOCKED</button>`;
-                } else if (!canAfford) {
-                    buttonHTML = `<button class="w-full btn-minimal py-3 text-xs rounded-lg border-[var(--retro-red)] text-[var(--retro-red)] opacity-60 cursor-not-allowed uppercase font-bold" disabled>INSUFFICIENT FUNDS</button>`;
-                } else {
-                    buttonHTML = `<button class="w-full btn-action py-3 text-xs rounded-lg font-bold shadow-lg" onclick="buyFurniture('${item.id}')">INSTALL ($${item.price})</button>`;
-                }
-
-                html += `
-                    <div class="border border-[var(--glass-border)] p-5 rounded-xl bg-black/40 hover:border-[var(--accent)] transition-all flex flex-col justify-between group ${alreadyOwned ? 'opacity-85' : ''}">
-                        <div>
-                            <div class="flex justify-between items-start mb-2">
-                                <h4 class="font-bold text-base text-white group-hover:text-[var(--accent)] transition-colors">${item.name}</h4>
-                                <span class="text-xs font-retro font-bold text-[var(--accent)]">${item.category.toUpperCase()}</span>
-                            </div>
-                            <p class="text-xs text-[var(--text-muted)] mb-4">${item.perk}</p>
-                            
-                            <div class="space-y-1.5 mb-6 text-[10px] font-retro text-gray-400 border-t border-white/5 pt-3">
-                                <div class="flex justify-between">
-                                    <span>Prereqs:</span>
-                                    <span class="${isLocked ? 'text-[var(--retro-red)] font-bold' : 'text-gray-200'}">${prereqStr}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Price:</span>
-                                    <span class="${!alreadyOwned && !canAfford ? 'text-[var(--retro-red)] font-bold' : 'text-[var(--retro-green)]'}">$${item.price}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            ${buttonHTML}
-                        </div>
-                    </div>
-                `;
-            });
-
-            html += `
-                    </div>
-                </div>
-            `;
-
-            content.innerHTML = html;
-        }
+    
 
         function buyFurniture(id) {
-            const item = FURNITURE_CATALOG.find(f => f.id === id);
-            if (!item) return;
+    const item = FURNITURE_CATALOG.find(f => f.id === id);
+    if (!item) return;
 
-            if (state.ownedFurniture && state.ownedFurniture.includes(id)) {
-                showToast("Tu possèdes déjà cet équipement !", "warning");
-                return;
+    // Sécurités
+    if (state.ownedFurniture && state.ownedFurniture.includes(id)) return;
+    if (state.money < item.price || state.rep < (item.reqRep || 0) || state.followers < (item.reqFollowers || 0)) {
+        playError();
+        return;
+    }
+
+    // 1. Achat & Statut
+    logMoney(-item.price, 'Studio+: ' + item.name);
+    if (!state.ownedFurniture) state.ownedFurniture = [];
+    state.ownedFurniture.push(id);
+
+    // 2. Recalcul des Bonus globaux
+    if (typeof recalculateActivePerks === 'function') {
+        recalculateActivePerks();
+    }
+
+    // 3. Révélation Visuelle 3D (Restauration du Material)
+    scene.traverse(child => {
+        if (child.isMesh && child.userData && child.userData.originalMaterial) {
+            // Correspondance via sceneObject ou nom
+            if (child.name === item.sceneObject || child.parent?.name === item.sceneObject || child.name.includes(item.id)) {
+                child.material = child.userData.originalMaterial;
+                child.material.needsUpdate = true;
+                // Retire la sauvegarde pour que ce ne soit plus considéré comme une silhouette
+                delete child.userData.originalMaterial; 
             }
-
-            if (state.money < item.price) {
-                showToast("Fonds insuffisants !", "error");
-                playError();
-                return;
-            }
-
-            const missingRep = state.rep < (item.reqRep || 0);
-            const missingFollowers = state.followers < (item.reqFollowers || 0);
-            if (missingRep || missingFollowers) {
-                showToast("Tu ne respectes pas les prérequis de réputation ou de fans !", "error");
-                playError();
-                return;
-            }
-
-            logMoney(-item.price, 'Studio+: ' + item.name);
-            
-            if (!state.ownedFurniture) state.ownedFurniture = [];
-            state.ownedFurniture.push(id);
-
-            if (item.effect) {
-                if (item.effect.type === 'multiplier') {
-                    state.multiplier = (parseFloat(state.multiplier) || 1.0) + item.effect.value;
-                    showToast(`Équipement installé ! Multiplicateur permanent +${item.effect.value}x`, "success");
-                } else {
-                    applyFurniturePerk(item.effect);
-                    showToast(`Équipement installé : ${item.name}`, "success");
-                }
-            }
-
-            syncFurniture3DVisibility();
-
-            if (typeof fireConfetti === 'function') fireConfetti('store');
-            playSuccess();
-            
-            saveGame();
-            updateHUD();
-            renderStudioStore();
         }
+    });
+
+    // 4. Feedbacks (Fermeture Tooltip, Particules, Sauvegarde)
+    hideStudioTooltip();
+    showToast(`Équipement installé : ${item.name}`, "success");
+    if (typeof fireConfetti === 'function') fireConfetti('store');
+    playSuccess();
+    
+    updateHUD();
+    saveGame();
+}
 
         function downloadCrack(id) {
             const crack = cracks.find(c => c.id === id);
