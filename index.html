@@ -181,23 +181,30 @@
             .cloud-2d {
                 position: absolute;
                 width: calc(var(--w, 180px) * var(--s, 1));
-                height: calc(var(--h, 50px) * var(--s, 1));
-                background: var(--cloud-color, rgba(255, 255, 255, 0.08));
-                backdrop-filter: blur(16px) saturate(120%);
-                -webkit-backdrop-filter: blur(16px) saturate(120%);
-                border: 1px solid rgba(255, 255, 255, 0.05);
-                border-radius: 9999px; /* Perfect capsule/tic-tac shape */
+                height: calc(var(--h, 60px) * var(--s, 1));
                 pointer-events: none;
                 opacity: calc(var(--base-opacity, 0.5) * var(--cloud-alpha, 1));
                 animation: moveClouds linear infinite;
                 animation-duration: calc(var(--base-dur, 100s) / var(--time-warp-factor));
-                transition: opacity 0.5s ease-in-out, background 0.5s ease-in-out, filter 0.5s ease-in-out;
-                will-change: transform, opacity, background;
+                transition: opacity 0.5s ease-in-out, filter 0.5s ease-in-out;
+                will-change: transform, opacity;
                 transform: translateX(-400px) scale(var(--cz, 1));
+            }
+
+            .cloud-puff {
+                position: absolute;
+                background: var(--cloud-color, rgba(255, 255, 255, 0.08));
+                backdrop-filter: blur(16px) saturate(120%);
+                -webkit-backdrop-filter: blur(16px) saturate(120%);
+                border: 1px solid rgba(255, 255, 255, 0.04);
+                border-radius: 9999px; /* Capsule / Tic-tac geometry */
+                transition: background 0.5s ease-in-out, border-color 0.5s ease-in-out;
             }
 
             .cloud-glow {
                 filter: drop-shadow(0 0 20px var(--accent)) brightness(1.2) !important;
+            }
+            .cloud-glow .cloud-puff {
                 border-color: rgba(255, 255, 255, 0.15) !important;
             }
 
@@ -8463,29 +8470,76 @@ function triggerRankUp(oldRank, newRank) {
             container.querySelectorAll('.cloud-2d').forEach(c => c.remove());
             window._bgClouds = [];
 
-            // Génère entre 6 et 10 nuages (capsules lisses de tailles variées)
-            const count = 6 + Math.floor(Math.random() * 5); 
+            // Patterns de motifs de nuages (combinaisons de pilules superposées)
+            const patterns = [
+                // Pattern 0: Petit nuage classique (3 puffs)
+                {
+                    width: 170, height: 55,
+                    puffs: [
+                        { w: 70, h: 35, l: 0, b: 0 },
+                        { w: 100, h: 55, l: 40, b: 0 },
+                        { w: 60, h: 30, l: 110, b: 0 }
+                    ]
+                },
+                // Pattern 1: Nuage étiré en longueur (4 puffs)
+                {
+                    width: 280, height: 35,
+                    puffs: [
+                        { w: 90, h: 25, l: 0, b: 0 },
+                        { w: 120, h: 35, l: 50, b: 0 },
+                        { w: 100, h: 30, l: 130, b: 0 },
+                        { w: 80, h: 20, l: 200, b: 0 }
+                    ]
+                },
+                // Pattern 2: Gros nuage volumineux (5 puffs)
+                {
+                    width: 240, height: 65,
+                    puffs: [
+                        { w: 50, h: 30, l: 10, b: 0 },
+                        { w: 80, h: 55, l: 40, b: 0 },
+                        { w: 90, h: 65, l: 80, b: 0 },
+                        { w: 70, h: 45, l: 140, b: 0 },
+                        { w: 50, h: 25, l: 190, b: 0 }
+                    ]
+                },
+                // Pattern 3: Nuage compact minimaliste (2 puffs)
+                {
+                    width: 120, height: 40,
+                    puffs: [
+                        { w: 70, h: 30, l: 0, b: 0 },
+                        { w: 80, h: 40, l: 40, b: 0 }
+                    ]
+                }
+            ];
+
+            // Génère entre 5 et 8 clusters de nuages
+            const count = 5 + Math.floor(Math.random() * 4); 
             for (let i = 0; i < count; i++) {
                 const cloud = document.createElement('div');
                 cloud.className = 'cloud-2d';
                 
-                // Variété de dimensions (tic-tacs longs, courts, fins ou épais)
-                const width = 120 + Math.floor(Math.random() * 160); // 120px à 280px
-                const height = 30 + Math.floor(Math.random() * 40);  // 30px à 70px
-                const scale = 0.8 + Math.random() * 1.6; 
-                
-                const top = 5 + Math.random() * 70; // Position verticale
-                const baseOpacity = 0.2 + Math.random() * 0.25; // Opacité de base (0.2 à 0.45)
-                const duration = 90 + Math.random() * 140; // Défilement (90s à 230s)
+                // Sélection aléatoire d'un modèle de nuage
+                const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+                const scale = 0.8 + Math.random() * 1.5; 
+                const top = 5 + Math.random() * 65; 
+                const baseOpacity = 0.22 + Math.random() * 0.22; 
+                const duration = 100 + Math.random() * 140; 
                 const delay = -(Math.random() * duration); 
                 
-                cloud.style.setProperty('--w', `${width}px`);
-                cloud.style.setProperty('--h', `${height}px`);
+                cloud.style.setProperty('--w', `${pattern.width}px`);
+                cloud.style.setProperty('--h', `${pattern.height}px`);
                 cloud.style.setProperty('--s', scale);
                 cloud.style.top = `${top}%`;
                 cloud.style.setProperty('--base-opacity', baseOpacity);
                 cloud.style.setProperty('--base-dur', `${duration}s`);
                 cloud.style.animationDelay = `${delay}s`;
+                
+                // Génération des sous-puffs du cluster
+                let html = '';
+                pattern.puffs.forEach(p => {
+                    html += `<div class="cloud-puff" style="width: ${p.w}px; height: ${p.h}px; left: ${p.l}px; bottom: ${p.b}px;"></div>`;
+                });
+                cloud.innerHTML = html;
                 
                 container.appendChild(cloud);
                 window._bgClouds.push(cloud);
