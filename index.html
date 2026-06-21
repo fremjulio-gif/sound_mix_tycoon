@@ -185,10 +185,12 @@
                 pointer-events: none;
                 opacity: calc(var(--base-opacity, 0.5) * var(--cloud-alpha, 1));
                 animation: moveClouds linear infinite;
-                animation-duration: calc(var(--base-dur, 100s) / var(--time-warp-factor));
+                /* Constant duration and delay to avoid animation reset bugs when time-warp changes */
+                animation-duration: var(--base-dur, 120s);
+                animation-delay: var(--delay, 0s);
                 transition: opacity 0.5s ease-in-out, filter 0.5s ease-in-out;
                 will-change: transform, opacity;
-                transform: translateX(-400px) scale(var(--cz, 1));
+                transform: translateX(100vw) scale(var(--cz, 1)); /* Start off-screen right */
             }
 
             .cloud-puff {
@@ -209,8 +211,8 @@
             }
 
             @keyframes moveClouds {
-                from { transform: translateX(-400px) scale(var(--cz, 1)); }
-                to { transform: translateX(100vw) scale(var(--cz, 1)); }
+                from { transform: translateX(100vw) scale(var(--cz, 1)); }
+                to { transform: translateX(-100%) scale(var(--cz, 1)); }
             }
 
 
@@ -8258,7 +8260,7 @@ function triggerRankUp(oldRank, newRank) {
         // 11. INIT UI
         // ==========================================
         function initUI() {
-            spawnClouds(); // Correctif 3 : Génération au lancement de l'interface
+            initClouds(); // Génération au lancement de l'interface
             const cont = document.getElementById('avatar-container');
             // Clear any accidental text nodes and rebuild avatar buttons programmatically
             while (cont.firstChild) cont.removeChild(cont.firstChild);
@@ -8454,7 +8456,7 @@ function triggerRankUp(oldRank, newRank) {
         }
 
         // Génération des nuages 2D "Tic-Tac" de fond (Room Layer)
-        function spawnClouds() {
+        function initClouds() {
             // Clean up old 3D clouds if they exist
             if (window._3dClouds) {
                 window._3dClouds.forEach(c => {
@@ -8532,7 +8534,7 @@ function triggerRankUp(oldRank, newRank) {
                 cloud.style.top = `${top}%`;
                 cloud.style.setProperty('--base-opacity', baseOpacity);
                 cloud.style.setProperty('--base-dur', `${duration}s`);
-                cloud.style.animationDelay = `${delay}s`;
+                cloud.style.setProperty('--delay', `${delay}s`);
                 
                 // Génération des sous-puffs du cluster
                 let html = '';
