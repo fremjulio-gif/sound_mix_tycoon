@@ -486,7 +486,7 @@
         grid-template-columns: 120px minmax(320px, 1fr) 320px;
         grid-template-rows: 1fr auto;
         gap: 22px;
-        padding: 24px 34px 92px 34px; /* Reduced top-padding from 116px to 24px on desktop */
+        padding: 100px 34px 92px 34px; /* 100px top-padding on desktop to leave breathing room below HUD */
         pointer-events: none;
         overflow: hidden;
     }
@@ -5093,8 +5093,15 @@ const DEFAULT_STATE = {
 
             // --- MISE À JOUR VISUELLE DES NUAGES (GLOW PROXIMITÉ) ---
             if (window._bgNearPrev !== isNearSomething) {
-                if (window._bgClouds) {
-                    window._bgClouds.forEach(c => c.classList.toggle('cloud-glow', isNearSomething));
+                if (window._3dClouds) {
+                    window._3dClouds.forEach(cloud => {
+                        cloud.children.forEach(puff => {
+                            if (puff.material) {
+                                puff.material.emissive.copy(new THREE.Color(isNearSomething ? 0x221133 : 0x000000));
+                                puff.material.emissiveIntensity = isNearSomething ? 0.8 : 0.0;
+                            }
+                        });
+                    });
                 }
                 window._bgNearPrev = isNearSomething;
             }
@@ -5104,28 +5111,47 @@ const DEFAULT_STATE = {
         // --- LOGIQUE GLOBALE (SANS BESOIN D'AVATAR) ---
         // ==================================================
 
-        // --- MÉTÉO DYNAMIQUE : NUAGES VS INSPIRATION ---
-        if (window._bgClouds && typeof state !== 'undefined' && typeof state.inspi === 'number') {
+        // --- MÉTÉO DYNAMIQUE : NUAGES 3D VS INSPIRATION ---
+        if (window._3dClouds && typeof state !== 'undefined' && typeof state.inspi === 'number') {
             const inspiRatio = Math.max(0, Math.min(1, state.inspi / 100));
-            // Opacité : très faible (0.05) quand inspi=100%, forte (1.8) quand inspi=0%
-            const targetOpacity = THREE.MathUtils.lerp(1.8, 0.05, inspiRatio);
             
-            // Teinte : Orageux sombre (0x0f0f15) à 0%, Blanc éclatant (0xffffff) à 100%
-            if (!window._cloudColorDark) window._cloudColorDark = new THREE.Color(0x0f0f15);
-            if (!window._cloudColorLight) window._cloudColorLight = new THREE.Color(0xffffff);
-            if (!window._currentCloudColor) window._currentCloudColor = new THREE.Color(0xffffff);
-            
-            const targetColor = window._cloudColorDark.clone().lerp(window._cloudColorLight, inspiRatio);
-            window._currentCloudColor.lerp(targetColor, 0.02); // Lissage doux
-            
-            if (typeof window._currentCloudOpacity === 'undefined') window._currentCloudOpacity = targetOpacity;
-            window._currentCloudOpacity += (targetOpacity - window._currentCloudOpacity) * 0.02;
+            // Teinte : Orageux sombre (0x15151e) à 0%, Blanc éclatant (0xffffff) à 100%
+            const darkColor = new THREE.Color(0x15151e);
+            const lightColor = new THREE.Color(0xffffff);
+            const targetColor = darkColor.clone().lerp(lightColor, inspiRatio);
 
-            const bgLayer = document.getElementById('room-bg-layer');
-            if (bgLayer) {
-                bgLayer.style.setProperty('--cloud-alpha', window._currentCloudOpacity);
-                bgLayer.style.setProperty('--cloud-bg', `rgba(${Math.floor(window._currentCloudColor.r*255)}, ${Math.floor(window._currentCloudColor.g*255)}, ${Math.floor(window._currentCloudColor.b*255)}, 0.1)`);
-            }
+            // Déterminer combien de nuages sont actifs basés sur l'inspiration
+            // Inspi à 100% (ratio=1) -> seulement 2 nuages. Inspi à 0% (ratio=0) -> 8 nuages.
+            const activeThresholds = [1.1, 1.1, 0.85, 0.7, 0.55, 0.4, 0.25, 0.12]; // Seuils d'activation pour les index 0 à 7
+
+            window._3dClouds.forEach(cloud => {
+                // Déplacement horizontal continu (vent)
+                cloud.position.x += cloud.userData.speed;
+                // Emballage / Reset de position si hors de vue
+                if (cloud.position.x > 15) {
+                    cloud.position.x = -15;
+                    cloud.position.z = -12 + Math.random() * 16;
+                    cloud.position.y = 5.5 + Math.random() * 3.0;
+                }
+
+                // Détermination de l'état actif et de l'échelle cible du nuage
+                const idx = cloud.userData.index;
+                const isActive = (idx < 2) || (inspiRatio < activeThresholds[idx]);
+                const targetScaleVal = isActive ? cloud.userData.baseScale : 0.0;
+                
+                // Animation de l'échelle (scale) pour un fondu organique
+                cloud.scale.x += (targetScaleVal - cloud.scale.x) * 0.03;
+                cloud.scale.y += (targetScaleVal - cloud.scale.y) * 0.03;
+                cloud.scale.z += (targetScaleVal - cloud.scale.z) * 0.03;
+
+                // Animation de la couleur
+                cloud.userData.currentColor.lerp(targetColor, 0.03);
+                cloud.children.forEach(puff => {
+                    if (puff.material) {
+                        puff.material.color.copy(cloud.userData.currentColor);
+                    }
+                });
+            });
         }
 
         // --- EFFET DE DISTORSION VISUELLE ---
@@ -8437,38 +8463,91 @@ function triggerRankUp(oldRank, newRank) {
             scene.updateMatrixWorld(true);
         }
 
-        // Génération des nuages de fond (Room Layer)
+        // Génération des nuages 3D Low-Poly de fond (Room Layer)
         function spawnClouds() {
-            const container = document.getElementById('room-bg-layer');
-            if (!container) return;
-            
-            window._bgClouds = [];
-            // Génère entre 5 et 8 nuages
-            const count = 5 + Math.floor(Math.random() * 4); 
-            for (let i = 0; i < count; i++) {
-                const cloud = document.createElement('div');
-                cloud.className = 'cloud-2d';
+            if (window._3dClouds) {
+                window._3dClouds.forEach(c => {
+                    if (typeof scene !== 'undefined' && scene) scene.remove(c);
+                });
+            }
+            window._3dClouds = [];
+            window._bgClouds = []; // Sécurité pour d'autres parties du code
+
+            if (typeof scene === 'undefined' || !scene) return;
+
+            const cloudCount = 8; // Max 8 nuages
+            for (let i = 0; i < cloudCount; i++) {
+                const cloud = new THREE.Group();
+                const numPuffs = 3 + Math.floor(Math.random() * 3); // 3 à 5 puffs par nuage
                 
-                const scale = 1.5 + Math.random() * 2.5; // Volume XXL (1.5x à 4.0x)
-                const top = 5 + Math.random() * 80; 
-                const opacity = 0.3 + Math.random() * 0.3; // Plus visibles (0.3 à 0.6)
-                const duration = 100 + Math.random() * 150; 
-                const delay = -(Math.random() * duration); 
+                // Matériau flatShading avec haute rugosité
+                const cloudMat = new THREE.MeshStandardMaterial({
+                    color: 0xffffff,
+                    flatShading: true,
+                    roughness: 0.85,
+                    metalness: 0.05,
+                    transparent: true,
+                    opacity: 0.85
+                });
+
+                for (let j = 0; j < numPuffs; j++) {
+                    const radius = 0.5 + Math.random() * 0.7;
+                    const geo = new THREE.DodecahedronGeometry(radius, 1);
+                    
+                    // Micro-déformation des sommets (Bruit Procédural Discret)
+                    const posAttr = geo.attributes.position;
+                    if (posAttr) {
+                        for (let k = 0; k < posAttr.count; k++) {
+                            const vx = posAttr.getX(k);
+                            const vy = posAttr.getY(k);
+                            const vz = posAttr.getZ(k);
+                            posAttr.setX(k, vx + (Math.random() - 0.5) * 0.18 * radius);
+                            posAttr.setY(k, vy + (Math.random() - 0.5) * 0.18 * radius);
+                            posAttr.setZ(k, vz + (Math.random() - 0.5) * 0.18 * radius);
+                        }
+                        geo.computeVertexNormals();
+                    }
+
+                    const puff = new THREE.Mesh(geo, cloudMat);
+                    puff.castShadow = true;
+                    puff.receiveShadow = true;
+                    
+                    if (j === 0) {
+                        puff.position.set(0, 0, 0);
+                    } else {
+                        puff.position.set(
+                            (Math.random() - 0.5) * 1.2,
+                            (Math.random() - 0.5) * 0.4,
+                            (Math.random() - 0.5) * 1.2
+                        );
+                    }
+                    cloud.add(puff);
+                }
+
+                // Placement au-dessus des murs (y=5.5..8.5) et dispersés en arrière-plan
+                cloud.position.set(
+                    -14 + Math.random() * 20,
+                    5.5 + Math.random() * 3.0,
+                    -12 + Math.random() * 12
+                );
+
+                const baseScale = 0.8 + Math.random() * 0.6;
+                cloud.scale.set(0, 0, 0); // Échelle initiale à 0 pour un fade-in fluide
                 
-                cloud.style.setProperty('--s', scale);
-                cloud.style.top = `${top}%`;
-                cloud.style.setProperty('--base-opacity', opacity);
-                cloud.style.setProperty('--base-dur', `${duration}s`);
-                cloud.style.animationDelay = `${delay}s`;
-                
-                container.appendChild(cloud);
-                window._bgClouds.push(cloud);
+                cloud.userData = {
+                    baseScale: baseScale,
+                    speed: 0.005 + Math.random() * 0.008,
+                    currentColor: new THREE.Color(0xffffff),
+                    index: i
+                };
+
+                scene.add(cloud);
+                window._3dClouds.push(cloud);
             }
         }
 
         function triggerLightningEffect() {
             const overlay = document.getElementById('lightning-overlay');
-            const clouds = window._bgClouds || [];
             if (!overlay) return;
 
             // Reset animation (force reflow)
@@ -8476,10 +8555,28 @@ function triggerRankUp(oldRank, newRank) {
             void overlay.offsetWidth; 
             overlay.classList.add('lightning-active');
 
-            clouds.forEach(c => {
-                c.classList.add('cloud-lightning-boost');
-                setTimeout(() => c.classList.remove('cloud-lightning-boost'), 400);
-            });
+            // Flash lumineux sur les nuages 3D
+            if (window._3dClouds) {
+                window._3dClouds.forEach(cloud => {
+                    cloud.children.forEach(puff => {
+                        if (puff.material) {
+                            puff.material.emissive.setHex(0xffffff);
+                            puff.material.emissiveIntensity = 1.5;
+                            setTimeout(() => {
+                                let interval = setInterval(() => {
+                                    if (puff.material.emissiveIntensity > 0.05) {
+                                        puff.material.emissiveIntensity -= 0.15;
+                                    } else {
+                                        puff.material.emissive.setHex(0x000000);
+                                        puff.material.emissiveIntensity = 1.0;
+                                        clearInterval(interval);
+                                    }
+                                }, 30);
+                            }, 100);
+                        }
+                    });
+                });
+            }
 
             // Tonnerre synthétique (Grondement basse fréquence)
             playTone(55, 'sawtooth', 0.6, 0.05);
