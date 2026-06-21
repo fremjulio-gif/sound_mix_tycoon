@@ -4551,7 +4551,106 @@ const DEFAULT_STATE = {
                 window.highlightItems = [];
             }
         } catch(e) {}
-        
+
+        // ==========================================
+        // CATALOGUE STUDIO+ (MARKETPLACE) & ACTIVE PERKS
+        // ==========================================
+        const FURNITURE_CATALOG = [
+            // --- ACTE 1 : Survie ---
+            { id: 'sofa', name: 'Canapé en cuir', price: 600, reqFollowers: 0, reqRep: 20, sceneObject: 'sofaGroup', category: 'confort', perk: 'Débloque la zone détente', effect: { type: 'unlockAction', value: 'goSit' }, tier: 1 },
+            { id: 'table', name: 'Table basse', price: 300, reqFollowers: 0, reqRep: 10, sceneObject: 'tableGroup', category: 'deco', perk: 'Confort basique', effect: { type: 'none', value: null }, tier: 1 },
+            { id: 'rug', name: 'Tapis vintage', price: 200, reqFollowers: 0, reqRep: 5, sceneObject: 'rugMesh', category: 'deco', perk: 'Ambiance cosy', effect: { type: 'none', value: null }, tier: 1 },
+
+            // --- ACTE 2 : Confort ---
+            { id: 'vinyls', name: 'Meuble à Vinyles', price: 1000, reqFollowers: 0, reqRep: 40, sceneObject: 'crateGroup', category: 'deco', perk: 'Rangement collection', effect: { type: 'none', value: null }, tier: 2 },
+            { id: 'tv', name: 'TV Cathodique', price: 800, reqFollowers: 0, reqRep: 50, sceneObject: 'tvGroup', category: 'ambiance', perk: 'Écran interactif', effect: { type: 'none', value: null }, tier: 2 },
+            { id: 'lamp', name: 'Lampe Pixar', price: 400, reqFollowers: 0, reqRep: 60, sceneObject: 'lampGroup', category: 'ambiance', perk: 'Lumière dynamique', effect: { type: 'unlockAction', value: 'togglePixarLamp' }, tier: 2 },
+            { id: 'rack', name: 'Rack Analogique', price: 2000, reqFollowers: 0, reqRep: 80, sceneObject: 'rackGroup', category: 'studio', perk: 'Son plus chaud (+0.3x Mult)', effect: { type: 'multiplier', value: 0.3 }, tier: 2 },
+
+            // --- ACTE 3 : Studio Pro ---
+            { id: 'acoustic', name: 'Panneaux Acoustiques', price: 2500, reqFollowers: 150, reqRep: 0, sceneObject: 'acousticGroup', category: 'studio', perk: 'Meilleurs mix (+1.5 Review)', effect: { type: 'reviewBonus', value: 1.5 }, tier: 3 },
+            { id: 'synth', name: 'Synthétiseur', price: 3500, reqFollowers: 200, reqRep: 0, sceneObject: 'synthGroup', category: 'studio', perk: 'Débloque le Piano Roll', effect: { type: 'unlockAction', value: 'openPianoRoll' }, tier: 3 },
+
+            // --- ACTE 4 : Flex ---
+            { id: 'guitar', name: 'Guitare Murale', price: 1800, reqFollowers: 3000, reqRep: 0, sceneObject: 'guitarGroup', category: 'deco', perk: 'Flex (+5 REP/Story)', effect: { type: 'storyBonus', value: 5 }, tier: 4 }
+        ];
+
+        const activePerks = {
+            multiplierBonus: 0,
+            reviewBonus: 0,
+            storyBonus: 0
+        };
+
+        function applyFurniturePerk(effect) {
+            if (!effect || effect.type === 'none') return;
+            
+            switch (effect.type) {
+                case 'multiplier':
+                    activePerks.multiplierBonus += effect.value;
+                    break;
+                case 'reviewBonus':
+                    activePerks.reviewBonus += effect.value;
+                    break;
+                case 'storyBonus':
+                    activePerks.storyBonus += effect.value;
+                    break;
+            }
+        }
+
+        function recalculateActivePerks() {
+            activePerks.multiplierBonus = 0;
+            activePerks.reviewBonus = 0;
+            activePerks.storyBonus = 0;
+            
+            if (state && state.ownedFurniture) {
+                state.ownedFurniture.forEach(fid => {
+                    const item = FURNITURE_CATALOG.find(f => f.id === fid);
+                    if (item && item.effect) {
+                        applyFurniturePerk(item.effect);
+                    }
+                });
+            }
+        }
+
+        function getFurniture3DObject(sceneObjectName) {
+            if (sceneObjectName === 'tableGroup') return typeof sideTableGroup !== 'undefined' ? sideTableGroup : null;
+            if (sceneObjectName === 'rugMesh') return typeof rugGroup !== 'undefined' ? rugGroup : null;
+            if (sceneObjectName === 'sofaGroup') return typeof sofaGroup !== 'undefined' ? sofaGroup : null;
+            if (sceneObjectName === 'crateGroup') return typeof crateGroup !== 'undefined' ? crateGroup : null;
+            if (sceneObjectName === 'tvGroup') return typeof tvGroup !== 'undefined' ? tvGroup : null;
+            if (sceneObjectName === 'lampGroup') return typeof lampGroup !== 'undefined' ? lampGroup : null;
+            if (sceneObjectName === 'rackGroup') return typeof rackGroup !== 'undefined' ? rackGroup : null;
+            if (sceneObjectName === 'acousticGroup') return typeof acousticGroup !== 'undefined' ? acousticGroup : null;
+            if (sceneObjectName === 'synthGroup') return typeof synthGroup !== 'undefined' ? synthGroup : null;
+            if (sceneObjectName === 'guitarGroup') return typeof guitarGroup !== 'undefined' ? guitarGroup : null;
+            return null;
+        }
+
+        function syncFurniture3DVisibility() {
+            if (typeof FURNITURE_CATALOG === 'undefined') return;
+            FURNITURE_CATALOG.forEach(item => {
+                const obj = getFurniture3DObject(item.sceneObject);
+                if (obj) {
+                    const isOwned = state && state.ownedFurniture && state.ownedFurniture.includes(item.id);
+                    obj.visible = Boolean(isOwned);
+                }
+            });
+
+            if (window.pixarLamp && state && state.ownedFurniture) {
+                const hasLamp = state.ownedFurniture.includes('lamp');
+                if (!hasLamp) {
+                    window.pixarLamp.userData.isOn = false;
+                    if (window.pixarLamp.userData.spot) {
+                        window.pixarLamp.userData.spot.intensity = 0;
+                        window.pixarLamp.userData.spot.visible = false;
+                    }
+                    if (window.pixarLamp.userData.bulb) {
+                        window.pixarLamp.userData.bulb.material.emissiveIntensity = 0;
+                        window.pixarLamp.userData.bulb.material.needsUpdate = true;
+                    }
+                }
+            }
+        }
         
         function animate3D() {
         requestAnimationFrame(animate3D);
@@ -5231,109 +5330,6 @@ const DEFAULT_STATE = {
                 }
             }
         }
-
-        const FURNITURE_CATALOG = [
-    // --- ACTE 1 : Survie ---
-    { id: 'sofa', name: 'Canapé en cuir', price: 600, reqFollowers: 0, reqRep: 20, sceneObject: 'sofaGroup', category: 'confort', perk: 'Débloque la zone détente', effect: { type: 'unlockAction', value: 'goSit' }, tier: 1 },
-    { id: 'table', name: 'Table basse', price: 300, reqFollowers: 0, reqRep: 10, sceneObject: 'tableGroup', category: 'deco', perk: 'Confort basique', effect: { type: 'none', value: null }, tier: 1 },
-    { id: 'rug', name: 'Tapis vintage', price: 200, reqFollowers: 0, reqRep: 5, sceneObject: 'rugMesh', category: 'deco', perk: 'Ambiance cosy', effect: { type: 'none', value: null }, tier: 1 },
-
-    // --- ACTE 2 : Confort ---
-    { id: 'vinyls', name: 'Meuble à Vinyles', price: 1000, reqFollowers: 0, reqRep: 40, sceneObject: 'crateGroup', category: 'deco', perk: 'Rangement collection', effect: { type: 'none', value: null }, tier: 2 },
-    { id: 'tv', name: 'TV Cathodique', price: 800, reqFollowers: 0, reqRep: 50, sceneObject: 'tvGroup', category: 'ambiance', perk: 'Écran interactif', effect: { type: 'none', value: null }, tier: 2 },
-    { id: 'lamp', name: 'Lampe Pixar', price: 400, reqFollowers: 0, reqRep: 60, sceneObject: 'lampGroup', category: 'ambiance', perk: 'Lumière dynamique', effect: { type: 'unlockAction', value: 'togglePixarLamp' }, tier: 2 },
-    { id: 'rack', name: 'Rack Analogique', price: 2000, reqFollowers: 0, reqRep: 80, sceneObject: 'rackGroup', category: 'studio', perk: 'Son plus chaud (+0.3x Mult)', effect: { type: 'multiplier', value: 0.3 }, tier: 2 },
-
-    // --- ACTE 3 : Studio Pro ---
-    { id: 'acoustic', name: 'Panneaux Acoustiques', price: 2500, reqFollowers: 150, reqRep: 0, sceneObject: 'acousticGroup', category: 'studio', perk: 'Meilleurs mix (+1.5 Review)', effect: { type: 'reviewBonus', value: 1.5 }, tier: 3 },
-    { id: 'synth', name: 'Synthétiseur', price: 3500, reqFollowers: 200, reqRep: 0, sceneObject: 'synthGroup', category: 'studio', perk: 'Débloque le Piano Roll', effect: { type: 'unlockAction', value: 'openPianoRoll' }, tier: 3 },
-
-    // --- ACTE 4 : Flex ---
-    { id: 'guitar', name: 'Guitare Murale', price: 1800, reqFollowers: 3000, reqRep: 0, sceneObject: 'guitarGroup', category: 'deco', perk: 'Flex (+5 REP/Story)', effect: { type: 'storyBonus', value: 5 }, tier: 4 }
-];
-
-
-
-
-// Objet de stockage dynamique pour centraliser les bonus actifs de la session
-const activePerks = {
-    multiplierBonus: 0,
-    reviewBonus: 0,
-    storyBonus: 0
-};
-
-function applyFurniturePerk(effect) {
-    if (!effect || effect.type === 'none') return;
-    
-    switch (effect.type) {
-        case 'multiplier':
-            activePerks.multiplierBonus += effect.value;
-            break;
-        case 'reviewBonus':
-            activePerks.reviewBonus += effect.value;
-            break;
-        case 'storyBonus':
-            activePerks.storyBonus += effect.value;
-            break;
-        // Les "unlockAction" n'ont pas besoin d'être stockés ici, 
-        // ils seront vérifiés à la volée avec ownedFurniture.includes()
-    }
-}
-
-function recalculateActivePerks() {
-    activePerks.multiplierBonus = 0;
-    activePerks.reviewBonus = 0;
-    activePerks.storyBonus = 0;
-    
-    if (state && state.ownedFurniture) {
-        state.ownedFurniture.forEach(fid => {
-            const item = FURNITURE_CATALOG.find(f => f.id === fid);
-            if (item && item.effect) {
-                applyFurniturePerk(item.effect);
-            }
-        });
-    }
-}
-
-function getFurniture3DObject(sceneObjectName) {
-    if (sceneObjectName === 'tableGroup') return typeof sideTableGroup !== 'undefined' ? sideTableGroup : null;
-    if (sceneObjectName === 'rugMesh') return typeof rugGroup !== 'undefined' ? rugGroup : null;
-    if (sceneObjectName === 'sofaGroup') return typeof sofaGroup !== 'undefined' ? sofaGroup : null;
-    if (sceneObjectName === 'crateGroup') return typeof crateGroup !== 'undefined' ? crateGroup : null;
-    if (sceneObjectName === 'tvGroup') return typeof tvGroup !== 'undefined' ? tvGroup : null;
-    if (sceneObjectName === 'lampGroup') return typeof lampGroup !== 'undefined' ? lampGroup : null;
-    if (sceneObjectName === 'rackGroup') return typeof rackGroup !== 'undefined' ? rackGroup : null;
-    if (sceneObjectName === 'acousticGroup') return typeof acousticGroup !== 'undefined' ? acousticGroup : null;
-    if (sceneObjectName === 'synthGroup') return typeof synthGroup !== 'undefined' ? synthGroup : null;
-    if (sceneObjectName === 'guitarGroup') return typeof guitarGroup !== 'undefined' ? guitarGroup : null;
-    return null;
-}
-
-function syncFurniture3DVisibility() {
-    if (typeof FURNITURE_CATALOG === 'undefined') return;
-    FURNITURE_CATALOG.forEach(item => {
-        const obj = getFurniture3DObject(item.sceneObject);
-        if (obj) {
-            const isOwned = state && state.ownedFurniture && state.ownedFurniture.includes(item.id);
-            obj.visible = Boolean(isOwned);
-        }
-    });
-
-    if (window.pixarLamp && state && state.ownedFurniture) {
-        const hasLamp = state.ownedFurniture.includes('lamp');
-        if (!hasLamp) {
-            window.pixarLamp.userData.isOn = false;
-            if (window.pixarLamp.userData.spot) {
-                window.pixarLamp.userData.spot.intensity = 0;
-                window.pixarLamp.userData.spot.visible = false;
-            }
-            if (window.pixarLamp.userData.bulb) {
-                window.pixarLamp.userData.bulb.material.emissiveIntensity = 0;
-                window.pixarLamp.userData.bulb.material.needsUpdate = true;
-            }
-        }
-    }
-}
 
         // ==========================================
         // --- FLOATING VITALS BADGES (3D → 2D projection) ---
