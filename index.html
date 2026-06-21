@@ -3059,7 +3059,6 @@ const DEFAULT_STATE = {
         // BAC DE DISQUAIRE (ACHIEVEMENTS) - VERSION XXL ISOMÉTRIQUE
         // ==========================================
         const crateGroup = new THREE.Group();
-        crateGroup.visible = false;
         // Position ajustée pour qu'il soit contre le lit
         crateGroup.position.set(3.8, -1, 0.5); 
         
@@ -3247,7 +3246,6 @@ const DEFAULT_STATE = {
         // TAPIS CENTRAL (Agrandit et devant le canapé)
         // ==========================================
         const rugGroup = new THREE.Group();
-        rugGroup.visible = false;
         // Décalé vers la gauche et aligné avec le canapé
         rugGroup.position.set(-0.5, -0.99, 1.5);
 
@@ -3270,7 +3268,6 @@ const DEFAULT_STATE = {
         // RACK HARDWARE ANALOGIQUE
         // ==========================================
         const rackGroup = new THREE.Group();
-        rackGroup.visible = false;
             rackGroup.position.set(1.3, -1, -4.45);
             rackGroup.rotation.x = -Math.PI / 36;
 
@@ -3375,7 +3372,6 @@ const DEFAULT_STATE = {
         // LAMPE PIXAR (Sur le Rack Analogique)
         // ==========================================
         const lampGroup = new THREE.Group();
-        lampGroup.visible = false;
         // Le rack fait environ 1.8 de haut, on pose la lampe sur le sommet
         lampGroup.position.set(0, 1.9, 0.2);
 
@@ -3538,7 +3534,6 @@ const DEFAULT_STATE = {
         // PANNEAUX ACOUSTIQUES (Mousse Studio Réaliste)
         // ==========================================
         const acousticGroup = new THREE.Group();
-        acousticGroup.visible = false;
 
         // Matériaux : Noir ultra-mat pour absorber la lumière (et le son)
         const foamMat = new THREE.MeshStandardMaterial({ color: '#242424', roughness: 1.0 });
@@ -3656,7 +3651,6 @@ const DEFAULT_STATE = {
         // CANAPÉ STUDIO (Contre le mur de gauche)
         // ==========================================
         const sofaGroup = new THREE.Group();
-        sofaGroup.visible = false;
         // Placé contre le mur de gauche (x = -4.2), vers le bas de la pièce (z = 1.5)
         sofaGroup.position.set(-4.2, -1, 1.5);
         sofaGroup.rotation.y = Math.PI / 2; // Orienté vers le centre de la pièce
@@ -3693,7 +3687,6 @@ const DEFAULT_STATE = {
         // TABLE BASSE (Centrée devant le canapé)
         // ==========================================
         const sideTableGroup = new THREE.Group();
-        sideTableGroup.visible = false;
         // X=-2.6 (devant le canapé), Y=-1 (sol), Z=1.5 (centré sur le canapé)
         sideTableGroup.position.set(-1.4, -1, 1.5);
 
@@ -3725,7 +3718,6 @@ const DEFAULT_STATE = {
         // TÉLÉVISION ÉTEINTE XXL (Posée sur la table basse)
         // ==========================================
         const tvGroup = new THREE.Group();
-        tvGroup.visible = false;
         // On la pose sur le plateau de la table (Y local = 0.35 hauteur + 0.025 épaisseur)
         tvGroup.position.set(0, 0.375, 0);
 
@@ -3865,7 +3857,6 @@ const DEFAULT_STATE = {
     // SYNTHÉTISEUR SUR PIED X-STAND
     // ==========================================
     const synthGroup = new THREE.Group();
-    synthGroup.visible = false;
     synthGroup.position.set(-4.35, -1, -1.35);
     synthGroup.rotation.y = Math.PI / 2;
 
@@ -4030,7 +4021,6 @@ const DEFAULT_STATE = {
         // GUITARE ÉLECTRIQUE RÉALISTE AU MUR (Proportions corrigées, Sans ombres)
         // ==========================================
         const guitarGroup = new THREE.Group();
-        guitarGroup.visible = false;
         // Positionnement : mur de gauche
         guitarGroup.position.set(-4.9, 2.0, -3.5); 
         guitarGroup.rotation.y = Math.PI / 2; // Face à la pièce
@@ -4626,13 +4616,38 @@ const DEFAULT_STATE = {
             return null;
         }
 
+        const silhouetteMaterial = new THREE.MeshBasicMaterial({
+            color: 0x111115,
+            transparent: true,
+            opacity: 0.82
+        });
+
         function syncFurniture3DVisibility() {
             if (typeof FURNITURE_CATALOG === 'undefined') return;
             FURNITURE_CATALOG.forEach(item => {
                 const obj = getFurniture3DObject(item.sceneObject);
                 if (obj) {
                     const isOwned = state && state.ownedFurniture && state.ownedFurniture.includes(item.id);
-                    obj.visible = Boolean(isOwned);
+                    obj.visible = true; // Silhouette or original is always visible
+
+                    obj.traverse(child => {
+                        if (child.isMesh) {
+                            if (!child.userData.originalMaterial) {
+                                child.userData.originalMaterial = child.material;
+                            }
+                            child.material = isOwned ? child.userData.originalMaterial : silhouetteMaterial;
+                        } else if (child.isLine || child.isLineSegments) {
+                            if (child.userData.originalVisible === undefined) {
+                                child.userData.originalVisible = child.visible;
+                            }
+                            child.visible = isOwned ? child.userData.originalVisible : false;
+                        } else if (child.isLight) {
+                            if (child.userData.originalIntensity === undefined) {
+                                child.userData.originalIntensity = child.intensity;
+                            }
+                            child.intensity = isOwned ? child.userData.originalIntensity : 0;
+                        }
+                    });
                 }
             });
 
@@ -4645,8 +4660,7 @@ const DEFAULT_STATE = {
                         window.pixarLamp.userData.spot.visible = false;
                     }
                     if (window.pixarLamp.userData.bulb) {
-                        window.pixarLamp.userData.bulb.material.emissiveIntensity = 0;
-                        window.pixarLamp.userData.bulb.material.needsUpdate = true;
+                        window.pixarLamp.userData.bulb.material = silhouetteMaterial;
                     }
                 }
             }
@@ -5189,13 +5203,22 @@ const DEFAULT_STATE = {
                         item.mesh.userData.baseEmissiveIntensity = 0.1 + (proximityFocus * 0.8) + (Math.sin(time) * 0.1);
                     }
 
+                    const getFurnitureId = (name) => {
+                        if (name === 'synth_mesh') return 'synth';
+                        if (name === 'sofa_mesh') return 'sofa';
+                        if (name === 'interactiveLamp') return 'lamp';
+                        return null;
+                    };
+                    const fid = getFurnitureId(item.mesh.name);
+                    const isFurnitureOwned = !fid || (state && state.ownedFurniture && state.ownedFurniture.includes(fid));
+
                     let targetEmissive = item.mesh.userData.baseEmissiveIntensity || 0;
-                    let targetLineOp = 0.4; 
+                    let targetLineOp = isFurnitureOwned ? 0.4 : 0.0; 
                     let targetLineColor = defColor;
 
                     // Hover override: if edges.userData.hovered is set by pointermove, force highlight
-                    const isHovered = !!(item.edges && item.edges.userData && item.edges.userData.hovered);
-                    if (dist < customDist || isHovered) {
+                    const isHovered = isFurnitureOwned && !!(item.edges && item.edges.userData && item.edges.userData.hovered);
+                    if (isFurnitureOwned && (dist < customDist || isHovered)) {
                         isNearSomething = true;
                         if (!(item.mesh.geometry && item.mesh.geometry.type === "PlaneGeometry" && item.mesh.name === 'pc_mesh')) {
                             targetEmissive += 0.25; 
