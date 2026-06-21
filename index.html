@@ -1369,10 +1369,7 @@
             transition: color 0.3s ease;
         }
 
-        /* Reputation gauge */
-        .hud-rep-gauge { display: inline-block; position: relative; width: 6.5rem; height: 0.6rem; border-radius: 999px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); overflow: hidden; box-shadow: inset 0 -2px 6px rgba(0,0,0,0.4); }
-        .hud-rep-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background-image: linear-gradient(90deg, var(--retro-orange), var(--accent)); box-shadow: 0 0 10px rgba(255,140,40,0.18); transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
-        .hud-rep-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.65rem; color: white; pointer-events: none; text-shadow: 0 1px 6px rgba(0,0,0,0.6); }
+        /* Reputation gauge (Removed old CSS, now fully Tailwind) */
         /* Inspiration gauge */
         #hud-inspi-val { font-weight: 700; font-size: 0.65rem; color: white; text-shadow: 0 1px 6px rgba(0,0,0,0.6); }
         @keyframes moneyPulse {
@@ -1705,11 +1702,13 @@
                     <span class="text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] text-[10px] md:text-lg">$$$</span> <span id="hud-money" class="text-white text-[11px] md:text-lg">0</span>
                 </div>
                 
-                <div class="flex items-center gap-2 md:gap-3 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)" onmouseleave="!isMobile && hideTooltip()">
-                    <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)] text-[10px] md:text-lg">REP</span>
-                    <div class="hud-rep-gauge ml-1 md:ml-2" role="progressbar" aria-label="Reputation" aria-valuemin="0" aria-valuemax="100">
-                        <div id="hud-rep-fill" class="hud-rep-fill"></div>
-                        <div id="hud-rep-num" class="hud-rep-num">0</div>
+                <div class="flex flex-col justify-center cursor-pointer px-2 md:px-4 py-1.5 md:py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('rep', this)" onmouseenter="!isMobile && showTooltip('rep', this)" onmouseleave="!isMobile && hideTooltip()">
+                    <div class="flex items-center justify-between w-full mb-1">
+                        <span class="text-[var(--retro-orange)] drop-shadow-[0_0_5px_var(--retro-orange)] text-[10px] md:text-xs font-bold tracking-widest">REP</span>
+                        <span id="hud-rep-num" class="text-white text-[11px] md:text-sm font-bold ml-2">0</span>
+                    </div>
+                    <div class="relative min-w-[80px] md:min-w-[120px] h-2.5 bg-black/60 rounded-full shadow-inner border border-white/5 overflow-hidden" role="progressbar" aria-label="Reputation" aria-valuemin="0" aria-valuemax="100">
+                        <div id="hud-rep-fill" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-orange-500 to-amber-400 shadow-[0_0_10px_rgba(249,115,22,0.4)] rounded-full transition-all duration-500 ease-out" style="width: 0%;"></div>
                     </div>
                 </div>
                 
