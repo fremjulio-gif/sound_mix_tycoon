@@ -4510,36 +4510,33 @@ const DEFAULT_STATE = {
         const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp', 'speaker_mesh', 'achievements_board_mesh']; // Ajout de 'speaker_mesh'
         const highlightItems = [];
 
-        function initProximityHighlight() {
-            scene.traverse(child => {
-                if (child.isMesh && interactableNames.includes(child.name)) {
-                    
-                    if (child.material) {
-                        child.material = child.material.clone();
-                        
-                        // On sauvegarde l'intensité d'origine (vital pour l'écran PC qui brille déjà)
-                        const baseInt = child.material.emissiveIntensity || 0;
-                        child.userData.baseEmissiveIntensity = baseInt;
-                        
-                        // Si l'objet ne brille pas de base, on lui assigne sa propre couleur en emissive
-                        if (baseInt === 0) {
-                            child.material.emissive = child.material.color.clone(); 
-                        }
-                        child.material.needsUpdate = true;
+        window.syncStudioSilhouettes = function() {
+    // Sécurité vitale : on s'assure que la scène existe avant de toucher à quoi que ce soit
+    if (typeof scene === 'undefined' || !scene || !state.ownedFurniture) return;
+
+    scene.traverse((child) => {
+        if (child.isMesh && child.userData && child.userData.originalMaterial) {
+            // Identifier à quel objet du catalogue ce mesh appartient
+            const catalogItem = FURNITURE_CATALOG.find(f => 
+                f.sceneObject === child.name || 
+                f.sceneObject === child.parent?.name || 
+                child.name.includes(f.id)
+            );
+            
+            if (catalogItem) {
+                if (state.ownedFurniture.includes(catalogItem.id)) {
+                    // Objet possédé : texture normale
+                    child.material = child.userData.originalMaterial;
+                } else {
+                    // Objet non possédé : silhouette sombre
+                    if (typeof silhouetteMaterial !== 'undefined') {
+                        child.material = silhouetteMaterial;
                     }
-
-                    let edgesLine = null;
-                    child.children.forEach(subChild => {
-                        if (subChild.isLineSegments && subChild.material) {
-                            subChild.material = subChild.material.clone();
-                            edgesLine = subChild;
-                        }
-                    });
-
-                    highlightItems.push({ mesh: child, edges: edgesLine });
                 }
-            });
+            }
         }
+    });
+};
 
         initProximityHighlight();
         // If some objects registered outlines earlier (created before highlight system), merge them in
@@ -5476,6 +5473,7 @@ const DEFAULT_STATE = {
 
         // --- LE RENDU FINAL (INDISPENSABLE POUR VOIR LA ROOM) ---
         renderer.render(scene, camera);
+        syncStudioSilhouettes()
     }
 
         
@@ -9156,6 +9154,9 @@ window.addEventListener('touchstart', onPointerMoveDiegetic, {passive: true});
                         MusicSystem.setMasterVolume(window.masterVolume);
                         MusicSystem.setMusicVolume(window.musicVolume);
                     }
+                    if (!state.ownedFurniture) {
+                    state.ownedFurniture = [];
+                }
                     // --------------------------------------------
 
                     // 3. Parsing sécurisé des valeurs
@@ -10318,9 +10319,21 @@ window.addEventListener('touchstart', onPointerMoveDiegetic, {passive: true});
             }
         }
 
+
+       // Fonction de recalcul des bonus (évite le crash ReferenceError)
+    window.recalculateActivePerks = function() {    
+    // Si la structure des perks existe, on la réinitialise
+    if (typeof activePerks !== 'undefined') {
+        activePerks.moneyMultiplier = 1.0;
+        activePerks.expMultiplier = 1.0;
+        // On ajoutera la vraie logique de calcul plus tard
+    }
+    console.log("Perks recalculés avec succès.");
+    }; 
+
     
 
-        function buyFurniture(id) {
+    function buyFurniture(id) {
     const item = FURNITURE_CATALOG.find(f => f.id === id);
     if (!item) return;
 
