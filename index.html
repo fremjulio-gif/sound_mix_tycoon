@@ -1782,26 +1782,6 @@
             </div>
         </div>
 
-        <div id="studio-buy-tooltip" class="fixed z-[100] bg-[var(--glass-bg)] backdrop-blur-[20px] border border-[var(--glass-border)] rounded-2xl p-5 w-[300px] opacity-0 pointer-events-none transition-all duration-300 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.2)] font-sans text-white flex flex-col gap-3 transform -translate-x-1/2 -translate-y-full mt-[-20px]">
-    <div class="flex justify-between items-start border-b border-white/10 pb-2">
-        <h4 id="tt-name" class="font-bold text-base text-white tracking-wide">Nom Objet</h4>
-        <span id="tt-cat" class="text-[9px] font-retro text-[var(--accent)] px-2 py-1 bg-[var(--accent)]/10 border border-[var(--accent)]/20 rounded">CAT</span>
-    </div>
-    <p id="tt-desc" class="text-xs text-gray-300 leading-snug">Description du bonus...</p>
-    
-    <div class="space-y-1.5 mb-2 text-[10px] font-retro text-gray-400 border-t border-white/5 pt-3">
-        <div class="flex justify-between items-center">
-            <span>Req:</span>
-            <span id="tt-req" class="text-white font-bold">Aucun</span>
-        </div>
-        <div class="flex justify-between items-center">
-            <span>Prix:</span>
-            <span id="tt-price" class="text-[var(--retro-green)] text-sm drop-shadow-[0_0_5px_var(--retro-green)]">$0</span>
-        </div>
-    </div>
-    <button id="tt-buy-btn" class="w-full btn-action py-3 text-[11px] rounded-lg shadow-lg pointer-events-auto tracking-widest font-bold">INSTALLER</button>
-</div>
-
         <div id="room-ui"></div>
 
         <button id="audio-settings-gear" class="btn-system" onclick="openAudioSettings()" title="Paramètres">
@@ -2365,6 +2345,7 @@
                 <div class="flex border-b border-[var(--glass-border)] text-[12px] md:text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-black/60 font-bold">
                     <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
                     <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
+                    <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-studio" onclick="switchBrowserTab('studio')">Studio+</button>
                 </div>
                 <div class="window-content" id="browser-content"></div>
             </div>
@@ -2550,6 +2531,7 @@ const DEFAULT_STATE = {
     let loadPercentage = 0;
 
     function simulateLoading() {
+        const sLoader = document.getElementById('studio-loader');
         const lText = document.getElementById('loader-text');
         const lProgress = document.getElementById('loader-progress');
         if (!sLoader || !lText || !lProgress) return;
@@ -3077,6 +3059,7 @@ const DEFAULT_STATE = {
         // BAC DE DISQUAIRE (ACHIEVEMENTS) - VERSION XXL ISOMÉTRIQUE
         // ==========================================
         const crateGroup = new THREE.Group();
+        crateGroup.visible = false;
         // Position ajustée pour qu'il soit contre le lit
         crateGroup.position.set(3.8, -1, 0.5); 
         
@@ -3264,6 +3247,7 @@ const DEFAULT_STATE = {
         // TAPIS CENTRAL (Agrandit et devant le canapé)
         // ==========================================
         const rugGroup = new THREE.Group();
+        rugGroup.visible = false;
         // Décalé vers la gauche et aligné avec le canapé
         rugGroup.position.set(-0.5, -0.99, 1.5);
 
@@ -3286,6 +3270,7 @@ const DEFAULT_STATE = {
         // RACK HARDWARE ANALOGIQUE
         // ==========================================
         const rackGroup = new THREE.Group();
+        rackGroup.visible = false;
             rackGroup.position.set(1.3, -1, -4.45);
             rackGroup.rotation.x = -Math.PI / 36;
 
@@ -3390,6 +3375,7 @@ const DEFAULT_STATE = {
         // LAMPE PIXAR (Sur le Rack Analogique)
         // ==========================================
         const lampGroup = new THREE.Group();
+        lampGroup.visible = false;
         // Le rack fait environ 1.8 de haut, on pose la lampe sur le sommet
         lampGroup.position.set(0, 1.9, 0.2);
 
@@ -3552,6 +3538,7 @@ const DEFAULT_STATE = {
         // PANNEAUX ACOUSTIQUES (Mousse Studio Réaliste)
         // ==========================================
         const acousticGroup = new THREE.Group();
+        acousticGroup.visible = false;
 
         // Matériaux : Noir ultra-mat pour absorber la lumière (et le son)
         const foamMat = new THREE.MeshStandardMaterial({ color: '#242424', roughness: 1.0 });
@@ -3669,6 +3656,7 @@ const DEFAULT_STATE = {
         // CANAPÉ STUDIO (Contre le mur de gauche)
         // ==========================================
         const sofaGroup = new THREE.Group();
+        sofaGroup.visible = false;
         // Placé contre le mur de gauche (x = -4.2), vers le bas de la pièce (z = 1.5)
         sofaGroup.position.set(-4.2, -1, 1.5);
         sofaGroup.rotation.y = Math.PI / 2; // Orienté vers le centre de la pièce
@@ -3705,6 +3693,7 @@ const DEFAULT_STATE = {
         // TABLE BASSE (Centrée devant le canapé)
         // ==========================================
         const sideTableGroup = new THREE.Group();
+        sideTableGroup.visible = false;
         // X=-2.6 (devant le canapé), Y=-1 (sol), Z=1.5 (centré sur le canapé)
         sideTableGroup.position.set(-1.4, -1, 1.5);
 
@@ -3736,6 +3725,7 @@ const DEFAULT_STATE = {
         // TÉLÉVISION ÉTEINTE XXL (Posée sur la table basse)
         // ==========================================
         const tvGroup = new THREE.Group();
+        tvGroup.visible = false;
         // On la pose sur le plateau de la table (Y local = 0.35 hauteur + 0.025 épaisseur)
         tvGroup.position.set(0, 0.375, 0);
 
@@ -3875,6 +3865,7 @@ const DEFAULT_STATE = {
     // SYNTHÉTISEUR SUR PIED X-STAND
     // ==========================================
     const synthGroup = new THREE.Group();
+    synthGroup.visible = false;
     synthGroup.position.set(-4.35, -1, -1.35);
     synthGroup.rotation.y = Math.PI / 2;
 
@@ -4039,6 +4030,7 @@ const DEFAULT_STATE = {
         // GUITARE ÉLECTRIQUE RÉALISTE AU MUR (Proportions corrigées, Sans ombres)
         // ==========================================
         const guitarGroup = new THREE.Group();
+        guitarGroup.visible = false;
         // Positionnement : mur de gauche
         guitarGroup.position.set(-4.9, 2.0, -3.5); 
         guitarGroup.rotation.y = Math.PI / 2; // Face à la pièce
@@ -4509,83 +4501,38 @@ const DEFAULT_STATE = {
         const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp', 'speaker_mesh', 'achievements_board_mesh']; // Ajout de 'speaker_mesh'
         const highlightItems = [];
 
-        window.syncStudioSilhouettes = function() {
-    if (typeof scene === 'undefined' || !scene) return;
-    if (!state.ownedFurniture) state.ownedFurniture = [];
-
-    scene.traverse((child) => {
-        if (child.isMesh) {
-            // On cherche si cet objet ou l'un de ses parents est dans le catalogue
-            const catalogItem = FURNITURE_CATALOG.find(f => 
-                child.name.includes(f.sceneObject) || 
-                (child.parent && child.parent.name.includes(f.sceneObject)) ||
-                (child.parent?.parent && child.parent.parent.name.includes(f.sceneObject))
-            );
-
-            if (catalogItem) {
-                // Sauvegarde du matériau d'origine s'il n'existe pas encore
-                if (!child.userData.originalMaterial) {
-                    child.userData.originalMaterial = child.material;
-                }
-
-                // Application du filtre selon la possession
-                if (state.ownedFurniture.includes(catalogItem.id)) {
-                    child.material = child.userData.originalMaterial;
-                } else {
-                    if (typeof silhouetteMaterial !== 'undefined') {
-                        child.material = silhouetteMaterial;
-                    } else {
-                        // Matériau de secours si silhouetteMaterial n'est pas instancié
-                        child.material = new THREE.MeshStandardMaterial({
-                            color: 0x050505,
-                            roughness: 1.0,
-                            metalness: 0.0,
-                            transparent: true,
-                            opacity: 0.9
-                        });
-                    }
-                }
-            }
-        }
-    });
-};
-
-                // ==========================================
-        // FONCTION MANQUANTE : INITIALISATION PROXIMITÉ
-        // ==========================================
         function initProximityHighlight() {
-            highlightItems.length = 0; // Vide la liste au cas où
-            
-            scene.traverse((child) => {
-                // Si l'objet est un mesh et fait partie des objets interactifs
+            scene.traverse(child => {
                 if (child.isMesh && interactableNames.includes(child.name)) {
                     
-                    // Cherche s'il a déjà des bordures (LineSegments)
-                    let edges = child.children.find(c => c.isLineSegments);
-                    
-                    if (!edges) {
-                        // S'il n'en a pas, on lui en crée des invisibles par défaut
-                        const edgeGeo = new THREE.EdgesGeometry(child.geometry);
-                        const edgeMat = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0 });
-                        edges = new THREE.LineSegments(edgeGeo, edgeMat);
-                        child.add(edges);
-                    } else {
-                        // S'il en a déjà, on s'assure que la transparence est activable
-                        edges.material.transparent = true;
+                    if (child.material) {
+                        child.material = child.material.clone();
+                        
+                        // On sauvegarde l'intensité d'origine (vital pour l'écran PC qui brille déjà)
+                        const baseInt = child.material.emissiveIntensity || 0;
+                        child.userData.baseEmissiveIntensity = baseInt;
+                        
+                        // Si l'objet ne brille pas de base, on lui assigne sa propre couleur en emissive
+                        if (baseInt === 0) {
+                            child.material.emissive = child.material.color.clone(); 
+                        }
+                        child.material.needsUpdate = true;
                     }
-                    
-                    // Sauvegarde l'intensité lumineuse de base si elle n'existe pas
-                    if (child.userData.baseEmissiveIntensity === undefined) {
-                        child.userData.baseEmissiveIntensity = child.material.emissiveIntensity || 0;
-                    }
-                    
-                    // Enregistre l'objet pour la boucle animate3D()
-                    highlightItems.push({ mesh: child, edges: edges });
+
+                    let edgesLine = null;
+                    child.children.forEach(subChild => {
+                        if (subChild.isLineSegments && subChild.material) {
+                            subChild.material = subChild.material.clone();
+                            edgesLine = subChild;
+                        }
+                    });
+
+                    highlightItems.push({ mesh: child, edges: edgesLine });
                 }
             });
         }
 
-        initProximityHighlight(); // Appel de la fonction maintenant qu'elle existe
+        initProximityHighlight();
         // If some objects registered outlines earlier (created before highlight system), merge them in
         try {
             if (window.highlightItems && Array.isArray(window.highlightItems)) {
@@ -4679,38 +4626,13 @@ const DEFAULT_STATE = {
             return null;
         }
 
-        const silhouetteMaterial = new THREE.MeshBasicMaterial({
-            color: 0x111115,
-            transparent: true,
-            opacity: 0.82
-        });
-
         function syncFurniture3DVisibility() {
             if (typeof FURNITURE_CATALOG === 'undefined') return;
             FURNITURE_CATALOG.forEach(item => {
                 const obj = getFurniture3DObject(item.sceneObject);
                 if (obj) {
                     const isOwned = state && state.ownedFurniture && state.ownedFurniture.includes(item.id);
-                    obj.visible = true; // Silhouette or original is always visible
-
-                    obj.traverse(child => {
-                        if (child.isMesh) {
-                            if (!child.userData.originalMaterial) {
-                                child.userData.originalMaterial = child.material;
-                            }
-                            child.material = isOwned ? child.userData.originalMaterial : silhouetteMaterial;
-                        } else if (child.isLine || child.isLineSegments) {
-                            if (child.userData.originalVisible === undefined) {
-                                child.userData.originalVisible = child.visible;
-                            }
-                            child.visible = isOwned ? child.userData.originalVisible : false;
-                        } else if (child.isLight) {
-                            if (child.userData.originalIntensity === undefined) {
-                                child.userData.originalIntensity = child.intensity;
-                            }
-                            child.intensity = isOwned ? child.userData.originalIntensity : 0;
-                        }
-                    });
+                    obj.visible = Boolean(isOwned);
                 }
             });
 
@@ -4723,7 +4645,8 @@ const DEFAULT_STATE = {
                         window.pixarLamp.userData.spot.visible = false;
                     }
                     if (window.pixarLamp.userData.bulb) {
-                        window.pixarLamp.userData.bulb.material = silhouetteMaterial;
+                        window.pixarLamp.userData.bulb.material.emissiveIntensity = 0;
+                        window.pixarLamp.userData.bulb.material.needsUpdate = true;
                     }
                 }
             }
@@ -5266,22 +5189,13 @@ const DEFAULT_STATE = {
                         item.mesh.userData.baseEmissiveIntensity = 0.1 + (proximityFocus * 0.8) + (Math.sin(time) * 0.1);
                     }
 
-                    const getFurnitureId = (name) => {
-                        if (name === 'synth_mesh') return 'synth';
-                        if (name === 'sofa_mesh') return 'sofa';
-                        if (name === 'interactiveLamp') return 'lamp';
-                        return null;
-                    };
-                    const fid = getFurnitureId(item.mesh.name);
-                    const isFurnitureOwned = !fid || (state && state.ownedFurniture && state.ownedFurniture.includes(fid));
-
                     let targetEmissive = item.mesh.userData.baseEmissiveIntensity || 0;
-                    let targetLineOp = isFurnitureOwned ? 0.4 : 0.0; 
+                    let targetLineOp = 0.4; 
                     let targetLineColor = defColor;
 
                     // Hover override: if edges.userData.hovered is set by pointermove, force highlight
-                    const isHovered = isFurnitureOwned && !!(item.edges && item.edges.userData && item.edges.userData.hovered);
-                    if (isFurnitureOwned && (dist < customDist || isHovered)) {
+                    const isHovered = !!(item.edges && item.edges.userData && item.edges.userData.hovered);
+                    if (dist < customDist || isHovered) {
                         isNearSomething = true;
                         if (!(item.mesh.geometry && item.mesh.geometry.type === "PlaneGeometry" && item.mesh.name === 'pc_mesh')) {
                             targetEmissive += 0.25; 
@@ -5520,7 +5434,6 @@ const DEFAULT_STATE = {
 
         // --- LE RENDU FINAL (INDISPENSABLE POUR VOIR LA ROOM) ---
         renderer.render(scene, camera);
-        syncStudioSilhouettes()
     }
 
         
@@ -8418,128 +8331,6 @@ function triggerRankUp(oldRank, newRank) {
                 }
             }, { passive: false });
         }
-
-
-        // ==========================================
-// UI DIÉGÉTIQUE : RAYCASTER POUR STUDIO+
-// ==========================================
-const diegeticRaycaster = new THREE.Raycaster();
-const diegeticMouse = new THREE.Vector2();
-const tooltipEl = document.getElementById('studio-buy-tooltip');
-let currentHoveredItemId = null;
-
-function onPointerMoveDiegetic(event) {
-    if ((document.getElementById('pc-ui-layer') && document.getElementById('pc-ui-layer').style.display === 'flex') || window.isIntroAnimating) {
-        hideStudioTooltip();
-        return;
-    }
-
-    let cx = event.touches ? event.touches[0].clientX : event.clientX;
-    let cy = event.touches ? event.touches[0].clientY : event.clientY;
-
-    diegeticMouse.x = (cx / window.innerWidth) * 2 - 1;
-    diegeticMouse.y = -(cy / window.innerHeight) * 2 + 1;
-
-    diegeticRaycaster.setFromCamera(diegeticMouse, camera);
-    const intersects = diegeticRaycaster.intersectObjects(scene.children, true);
-    
-    let hitMesh = null;
-    let hitItem = null;
-
-    for (let i = 0; i < intersects.length; i++) {
-        let current = intersects[i].object;
-        
-        // Remonter la chaîne des parents pour trouver une correspondance dans le catalogue
-        while (current && current !== scene) {
-            const found = FURNITURE_CATALOG.find(f => 
-                current.name && current.name.includes(f.sceneObject)
-            );
-            
-            if (found) {
-                // On vérifie s'il n'est pas déjà acheté
-                if (!state.ownedFurniture || !state.ownedFurniture.includes(found.id)) {
-                    hitMesh = intersects[i].object; // Le point d'impact visuel
-                    hitItem = found;
-                }
-                break;
-            }
-            current = current.parent;
-        }
-        if (hitItem) break;
-    }
-
-    if (hitMesh && hitItem) {
-        showStudioTooltip(hitMesh, hitItem.id);
-    } else {
-        hideStudioTooltip();
-    }
-}
-
-function showStudioTooltip(mesh, itemId) {
-    if (currentHoveredItemId === itemId) return; // Évite de recalculer si déjà affiché
-    
-    const item = FURNITURE_CATALOG.find(f => f.id === itemId);
-    if (!item || !tooltipEl) return;
-
-    currentHoveredItemId = itemId;
-
-    // Conversion 3D -> 2D
-    const vector = new THREE.Vector3();
-    mesh.getWorldPosition(vector);
-    vector.y += 0.8; // Léger offset vers le haut pour ne pas cacher l'objet
-    vector.project(camera);
-
-    const x = (vector.x * .5 + .5) * window.innerWidth;
-    const y = (vector.y * -.5 + .5) * window.innerHeight;
-
-    tooltipEl.style.left = `${x}px`;
-    tooltipEl.style.top = `${y}px`;
-
-    // Remplissage des données HTML
-    document.getElementById('tt-name').innerText = item.name;
-    document.getElementById('tt-cat').innerText = item.category.toUpperCase();
-    document.getElementById('tt-desc').innerText = item.perk;
-    
-    let reqs = [];
-    if (item.reqRep > 0) reqs.push(`${item.reqRep} REP`);
-    if (item.reqFollowers > 0) reqs.push(`${formatNum(item.reqFollowers)} FANS`);
-    let followersText = typeof formatNum === 'function' ? formatNum(item.reqFollowers) : item.reqFollowers;
-    if (item.reqFollowers > 0) reqs.push(`${followersText} FANS`);
-    
-    const canAfford = state.money >= item.price;
-    const meetsReqs = (state.rep >= (item.reqRep || 0)) && (state.followers >= (item.reqFollowers || 0));
-    
-    const btn = document.getElementById('tt-buy-btn');
-    btn.onclick = () => buyFurniture(itemId);
-    
-    if (!canAfford || !meetsReqs) {
-        document.getElementById('tt-price').innerText = `$${item.price}`;
-        document.getElementById('tt-price').className = "text-[var(--retro-red)] text-lg font-bold drop-shadow-[0_0_5px_var(--retro-red)]";
-        btn.disabled = true;
-        btn.innerText = !meetsReqs ? "PRÉREQUIS MANQUANTS" : "FONDS INSUFFISANTS";
-        btn.className = "w-full mt-3 btn-minimal py-3 text-[10px] rounded border-[var(--retro-red)] text-[var(--retro-red)] opacity-50 cursor-not-allowed uppercase font-bold pointer-events-auto";
-    } else {
-        document.getElementById('tt-price').innerText = `$${item.price}`;
-        document.getElementById('tt-price').className = "text-[var(--retro-green)] text-lg font-bold drop-shadow-[0_0_5px_var(--retro-green)]";
-        btn.disabled = false;
-        btn.innerText = `ACHETER ($${item.price})`;
-        btn.className = "w-full mt-3 btn-action py-3 text-[11px] rounded-lg shadow-[0_0_15px_rgba(129,140,248,0.4)] pointer-events-auto tracking-widest font-bold";
-    }
-
-    tooltipEl.classList.remove('opacity-0', 'pointer-events-none');
-    tooltipEl.classList.add('opacity-100'); // Note: Les events pointer sont gérés sur le bouton
-}
-
-function hideStudioTooltip() {
-    if (!tooltipEl || tooltipEl.classList.contains('opacity-0')) return;
-    tooltipEl.classList.remove('opacity-100');
-    tooltipEl.classList.add('opacity-0', 'pointer-events-none');
-    currentHoveredItemId = null;
-}
-
-// Listeners
-window.addEventListener('mousemove', onPointerMoveDiegetic);
-window.addEventListener('touchstart', onPointerMoveDiegetic, {passive: true});
         
         // ==========================================
         // 11. INIT UI
@@ -8735,8 +8526,6 @@ window.addEventListener('touchstart', onPointerMoveDiegetic, {passive: true});
             };
             tlContainer.addEventListener('mousedown', (e) => onTlClick(e.clientX));
             tlContainer.addEventListener('touchstart', (e) => onTlClick(e.touches[0].clientX), { passive: true });
-
-            
 
             // Pré-calcul immédiat des matrices pour éviter les pics de calcul au premier input
             scene.updateMatrixWorld(true);
@@ -9196,9 +8985,6 @@ window.addEventListener('touchstart', onPointerMoveDiegetic, {passive: true});
                         MusicSystem.setMasterVolume(window.masterVolume);
                         MusicSystem.setMusicVolume(window.musicVolume);
                     }
-                    if (!state.ownedFurniture) {
-                    state.ownedFurniture = [];
-                }
                     // --------------------------------------------
 
                     // 3. Parsing sécurisé des valeurs
@@ -10272,15 +10058,18 @@ window.addEventListener('touchstart', onPointerMoveDiegetic, {passive: true});
         function switchBrowserTab(tab) {
             const btnC = document.getElementById('tab-crackz');
             const btnA = document.getElementById('tab-audio');
+            const btnS = document.getElementById('tab-studio');
 
             if (btnC) btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
             if (btnA) btnA.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
-
+            if (btnS) btnS.className = "flex-1 py-4 transition-colors text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
 
             if (tab === 'crackz') {
                 if (btnC) btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] bg-white/10 text-white shadow-inner";
             } else if (tab === 'audio') {
                 if (btnA) btnA.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] bg-white/10 text-white shadow-inner";
+            } else if (tab === 'studio') {
+                if (btnS) btnS.className = "flex-1 py-4 transition-colors bg-white/10 text-white shadow-inner";
             }
 
             renderStore(tab);
@@ -10361,63 +10150,132 @@ window.addEventListener('touchstart', onPointerMoveDiegetic, {passive: true});
             }
         }
 
+        function renderStudioStore() {
+            const content = document.getElementById('browser-content');
+            if (!content) return;
 
-       // Fonction de recalcul des bonus (évite le crash ReferenceError)
-    window.recalculateActivePerks = function() {    
-    // Si la structure des perks existe, on la réinitialise
-    if (typeof activePerks !== 'undefined') {
-        activePerks.moneyMultiplier = 1.0;
-        activePerks.expMultiplier = 1.0;
-        // On ajoutera la vraie logique de calcul plus tard
-    }
-    console.log("Perks recalculés avec succès.");
-    }; 
+            let html = `
+                <div class="p-6 md:p-8 bg-black/30 text-white h-full min-h-[300px] overflow-y-auto custom-scrollbar font-sans shadow-inner">
+                    <div class="flex justify-between items-center mb-8 border-b border-[var(--accent)]/30 pb-4">
+                        <div>
+                            <h3 class="font-bold text-xl text-white tracking-widest uppercase drop-shadow-md">🛋️ STUDIO+ UPGRADES</h3>
+                            <p class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-wider mt-1">Améliore ton studio physique pour booster ta production</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-wider">Bank Balance</div>
+                            <div class="text-lg font-retro font-bold text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)]">$${formatNum(state.money)}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            `;
 
-    
+            FURNITURE_CATALOG.forEach(item => {
+                const alreadyOwned = state.ownedFurniture && state.ownedFurniture.includes(item.id);
+                
+                const missingRep = state.rep < (item.reqRep || 0);
+                const missingFollowers = state.followers < (item.reqFollowers || 0);
+                const isLocked = !alreadyOwned && (missingRep || missingFollowers);
+                const canAfford = state.money >= item.price;
+                
+                let prereqTexts = [];
+                if (item.reqRep > 0) prereqTexts.push(`${item.reqRep} REP`);
+                if (item.reqFollowers > 0) prereqTexts.push(`${formatNum(item.reqFollowers)} Fans`);
+                const prereqStr = prereqTexts.length > 0 ? prereqTexts.join(" & ") : "Aucun";
 
-    function buyFurniture(id) {
-    const item = FURNITURE_CATALOG.find(f => f.id === id);
-    if (!item) return;
+                let buttonHTML = '';
+                if (alreadyOwned) {
+                    buttonHTML = `<button class="w-full btn-minimal py-3 text-xs rounded-lg border-gray-600 text-gray-500 cursor-not-allowed uppercase font-bold" disabled>OWNED</button>`;
+                } else if (isLocked) {
+                    buttonHTML = `<button class="w-full btn-minimal py-3 text-xs rounded-lg opacity-50 cursor-not-allowed uppercase font-bold" disabled>LOCKED</button>`;
+                } else if (!canAfford) {
+                    buttonHTML = `<button class="w-full btn-minimal py-3 text-xs rounded-lg border-[var(--retro-red)] text-[var(--retro-red)] opacity-60 cursor-not-allowed uppercase font-bold" disabled>INSUFFICIENT FUNDS</button>`;
+                } else {
+                    buttonHTML = `<button class="w-full btn-action py-3 text-xs rounded-lg font-bold shadow-lg" onclick="buyFurniture('${item.id}')">INSTALL ($${item.price})</button>`;
+                }
 
-    // Sécurités
-    if (state.ownedFurniture && state.ownedFurniture.includes(id)) return;
-    if (state.money < item.price || state.rep < (item.reqRep || 0) || state.followers < (item.reqFollowers || 0)) {
-        playError();
-        return;
-    }
+                html += `
+                    <div class="border border-[var(--glass-border)] p-5 rounded-xl bg-black/40 hover:border-[var(--accent)] transition-all flex flex-col justify-between group ${alreadyOwned ? 'opacity-85' : ''}">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-base text-white group-hover:text-[var(--accent)] transition-colors">${item.name}</h4>
+                                <span class="text-xs font-retro font-bold text-[var(--accent)]">${item.category.toUpperCase()}</span>
+                            </div>
+                            <p class="text-xs text-[var(--text-muted)] mb-4">${item.perk}</p>
+                            
+                            <div class="space-y-1.5 mb-6 text-[10px] font-retro text-gray-400 border-t border-white/5 pt-3">
+                                <div class="flex justify-between">
+                                    <span>Prereqs:</span>
+                                    <span class="${isLocked ? 'text-[var(--retro-red)] font-bold' : 'text-gray-200'}">${prereqStr}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Price:</span>
+                                    <span class="${!alreadyOwned && !canAfford ? 'text-[var(--retro-red)] font-bold' : 'text-[var(--retro-green)]'}">$${item.price}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            ${buttonHTML}
+                        </div>
+                    </div>
+                `;
+            });
 
-    // 1. Achat & Statut
-    logMoney(-item.price, 'Studio+: ' + item.name);
-    if (!state.ownedFurniture) state.ownedFurniture = [];
-    state.ownedFurniture.push(id);
+            html += `
+                    </div>
+                </div>
+            `;
 
-    // 2. Recalcul des Bonus globaux
-    if (typeof recalculateActivePerks === 'function') {
-        recalculateActivePerks();
-    }
-
-    // 3. Révélation Visuelle 3D (Restauration du Material)
-    scene.traverse(child => {
-        if (child.isMesh && child.userData && child.userData.originalMaterial) {
-            // Correspondance via sceneObject ou nom
-            if (child.name === item.sceneObject || child.parent?.name === item.sceneObject || child.name.includes(item.id)) {
-                child.material = child.userData.originalMaterial;
-                child.material.needsUpdate = true;
-                // Retire la sauvegarde pour que ce ne soit plus considéré comme une silhouette
-                delete child.userData.originalMaterial; 
-            }
+            content.innerHTML = html;
         }
-    });
 
-    // 4. Feedbacks (Fermeture Tooltip, Particules, Sauvegarde)
-    hideStudioTooltip();
-    showToast(`Équipement installé : ${item.name}`, "success");
-    if (typeof fireConfetti === 'function') fireConfetti('store');
-    playSuccess();
-    
-    updateHUD();
-    saveGame();
-}
+        function buyFurniture(id) {
+            const item = FURNITURE_CATALOG.find(f => f.id === id);
+            if (!item) return;
+
+            if (state.ownedFurniture && state.ownedFurniture.includes(id)) {
+                showToast("Tu possèdes déjà cet équipement !", "warning");
+                return;
+            }
+
+            if (state.money < item.price) {
+                showToast("Fonds insuffisants !", "error");
+                playError();
+                return;
+            }
+
+            const missingRep = state.rep < (item.reqRep || 0);
+            const missingFollowers = state.followers < (item.reqFollowers || 0);
+            if (missingRep || missingFollowers) {
+                showToast("Tu ne respectes pas les prérequis de réputation ou de fans !", "error");
+                playError();
+                return;
+            }
+
+            logMoney(-item.price, 'Studio+: ' + item.name);
+            
+            if (!state.ownedFurniture) state.ownedFurniture = [];
+            state.ownedFurniture.push(id);
+
+            if (item.effect) {
+                if (item.effect.type === 'multiplier') {
+                    state.multiplier = (parseFloat(state.multiplier) || 1.0) + item.effect.value;
+                    showToast(`Équipement installé ! Multiplicateur permanent +${item.effect.value}x`, "success");
+                } else {
+                    applyFurniturePerk(item.effect);
+                    showToast(`Équipement installé : ${item.name}`, "success");
+                }
+            }
+
+            syncFurniture3DVisibility();
+
+            if (typeof fireConfetti === 'function') fireConfetti('store');
+            playSuccess();
+            
+            saveGame();
+            updateHUD();
+            renderStudioStore();
+        }
 
         function downloadCrack(id) {
             const crack = cracks.find(c => c.id === id);
