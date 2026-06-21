@@ -4538,7 +4538,42 @@ const DEFAULT_STATE = {
     });
 };
 
-        initProximityHighlight();
+                // ==========================================
+        // FONCTION MANQUANTE : INITIALISATION PROXIMITÉ
+        // ==========================================
+        function initProximityHighlight() {
+            highlightItems.length = 0; // Vide la liste au cas où
+            
+            scene.traverse((child) => {
+                // Si l'objet est un mesh et fait partie des objets interactifs
+                if (child.isMesh && interactableNames.includes(child.name)) {
+                    
+                    // Cherche s'il a déjà des bordures (LineSegments)
+                    let edges = child.children.find(c => c.isLineSegments);
+                    
+                    if (!edges) {
+                        // S'il n'en a pas, on lui en crée des invisibles par défaut
+                        const edgeGeo = new THREE.EdgesGeometry(child.geometry);
+                        const edgeMat = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0 });
+                        edges = new THREE.LineSegments(edgeGeo, edgeMat);
+                        child.add(edges);
+                    } else {
+                        // S'il en a déjà, on s'assure que la transparence est activable
+                        edges.material.transparent = true;
+                    }
+                    
+                    // Sauvegarde l'intensité lumineuse de base si elle n'existe pas
+                    if (child.userData.baseEmissiveIntensity === undefined) {
+                        child.userData.baseEmissiveIntensity = child.material.emissiveIntensity || 0;
+                    }
+                    
+                    // Enregistre l'objet pour la boucle animate3D()
+                    highlightItems.push({ mesh: child, edges: edges });
+                }
+            });
+        }
+
+        initProximityHighlight(); // Appel de la fonction maintenant qu'elle existe
         // If some objects registered outlines earlier (created before highlight system), merge them in
         try {
             if (window.highlightItems && Array.isArray(window.highlightItems)) {
