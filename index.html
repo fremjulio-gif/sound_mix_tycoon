@@ -2550,7 +2550,6 @@ const DEFAULT_STATE = {
     let loadPercentage = 0;
 
     function simulateLoading() {
-        const sLoader = document.getElementById('studio-loader');
         const lText = document.getElementById('loader-text');
         const lProgress = document.getElementById('loader-progress');
         if (!sLoader || !lText || !lProgress) return;
@@ -4511,26 +4510,39 @@ const DEFAULT_STATE = {
         const highlightItems = [];
 
         window.syncStudioSilhouettes = function() {
-    // Sécurité vitale : on s'assure que la scène existe avant de toucher à quoi que ce soit
-    if (typeof scene === 'undefined' || !scene || !state.ownedFurniture) return;
+    if (typeof scene === 'undefined' || !scene) return;
+    if (!state.ownedFurniture) state.ownedFurniture = [];
 
     scene.traverse((child) => {
-        if (child.isMesh && child.userData && child.userData.originalMaterial) {
-            // Identifier à quel objet du catalogue ce mesh appartient
+        if (child.isMesh) {
+            // On cherche si cet objet ou l'un de ses parents est dans le catalogue
             const catalogItem = FURNITURE_CATALOG.find(f => 
-                f.sceneObject === child.name || 
-                f.sceneObject === child.parent?.name || 
-                child.name.includes(f.id)
+                child.name.includes(f.sceneObject) || 
+                (child.parent && child.parent.name.includes(f.sceneObject)) ||
+                (child.parent?.parent && child.parent.parent.name.includes(f.sceneObject))
             );
-            
+
             if (catalogItem) {
+                // Sauvegarde du matériau d'origine s'il n'existe pas encore
+                if (!child.userData.originalMaterial) {
+                    child.userData.originalMaterial = child.material;
+                }
+
+                // Application du filtre selon la possession
                 if (state.ownedFurniture.includes(catalogItem.id)) {
-                    // Objet possédé : texture normale
                     child.material = child.userData.originalMaterial;
                 } else {
-                    // Objet non possédé : silhouette sombre
                     if (typeof silhouetteMaterial !== 'undefined') {
                         child.material = silhouetteMaterial;
+                    } else {
+                        // Matériau de secours si silhouetteMaterial n'est pas instancié
+                        child.material = new THREE.MeshStandardMaterial({
+                            color: 0x050505,
+                            roughness: 1.0,
+                            metalness: 0.0,
+                            transparent: true,
+                            opacity: 0.9
+                        });
                     }
                 }
             }
@@ -8417,53 +8429,47 @@ const tooltipEl = document.getElementById('studio-buy-tooltip');
 let currentHoveredItemId = null;
 
 function onPointerMoveDiegetic(event) {
-    // Si un menu PC est ouvert ou qu'on est sur le tooltip lui-même, on ne fait rien
-    if (document.getElementById('pc-ui-layer').style.display === 'flex' || window.isIntroAnimating) {
+    if ((document.getElementById('pc-ui-layer') && document.getElementById('pc-ui-layer').style.display === 'flex') || window.isIntroAnimating) {
         hideStudioTooltip();
         return;
     }
-    if (event.target && event.target.closest('#studio-buy-tooltip')) return;
 
-    let cx, cy;
-    if (event.touches) {
-        cx = event.touches[0].clientX;
-        cy = event.touches[0].clientY;
-    } else {
-        cx = event.clientX;
-        cy = event.clientY;
-    }
+    let cx = event.touches ? event.touches[0].clientX : event.clientX;
+    let cy = event.touches ? event.touches[0].clientY : event.clientY;
 
     diegeticMouse.x = (cx / window.innerWidth) * 2 - 1;
     diegeticMouse.y = -(cy / window.innerHeight) * 2 + 1;
 
     diegeticRaycaster.setFromCamera(diegeticMouse, camera);
-
     const intersects = diegeticRaycaster.intersectObjects(scene.children, true);
-    let hitSilhouette = null;
-    let hitId = null;
+    
+    let hitMesh = null;
+    let hitItem = null;
 
     for (let i = 0; i < intersects.length; i++) {
-        const mesh = intersects[i].object;
+        let current = intersects[i].object;
         
-        // On vérifie si c'est bien une silhouette non achetée
-        if (mesh.userData && mesh.userData.originalMaterial) {
-            // Cherche dans le catalogue à qui appartient ce mesh (via son nom ou celui de son groupe parent)
-            const catalogItem = FURNITURE_CATALOG.find(f => 
-                f.sceneObject === mesh.name || 
-                f.sceneObject === mesh.parent?.name || 
-                mesh.name.includes(f.id)
+        // Remonter la chaîne des parents pour trouver une correspondance dans le catalogue
+        while (current && current !== scene) {
+            const found = FURNITURE_CATALOG.find(f => 
+                current.name && current.name.includes(f.sceneObject)
             );
             
-            if (catalogItem && (!state.ownedFurniture || !state.ownedFurniture.includes(catalogItem.id))) {
-                hitSilhouette = mesh;
-                hitId = catalogItem.id;
+            if (found) {
+                // On vérifie s'il n'est pas déjà acheté
+                if (!state.ownedFurniture || !state.ownedFurniture.includes(found.id)) {
+                    hitMesh = intersects[i].object; // Le point d'impact visuel
+                    hitItem = found;
+                }
                 break;
             }
+            current = current.parent;
         }
+        if (hitItem) break;
     }
 
-    if (hitSilhouette && hitId) {
-        showStudioTooltip(hitSilhouette, hitId);
+    if (hitMesh && hitItem) {
+        showStudioTooltip(hitMesh, hitItem.id);
     } else {
         hideStudioTooltip();
     }
@@ -8497,7 +8503,8 @@ function showStudioTooltip(mesh, itemId) {
     let reqs = [];
     if (item.reqRep > 0) reqs.push(`${item.reqRep} REP`);
     if (item.reqFollowers > 0) reqs.push(`${formatNum(item.reqFollowers)} FANS`);
-    document.getElementById('tt-req').innerText = reqs.length > 0 ? reqs.join(' & ') : 'Aucun';
+    let followersText = typeof formatNum === 'function' ? formatNum(item.reqFollowers) : item.reqFollowers;
+    if (item.reqFollowers > 0) reqs.push(`${followersText} FANS`);
     
     const canAfford = state.money >= item.price;
     const meetsReqs = (state.rep >= (item.reqRep || 0)) && (state.followers >= (item.reqFollowers || 0));
