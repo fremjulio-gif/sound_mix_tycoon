@@ -2466,7 +2466,7 @@ const DEFAULT_STATE = {
             multiplier: 1.0, plugins: 0, lastLevel: 1,
             stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0, consecutiveFlops: 0, sofaChills: 0, lampToggles: 0, awakeDays: 0 },
             cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, sponsors: {} },
-            inventory: [], ownedCracks: [], downloadedCracks: {},
+            inventory: [], ownedCracks: [], downloadedCracks: {}, ownedFurniture: [],
             history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
             isExporting: false, isSleeping: false, isEventActive: false,
             isSitting: false,
@@ -3059,6 +3059,7 @@ const DEFAULT_STATE = {
         // BAC DE DISQUAIRE (ACHIEVEMENTS) - VERSION XXL ISOMÉTRIQUE
         // ==========================================
         const crateGroup = new THREE.Group();
+        crateGroup.visible = false;
         // Position ajustée pour qu'il soit contre le lit
         crateGroup.position.set(3.8, -1, 0.5); 
         
@@ -3246,6 +3247,7 @@ const DEFAULT_STATE = {
         // TAPIS CENTRAL (Agrandit et devant le canapé)
         // ==========================================
         const rugGroup = new THREE.Group();
+        rugGroup.visible = false;
         // Décalé vers la gauche et aligné avec le canapé
         rugGroup.position.set(-0.5, -0.99, 1.5);
 
@@ -3268,6 +3270,7 @@ const DEFAULT_STATE = {
         // RACK HARDWARE ANALOGIQUE
         // ==========================================
         const rackGroup = new THREE.Group();
+        rackGroup.visible = false;
             rackGroup.position.set(1.3, -1, -4.45);
             rackGroup.rotation.x = -Math.PI / 36;
 
@@ -3372,6 +3375,7 @@ const DEFAULT_STATE = {
         // LAMPE PIXAR (Sur le Rack Analogique)
         // ==========================================
         const lampGroup = new THREE.Group();
+        lampGroup.visible = false;
         // Le rack fait environ 1.8 de haut, on pose la lampe sur le sommet
         lampGroup.position.set(0, 1.9, 0.2);
 
@@ -3534,6 +3538,7 @@ const DEFAULT_STATE = {
         // PANNEAUX ACOUSTIQUES (Mousse Studio Réaliste)
         // ==========================================
         const acousticGroup = new THREE.Group();
+        acousticGroup.visible = false;
 
         // Matériaux : Noir ultra-mat pour absorber la lumière (et le son)
         const foamMat = new THREE.MeshStandardMaterial({ color: '#242424', roughness: 1.0 });
@@ -3651,6 +3656,7 @@ const DEFAULT_STATE = {
         // CANAPÉ STUDIO (Contre le mur de gauche)
         // ==========================================
         const sofaGroup = new THREE.Group();
+        sofaGroup.visible = false;
         // Placé contre le mur de gauche (x = -4.2), vers le bas de la pièce (z = 1.5)
         sofaGroup.position.set(-4.2, -1, 1.5);
         sofaGroup.rotation.y = Math.PI / 2; // Orienté vers le centre de la pièce
@@ -3687,6 +3693,7 @@ const DEFAULT_STATE = {
         // TABLE BASSE (Centrée devant le canapé)
         // ==========================================
         const sideTableGroup = new THREE.Group();
+        sideTableGroup.visible = false;
         // X=-2.6 (devant le canapé), Y=-1 (sol), Z=1.5 (centré sur le canapé)
         sideTableGroup.position.set(-1.4, -1, 1.5);
 
@@ -3718,6 +3725,7 @@ const DEFAULT_STATE = {
         // TÉLÉVISION ÉTEINTE XXL (Posée sur la table basse)
         // ==========================================
         const tvGroup = new THREE.Group();
+        tvGroup.visible = false;
         // On la pose sur le plateau de la table (Y local = 0.35 hauteur + 0.025 épaisseur)
         tvGroup.position.set(0, 0.375, 0);
 
@@ -3857,6 +3865,7 @@ const DEFAULT_STATE = {
     // SYNTHÉTISEUR SUR PIED X-STAND
     // ==========================================
     const synthGroup = new THREE.Group();
+    synthGroup.visible = false;
     synthGroup.position.set(-4.35, -1, -1.35);
     synthGroup.rotation.y = Math.PI / 2;
 
@@ -4021,7 +4030,7 @@ const DEFAULT_STATE = {
         // GUITARE ÉLECTRIQUE RÉALISTE AU MUR (Proportions corrigées, Sans ombres)
         // ==========================================
         const guitarGroup = new THREE.Group();
-
+        guitarGroup.visible = false;
         // Positionnement : mur de gauche
         guitarGroup.position.set(-4.9, 2.0, -3.5); 
         guitarGroup.rotation.y = Math.PI / 2; // Face à la pièce
@@ -5271,6 +5280,61 @@ function applyFurniturePerk(effect) {
     }
 }
 
+function recalculateActivePerks() {
+    activePerks.multiplierBonus = 0;
+    activePerks.reviewBonus = 0;
+    activePerks.storyBonus = 0;
+    
+    if (state && state.ownedFurniture) {
+        state.ownedFurniture.forEach(fid => {
+            const item = FURNITURE_CATALOG.find(f => f.id === fid);
+            if (item && item.effect) {
+                applyFurniturePerk(item.effect);
+            }
+        });
+    }
+}
+
+function getFurniture3DObject(sceneObjectName) {
+    if (sceneObjectName === 'tableGroup') return typeof sideTableGroup !== 'undefined' ? sideTableGroup : null;
+    if (sceneObjectName === 'rugMesh') return typeof rugGroup !== 'undefined' ? rugGroup : null;
+    if (sceneObjectName === 'sofaGroup') return typeof sofaGroup !== 'undefined' ? sofaGroup : null;
+    if (sceneObjectName === 'crateGroup') return typeof crateGroup !== 'undefined' ? crateGroup : null;
+    if (sceneObjectName === 'tvGroup') return typeof tvGroup !== 'undefined' ? tvGroup : null;
+    if (sceneObjectName === 'lampGroup') return typeof lampGroup !== 'undefined' ? lampGroup : null;
+    if (sceneObjectName === 'rackGroup') return typeof rackGroup !== 'undefined' ? rackGroup : null;
+    if (sceneObjectName === 'acousticGroup') return typeof acousticGroup !== 'undefined' ? acousticGroup : null;
+    if (sceneObjectName === 'synthGroup') return typeof synthGroup !== 'undefined' ? synthGroup : null;
+    if (sceneObjectName === 'guitarGroup') return typeof guitarGroup !== 'undefined' ? guitarGroup : null;
+    return null;
+}
+
+function syncFurniture3DVisibility() {
+    if (typeof FURNITURE_CATALOG === 'undefined') return;
+    FURNITURE_CATALOG.forEach(item => {
+        const obj = getFurniture3DObject(item.sceneObject);
+        if (obj) {
+            const isOwned = state && state.ownedFurniture && state.ownedFurniture.includes(item.id);
+            obj.visible = Boolean(isOwned);
+        }
+    });
+
+    if (window.pixarLamp && state && state.ownedFurniture) {
+        const hasLamp = state.ownedFurniture.includes('lamp');
+        if (!hasLamp) {
+            window.pixarLamp.userData.isOn = false;
+            if (window.pixarLamp.userData.spot) {
+                window.pixarLamp.userData.spot.intensity = 0;
+                window.pixarLamp.userData.spot.visible = false;
+            }
+            if (window.pixarLamp.userData.bulb) {
+                window.pixarLamp.userData.bulb.material.emissiveIntensity = 0;
+                window.pixarLamp.userData.bulb.material.needsUpdate = true;
+            }
+        }
+    }
+}
+
         // ==========================================
         // --- FLOATING VITALS BADGES (3D → 2D projection) ---
         // ==========================================
@@ -5420,12 +5484,23 @@ function applyFurniturePerk(effect) {
                     if (objName === 'sofa_mesh') interactDist = 3.0;
 
                     if (dist <= interactDist) {
+                        const isOwned = (id) => state && state.ownedFurniture && state.ownedFurniture.includes(id);
+
                         if (objName === 'pc_mesh') enterPC();
                         else if (objName === 'achievements_board_mesh') openAchievementsBoard();
-                        else if (objName === 'synth_mesh') openPianoRoll();
+                        else if (objName === 'synth_mesh') {
+                            if (isOwned('synth')) openPianoRoll();
+                            else showToast("Tu dois d'abord acheter le Synthétiseur dans Studio+ !", "warning");
+                        }
                         else if (objName === 'bed_mesh') { if (state.energy < 50) goSleep(); else showToast("Tu n'es pas assez fatigué (< 50% NRJ).", "info"); }
-                        else if (objName === 'sofa_mesh') goSit();
-                        else if (objName === 'interactiveLamp') togglePixarLamp();
+                        else if (objName === 'sofa_mesh') {
+                            if (isOwned('sofa')) goSit();
+                            else showToast("Tu dois d'abord acheter le Canapé en cuir dans Studio+ !", "warning");
+                        }
+                        else if (objName === 'interactiveLamp') {
+                            if (isOwned('lamp')) togglePixarLamp();
+                            else showToast("Tu dois d'abord acheter la Lampe Pixar dans Studio+ !", "warning");
+                        }
                         else if (objName === 'speaker_mesh') openAudioSettings();
                     }
                 } catch (e) { console.error("Error during object interaction:", e); }
@@ -5550,6 +5625,11 @@ function applyFurniturePerk(effect) {
         // GESTION DU PIANO ROLL INDÉPENDANT
         // ==========================================
         function openPianoRoll() {
+            const isOwned = (id) => state && state.ownedFurniture && state.ownedFurniture.includes(id);
+            if (!isOwned('synth')) {
+                showToast("Tu dois d'abord acheter le Synthétiseur dans Studio+ !", "warning");
+                return;
+            }
             MusicSystem.muteForGameplay(0.5); // <-- AJOUT ICI
             // Cache l'UI de la chambre (bulle d'aide, etc)
             document.getElementById('room-ui').style.display = 'none'; 
@@ -8891,6 +8971,9 @@ function triggerRankUp(oldRank, newRank) {
                     state.ownedCracks = Array.isArray(state.ownedCracks) ? state.ownedCracks : [];
                     state.downloadedCracks = state.downloadedCracks && typeof state.downloadedCracks === 'object' ? state.downloadedCracks : {};
                     state.dms = state.dms || [];
+                    state.ownedFurniture = Array.isArray(state.ownedFurniture) ? state.ownedFurniture : [];
+                    recalculateActivePerks();
+                    syncFurniture3DVisibility();
 
                     // --- CHARGEMENT ET SYNC DES VOLUMES AUDIO ---
                     state.masterVolume = state.masterVolume !== undefined ? parseFloat(state.masterVolume) : 1.0;
@@ -8996,6 +9079,8 @@ function triggerRankUp(oldRank, newRank) {
             refreshAchievementsPanel();
 
             spawnRoomAvatar(state.activeCharacter);
+            recalculateActivePerks();
+            syncFurniture3DVisibility();
             if (typeof window.updateVinylCrate === 'function') window.updateVinylCrate();
 
             saveGame();
@@ -9849,6 +9934,10 @@ function triggerRankUp(oldRank, newRank) {
                 }
             } catch(e) {}
 
+            if (activePerks && activePerks.reviewBonus) {
+                finalTrackScore = Math.min(10, finalTrackScore + activePerks.reviewBonus);
+            }
+
             // Stockage des gains pour application à la fermeture de la review
             window.pendingReviewData = {
                 money: moneyGain,
@@ -9973,18 +10062,25 @@ function triggerRankUp(oldRank, newRank) {
         function switchBrowserTab(tab) {
             const btnC = document.getElementById('tab-crackz');
             const btnA = document.getElementById('tab-audio');
+            const btnS = document.getElementById('tab-studio');
+
+            if (btnC) btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
+            if (btnA) btnA.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
+            if (btnS) btnS.className = "flex-1 py-4 transition-colors text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
+
             if (tab === 'crackz') {
-                btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] bg-white/10 text-white shadow-inner";
-                btnA.className = "flex-1 py-4 transition-colors text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
-            } else {
-                btnA.className = "flex-1 py-4 transition-colors bg-white/10 text-white shadow-inner";
-                btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
+                if (btnC) btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] bg-white/10 text-white shadow-inner";
+            } else if (tab === 'audio') {
+                if (btnA) btnA.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] bg-white/10 text-white shadow-inner";
+            } else if (tab === 'studio') {
+                if (btnS) btnS.className = "flex-1 py-4 transition-colors bg-white/10 text-white shadow-inner";
             }
+
             renderStore(tab);
             playBleep();
         }
 
-    function renderStore(tab) {
+        function renderStore(tab) {
             const content = document.getElementById('browser-content');
             if (tab === 'crackz') {
                 const total      = getTotalMins();
@@ -10035,7 +10131,7 @@ function triggerRankUp(oldRank, newRank) {
                 if (!foundAny) crackHTML += `<p class="text-sm text-gray-500 text-center py-10 font-retro">Make some money to access deep web links.</p>`;
                 crackHTML += '</div>';
                 content.innerHTML = `<div class="p-8 bg-[#050505] font-sans h-full min-h-[300px] overflow-y-auto shadow-inner">${crackHTML}</div>`;
-            } else {
+            } else if (tab === 'audio') {
                 if (state.rep < 100) {
                     content.innerHTML = `<div class="p-10 text-center text-[var(--text-muted)] font-retro h-full min-h-[300px] flex items-center justify-center bg-black/30 shadow-inner"><p class="leading-loose text-sm uppercase tracking-widest">🔒 ACCESS DENIED.<br>AudioStore requires 100 REP.<br>(Who are you bro?)</p></div>`;
                 } else {
@@ -10053,7 +10149,136 @@ function triggerRankUp(oldRank, newRank) {
                         </div>
                     </div>`;
                 }
+            } else if (tab === 'studio') {
+                renderStudioStore();
             }
+        }
+
+        function renderStudioStore() {
+            const content = document.getElementById('browser-content');
+            if (!content) return;
+
+            let html = `
+                <div class="p-6 md:p-8 bg-black/30 text-white h-full min-h-[300px] overflow-y-auto custom-scrollbar font-sans shadow-inner">
+                    <div class="flex justify-between items-center mb-8 border-b border-[var(--accent)]/30 pb-4">
+                        <div>
+                            <h3 class="font-bold text-xl text-white tracking-widest uppercase drop-shadow-md">🛋️ STUDIO+ UPGRADES</h3>
+                            <p class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-wider mt-1">Améliore ton studio physique pour booster ta production</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-wider">Bank Balance</div>
+                            <div class="text-lg font-retro font-bold text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)]">$${formatNum(state.money)}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            `;
+
+            FURNITURE_CATALOG.forEach(item => {
+                const alreadyOwned = state.ownedFurniture && state.ownedFurniture.includes(item.id);
+                
+                const missingRep = state.rep < (item.reqRep || 0);
+                const missingFollowers = state.followers < (item.reqFollowers || 0);
+                const isLocked = !alreadyOwned && (missingRep || missingFollowers);
+                const canAfford = state.money >= item.price;
+                
+                let prereqTexts = [];
+                if (item.reqRep > 0) prereqTexts.push(`${item.reqRep} REP`);
+                if (item.reqFollowers > 0) prereqTexts.push(`${formatNum(item.reqFollowers)} Fans`);
+                const prereqStr = prereqTexts.length > 0 ? prereqTexts.join(" & ") : "Aucun";
+
+                let buttonHTML = '';
+                if (alreadyOwned) {
+                    buttonHTML = `<button class="w-full btn-minimal py-3 text-xs rounded-lg border-gray-600 text-gray-500 cursor-not-allowed uppercase font-bold" disabled>OWNED</button>`;
+                } else if (isLocked) {
+                    buttonHTML = `<button class="w-full btn-minimal py-3 text-xs rounded-lg opacity-50 cursor-not-allowed uppercase font-bold" disabled>LOCKED</button>`;
+                } else if (!canAfford) {
+                    buttonHTML = `<button class="w-full btn-minimal py-3 text-xs rounded-lg border-[var(--retro-red)] text-[var(--retro-red)] opacity-60 cursor-not-allowed uppercase font-bold" disabled>INSUFFICIENT FUNDS</button>`;
+                } else {
+                    buttonHTML = `<button class="w-full btn-action py-3 text-xs rounded-lg font-bold shadow-lg" onclick="buyFurniture('${item.id}')">INSTALL ($${item.price})</button>`;
+                }
+
+                html += `
+                    <div class="border border-[var(--glass-border)] p-5 rounded-xl bg-black/40 hover:border-[var(--accent)] transition-all flex flex-col justify-between group ${alreadyOwned ? 'opacity-85' : ''}">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-base text-white group-hover:text-[var(--accent)] transition-colors">${item.name}</h4>
+                                <span class="text-xs font-retro font-bold text-[var(--accent)]">${item.category.toUpperCase()}</span>
+                            </div>
+                            <p class="text-xs text-[var(--text-muted)] mb-4">${item.perk}</p>
+                            
+                            <div class="space-y-1.5 mb-6 text-[10px] font-retro text-gray-400 border-t border-white/5 pt-3">
+                                <div class="flex justify-between">
+                                    <span>Prereqs:</span>
+                                    <span class="${isLocked ? 'text-[var(--retro-red)] font-bold' : 'text-gray-200'}">${prereqStr}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Price:</span>
+                                    <span class="${!alreadyOwned && !canAfford ? 'text-[var(--retro-red)] font-bold' : 'text-[var(--retro-green)]'}">$${item.price}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            ${buttonHTML}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            content.innerHTML = html;
+        }
+
+        function buyFurniture(id) {
+            const item = FURNITURE_CATALOG.find(f => f.id === id);
+            if (!item) return;
+
+            if (state.ownedFurniture && state.ownedFurniture.includes(id)) {
+                showToast("Tu possèdes déjà cet équipement !", "warning");
+                return;
+            }
+
+            if (state.money < item.price) {
+                showToast("Fonds insuffisants !", "error");
+                playError();
+                return;
+            }
+
+            const missingRep = state.rep < (item.reqRep || 0);
+            const missingFollowers = state.followers < (item.reqFollowers || 0);
+            if (missingRep || missingFollowers) {
+                showToast("Tu ne respectes pas les prérequis de réputation ou de fans !", "error");
+                playError();
+                return;
+            }
+
+            logMoney(-item.price, 'Studio+: ' + item.name);
+            
+            if (!state.ownedFurniture) state.ownedFurniture = [];
+            state.ownedFurniture.push(id);
+
+            if (item.effect) {
+                if (item.effect.type === 'multiplier') {
+                    state.multiplier = (parseFloat(state.multiplier) || 1.0) + item.effect.value;
+                    showToast(`Équipement installé ! Multiplicateur permanent +${item.effect.value}x`, "success");
+                } else {
+                    applyFurniturePerk(item.effect);
+                    showToast(`Équipement installé : ${item.name}`, "success");
+                }
+            }
+
+            syncFurniture3DVisibility();
+
+            if (typeof fireConfetti === 'function') fireConfetti('store');
+            playSuccess();
+            
+            saveGame();
+            updateHUD();
+            renderStudioStore();
         }
 
         function downloadCrack(id) {
@@ -10182,7 +10407,10 @@ function triggerRankUp(oldRank, newRank) {
             const followerGain = Math.floor((state.rep * 1.5) + 15 + (state.followers * 0.001));
             
             // Le grind de la réputation doit être lent mais constant (1 à 2 points max par story)
-            const repGain = Math.floor(Math.random() * 2) + 1; 
+            let repGain = Math.floor(Math.random() * 2) + 1; 
+            if (activePerks && activePerks.storyBonus) {
+                repGain += activePerks.storyBonus;
+            }
             
             // Application
             logFollower(followerGain);
@@ -11188,6 +11416,7 @@ function triggerRankUp(oldRank, newRank) {
         window.switchBrowserTab = switchBrowserTab;
         window.downloadCrack    = downloadCrack;
         window.buyLegit         = buyLegit;
+        window.buyFurniture     = buyFurniture;
         window.postStory        = postStory;
         window.acceptSponsor    = acceptSponsor;
         window.quitPC           = quitPC;
@@ -11233,4 +11462,3 @@ if (reviewOverlay) {
     </script>
         </body>
             </html>
-            
