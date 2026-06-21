@@ -180,20 +180,25 @@
             /* --- 2D CLOUDS BACKGROUND --- */
             .cloud-2d {
                 position: absolute;
-                width: calc(180px * var(--s, 1));
-                height: calc(105px * var(--s, 1));
+                width: calc(var(--w, 180px) * var(--s, 1));
+                height: calc(var(--h, 50px) * var(--s, 1));
+                background: var(--cloud-color, rgba(255, 255, 255, 0.08));
+                backdrop-filter: blur(16px) saturate(120%);
+                -webkit-backdrop-filter: blur(16px) saturate(120%);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 9999px; /* Perfect capsule/tic-tac shape */
                 pointer-events: none;
                 opacity: calc(var(--base-opacity, 0.5) * var(--cloud-alpha, 1));
-                color: var(--cloud-color, #ffffff);
                 animation: moveClouds linear infinite;
                 animation-duration: calc(var(--base-dur, 100s) / var(--time-warp-factor));
-                transition: opacity 0.5s ease-in-out, color 0.5s ease-in-out, filter 0.5s ease-in-out;
-                will-change: transform, opacity, color;
+                transition: opacity 0.5s ease-in-out, background 0.5s ease-in-out, filter 0.5s ease-in-out;
+                will-change: transform, opacity, background;
                 transform: translateX(-400px) scale(var(--cz, 1));
             }
 
             .cloud-glow {
-                filter: drop-shadow(0 0 15px var(--accent)) !important;
+                filter: drop-shadow(0 0 20px var(--accent)) brightness(1.2) !important;
+                border-color: rgba(255, 255, 255, 0.15) !important;
             }
 
             @keyframes moveClouds {
@@ -5106,20 +5111,21 @@ const DEFAULT_STATE = {
         // --- LOGIQUE GLOBALE (SANS BESOIN D'AVATAR) ---
         // ==================================================
 
-        // --- MÉTÉO DYNAMIQUE : NUAGES 2D VS INSPIRATION ---
+        // --- MÉTÉO DYNAMIQUE : NUAGES TIC-TAC VS INSPIRATION ---
         if (window._bgClouds && typeof state !== 'undefined' && typeof state.inspi === 'number') {
             const inspiRatio = Math.max(0, Math.min(1, state.inspi / 100));
             
-            // Opacité : faible (0.2) quand inspi=100%, forte (1.0) quand inspi=0%
-            const targetOpacity = THREE.MathUtils.lerp(1.0, 0.2, inspiRatio);
+            // Opacité globale : faible (0.3) quand inspi=100%, forte (1.5) quand inspi=0%
+            const targetOpacity = THREE.MathUtils.lerp(1.5, 0.3, inspiRatio);
             
-            // Couleur : Gris/violet sombre (rgb(34, 22, 59)) à 0%, Blanc/bleuté pastel (rgb(240, 244, 255)) à 100%
-            const darkR = 34, darkG = 22, darkB = 59;
-            const lightR = 240, lightG = 244, lightB = 255;
+            // Couleur de fond : Sombre orageux (rgba(30, 20, 48, 0.45)) à 0%, Blanc brillant (rgba(255, 255, 255, 0.12)) à 100%
+            const darkR = 30, darkG = 20, darkB = 48, darkA = 0.45;
+            const lightR = 255, lightG = 255, lightB = 255, lightA = 0.12;
             
             const r = Math.floor(THREE.MathUtils.lerp(darkR, lightR, inspiRatio));
             const g = Math.floor(THREE.MathUtils.lerp(darkG, lightG, inspiRatio));
             const b = Math.floor(THREE.MathUtils.lerp(darkB, lightB, inspiRatio));
+            const a = THREE.MathUtils.lerp(darkA, lightA, inspiRatio);
             
             if (typeof window._currentCloudOpacity === 'undefined') window._currentCloudOpacity = targetOpacity;
             window._currentCloudOpacity += (targetOpacity - window._currentCloudOpacity) * 0.05; // Lissage doux
@@ -5127,7 +5133,7 @@ const DEFAULT_STATE = {
             const bgLayer = document.getElementById('room-bg-layer');
             if (bgLayer) {
                 bgLayer.style.setProperty('--cloud-alpha', window._currentCloudOpacity);
-                bgLayer.style.setProperty('--cloud-color', `rgb(${r}, ${g}, ${b})`);
+                bgLayer.style.setProperty('--cloud-color', `rgba(${r}, ${g}, ${b}, ${a})`);
             }
         }
 
@@ -8440,7 +8446,7 @@ function triggerRankUp(oldRank, newRank) {
             scene.updateMatrixWorld(true);
         }
 
-        // Génération des nuages 2D Low-Poly de fond (Room Layer)
+        // Génération des nuages 2D "Tic-Tac" de fond (Room Layer)
         function spawnClouds() {
             // Clean up old 3D clouds if they exist
             if (window._3dClouds) {
@@ -8457,52 +8463,29 @@ function triggerRankUp(oldRank, newRank) {
             container.querySelectorAll('.cloud-2d').forEach(c => c.remove());
             window._bgClouds = [];
 
-            // Génère entre 5 et 8 nuages
-            const count = 5 + Math.floor(Math.random() * 4); 
+            // Génère entre 6 et 10 nuages (capsules lisses de tailles variées)
+            const count = 6 + Math.floor(Math.random() * 5); 
             for (let i = 0; i < count; i++) {
                 const cloud = document.createElement('div');
                 cloud.className = 'cloud-2d';
                 
-                const scale = 1.2 + Math.random() * 2.0; 
-                const top = 5 + Math.random() * 65; 
-                const baseOpacity = 0.25 + Math.random() * 0.25; 
-                const duration = 120 + Math.random() * 160; 
+                // Variété de dimensions (tic-tacs longs, courts, fins ou épais)
+                const width = 120 + Math.floor(Math.random() * 160); // 120px à 280px
+                const height = 30 + Math.floor(Math.random() * 40);  // 30px à 70px
+                const scale = 0.8 + Math.random() * 1.6; 
+                
+                const top = 5 + Math.random() * 70; // Position verticale
+                const baseOpacity = 0.2 + Math.random() * 0.25; // Opacité de base (0.2 à 0.45)
+                const duration = 90 + Math.random() * 140; // Défilement (90s à 230s)
                 const delay = -(Math.random() * duration); 
                 
+                cloud.style.setProperty('--w', `${width}px`);
+                cloud.style.setProperty('--h', `${height}px`);
                 cloud.style.setProperty('--s', scale);
                 cloud.style.top = `${top}%`;
                 cloud.style.setProperty('--base-opacity', baseOpacity);
                 cloud.style.setProperty('--base-dur', `${duration}s`);
                 cloud.style.animationDelay = `${delay}s`;
-                
-                // Inject structural low-poly paper textured SVGs
-                cloud.innerHTML = `
-                    <svg viewBox="0 0 120 70" style="width: 100%; height: 100%;" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <filter id="paper-noise-${i}" x="0%" y="0%" width="100%" height="100%">
-                                <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise" />
-                                <feDiffuseLighting in="noise" lighting-color="#fff" surfaceScale="2.5" result="light">
-                                    <feDistantLight azimuth="45" elevation="60" />
-                                </feDiffuseLighting>
-                                <feBlend mode="multiply" in="SourceGraphic" in2="light" result="blend" />
-                            </filter>
-                        </defs>
-                        <g filter="url(#paper-noise-${i})" style="color: currentColor;">
-                            <polygon points="30,50 60,60 50,40" fill="currentColor" opacity="0.80" />
-                            <polygon points="30,50 50,40 25,35" fill="currentColor" opacity="0.85" />
-                            <polygon points="50,40 60,60 90,55" fill="currentColor" opacity="0.75" />
-                            <polygon points="50,40 90,55 75,30" fill="currentColor" opacity="0.90" />
-                            <polygon points="50,40 75,30 55,20" fill="currentColor" opacity="0.95" />
-                            <polygon points="25,35 50,40 55,20" fill="currentColor" opacity="0.85" />
-                            <polygon points="55,20 75,30 95,25" fill="currentColor" opacity="0.85" />
-                            <polygon points="75,30 90,55 110,40" fill="currentColor" opacity="0.80" />
-                            <polygon points="75,30 110,40 95,25" fill="currentColor" opacity="0.85" />
-                            <polygon points="25,35 55,20 15,25" fill="currentColor" opacity="0.80" />
-                            <polygon points="5,45 25,35 30,50" fill="currentColor" opacity="0.75" />
-                            <polygon points="5,45 15,25 25,35" fill="currentColor" opacity="0.80" />
-                        </g>
-                    </svg>
-                `;
                 
                 container.appendChild(cloud);
                 window._bgClouds.push(cloud);
