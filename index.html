@@ -9190,6 +9190,12 @@ function triggerRankUp(oldRank, newRank) {
             const sleepInt = setInterval(() => {
                 ticks++;
                 state.energy = Math.min(100, state.energy + rechargePerTick);
+                
+                // On vérifie la quête uniquement quand l'énergie augmente
+                if (state.energy >= 90 && typeof checkDailyQuests === 'function') {
+                    checkDailyQuests('high_energy', Math.floor(state.energy));
+                }
+                
                 updateHUD();
             
                 const timeLeft = Math.ceil(15 - (ticks / 10));
@@ -9601,19 +9607,21 @@ function triggerRankUp(oldRank, newRank) {
             showToast("📅 Nouvelles quêtes journalières disponibles !", "info");
         };
 
-        window.checkDailyQuests = function(type, value) {
+                window.checkDailyQuests = function(type, value) {
             if (!state.dailyQuests) return;
+            let updated = false;
             state.dailyQuests.forEach(q => {
                 if (q.done) return;
                 if (q.id === type) {
                     if (type === 'high_energy' || type === 'reach_hype') {
-                        q.current = value;
+                        if (q.current !== value) { q.current = value; updated = true; }
                     } else {
-                        q.current += value;
+                        q.current += value; updated = true;
                     }
                     if (q.current >= q.target) {
                         q.current = q.target;
                         q.done = true;
+                        updated = true;
                         logMoney(q.rewardMoney, `Quête: ${q.text}`);
                         state.rep = (parseInt(state.rep, 10) || 0) + q.rewardRep;
                         showToast(`✅ Quête Réussie : ${q.text} ! +$${q.rewardMoney} / +${q.rewardRep} REP`, "success");
@@ -9621,7 +9629,11 @@ function triggerRankUp(oldRank, newRank) {
                     }
                 }
             });
-            updateHUD();
+            // SÉCURITÉ : Ne met à jour le HUD que si une vraie quête avance, 
+            // et on bloque la boucle pour high_energy
+            if (updated && type !== 'high_energy') {
+                updateHUD();
+            }
         };
 
         window.updateHype = function(amount) {
@@ -10241,9 +10253,6 @@ function triggerRankUp(oldRank, newRank) {
             document.getElementById('hud-day').innerText   = `JOUR ${state.day}`;
 
             const energyVal = Math.floor(state.energy);
-            if (energyVal >= 90) {
-                if (typeof checkDailyQuests === 'function') checkDailyQuests('high_energy', energyVal);
-            }
             const energyFill = document.getElementById('meter-energy-fill');
             if (energyFill) energyFill.style.height = `${energyVal}%`;
             const energyValEl = document.getElementById('meter-energy-val');
@@ -10372,8 +10381,23 @@ function triggerRankUp(oldRank, newRank) {
         // ==========================================
         // 15. COOLDOWN UIs
         // ==========================================
+                // ==========================================
+        // 15. COOLDOWN UIs (AVEC JUICY BUTTONS)
+        // ==========================================
         function updateCooldownUIs() {
             const total = getTotalMins();
+
+            // Fonction interne pour gérer le glow des boutons actifs
+            function updateButtonGlow(btn, isActive) {
+                if (!btn) return;
+                if (isActive) {
+                    btn.classList.add('animate-pulse', 'glow-active');
+                    btn.style.boxShadow = '0 0 15px rgba(129, 140, 248, 0.5)';
+                } else {
+                    btn.classList.remove('animate-pulse', 'glow-active');
+                    btn.style.boxShadow = 'none';
+                }
+            }
 
             const btnDaw = document.getElementById('btn-export');
             if (btnDaw && !state.isExporting) {
@@ -10382,12 +10406,13 @@ function triggerRankUp(oldRank, newRank) {
                     const left = dawReady - total;
                     btnDaw.innerText = `CPU COOL (${formatTimeLeft(left)})`;
                     btnDaw.disabled = true;
+                    updateButtonGlow(btnDaw, false); // Éteint le bouton
                 } else {
-                    // FIX : On vérifie l'état ET le texte exact pour forcer la restauration
                     if (btnDaw.disabled || btnDaw.innerText !== "RENDER MIXDOWN") {
                         btnDaw.innerText = "RENDER MIXDOWN";
                         btnDaw.disabled = false;
                     }
+                    updateButtonGlow(btnDaw, true); // Allume le bouton
                 }
             }
 
@@ -10399,10 +10424,12 @@ function triggerRankUp(oldRank, newRank) {
                     btnStory.disabled = true;
                     statusStory.innerText = "STATUS: COOLDOWN";
                     statusStory.className = "text-xs text-[var(--retro-orange)] mt-5 font-retro tracking-widest";
+                    updateButtonGlow(btnStory, false); // Éteint le bouton
                 } else {
                     btnStory.disabled = false;
                     statusStory.innerText = "STATUS: READY";
                     statusStory.className = "text-xs text-[var(--retro-green)] mt-5 font-retro tracking-widest drop-shadow-[0_0_5px_var(--retro-green)]";
+                    updateButtonGlow(btnStory, true); // Allume le bouton
                 }
             }
 
