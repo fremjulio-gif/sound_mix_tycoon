@@ -1782,6 +1782,28 @@
             </div>
         </div>
 
+        <!-- STUDIO+ BUY TOOLTIP (Diegetic UI) -->
+        <div id="studio-buy-tooltip" style="display: none; position: fixed; z-index: 100; pointer-events: auto; transform: translate(-50%, -100%); margin-top: -30px;" class="liquid-glass-heavy p-4 rounded-xl border border-white/10 text-white min-w-[240px] font-sans shadow-2xl flex flex-col gap-3">
+            <div>
+                <div class="flex justify-between items-start gap-3">
+                    <h4 id="s-tooltip-name" class="font-bold text-sm tracking-wide text-[var(--accent)]">Item Name</h4>
+                    <span id="s-tooltip-category" class="text-[9px] font-retro uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded text-gray-300">DECO</span>
+                </div>
+                <p id="s-tooltip-perk" class="text-[11px] text-gray-300 mt-1">Perk description...</p>
+            </div>
+            <div class="border-t border-white/5 pt-2 flex flex-col gap-1 text-[10px] font-retro text-gray-400">
+                <div class="flex justify-between">
+                    <span>Prereqs:</span>
+                    <span id="s-tooltip-prereq" class="text-gray-200">REP / Fans</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Price:</span>
+                    <span id="s-tooltip-price" class="text-[var(--retro-green)] font-bold">$0</span>
+                </div>
+            </div>
+            <button id="s-tooltip-buy-btn" class="btn-action w-full py-2 text-xs rounded-lg font-bold shadow-md uppercase tracking-wider">Install</button>
+        </div>
+
         <div id="room-ui"></div>
 
         <button id="audio-settings-gear" class="btn-system" onclick="openAudioSettings()" title="Paramètres">
@@ -2344,8 +2366,7 @@
                 </div>
                 <div class="flex border-b border-[var(--glass-border)] text-[12px] md:text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-black/60 font-bold">
                     <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
-                    <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
-                    <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-studio" onclick="switchBrowserTab('studio')">Studio+</button>
+                    <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
                 </div>
                 <div class="window-content" id="browser-content"></div>
             </div>
@@ -4626,13 +4647,92 @@ const DEFAULT_STATE = {
             return null;
         }
 
+        // =========================================================
+        // --- SHADER MATIÈRE MYSTIQUE (FRESNEL & BRUIT DE CONDENSATION) ---
+        // =========================================================
+        const baseMysticMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                glowColor: { value: new THREE.Color(0x312e81) },
+                baseColor: { value: new THREE.Color(0x050505) },
+                fresnelPower: { value: 2.0 },
+                opacity: { value: 0.9 },
+                time: { value: 0.0 }
+            },
+            vertexShader: `
+                varying vec3 vNormal;
+                varying vec3 vViewPosition;
+                void main() {
+                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                    vNormal = normalize(normalMatrix * normal);
+                    vViewPosition = -mvPosition.xyz;
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                uniform vec3 glowColor;
+                uniform vec3 baseColor;
+                uniform float fresnelPower;
+                uniform float opacity;
+                uniform float time;
+                varying vec3 vNormal;
+                varying vec3 vViewPosition;
+
+                float rand(vec2 co) {
+                    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+                }
+
+                void main() {
+                    vec3 normal = normalize(vNormal);
+                    vec3 viewDir = normalize(vViewPosition);
+                    float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), fresnelPower);
+                    float grain = (rand(gl_FragCoord.xy * 0.01 + time * 0.001) - 0.5) * 0.06;
+                    vec3 finalColor = mix(baseColor + grain, glowColor, fresnel * 0.35);
+                    gl_FragColor = vec4(finalColor, opacity + fresnel * 0.15);
+                }
+            `,
+            transparent: true,
+            depthWrite: false
+        });
+
+        window.activeMysticMaterials = [];
+
         function syncFurniture3DVisibility() {
             if (typeof FURNITURE_CATALOG === 'undefined') return;
+            window.activeMysticMaterials = [];
+            
             FURNITURE_CATALOG.forEach(item => {
                 const obj = getFurniture3DObject(item.sceneObject);
                 if (obj) {
                     const isOwned = state && state.ownedFurniture && state.ownedFurniture.includes(item.id);
-                    obj.visible = Boolean(isOwned);
+                    obj.visible = true; // Toujours visible pour le rendu de la silhouette
+
+                    obj.traverse(child => {
+                        if (child.isMesh) {
+                            if (!child.userData.originalMaterial) {
+                                child.userData.originalMaterial = child.material;
+                            }
+                            if (isOwned) {
+                                child.material = child.userData.originalMaterial;
+                            } else {
+                                if (!child.userData.mysticMaterial) {
+                                    child.userData.mysticMaterial = baseMysticMaterial.clone();
+                                    child.userData.mysticMaterial.userData = { targetOpacity: 0.9 };
+                                }
+                                child.material = child.userData.mysticMaterial;
+                                window.activeMysticMaterials.push(child.material);
+                            }
+                        } else if (child.isLine || child.isLineSegments) {
+                            if (child.userData.originalVisible === undefined) {
+                                child.userData.originalVisible = child.visible;
+                            }
+                            child.visible = isOwned ? child.userData.originalVisible : false;
+                        } else if (child.isLight) {
+                            if (child.userData.originalIntensity === undefined) {
+                                child.userData.originalIntensity = child.intensity;
+                            }
+                            child.intensity = isOwned ? child.userData.originalIntensity : 0;
+                        }
+                    });
                 }
             });
 
@@ -4643,10 +4743,6 @@ const DEFAULT_STATE = {
                     if (window.pixarLamp.userData.spot) {
                         window.pixarLamp.userData.spot.intensity = 0;
                         window.pixarLamp.userData.spot.visible = false;
-                    }
-                    if (window.pixarLamp.userData.bulb) {
-                        window.pixarLamp.userData.bulb.material.emissiveIntensity = 0;
-                        window.pixarLamp.userData.bulb.material.needsUpdate = true;
                     }
                 }
             }
@@ -4660,6 +4756,18 @@ const DEFAULT_STATE = {
 
         // Reprise de ta variable time locale
         time += 0.02;
+
+        if (window.activeMysticMaterials) {
+            window.activeMysticMaterials.forEach(mat => {
+                if (mat.uniforms) {
+                    if (mat.uniforms.time) mat.uniforms.time.value = time;
+                    if (mat.uniforms.opacity) {
+                        const targetOp = mat.userData && mat.userData.targetOpacity !== undefined ? mat.userData.targetOpacity : 0.9;
+                        mat.uniforms.opacity.value += (targetOp - mat.uniforms.opacity.value) * 0.15;
+                    }
+                }
+            });
+        }
 
         // --- OPTIMISATION : CACHE MÉMOIRE POUR ÉVITER LE GARBAGE COLLECTION ---
         window._v2a = window._v2a || new THREE.Vector2();
@@ -5548,9 +5656,49 @@ const DEFAULT_STATE = {
             // This is already handled by the `if (!isJoystickActive)` check in the IIFE below.
         });
 
-        // Hover detection for interactables -> outline on hover
+        // Hover detection for interactables -> outline on hover & Studio+ Silhouette Tooltips (Diegetic UI)
         (function(){
             let lastHoverMesh = null;
+            let lastHoveredSilhouetteGroup = null;
+            let isMouseOverTooltip = false;
+
+            const tooltipEl = document.getElementById('studio-buy-tooltip');
+            if (tooltipEl) {
+                tooltipEl.addEventListener('mouseenter', () => { isMouseOverTooltip = true; });
+                tooltipEl.addEventListener('mouseleave', () => { isMouseOverTooltip = false; });
+            }
+
+            function findCatalogItemByObject(object) {
+                if (!object) return null;
+                let curr = object;
+                while (curr) {
+                    if (curr === (typeof sofaGroup !== 'undefined' ? sofaGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'sofa'), group: sofaGroup };
+                    if (curr === (typeof sideTableGroup !== 'undefined' ? sideTableGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'table'), group: sideTableGroup };
+                    if (curr === (typeof rugGroup !== 'undefined' ? rugGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'rug'), group: rugGroup };
+                    if (curr === (typeof crateGroup !== 'undefined' ? crateGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'vinyls'), group: crateGroup };
+                    if (curr === (typeof tvGroup !== 'undefined' ? tvGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'tv'), group: tvGroup };
+                    if (curr === (typeof lampGroup !== 'undefined' ? lampGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'lamp'), group: lampGroup };
+                    if (curr === (typeof rackGroup !== 'undefined' ? rackGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'rack'), group: rackGroup };
+                    if (curr === (typeof acousticGroup !== 'undefined' ? acousticGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'acoustic'), group: acousticGroup };
+                    if (curr === (typeof synthGroup !== 'undefined' ? synthGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'synth'), group: synthGroup };
+                    if (curr === (typeof guitarGroup !== 'undefined' ? guitarGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'guitar'), group: guitarGroup };
+                    curr = curr.parent;
+                }
+                return null;
+            }
+
+            function hideBuyTooltip() {
+                if (tooltipEl) tooltipEl.style.display = 'none';
+                if (lastHoveredSilhouetteGroup) {
+                    lastHoveredSilhouetteGroup.traverse(child => {
+                        if (child.isMesh && child.userData.mysticMaterial) {
+                            child.userData.mysticMaterial.userData.targetOpacity = 0.9;
+                        }
+                    });
+                    lastHoveredSilhouetteGroup = null;
+                }
+            }
+
             canvasCont.addEventListener('pointermove', (ev) => {
                 try {
                     if (isJoystickActive) return; // don't interfere with joystick
@@ -5561,31 +5709,135 @@ const DEFAULT_STATE = {
                     mousePos.y = -(clientY / rect.height) * 2 + 1;
                     raycaster.setFromCamera(mousePos, camera);
                     const intersects = raycaster.intersectObjects(scene.children, true);
+
+                    // 1. Check if we hover over a silhouette (FURNITURE_CATALOG item, but not owned)
+                    let foundSilhouette = null;
+                    for (let hit of intersects) {
+                        const hitInfo = findCatalogItemByObject(hit.object);
+                        if (hitInfo && hitInfo.item) {
+                            const isOwned = state && state.ownedFurniture && state.ownedFurniture.includes(hitInfo.item.id);
+                            if (!isOwned) {
+                                foundSilhouette = { hit, info: hitInfo };
+                                break;
+                            }
+                        }
+                    }
+
+                    if (foundSilhouette) {
+                        const { hit, info } = foundSilhouette;
+                        const item = info.item;
+                        const group = info.group;
+
+                        // Hover transition to 0.7 opacity
+                        if (lastHoveredSilhouetteGroup !== group) {
+                            if (lastHoveredSilhouetteGroup) {
+                                lastHoveredSilhouetteGroup.traverse(child => {
+                                    if (child.isMesh && child.userData.mysticMaterial) {
+                                        child.userData.mysticMaterial.userData.targetOpacity = 0.9;
+                                    }
+                                });
+                            }
+                            group.traverse(child => {
+                                if (child.isMesh && child.userData.mysticMaterial) {
+                                    child.userData.mysticMaterial.userData.targetOpacity = 0.7;
+                                }
+                            });
+                            lastHoveredSilhouetteGroup = group;
+                        }
+
+                        // Project 3D position to 2D screen coordinates
+                        const pos3D = new THREE.Vector3();
+                        const box = new THREE.Box3().setFromObject(group);
+                        box.getCenter(pos3D);
+                        pos3D.y += (box.max.y - box.min.y) * 0.4 + 0.3;
+                        pos3D.project(camera);
+
+                        const widthHalf = rect.width / 2;
+                        const heightHalf = rect.height / 2;
+                        const screenX = (pos3D.x * widthHalf) + widthHalf + rect.left;
+                        const screenY = -(pos3D.y * heightHalf) + heightHalf + rect.top;
+
+                        if (tooltipEl) {
+                            document.getElementById('s-tooltip-name').innerText = item.name;
+                            document.getElementById('s-tooltip-category').innerText = item.category.toUpperCase();
+                            document.getElementById('s-tooltip-perk').innerText = item.perk;
+                            
+                            let prereqTexts = [];
+                            if (item.reqRep > 0) prereqTexts.push(`${item.reqRep} REP`);
+                            if (item.reqFollowers > 0) prereqTexts.push(`${formatNum(item.reqFollowers)} Fans`);
+                            const prereqStr = prereqTexts.length > 0 ? prereqTexts.join(" & ") : "Aucun";
+                            
+                            const missingRep = state.rep < (item.reqRep || 0);
+                            const missingFollowers = state.followers < (item.reqFollowers || 0);
+                            const isLocked = missingRep || missingFollowers;
+                            const canAfford = state.money >= item.price;
+
+                            const prereqEl = document.getElementById('s-tooltip-prereq');
+                            prereqEl.innerText = prereqStr;
+                            prereqEl.className = isLocked ? 'text-[var(--retro-red)] font-bold' : 'text-gray-200';
+
+                            const priceEl = document.getElementById('s-tooltip-price');
+                            priceEl.innerText = `$${item.price}`;
+                            priceEl.className = !canAfford ? 'text-[var(--retro-red)] font-bold' : 'text-[var(--retro-green)] font-bold';
+
+                            const buyBtn = document.getElementById('s-tooltip-buy-btn');
+                            buyBtn.setAttribute('data-id', item.id);
+                            if (isLocked) {
+                                buyBtn.innerText = "Verrouillé";
+                                buyBtn.className = "w-full btn-minimal py-2 text-xs rounded-lg opacity-50 cursor-not-allowed uppercase font-bold";
+                                buyBtn.disabled = true;
+                            } else if (!canAfford) {
+                                buyBtn.innerText = "Fonds Insuffisants";
+                                buyBtn.className = "w-full btn-minimal py-2 text-xs rounded-lg border-[var(--retro-red)] text-[var(--retro-red)] opacity-60 cursor-not-allowed uppercase font-bold";
+                                buyBtn.disabled = true;
+                            } else {
+                                buyBtn.innerText = `Installer ($${item.price})`;
+                                buyBtn.className = "btn-action w-full py-2 text-xs rounded-lg font-bold shadow-md uppercase tracking-wider";
+                                buyBtn.disabled = false;
+                            }
+
+                            tooltipEl.style.left = `${screenX}px`;
+                            tooltipEl.style.top = `${screenY}px`;
+                            tooltipEl.style.display = 'flex';
+                        }
+
+                        if (lastHoverMesh) {
+                            const prev = (window.highlightItems||[]).find(it => it.mesh === lastHoverMesh || it.mesh.name === lastHoverMesh.name);
+                            if (prev && prev.edges) prev.edges.userData.hovered = false;
+                            lastHoverMesh = null;
+                        }
+                        return;
+                    }
+
+                    // 2. Normal interactable highlight fallback
                     const interactableHit = intersects.find(hit => interactableNames.includes(hit.object.name));
                     if (interactableHit) {
+                        if (!isMouseOverTooltip) hideBuyTooltip();
+
                         const hitMesh = interactableHit.object;
                         if (lastHoverMesh !== hitMesh) {
-                            // clear previous
                             if (lastHoverMesh) {
                                 const prev = (window.highlightItems||[]).find(it => it.mesh === lastHoverMesh || it.mesh.name === lastHoverMesh.name);
                                 if (prev && prev.edges) prev.edges.userData.hovered = false;
                             }
-                            // set new
                             const item = (window.highlightItems||[]).find(it => it.mesh === hitMesh || it.mesh.name === hitMesh.name);
                             if (item && item.edges) item.edges.userData.hovered = true;
                             lastHoverMesh = hitMesh;
                         }
                         return;
                     }
-                    // no hit -> clear
+
                     if (lastHoverMesh) {
                         const prev = (window.highlightItems||[]).find(it => it.mesh === lastHoverMesh || it.mesh.name === lastHoverMesh.name);
                         if (prev && prev.edges) prev.edges.userData.hovered = false;
                         lastHoverMesh = null;
                     }
+                    if (!isMouseOverTooltip) {
+                        hideBuyTooltip();
+                    }
                 } catch(e) { /* ignore */ }
             });
-            // clear on leave
+
             canvasCont.addEventListener('pointerleave', () => {
                 try {
                     if (lastHoverMesh) {
@@ -5593,6 +5845,9 @@ const DEFAULT_STATE = {
                         if (prev && prev.edges) prev.edges.userData.hovered = false;
                         lastHoverMesh = null;
                     }
+                    setTimeout(() => {
+                        if (!isMouseOverTooltip) hideBuyTooltip();
+                    }, 100);
                 } catch(e){}
             });
         })();
@@ -10020,56 +10275,20 @@ function triggerRankUp(oldRank, newRank) {
                     cpuGraphStarted = true;
                     drawSysGraphUI(performance.now());
                 }
-
-                status.innerText = "REC";
-                status.className = "text-[10px] font-retro text-[var(--retro-red)] animate-pulse font-bold drop-shadow-[0_0_5px_var(--retro-red)]";
-                showToast('Secret tape en cours d\'enregistrement.', "discreet");
-                playTone(500, 'sine', 0.1, 0.05);
-            } else {
-                reel1.classList.add('tape-paused');
-                reel2.classList.add('tape-paused');
-                signalElements.forEach(el => el.classList.add('tape-paused'));
-
-                // --- NOUVEAU : ARRÊT DU GRAPHE CPU ---
-                cpuGraphStarted = false; 
-
-                status.innerText = "STOP";
-                status.className = "text-[10px] font-retro text-gray-500 font-bold";
-                showToast('Secret tape mise en pause.', "discreet");
-                playTone(300, 'sine', 0.1, 0.05);
             }
         }
 
-    // Pour rayer la ToDo list interactive
-    window.toggleTodo = function(el) {
-        if(el.classList.contains('line-through')) {
-            el.classList.remove('line-through', 'opacity-40');
-        } else {
-            el.classList.add('line-through', 'opacity-40');
-        }
-        playTone(400, 'sine', 0.05, 0.02);
-    };
-
-
-        
-        // ==========================================
-        // 18. BROWSER / STORE
-        // ==========================================
         function switchBrowserTab(tab) {
             const btnC = document.getElementById('tab-crackz');
             const btnA = document.getElementById('tab-audio');
-            const btnS = document.getElementById('tab-studio');
 
             if (btnC) btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
-            if (btnA) btnA.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
-            if (btnS) btnS.className = "flex-1 py-4 transition-colors text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
+            if (btnA) btnA.className = "flex-1 py-4 transition-colors text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
 
             if (tab === 'crackz') {
                 if (btnC) btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] bg-white/10 text-white shadow-inner";
             } else if (tab === 'audio') {
-                if (btnA) btnA.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] bg-white/10 text-white shadow-inner";
-            } else if (tab === 'studio') {
-                if (btnS) btnS.className = "flex-1 py-4 transition-colors bg-white/10 text-white shadow-inner";
+                if (btnA) btnA.className = "flex-1 py-4 transition-colors bg-white/10 text-white shadow-inner";
             }
 
             renderStore(tab);
@@ -10137,96 +10356,92 @@ function triggerRankUp(oldRank, newRank) {
                              <div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
                                 <div class="mb-4 sm:mb-0"><p class="font-bold text-base">ProEQ Studio Bundle</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +0.5x</p></div>
                                 <button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(300, 0.5)">BUY ($300)</button>
-                            </div>
-                            <div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
+                             </div>
+                             <div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
                                 <div class="mb-4 sm:mb-0"><p class="font-bold text-base">Analog Tape Saturation</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +1.0x</p></div>
                                 <button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button>
-                            </div>
+                             </div>
                         </div>
                     </div>`;
                 }
-            } else if (tab === 'studio') {
-                renderStudioStore();
             }
         }
 
-        function renderStudioStore() {
-            const content = document.getElementById('browser-content');
-            if (!content) return;
+        function playMaterializationEffect(group) {
+            if (!group) return;
 
-            let html = `
-                <div class="p-6 md:p-8 bg-black/30 text-white h-full min-h-[300px] overflow-y-auto custom-scrollbar font-sans shadow-inner">
-                    <div class="flex justify-between items-center mb-8 border-b border-[var(--accent)]/30 pb-4">
-                        <div>
-                            <h3 class="font-bold text-xl text-white tracking-widest uppercase drop-shadow-md">🛋️ STUDIO+ UPGRADES</h3>
-                            <p class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-wider mt-1">Améliore ton studio physique pour booster ta production</p>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-wider">Bank Balance</div>
-                            <div class="text-lg font-retro font-bold text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)]">$${formatNum(state.money)}</div>
-                        </div>
-                    </div>
+            // Create a clone group to display the fading mystic silhouette
+            const cloneGroup = new THREE.Group();
+            cloneGroup.position.copy(group.position);
+            cloneGroup.rotation.copy(group.rotation);
+            cloneGroup.scale.copy(group.scale);
+            scene.add(cloneGroup);
+
+            const originalMeshes = [];
+            
+            group.traverse(child => {
+                if (child.isMesh) {
+                    originalMeshes.push(child);
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            `;
+                    // Backup original material state
+                    child.userData.origTransparent = child.material.transparent;
+                    child.userData.origOpacity = child.material.opacity !== undefined ? child.material.opacity : 1.0;
+                    
+                    // Start at transparent and 0.0 opacity
+                    child.material.transparent = true;
+                    child.material.opacity = 0.0;
+                    child.material.needsUpdate = true;
 
-            FURNITURE_CATALOG.forEach(item => {
-                const alreadyOwned = state.ownedFurniture && state.ownedFurniture.includes(item.id);
-                
-                const missingRep = state.rep < (item.reqRep || 0);
-                const missingFollowers = state.followers < (item.reqFollowers || 0);
-                const isLocked = !alreadyOwned && (missingRep || missingFollowers);
-                const canAfford = state.money >= item.price;
-                
-                let prereqTexts = [];
-                if (item.reqRep > 0) prereqTexts.push(`${item.reqRep} REP`);
-                if (item.reqFollowers > 0) prereqTexts.push(`${formatNum(item.reqFollowers)} Fans`);
-                const prereqStr = prereqTexts.length > 0 ? prereqTexts.join(" & ") : "Aucun";
-
-                let buttonHTML = '';
-                if (alreadyOwned) {
-                    buttonHTML = `<button class="w-full btn-minimal py-3 text-xs rounded-lg border-gray-600 text-gray-500 cursor-not-allowed uppercase font-bold" disabled>OWNED</button>`;
-                } else if (isLocked) {
-                    buttonHTML = `<button class="w-full btn-minimal py-3 text-xs rounded-lg opacity-50 cursor-not-allowed uppercase font-bold" disabled>LOCKED</button>`;
-                } else if (!canAfford) {
-                    buttonHTML = `<button class="w-full btn-minimal py-3 text-xs rounded-lg border-[var(--retro-red)] text-[var(--retro-red)] opacity-60 cursor-not-allowed uppercase font-bold" disabled>INSUFFICIENT FUNDS</button>`;
-                } else {
-                    buttonHTML = `<button class="w-full btn-action py-3 text-xs rounded-lg font-bold shadow-lg" onclick="buyFurniture('${item.id}')">INSTALL ($${item.price})</button>`;
+                    // Create the fading mystic clone mesh
+                    const cloneMaterial = baseMysticMaterial.clone();
+                    cloneMaterial.uniforms.opacity.value = 0.9;
+                    const cloneMesh = new THREE.Mesh(child.geometry.clone(), cloneMaterial);
+                    cloneMesh.position.copy(child.position);
+                    cloneMesh.rotation.copy(child.rotation);
+                    cloneMesh.scale.copy(child.scale);
+                    cloneGroup.add(cloneMesh);
                 }
-
-                html += `
-                    <div class="border border-[var(--glass-border)] p-5 rounded-xl bg-black/40 hover:border-[var(--accent)] transition-all flex flex-col justify-between group ${alreadyOwned ? 'opacity-85' : ''}">
-                        <div>
-                            <div class="flex justify-between items-start mb-2">
-                                <h4 class="font-bold text-base text-white group-hover:text-[var(--accent)] transition-colors">${item.name}</h4>
-                                <span class="text-xs font-retro font-bold text-[var(--accent)]">${item.category.toUpperCase()}</span>
-                            </div>
-                            <p class="text-xs text-[var(--text-muted)] mb-4">${item.perk}</p>
-                            
-                            <div class="space-y-1.5 mb-6 text-[10px] font-retro text-gray-400 border-t border-white/5 pt-3">
-                                <div class="flex justify-between">
-                                    <span>Prereqs:</span>
-                                    <span class="${isLocked ? 'text-[var(--retro-red)] font-bold' : 'text-gray-200'}">${prereqStr}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Price:</span>
-                                    <span class="${!alreadyOwned && !canAfford ? 'text-[var(--retro-red)] font-bold' : 'text-[var(--retro-green)]'}">$${item.price}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            ${buttonHTML}
-                        </div>
-                    </div>
-                `;
             });
 
-            html += `
-                    </div>
-                </div>
-            `;
+            const duration = 1500;
+            const startTime = performance.now();
 
-            content.innerHTML = html;
+            function animateFade() {
+                const elapsed = performance.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1.0);
+                const easeOut = 1.0 - Math.pow(1.0 - progress, 3); // Cubic ease out
+
+                // Fade in the real meshes
+                originalMeshes.forEach(mesh => {
+                    mesh.material.opacity = easeOut * mesh.userData.origOpacity;
+                });
+
+                // Fade out the silhouette clone
+                cloneGroup.traverse(child => {
+                    if (child.isMesh && child.material.uniforms && child.material.uniforms.opacity) {
+                        child.material.uniforms.opacity.value = 0.9 * (1.0 - easeOut);
+                    }
+                });
+
+                if (progress < 1.0) {
+                    requestAnimationFrame(animateFade);
+                } else {
+                    // Cleanup
+                    scene.remove(cloneGroup);
+                    cloneGroup.traverse(child => {
+                        if (child.geometry) child.geometry.dispose();
+                        if (child.material) child.material.dispose();
+                    });
+
+                    originalMeshes.forEach(mesh => {
+                        mesh.material.transparent = mesh.userData.origTransparent;
+                        mesh.material.opacity = mesh.userData.origOpacity;
+                        mesh.material.needsUpdate = true;
+                    });
+                }
+            }
+
+            requestAnimationFrame(animateFade);
         }
 
         function buyFurniture(id) {
@@ -10257,6 +10472,9 @@ function triggerRankUp(oldRank, newRank) {
             if (!state.ownedFurniture) state.ownedFurniture = [];
             state.ownedFurniture.push(id);
 
+            // Recalculate perks
+            recalculateActivePerks();
+
             if (item.effect) {
                 if (item.effect.type === 'multiplier') {
                     state.multiplier = (parseFloat(state.multiplier) || 1.0) + item.effect.value;
@@ -10269,13 +10487,28 @@ function triggerRankUp(oldRank, newRank) {
 
             syncFurniture3DVisibility();
 
+            const obj = getFurniture3DObject(item.sceneObject);
+            if (obj) {
+                playMaterializationEffect(obj);
+            }
+
+            const tooltip = document.getElementById('studio-buy-tooltip');
+            if (tooltip) tooltip.style.display = 'none';
+
             if (typeof fireConfetti === 'function') fireConfetti('store');
             playSuccess();
             
             saveGame();
             updateHUD();
-            renderStudioStore();
         }
+
+        window.buyFurnitureDirect = function() {
+            const btn = document.getElementById('s-tooltip-buy-btn');
+            const id = btn ? btn.getAttribute('data-id') : null;
+            if (id) {
+                buyFurniture(id);
+            }
+        };
 
         function downloadCrack(id) {
             const crack = cracks.find(c => c.id === id);
