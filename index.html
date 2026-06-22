@@ -177,6 +177,20 @@
                 100% { transform: translate(-8%, -6%) scale(0.95); }
             }
 
+            @keyframes tape-spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            .tape-reel-slow {
+                animation: tape-spin 6s linear infinite;
+            }
+            .tape-reel-fast {
+                animation: tape-spin 4.5s linear infinite;
+            }
+            .tape-paused {
+                animation-play-state: paused !important;
+            }
+
             /* --- 2D CLOUDS BACKGROUND --- */
             .cloud-2d {
                 position: absolute;
@@ -208,6 +222,16 @@
             }
             .cloud-glow .cloud-puff {
                 border-color: rgba(255, 255, 255, 0.15) !important;
+            }
+
+            .daw-rendering {
+                box-shadow: 0 0 25px var(--accent) !important;
+                border-color: var(--accent) !important;
+                animation: dawGlowPulse 1.5s infinite ease-in-out !important;
+            }
+            @keyframes dawGlowPulse {
+                0%, 100% { filter: brightness(1); }
+                50% { filter: brightness(1.15); }
             }
 
             @keyframes moveClouds {
@@ -692,7 +716,7 @@
             
             #daw-plugin, #daw-bpm { height: 48px !important; }
 
-            /* =========================================
+            /* ========================================
             7. UTILITIES & SCROLLBARS
             ========================================= */
             ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -2432,7 +2456,7 @@
 
     <div id="bsod" class="absolute inset-0 z-[2000] bg-[#0000AA] text-white p-8 md:p-16 flex-col hidden font-retro">
             <h1 class="text-3xl md:text-5xl font-bold bg-white text-[#0000AA] inline-block px-5 py-2 mb-8 md:mb-10 mt-10">CRITICAL_SYSTEM_ERROR</h1>
-            <p class="mb-6 text-lg md:text-xl tracking-wider">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
+            <p id="bsod-msg" class="mb-6 text-lg md:text-xl tracking-wider">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
             <p class="mb-12 md:mb-16 text-base md:text-lg text-gray-300">Unlicensed software execution caused a memory leak. Restoring system state...</p>
             <div class="w-full max-w-3xl border border-white/50 p-1"><div id="bsod-progress" class="bg-white h-5 md:h-6 w-0 transition-all"></div></div>
             <p class="mt-12 text-sm md:text-base glitch text-gray-400">Do not turn off your workstation.</p>
@@ -2482,6 +2506,8 @@ const DEFAULT_STATE = {
             money: 100, rep: 10, followers: 0, energy: 100,
             inspi: 100,
             lastGenres: [],
+            recentExports: [],
+            flowStateActive: false,
             // --- AJOUT DES VOLUMES PAR DÉFAUT ---
             masterVolume: 1.0,
             musicVolume: 0.8,
@@ -4418,6 +4444,10 @@ const DEFAULT_STATE = {
         state.stats.lampToggles = (state.stats.lampToggles || 0) + 1;
         checkAchievement('lumiere_divine', () => state.stats.lampToggles >= 20);
 
+        if (state.stats.lampToggles === 10) {
+            showToast("Tu testes l'interrupteur ou tu cherches l'inspi ?", "discreet");
+        }
+
         const spot    = lamp.userData.spot;
         const bulb    = lamp.userData.bulb;
         const ceiling = scene.getObjectByName("ceilingLight");
@@ -6304,7 +6334,28 @@ function triggerRankUp(oldRank, newRank) {
         document.body.appendChild(globalTooltip);
         let tooltipTimeout;
 
+        let avatarClickCount = 0;
+        let avatarClickTimer = null;
+
         function toggleTooltip(type, el) {
+            if (type === 'avatar') {
+                avatarClickCount++;
+                if (avatarClickTimer) clearTimeout(avatarClickTimer);
+                avatarClickTimer = setTimeout(() => {
+                    avatarClickCount = 0;
+                }, 1500);
+
+                if (avatarClickCount >= 5) {
+                    showToast("Arrête de te regarder dans le miroir, va composer.", "discreet");
+                    if (typeof playBleep === 'function') playBleep();
+                    avatarClickCount = 0;
+                    if (avatarClickTimer) {
+                        clearTimeout(avatarClickTimer);
+                        avatarClickTimer = null;
+                    }
+                }
+            }
+
             if (isMobile) {
                 if (globalTooltip.dataset.type === type && !globalTooltip.classList.contains('hidden')) hideTooltip();
                 else showTooltip(type, el);
@@ -7783,7 +7834,9 @@ function triggerRankUp(oldRank, newRank) {
         const isMid = track.score >= 4 && track.score < 7;
         const isFlop = track.score < 4;
         
-      // Générateur de vocabulaire massivement enrichi
+        const usedMessages = new Set();
+        
+        // Générateur de vocabulaire massivement enrichi
         const getMessage = () => {
             let pool = [];
             const rCancel = rappersCancel[Math.floor(Math.random() * rappersCancel.length)];
@@ -7866,7 +7919,7 @@ function triggerRankUp(oldRank, newRank) {
                 else if (isMid) pool.push("Y'a un truc, hâte de voir la suite.", "Le talent est là, ça va percer.");
                 else if (isFlop) pool.push("C'est pour ça qu'il reste dans sa chambre", "Gardez-le underground.");
             }
-
+ 
             // 5. CONTEXTE RANG (Expertise)
             const playerRank = getCurrentRank();
             if (playerRank.id >= 4) {
@@ -7874,7 +7927,7 @@ function triggerRankUp(oldRank, newRank) {
                 else if (isMid) pool.push("Efficacité redoutable.", "On sent l'expérience derrière le mix.");
                 else if (isFlop) pool.push(`Un bide industriel...`, `Gros malaise pour un ${playerRank.name}.`, "C'est ça votre prod à 5000€ ? 💀");
             }
-
+ 
             // 6. CONTEXTE RÉPUTATION (Dramas, Scams, etc.)
             if (state.rep < 0) {
                 if (isBanger) pool.push("C'est lourd mais le mec est un rat.", "Le talent est là, mais j'oublie pas le drama.");
@@ -7885,8 +7938,16 @@ function triggerRankUp(oldRank, newRank) {
                 else if (isMid) pool.push("Travail sérieux comme d'hab.", "Valeur sûre du game.");
                 else if (isFlop) pool.push("Même les meilleurs peuvent avoir un coup de mou.", "D'habitude il est plus carré que ça.");
             }
-
-            return pool[Math.floor(Math.random() * pool.length)];
+ 
+            let msg = "";
+            let attempts = 0;
+            do {
+                msg = pool[Math.floor(Math.random() * pool.length)];
+                attempts++;
+            } while (usedMessages.has(msg) && attempts < 15);
+            
+            usedMessages.add(msg);
+            return msg;
         };
 
         const startTime = Date.now();
@@ -7991,11 +8052,13 @@ function triggerRankUp(oldRank, newRank) {
         prix_de_la_paix: { category: 'business', target: 1, unit: 'deal', reward: { rep: 40 } },
         toujours_dans_le_rouge: { category: 'studio', target: 1, unit: 'export', secret: true, reward: { money: 300, rep: 5 } },
         lumiere_divine: { category: 'studio', progressPath: 'stats.lampToggles', target: 20, unit: 'switches', secret: true, reward: { money: 50 } },
-        vrai_rat_de_studio: { category: 'studio', progressPath: 'stats.awakeDays', target: 3, unit: 'days', secret: true, reward: { money: 1000, rep: 20 } }
+        vrai_rat_de_studio: { category: 'studio', progressPath: 'stats.awakeDays', target: 3, unit: 'days', secret: true, reward: { money: 1000, rep: 20 } },
+        zero_energie_zero_probleme: { category: 'studio', target: 1, unit: 'export', secret: true, reward: { money: 100, rep: 10 } }
     };
         let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
         normalizeAchievementState();
 
+        let easterEgg3AM = false;
         let selectedAvatarIndex = 0;
         let currentDawGenre = 'drill';
         let currentDawVoice = 'm';
@@ -8104,7 +8167,7 @@ function triggerRankUp(oldRank, newRank) {
         return Math.max(15, cooldown);
     }
 
-        function getDawCooldown() { return 60; }
+        function getDawCooldown() { return 30; }
 
     //PIANOROLLLLLL
         function initPianoRollUI() {
@@ -9087,6 +9150,9 @@ function triggerRankUp(oldRank, newRank) {
         function goSit() {
             if (state.isExporting || state.isSleeping || state.isSitting) return;
 
+            if (state.timeMins >= 0 && state.timeMins < 5) {
+                showToast("Minuit. Le silence avant le prochain hit.", "discreet");
+            }
 
             state.isSitting = true;
 
@@ -9261,6 +9327,8 @@ function triggerRankUp(oldRank, newRank) {
                     if (isNaN(state.inspi)) state.inspi = 100;
                     // lastGenres migration: ensure array
                     state.lastGenres = Array.isArray(state.lastGenres) ? state.lastGenres : [];
+                    state.recentExports = Array.isArray(state.recentExports) ? state.recentExports : [];
+                    state.flowStateActive = !!state.flowStateActive;
                     state.multiplier      = parseFloat(state.multiplier) || 1.0;
                     state.plugins         = parseInt(state.plugins, 10) || 0;
                     state.energy          = parseFloat(state.energy) || 100;
@@ -9457,9 +9525,21 @@ function triggerRankUp(oldRank, newRank) {
             state.timeMins = (parseInt(state.timeMins, 10) || 0) + 5;
             state.day      =  parseInt(state.day, 10) || 1;
 
+            // Régénération passive de l'inspiration (+1 point toutes les 5 minutes in-game)
+            state.inspi = Math.min(100, (parseFloat(state.inspi) || 0) + 1);
+
+            if (state.timeMins >= 180 && state.timeMins <= 200 && !easterEgg3AM) {
+                showToast("3AM... le moment où les meilleurs sons sortent.", "discreet");
+                easterEgg3AM = true;
+            }
+
             if (state.timeMins >= 1440) {
                 state.timeMins -= 1440;
                 state.day += 1;
+
+                if ([10, 50, 100].includes(state.day)) {
+                    showToast("🎂 Jour " + state.day + ". Ça fait un bail que tu te la butes là.", "success");
+                }
                 
                 // Achievement: Vrai Rat de Studio
                 state.stats.awakeDays = (state.stats.awakeDays || 0) + 1;
@@ -9784,6 +9864,7 @@ function triggerRankUp(oldRank, newRank) {
         };
 
         function dailyReset() {
+            easterEgg3AM = false;
             if (state.rep > 0) {
                 const gain = Math.floor(state.rep * 0.1) + Math.floor(Math.random() * 5);
                 logFollower(gain);
@@ -10114,8 +10195,8 @@ function triggerRankUp(oldRank, newRank) {
                 // Pénalité appliquée : la créativité est déjà épuisée, le mix en souffre
             }
 
-            // Chaque export consomme un gros bloc de créativité
-            state.inspi = Math.max(0, state.inspi - 30);
+            // Chaque export consomme un bloc moyen de créativité
+            state.inspi = Math.max(0, state.inspi - 15);
 
             // Achievement: Toujours dans le rouge
             checkAchievement('toujours_dans_le_rouge', () => state.energy < 5);
@@ -10156,6 +10237,8 @@ function triggerRankUp(oldRank, newRank) {
             playhead.style.left = '110px';
             playTone(400, 'square', 0.1);
 
+            if (dawWindow) dawWindow.classList.add('daw-rendering');
+
             const vuInterval = setInterval(() => {
                 simulateVuMeter(14);
                 for (let i = 1; i <= 3; i++) {
@@ -10179,7 +10262,10 @@ function triggerRankUp(oldRank, newRank) {
             if (p >= 100) {
                 clearInterval(interval);
                 clearInterval(vuInterval);
-                dawWindow.style.transform = 'none'; 
+                if (dawWindow) {
+                    dawWindow.style.transform = 'none'; 
+                    dawWindow.classList.remove('daw-rendering');
+                }
                 playhead.style.left = '110px';
                 state.isExporting = false;
                 state.cooldowns.dawTimeReady = getTotalMins() + getDawCooldown();
@@ -10190,9 +10276,13 @@ function triggerRankUp(oldRank, newRank) {
                 triggerDawFlash(bpm);           // Illumination du logiciel
                 // -------------------------------------
 
+                if (Math.floor(state.energy) === 1) {
+                    checkAchievement('zero_energie_zero_probleme', () => true);
+                }
+
                 finishExport(genre, bpm, voice, activePads, consumedPluginId, trackTitle);
             }
-            }, 60);
+            }, 30);
         
 
                 function finishExport(genre, bpm, voice, pads, pluginId, trackTitle) {
@@ -10222,10 +10312,48 @@ function triggerRankUp(oldRank, newRank) {
                 if (result.rewardType === 'rep')       { moneyGain = 30;   repGain += 15; }
             } else {
                 resultTxt = "🗑️ MASSIVE FLOP. Wrong vibe for 2026.";
-                moneyGain = 15; repGain -= 5; state.stats.flops++; 
+                moneyGain = 15;
+                state.stats.flops++; 
                 state.stats.consecutiveFlops++; 
+                
+                // Nerf the flop spiral: base is -2 REP, pity is 0 REP if consecutiveFlops >= 3
+                if (state.stats.consecutiveFlops >= 3) {
+                    repGain = 0;
+                    critique += "\n[Pitié] Flops consécutifs élevés. Pas de perte de REP.";
+                } else {
+                    repGain = -2;
+                }
             }
             checkAchievement('productivite_toxique', () => state.stats.consecutiveFlops >= 5);
+
+            // Flow State bonus multiplier application
+            let flowStateApplied = false;
+            if (state.flowStateActive) {
+                moneyGain = Math.floor(moneyGain * 1.05);
+                follGain = Math.floor(follGain * 1.05);
+                flowStateApplied = true;
+                state.flowStateActive = false; // consume flow state
+            }
+
+            // Track recent exports to check for next Flow State trigger
+            state.recentExports = state.recentExports || [];
+            state.recentExports.push(getTotalMins());
+            if (state.recentExports.length > 5) state.recentExports.shift();
+            
+            if (state.recentExports.length >= 3) {
+                const len = state.recentExports.length;
+                const timeDiff = state.recentExports[len - 1] - state.recentExports[len - 3];
+                if (timeDiff <= 10) {
+                    state.flowStateActive = true;
+                    setTimeout(() => {
+                        showToast("⚡ Flow State activé ! Prochain export : +5% de gains !", "success");
+                    }, 800);
+                }
+            }
+
+            if (flowStateApplied) {
+                critique += "\n[Flow State] Multiplicateur +5% appliqué aux gains !";
+            }
 
             moneyGain = Math.floor(moneyGain * state.multiplier);
             
@@ -10304,16 +10432,18 @@ function triggerRankUp(oldRank, newRank) {
                 state.lastGenres = Array.isArray(state.lastGenres) ? state.lastGenres : [];
                 const newGenre = (genre || '').toString().toLowerCase();
                 state.lastGenres.push(newGenre);
-                // keep only last 3
-                while (state.lastGenres.length > 3) state.lastGenres.shift();
+                while (state.lastGenres.length > 5) state.lastGenres.shift();
 
-                // Repetition penalty: if the last 3 are identical, apply -35 inspi
                 try {
-                    if (state.lastGenres.length === 3) {
-                        if (state.lastGenres[0] === state.lastGenres[1] && state.lastGenres[1] === state.lastGenres[2]) {
+                    const len = state.lastGenres.length;
+                    if (len >= 3) {
+                        if (state.lastGenres[len - 1] === state.lastGenres[len - 2] && state.lastGenres[len - 2] === state.lastGenres[len - 3]) {
                             state.inspi = Math.max(0, (Number(state.inspi) || 0) - 35);
                             showToast("Inspi: redondance créative — grosse perte d'inspiration (-35)", 'error');
                         }
+                    }
+                    if (len >= 5 && state.lastGenres.every(g => g === state.lastGenres[0])) {
+                        showToast("Même recette à chaque fois... t'as pas peur de tourner en rond ?", "discreet");
                     }
                 } catch(e) {}
             } catch(e) {}
@@ -10556,6 +10686,10 @@ function triggerRankUp(oldRank, newRank) {
             if (!state.ownedFurniture) state.ownedFurniture = [];
             state.ownedFurniture.push(id);
 
+            if (state.ownedFurniture.length === FURNITURE_CATALOG.length) {
+                showToast("Studio complet. Tu n'as plus d'excuses pour pas sortir un classique.", "success");
+            }
+
             // Recalculate perks
             recalculateActivePerks();
 
@@ -10646,6 +10780,12 @@ function triggerRankUp(oldRank, newRank) {
             checkAchievement('alerte_rouge', () => state.stats.viruses >= 1);
             logMoney(-loss, 'System Virus Purge');
             saveGame(); updateHUD(); playError();
+
+            const isRareBsod = Math.random() < 0.01;
+            const bsodMsg = isRareBsod ? "ERREUR_IRRÉCUPÉRABLE: Tu as essayé de cracker le karma." : "*** STOP: 0x000000FE (MALWARE_DETECTED)";
+            const bsodMsgEl = document.getElementById('bsod-msg');
+            if (bsodMsgEl) bsodMsgEl.innerText = bsodMsg;
+
             const bsod = document.getElementById('bsod');
             const prog = document.getElementById('bsod-progress');
             bsod.classList.remove('hidden'); bsod.classList.add('flex');
@@ -11772,6 +11912,20 @@ if (reviewOverlay) {
                 document.addEventListener('visibilitychange', () => {
                         if (document.visibilityState === 'hidden') saveGame();
     });
+
+            let secretBuffer = [];
+            const SECRET_CODE = ['b', 'o', 'u', 'n', 'c', 'e'];
+            window.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                secretBuffer.push(e.key.toLowerCase());
+                if (secretBuffer.length > SECRET_CODE.length) secretBuffer.shift();
+                if (secretBuffer.join('') === SECRET_CODE.join('')) {
+                    showToast("🎉 Code secret activé. +500$ pour le fun.", "success");
+                    logMoney(500, "Easter Egg");
+                    if(typeof playSuccess === 'function') playSuccess();
+                    secretBuffer = [];
+                }
+            });
     </script>
         </body>
             </html>
