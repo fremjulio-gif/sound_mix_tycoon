@@ -1879,6 +1879,37 @@
             <button id="s-tooltip-buy-btn" class="btn-action w-full py-2 text-xs rounded-lg font-bold shadow-md uppercase tracking-wider">Install</button>
         </div>
 
+                <button id="door-action-btn" class="hidden fixed bottom-24 left-1/2 transform -translate-x-1/2 z-[90] btn-action py-3 px-6 rounded-full text-xs font-retro tracking-widest shadow-[0_0_20px_rgba(129,140,248,0.5)] flex items-center gap-2 pointer-events-auto transition-all duration-300" onclick="openMiniGameMenu()">
+            <span class="text-lg">🚪</span> SORTIR PRENDRE L'AIR
+        </button>
+
+        <div id="minigames-menu-overlay" class="hidden fixed inset-0 bg-black/90 z-[1000] items-center justify-center p-4 backdrop-blur-md">
+            <div class="bg-[#18181b] rounded-2xl border border-[var(--accent)] w-full max-w-md p-6 shadow-[0_0_40px_rgba(129,140,248,0.2)] relative">
+                <button class="absolute top-4 right-4 text-gray-500 hover:text-[var(--retro-red)] transition-colors" onclick="closeMiniGameMenu()">✖</button>
+                <h2 class="text-2xl font-bold text-white mb-2 text-center font-retro tracking-widest">ACTIVITÉS EXTÉRIEURES</h2>
+                <p class="text-gray-400 text-[11px] mb-6 text-center uppercase tracking-widest">Fais une pause pour t'inspirer.<br><span class="text-[var(--retro-red)]">Cooldown : 4H in-game</span></p>
+                
+                <div class="space-y-3 font-retro tracking-widest">
+                    <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-[var(--accent)]" onclick="launchDoorMiniGame('page')">
+                        <span class="font-bold text-white text-[11px]">🎵 Syndrome Page Blanche</span>
+                        <span class="text-[10px] text-[var(--accent)]">+20% Inspi</span>
+                    </button>
+                    <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-[var(--retro-green)]" onclick="launchDoorMiniGame('lufs')">
+                        <span class="font-bold text-white text-[11px]">🔊 Guerre du LUFS</span>
+                        <span class="text-[10px] text-[var(--retro-green)]">+10% Mult.</span>
+                    </button>
+                    <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-[var(--retro-orange)]" onclick="launchDoorMiniGame('mono')">
+                        <span class="font-bold text-white text-[11px]">⚡ Mono Mix</span>
+                        <span class="text-[10px] text-[var(--retro-orange)]">+5% Mult.</span>
+                    </button>
+                    <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-pink-500" onclick="launchDoorMiniGame('quiz')">
+                        <span class="font-bold text-white text-[11px]">🎛️ Quiz Plugin</span>
+                        <span class="text-[10px] text-pink-500">+1 Plugin</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div id="room-ui"></div>
 
         <button id="audio-settings-gear" class="btn-system" onclick="openAudioSettings()" title="Paramètres">
@@ -9301,6 +9332,46 @@ function triggerRankUp(oldRank, newRank) {
             }, durationMs);
         }
 
+
+                // ==========================================
+        // SYSTÈME DE LA PORTE (MINI-JEUX)
+        // ==========================================
+        function openMiniGameMenu() {
+            document.getElementById('minigames-menu-overlay').classList.remove('hidden');
+            document.getElementById('minigames-menu-overlay').classList.add('flex');
+            playBleep();
+        }
+
+        function closeMiniGameMenu() {
+            document.getElementById('minigames-menu-overlay').classList.add('hidden');
+            document.getElementById('minigames-menu-overlay').classList.remove('flex');
+            playBleep();
+        }
+
+        function launchDoorMiniGame(gameId) {
+            closeMiniGameMenu();
+            
+            // 1. Applique le cooldown (240 minutes = 4 heures in-game)
+            if (!state.cooldowns) state.cooldowns = {};
+            state.cooldowns.doorTimeReady = getTotalMins() + 240; 
+            
+            // 2. Cache le bouton d'action immédiatement
+            document.getElementById('door-action-btn').classList.add('hidden');
+            
+            // 3. Lance le mini-jeu correspondant
+            if (gameId === 'page') {
+                if (typeof startBlankPageMiniGame === 'function') startBlankPageMiniGame();
+            } else if (gameId === 'lufs') {
+                if (typeof startLufsWarMiniGame === 'function') startLufsWarMiniGame();
+            } else if (gameId === 'mono') {
+                if (typeof triggerMonoMixMiniGame === 'function') triggerMonoMixMiniGame();
+            } else if (gameId === 'quiz') {
+                if (typeof startPluginQuiz === 'function') startPluginQuiz();
+            }
+            
+            saveGame();
+        }
+
         function standUp(energyGain) {
             state.isSitting = false;
             MusicSystem.crossfadeTo('room', 3.0); // <-- AJOUT ICI (Retour à la room)
@@ -10190,6 +10261,25 @@ function triggerRankUp(oldRank, newRank) {
                 // Petit effet sonore de tic-tac accéléré pour marquer le passage du temps
                 playTone(900, 'sine', 0.02, 0.01); // Tic
                 setTimeout(() => playTone(700, 'sine', 0.02, 0.01), 250); // Tac
+            }
+
+                        // --- SYSTÈME DE PROXIMITÉ DE LA PORTE ---
+            if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar) {
+                // Règle ici les coordonnées X et Z (et Y) approximatives de ta porte 3D !
+                // (Modifie x: 4.5, z: 4.5 selon l'endroit où se trouve la porte dans ta scène)
+                const doorPos = new THREE.Vector3(4.5, -1, 4.5); 
+                const dist = currentRoomAvatar.position.distanceTo(doorPos);
+                
+                const doorBtn = document.getElementById('door-action-btn');
+                const doorReady = parseInt(state.cooldowns?.doorTimeReady, 10) || 0;
+                const canPlayDoor = getTotalMins() >= doorReady;
+
+                // Si l'avatar est à moins de 2.5 unités de distance, que le cooldown est fini et qu'aucun event n'est en cours :
+                if (dist < 2.5 && canPlayDoor && !state.isEventActive && !state.isSleeping && !state.isSitting) {
+                    doorBtn.classList.remove('hidden');
+                } else {
+                    doorBtn.classList.add('hidden');
+                }
             }
 
             if (state.timeMins % 60 === 0) saveGame();
@@ -11784,6 +11874,10 @@ function triggerRankUp(oldRank, newRank) {
             overlay.style.display = 'none';
         }, 500);
     }
+
+
+
+
 
 
 
