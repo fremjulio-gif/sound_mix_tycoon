@@ -1843,6 +1843,10 @@
                         <input type="range" id="sfx-volume-slider" min="0" max="1" step="0.01" value="0.5" class="w-full accent-[var(--accent)] cursor-pointer">
                         <span id="sfx-volume-value" class="font-retro text-xs text-white">50%</span>
                     </div>
+                    <div class="border-t border-white/10 pt-4 flex gap-4 w-full mt-2">
+                        <button onclick="exportSave()" class="btn-action flex-1 py-3 text-[10px] md:text-xs rounded-lg font-bold shadow-md uppercase tracking-widest font-retro">Exporter</button>
+                        <button onclick="importSave()" class="btn-minimal flex-1 py-3 text-[10px] md:text-xs rounded-lg border-white/20 hover:border-white text-white font-bold shadow-md uppercase tracking-widest font-retro">Importer</button>
+                    </div>
                 </div> 
             </div> 
         </div> 
@@ -6940,7 +6944,7 @@ function triggerRankUp(oldRank, newRank) {
 
                 // 🚨 LE FIX EST ICI : Déblocage immédiat de l'audio 
                 if (audioCtx.state === 'suspended') {
-                    await audioCtx.resume();
+                    audioCtx.resume().catch(e => console.warn("Audio resume", e));
                 }
                 
                 // Hack de l'oscillateur silencieux pour verrouiller l'autorisation du navigateur
@@ -9198,11 +9202,15 @@ function triggerRankUp(oldRank, newRank) {
             const username = document.getElementById('login-username').value.trim();
             if (!username) { document.getElementById('login-error').classList.remove('hidden'); playError(); return; }
 
-            const savedData = SafeStorage.get(getSaveKey(username)) || SafeStorage.get('smt_save_' + username);
-            
-            // 1. On ignore les sauvegardes corrompues qui contiennent le texte "undefined" ou "null"
-            if (savedData && savedData !== "undefined" && savedData !== "null") {
+            try {
+                let savedData = null;
                 try {
+                    savedData = SafeStorage.get(getSaveKey(username)) || SafeStorage.get('smt_save_' + username);
+                } catch(e) {
+                    console.warn("Storage access failed:", e);
+                }
+
+                if (savedData && savedData !== "undefined" && savedData !== "null") {
                     const parsed = JSON.parse(savedData);
                     state = { ...JSON.parse(JSON.stringify(DEFAULT_STATE)), ...parsed };
                     state.username = username;
@@ -9311,18 +9319,18 @@ function triggerRankUp(oldRank, newRank) {
                     if (state.activeCharacter < 0 || state.activeCharacter >= avatars.length) state.activeCharacter = 0;
 
                     showToast("Session Restored.", "success");
-                } catch(e) {
-                    // On utilise console.error pour tracer le problème s'il se reproduit un jour
-                    console.error('Erreur critique au chargement de la sauvegarde :', e); 
+                } else {
                     state = JSON.parse(JSON.stringify(DEFAULT_STATE));
                     state.username = username;
                     state.activeCharacter = selectedAvatarIndex;
+                    showToast("New Profile Registered.", "info");
                 }
-            } else {
+            } catch(e) {
+                console.error('Erreur critique au chargement de la sauvegarde :', e); 
                 state = JSON.parse(JSON.stringify(DEFAULT_STATE));
                 state.username = username;
                 state.activeCharacter = selectedAvatarIndex;
-                showToast("New Profile Registered.", "info");
+                showToast("Loading failed, loaded default profile.", "warning");
             }
 
             normalizeAchievementState();
@@ -9698,6 +9706,82 @@ function triggerRankUp(oldRank, newRank) {
             SafeStorage.set(getSaveKey(state.username), JSON.stringify(state));
             refreshAchievementsPanel();
         }
+
+        window.exportSave = function() {
+            if (!state || !state.username) {
+                showToast("Aucune session active à exporter !", "warning");
+                return;
+            }
+            try {
+                saveGame();
+                const jsonStr = JSON.stringify(state);
+                const base64Save = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+                    return String.fromCharCode(parseInt(p1, 16));
+                }));
+                
+                navigator.clipboard.writeText(base64Save).then(() => {
+                    showToast("Sauvegarde copiée dans le presse-papiers !", "success");
+                    playSuccess();
+                }).catch(err => {
+                    console.error("Presse-papiers inaccessible, affichage de la clé :", err);
+                    prompt("Copie ta clé de sauvegarde ci-dessous :", base64Save);
+                });
+            } catch(e) {
+                console.error("Erreur d'exportation :", e);
+                showToast("Échec de l'exportation de la sauvegarde !", "error");
+            }
+        };
+
+        window.importSave = function() {
+            const saveStr = prompt("Colle ta clé de sauvegarde Base64 ci-dessous :");
+            if (!saveStr) return;
+            
+            try {
+                const trimmed = saveStr.trim();
+                const decodedStr = decodeURIComponent(Array.prototype.map.call(atob(trimmed), (c) => {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                
+                const parsed = JSON.parse(decodedStr);
+                if (!parsed || typeof parsed !== 'object' || !parsed.username) {
+                    throw new Error("Sauvegarde invalide");
+                }
+                
+                state = { ...JSON.parse(JSON.stringify(DEFAULT_STATE)), ...parsed };
+                
+                recalculateActivePerks();
+                syncFurniture3DVisibility();
+                
+                if (typeof MusicSystem !== 'undefined') {
+                    window.masterVolume = state.masterVolume !== undefined ? parseFloat(state.masterVolume) : 1.0;
+                    window.musicVolume = state.musicVolume !== undefined ? parseFloat(state.musicVolume) : 0.8;
+                    window.sfxVolume = state.sfxVolume !== undefined ? parseFloat(state.sfxVolume) : 0.5;
+                    MusicSystem.setMasterVolume(window.masterVolume);
+                    MusicSystem.setMusicVolume(window.musicVolume);
+                }
+                
+                saveGame();
+                updateHUD();
+                
+                if (typeof updateDawPlugins === 'function') updateDawPlugins();
+                if (typeof updateTopChartsWidget === 'function') updateTopChartsWidget();
+                if (typeof updateChallengeUI === 'function') updateChallengeUI();
+                if (typeof refreshSocial === 'function') refreshSocial();
+                if (typeof refreshStats === 'function') refreshStats();
+                if (typeof window.updateVinylCrate === 'function') window.updateVinylCrate();
+                
+                if (typeof spawnRoomAvatar === 'function') {
+                    spawnRoomAvatar(state.activeCharacter);
+                }
+                
+                showToast("Sauvegarde importée avec succès ! Session : " + state.username, "success");
+                playSuccess();
+            } catch(e) {
+                console.error("Erreur d'importation :", e);
+                showToast("Code de sauvegarde invalide ou corrompu !", "error");
+                playError();
+            }
+        };
 
         function dailyReset() {
             if (state.rep > 0) {
