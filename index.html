@@ -13067,13 +13067,13 @@ function generateEchoContext() {
     
     // A. OBSOLESCENCE (À ajuster selon l'ID exact de ton palier final)
     // Exemple : si le rang a une propriété 'index' élevée, ou un ID spécifique type 'stadium'
-    const isMaxRank = (currentRank && (currentRank.id === 'stadium' || currentRank.index >= 4)) || state.followers >= 1000000;
+    const isMaxRank = (currentRank && currentRank.index >= 3) || state.followers >= 500000;
 
     if (isMaxRank) {
         text = ECHO_DATA.intros.obsolete;
     } 
     // B. ANALYSE DES FLOPS
-    else if (state.stats && state.stats.consecutiveFlops >= 3) {
+    else if (state.stats?.consecutiveFlops >= 3) {
         text = _getEchoRandom(ECHO_DATA.intros.highFlops);
     } 
     // C. ANALYSE DE L'ÉNERGIE
