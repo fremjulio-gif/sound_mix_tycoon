@@ -1684,6 +1684,37 @@
             opacity: 0.7;
             box-shadow: none;
         }
+
+        /* =========================================
+           FOLLOWER/REP PARTICLES
+           ========================================= */
+        @keyframes followerFloat {
+            0% { transform: translateY(-20px) scale(0.8) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(80px) scale(1.2) rotate(360deg); opacity: 0; }
+        }
+        .follower-particle {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000000;
+            animation: followerFloat 1.5s ease-out forwards;
+        }
+
+        /* =========================================
+           BUTTON GLOW EFFECT
+           ========================================= */
+        .glow-active {
+            box-shadow: 0 0 15px rgba(129, 140, 248, 0.8) !important;
+            animation: buttonPulse 1.5s ease-in-out infinite;
+        }
+        @keyframes buttonPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
         </style>
     </head>
 
@@ -2537,6 +2568,7 @@ const DEFAULT_STATE = {
             viralActive: false,
             viralEndTime: 0,
             permanentMixBonus: 0,
+            earlyGameBoost: true, earlyGameTracks: 0,
             // --- AJOUT DES VOLUMES PAR DÉFAUT ---
             masterVolume: 1.0,
             musicVolume: 0.8,
@@ -4652,11 +4684,11 @@ const DEFAULT_STATE = {
             { id: 'rack', name: 'Rack Analogique', price: 2000, reqFollowers: 0, reqRep: 80, sceneObject: 'rackGroup', category: 'studio', perk: 'Son plus chaud (+0.3x Mult)', effect: { type: 'multiplier', value: 0.3 }, tier: 2 },
 
             // --- ACTE 3 : Studio Pro ---
-            { id: 'acoustic', name: 'Panneaux Acoustiques', price: 2500, reqFollowers: 150, reqRep: 0, sceneObject: 'acousticGroup', category: 'studio', perk: 'Meilleurs mix (+1.5 Review)', effect: { type: 'reviewBonus', value: 1.5 }, tier: 3 },
-            { id: 'synth', name: 'Synthétiseur', price: 3500, reqFollowers: 200, reqRep: 0, sceneObject: 'synthGroup', category: 'studio', perk: 'Débloque le Piano Roll', effect: { type: 'unlockAction', value: 'openPianoRoll' }, tier: 3 },
+            { id: 'acoustic', name: 'Panneaux Acoustiques', price: 2500, reqFollowers: 50, reqRep: 0, sceneObject: 'acousticGroup', category: 'studio', perk: 'Meilleurs mix (+1.5 Review)', effect: { type: 'reviewBonus', value: 1.5 }, tier: 3 },
+            { id: 'synth', name: 'Synthétiseur', price: 3500, reqFollowers: 100, reqRep: 0, sceneObject: 'synthGroup', category: 'studio', perk: 'Débloque le Piano Roll', effect: { type: 'unlockAction', value: 'openPianoRoll' }, tier: 3 },
 
             // --- ACTE 4 : Flex ---
-            { id: 'guitar', name: 'Guitare Murale', price: 1800, reqFollowers: 3000, reqRep: 0, sceneObject: 'guitarGroup', category: 'deco', perk: 'Flex (+5 REP/Story)', effect: { type: 'storyBonus', value: 5 }, tier: 4 }
+            { id: 'guitar', name: 'Guitare Murale', price: 1800, reqFollowers: 1000, reqRep: 0, sceneObject: 'guitarGroup', category: 'deco', perk: 'Flex (+5 REP/Story)', effect: { type: 'storyBonus', value: 5 }, tier: 4 }
         ];
 
         const activePerks = {
@@ -5833,14 +5865,15 @@ const DEFAULT_STATE = {
                             const missingRep = state.rep < (item.reqRep || 0);
                             const missingFollowers = state.followers < (item.reqFollowers || 0);
                             const isLocked = missingRep || missingFollowers;
-                            const canAfford = state.money >= item.price;
+                            const scaledPrice = typeof getScaledPrice === 'function' ? getScaledPrice(item.price) : item.price;
+                            const canAfford = state.money >= scaledPrice;
 
                             const prereqEl = document.getElementById('s-tooltip-prereq');
                             prereqEl.innerText = prereqStr;
                             prereqEl.className = isLocked ? 'text-[var(--retro-red)] font-bold' : 'text-gray-200';
 
                             const priceEl = document.getElementById('s-tooltip-price');
-                            priceEl.innerText = `$${item.price}`;
+                            priceEl.innerText = `$${scaledPrice}`;
                             priceEl.className = !canAfford ? 'text-[var(--retro-red)] font-bold' : 'text-[var(--retro-green)] font-bold';
 
                             const buyBtn = document.getElementById('s-tooltip-buy-btn');
@@ -5854,7 +5887,7 @@ const DEFAULT_STATE = {
                                 buyBtn.className = "w-full btn-minimal py-2 text-xs rounded-lg border-[var(--retro-red)] text-[var(--retro-red)] opacity-60 cursor-not-allowed uppercase font-bold";
                                 buyBtn.disabled = true;
                             } else {
-                                buyBtn.innerText = `Installer ($${item.price})`;
+                                buyBtn.innerText = `Installer ($${scaledPrice})`;
                                 buyBtn.className = "btn-action w-full py-2 text-xs rounded-lg font-bold shadow-md uppercase tracking-wider";
                                 buyBtn.disabled = false;
                             }
@@ -8216,7 +8249,7 @@ function triggerRankUp(oldRank, newRank) {
         return Math.max(15, cooldown);
     }
 
-        function getDawCooldown() { return 30; }
+        function getDawCooldown() { return 45; }
 
     //PIANOROLLLLLL
         function initPianoRollUI() {
@@ -9668,7 +9701,7 @@ function triggerRankUp(oldRank, newRank) {
 
                 if (diffBM <= 10 && diffMT <= 10 && diffBT <= 10) {
                     state.permanentMixBonus = Math.min(25, (state.permanentMixBonus || 0) + 5);
-                    state.multiplier = 1.0 + (state.permanentMixBonus / 100);
+                    state.multiplier = Math.min(3.0, 1.0 + (state.permanentMixBonus / 100));
                     showToast(`🔥 Mix mono parfait ! Multiplicateur permanent +5% (Total: +${state.permanentMixBonus}%)`, 'success');
                     playTone(600, 'sine', 0.1);
                     setTimeout(() => playTone(800, 'sine', 0.15), 100);
@@ -9866,7 +9899,7 @@ function triggerRankUp(oldRank, newRank) {
                 showToast("❌ CLIPPING DÉTECTÉ ! -5 REP", "error");
                 playError();
             } else if (lufs >= -14) {
-                state.multiplier = Math.min(1.5, state.multiplier + 0.1); // +10% (max +50%)
+                state.multiplier = Math.min(3.0, state.multiplier + 0.1); // +10% (max 3.0)
                 showToast("✅ LUFS parfait ! +10% multiplicateur permanent", "success");
                 playSuccess();
                 if (typeof fireConfetti === 'function') fireConfetti('achievement');
@@ -10085,8 +10118,8 @@ function triggerRankUp(oldRank, newRank) {
                 showToast("📉 L'effet de viralité s'est estompé.", "info");
             }
 
-            // Régénération passive de l'inspiration (+1 point toutes les 5 minutes in-game)
-            state.inspi = Math.min(100, (parseFloat(state.inspi) || 0) + 1);
+            // Régénération passive de l'inspiration (+1.2 point toutes les 5 minutes in-game)
+            state.inspi = Math.min(100, (parseFloat(state.inspi) || 0) + 1.2);
 
             // Syndrome de la page blanche hook (si l'inspiration tombe sous 20%, 15% de chance de déclencher)
             if (state.inspi < 20 && !state.isEventActive && Math.random() < 0.15) { 
@@ -10935,10 +10968,10 @@ function triggerRankUp(oldRank, newRank) {
                 state.stats.flops++; 
                 state.stats.consecutiveFlops++; 
                 
-                // Nerf the flop spiral: base is -2 REP, pity is 0 REP if consecutiveFlops >= 3
+                // Nerf the flop spiral: base is -2 REP, pity is +1 REP if consecutiveFlops >= 3
                 if (state.stats.consecutiveFlops >= 3) {
-                    repGain = 0;
-                    critique += "\n[Pitié] Flops consécutifs élevés. Pas de perte de REP.";
+                    repGain = 1;
+                    critique += "\n[Pitié] Flops consécutifs élevés. Bonus pitié +1 REP.";
                 } else {
                     repGain = -2;
                 }
@@ -10999,6 +11032,19 @@ function triggerRankUp(oldRank, newRank) {
 
             if (flowStateApplied) {
                 critique += "\n[Flow State] Multiplicateur +5% appliqué aux gains !";
+            }
+
+            if (state.earlyGameBoost) {
+                if (state.stats.tracks < 10) {
+                    moneyGain = Math.floor(moneyGain * 1.5);
+                    follGain = Math.floor(follGain * 1.5);
+                    critique += "\n[Boost Débutant] Gains x1.5 (Actif jusqu'à 10 prods) !";
+                } else {
+                    state.earlyGameBoost = false;
+                    setTimeout(() => {
+                        showToast("Fin du boost de débutant. À toi de jouer maintenant.", "info");
+                    }, 2000);
+                }
             }
 
             moneyGain = Math.floor(moneyGain * state.multiplier);
@@ -11305,6 +11351,12 @@ function triggerRankUp(oldRank, newRank) {
             requestAnimationFrame(animateFade);
         }
 
+        function getScaledPrice(basePrice) {
+            const levelData = typeof calculateLevelData === 'function' ? calculateLevelData(true) : null;
+            const level = levelData ? levelData.level : 1;
+            return Math.floor(basePrice * (1 + (level - 1) * 0.15));
+        }
+
         function buyFurniture(id) {
             const item = FURNITURE_CATALOG.find(f => f.id === id);
             if (!item) return;
@@ -11314,7 +11366,9 @@ function triggerRankUp(oldRank, newRank) {
                 return;
             }
 
-            if (state.money < item.price) {
+            const scaledPrice = getScaledPrice(item.price);
+
+            if (state.money < scaledPrice) {
                 showToast("Fonds insuffisants !", "error");
                 playError();
                 return;
@@ -11328,7 +11382,7 @@ function triggerRankUp(oldRank, newRank) {
                 return;
             }
 
-            logMoney(-item.price, 'Studio+: ' + item.name);
+            logMoney(-scaledPrice, 'Studio+: ' + item.name);
             
             if (!state.ownedFurniture) state.ownedFurniture = [];
             state.ownedFurniture.push(id);
@@ -11343,7 +11397,7 @@ function triggerRankUp(oldRank, newRank) {
 
             if (item.effect) {
                 if (item.effect.type === 'multiplier') {
-                    state.multiplier = (parseFloat(state.multiplier) || 1.0) + item.effect.value;
+                    state.multiplier = Math.min(3.0, (parseFloat(state.multiplier) || 1.0) + item.effect.value);
                     showToast(`Équipement installé ! Multiplicateur permanent +${item.effect.value}x`, "success");
                 } else {
                     applyFurniturePerk(item.effect);
@@ -11411,7 +11465,7 @@ function triggerRankUp(oldRank, newRank) {
         function buyLegit(price, mult) {
             if (state.money >= price) {
                 logMoney(-price, 'AudioStore: Plugin');
-                state.multiplier = (parseFloat(state.multiplier) || 1.0) + mult;
+                state.multiplier = Math.min(3.0, (parseFloat(state.multiplier) || 1.0) + mult);
                 state.plugins = (parseInt(state.plugins, 10) || 0) + 1;
                 checkAchievement('inge_son_certifie', () => state.plugins >= 1);
                 showToast(`Purchase Confirmed! Multiplier +${mult}`, "success");
@@ -11570,7 +11624,10 @@ function triggerRankUp(oldRank, newRank) {
         // ==========================================
         // 21. TOASTS
         // ==========================================
-        function showToast(msg, type = 'info', onClick = null) {
+        let activeToasts = 0;
+        const MAX_TOASTS = 3;
+
+        function showToast(msg, type = 'info', onClick = null, priority = 1) {
              if (window.isBooting) return; // Si la session charge, on bloque 
             const zone = document.getElementById('toast-zone');
             if (!zone) return;
