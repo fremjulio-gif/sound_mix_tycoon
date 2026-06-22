@@ -33,8 +33,10 @@
                 --bg-color-4: #312e81;
             }
 
-
-
+            @keyframes blank-page-note-float {
+                0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+                100% { transform: translateY(-100px) scale(0.5) rotate(45deg); opacity: 0; }
+            }
 
             /* 0.1 --- PIANO ROLL NOTES --- */
             .pr-note {
@@ -9305,6 +9307,63 @@ function triggerRankUp(oldRank, newRank) {
             saveGame();
         }
 
+        // ==========================================
+        // STATE NORMALIZATION AND DEEP MERGE HELPERS
+        // ==========================================
+        function deepMergeState(target, source) {
+            if (!source || typeof source !== 'object') return target;
+            
+            for (const key in target) {
+                if (Object.prototype.hasOwnProperty.call(target, key)) {
+                    const targetVal = target[key];
+                    const sourceVal = source[key];
+                    
+                    if (sourceVal === undefined || sourceVal === null) {
+                        continue;
+                    }
+                    
+                    if (Array.isArray(targetVal)) {
+                        if (Array.isArray(sourceVal)) {
+                            target[key] = sourceVal;
+                        }
+                    } else if (typeof targetVal === 'object') {
+                        target[key] = deepMergeState(targetVal, sourceVal);
+                    } else {
+                        if (typeof targetVal === 'number') {
+                            const parsedNum = Number(sourceVal);
+                            target[key] = isNaN(parsedNum) ? targetVal : parsedNum;
+                        } else if (typeof targetVal === 'boolean') {
+                            target[key] = Boolean(sourceVal);
+                        } else if (typeof targetVal === 'string') {
+                            target[key] = String(sourceVal);
+                        } else {
+                            target[key] = sourceVal;
+                        }
+                    }
+                }
+            }
+            return target;
+        }
+
+        function normalizeState(parsed) {
+            const baseState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            if (!parsed || typeof parsed !== 'object') return baseState;
+            
+            const merged = deepMergeState(baseState, parsed);
+            
+            // Post-merge validation for specific fields
+            merged.stats = merged.stats || {};
+            merged.cooldowns = merged.cooldowns || {};
+            merged.cooldowns.sponsors = merged.cooldowns.sponsors || {};
+            merged.history = merged.history || { money: [], followers: [] };
+            merged.trackList = Array.isArray(merged.trackList) ? merged.trackList : [];
+            merged.ownedCracks = Array.isArray(merged.ownedCracks) ? merged.ownedCracks : [];
+            merged.downloadedCracks = merged.downloadedCracks && typeof merged.downloadedCracks === 'object' ? merged.downloadedCracks : {};
+            merged.ownedFurniture = Array.isArray(merged.ownedFurniture) ? merged.ownedFurniture : [];
+            merged.dailyQuests = Array.isArray(merged.dailyQuests) ? merged.dailyQuests : [];
+            
+            return merged;
+        }
 
         // ==========================================
         // 12. LOGIN
@@ -9325,32 +9384,11 @@ function triggerRankUp(oldRank, newRank) {
 
                 if (savedData && savedData !== "undefined" && savedData !== "null") {
                     const parsed = JSON.parse(savedData);
-                    state = { ...JSON.parse(JSON.stringify(DEFAULT_STATE)), ...parsed };
+                    state = normalizeState(parsed);
                     state.username = username;
 
-                    // 2. Sécurisation TOTALE des objets imbriqués AVANT toute lecture
-                    state.stats = state.stats || {};
-                    state.cooldowns = state.cooldowns || {};
-                    state.cooldowns.sponsors = state.cooldowns.sponsors || {};
-                    state.history = state.history || { money: [], followers: [] };
-                    state.achievements = state.achievements || {};
-                    state.trackList = state.trackList || [];
-                    state.inventory = state.inventory || [];
-                    // Weekly challenge initialization - Secure nested object
-                    state.activeChallenge = state.activeChallenge || {};
-                    const defCH = JSON.parse(JSON.stringify(DEFAULT_STATE.activeChallenge));
-                    state.activeChallenge = { ...defCH, ...state.activeChallenge };
-                    state.ownedCracks = Array.isArray(state.ownedCracks) ? state.ownedCracks : [];
-                    state.downloadedCracks = state.downloadedCracks && typeof state.downloadedCracks === 'object' ? state.downloadedCracks : {};
-                    state.dms = state.dms || [];
-                    state.ownedFurniture = Array.isArray(state.ownedFurniture) ? state.ownedFurniture : [];
                     recalculateActivePerks();
                     syncFurniture3DVisibility();
-
-                    // --- CHARGEMENT ET SYNC DES VOLUMES AUDIO ---
-                    state.masterVolume = state.masterVolume !== undefined ? parseFloat(state.masterVolume) : 1.0;
-                    state.musicVolume = state.musicVolume !== undefined ? parseFloat(state.musicVolume) : 0.8;
-                    state.sfxVolume = state.sfxVolume !== undefined ? parseFloat(state.sfxVolume) : 0.5;
 
                     window.masterVolume = state.masterVolume;
                     window.musicVolume = state.musicVolume;
@@ -9362,33 +9400,6 @@ function triggerRankUp(oldRank, newRank) {
                         MusicSystem.setMusicVolume(window.musicVolume);
                     }
                     // --------------------------------------------
-
-                    // 3. Parsing sécurisé des valeurs
-                    state.timeMins        = parseInt(state.timeMins, 10) || 8 * 60;
-                    state.day             = parseInt(state.day, 10) || 1;
-                    state.money           = parseInt(state.money, 10) || 0;
-                    state.rep             = parseInt(state.rep, 10) || 0;
-                    state.followers       = parseInt(state.followers, 10) || 0;
-                    // Inspiration (creative fatigue) - Chargement sécurisé
-                    state.inspi           = (state.inspi !== undefined && state.inspi !== null) ? parseFloat(state.inspi) : 100;
-                    if (isNaN(state.inspi)) state.inspi = 100;
-                    // lastGenres migration: ensure array
-                    state.lastGenres = Array.isArray(state.lastGenres) ? state.lastGenres : [];
-                    state.recentExports = Array.isArray(state.recentExports) ? state.recentExports : [];
-                    state.flowStateActive = !!state.flowStateActive;
-                    state.streakDays = parseInt(state.streakDays, 10) || 0;
-                    state.lastPlayedDay = parseInt(state.lastPlayedDay, 10) || 0;
-                    state.maxStreak = parseInt(state.maxStreak, 10) || 0;
-                    state.dailyQuests = Array.isArray(state.dailyQuests) ? state.dailyQuests : [];
-                    state.dailyQuestsLastReset = parseInt(state.dailyQuestsLastReset, 10) || 0;
-                    state.hype = (state.hype !== undefined && state.hype !== null) ? parseFloat(state.hype) : 50;
-                    state.viralActive = !!state.viralActive;
-                    state.viralEndTime = parseInt(state.viralEndTime, 10) || 0;
-                    state.permanentMixBonus = parseFloat(state.permanentMixBonus) || 0;
-                    state.multiplier      = parseFloat(state.multiplier) || 1.0;
-                    state.plugins         = parseInt(state.plugins, 10) || 0;
-                    state.energy          = parseFloat(state.energy) || 100;
-                    
                     state.cooldowns.dawTimeReady    = parseInt(state.cooldowns.dawTimeReady, 10) || 0;
                     state.cooldowns.crackzTimeReady = parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
                     state.cooldowns.storyTimeReady  = 0; // Bonus QoL
@@ -9396,16 +9407,6 @@ function triggerRankUp(oldRank, newRank) {
                     Object.keys(state.cooldowns.sponsors).forEach(k => {
                         state.cooldowns.sponsors[k] = parseInt(state.cooldowns.sponsors[k], 10) || 0;
                     });
-
-                    state.stats.tracks           = parseInt(state.stats.tracks, 10) || 0;
-                    state.stats.bangers          = parseInt(state.stats.bangers, 10) || 0;
-                    state.stats.flops            = parseInt(state.stats.flops, 10) || 0;
-                    state.stats.viruses          = parseInt(state.stats.viruses, 10) || 0;
-                    state.stats.crackDownloads   = parseInt(state.stats.crackDownloads, 10) || 0;
-                    state.stats.consecutiveFlops = parseInt(state.stats.consecutiveFlops, 10) || 0;
-                    state.stats.sofaChills       = parseInt(state.stats.sofaChills, 10) || 0;
-                    state.stats.lampToggles      = parseInt(state.stats.lampToggles, 10) || 0;
-                    state.stats.awakeDays        = parseInt(state.stats.awakeDays, 10) || 0;
 
                     // --- MIGRATION RÉTROCOMPATIBILITÉ TOP CHARTS ---
                     if (state.trackList.length === 0 && state.stats.tracks > 0) {
@@ -9702,10 +9703,369 @@ function triggerRankUp(oldRank, newRank) {
     }, 1000);
 }
 
-    
-        
+        // ==========================================
+        // MINI-JEUX: INGENIERIE DU SON
+        // ==========================================
 
-                
+        const PLUGIN_QUIZ_QUESTIONS = [
+            {
+                question: "Quel processeur de dynamique est idéal pour atténuer les pics rapides d'une caisse claire sans détruire son punch ?",
+                options: [
+                    { name: "Compresseur Optique (ex: LA-2A)", desc: "Temps d'attaque très lent, couleur vintage chaleureuse.", correct: false },
+                    { name: "Limiteur de crêtes ultra-rapide", desc: "Écrête instantanément mais détruit le transient d'attaque.", correct: false },
+                    { name: "Compresseur VCA (ex: SSL G-Comp)", desc: "Attaque rapide réglable et contrôle précis des transitoires.", correct: true },
+                    { name: "Expandeur dynamique", desc: "Augmente la plage dynamique globale au lieu de la réduire.", correct: false }
+                ]
+            },
+            {
+                question: "Comment éviter les problèmes de phase lors du mixage d'un kick 808 avec une basse électrique ?",
+                options: [
+                    { name: "Inverser la polarité de l'un des canaux", desc: "Vérifie si les basses fréquences s'additionnent ou s'annulent.", correct: true },
+                    { name: "Ajouter une distorsion harmonique lourde", desc: "Masque le problème de phase sous du bruit saturé.", correct: false },
+                    { name: "Appliquer un filtre passe-haut à 150Hz", desc: "Supprime complètement les fréquences fondamentales de la basse.", correct: false },
+                    { name: "Compresser à un ratio de 20:1", desc: "Écrase le signal sans toucher aux relations temporelles.", correct: false }
+                ]
+            },
+            {
+                question: "Pour obtenir une voix pop ultra-brillante sans sibilance agressive, quel chaînage est recommandé ?",
+                options: [
+                    { name: "De-esser avant et après une égalisation additive", desc: "Permet de sculpter l'air de la voix tout en domptant les 'S'.", correct: true },
+                    { name: "Égaliseur avec un boost massif à 10kHz uniquement", desc: "Rend les aigus criards et perce les oreilles sur les 'S'.", correct: false },
+                    { name: "Compresseur en sidechain sur toute la batterie", desc: "Atténue la voix chaque fois que le kick tape.", correct: false },
+                    { name: "Filtre coupe-bas à 800Hz", desc: "Fait sonner la voix comme si elle sortait d'un téléphone.", correct: false }
+                ]
+            }
+        ];
+
+        function startLufsWarMiniGame() {
+            state.isEventActive = true;
+
+            const overlay = document.createElement('div');
+            overlay.id = 'lufs-war-overlay';
+            overlay.innerHTML = `
+                <div class="fixed inset-0 bg-black/90 flex items-center justify-center z-[1000] p-4">
+                    <div class="bg-[#18181b] rounded-2xl border border-white/20 w-full max-w-md p-6 shadow-2xl">
+                        <h2 class="text-2xl font-bold text-white mb-2 text-center">🔊 GUERRE DU LUFS</h2>
+                        <p class="text-gray-400 text-sm mb-6 text-center">
+                            Atteins <strong>-14 LUFS</strong> sans clipping.<br>
+                            Ajuste le <strong>gain</strong> et la <strong>compression</strong>.
+                        </p>
+
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-center gap-4">
+                                <span class="text-white font-bold w-16">GAIN</span>
+                                <input type="range" id="lufs-gain" min="-20" max="20" value="0" class="flex-1 h-2 bg-gray-700 rounded-lg">
+                                <span id="lufs-gain-val" class="text-white font-mono w-12 text-right">0dB</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span class="text-white font-bold w-16">COMP</span>
+                                <input type="range" id="lufs-comp" min="1" max="10" value="4" class="flex-1 h-2 bg-gray-700 rounded-lg">
+                                <span id="lufs-comp-val" class="text-white font-mono w-12 text-right">4:1</span>
+                            </div>
+                        </div>
+
+                        <!-- VU Meter -->
+                        <div class="mb-6">
+                            <div class="h-4 bg-gray-800 rounded-full relative overflow-hidden">
+                                <div id="lufs-meter" class="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 transition-all duration-200" style="width: 50%"></div>
+                                <div class="absolute inset-0 flex justify-center items-center pointer-events-none">
+                                    <span id="lufs-value" class="text-white font-bold text-sm drop-shadow-md">-14 LUFS</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-muted mt-1">
+                                <span>CLIPPING</span>
+                                <span>-14 LUFS</span>
+                                <span>TROP BAS</span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <button onclick="validateLufsWar()" class="btn-action flex-1 py-3">
+                                ✅ Valider
+                            </button>
+                            <button onclick="closeLufsWar()" class="btn-minimal flex-1 py-3">
+                                ❌ Abandonner
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            // Logique du jeu
+            const gainSlider = document.getElementById('lufs-gain');
+            const compSlider = document.getElementById('lufs-comp');
+            const meter = document.getElementById('lufs-meter');
+            const value = document.getElementById('lufs-value');
+
+            function updateLufsDisplay() {
+                const gain = parseInt(gainSlider.value);
+                const compRatio = parseInt(compSlider.value);
+
+                // Simulation réaliste :
+                // - Plus de gain = LUFS plus élevé
+                // - Plus de compression = LUFS plus stable (moins sensible au gain)
+                const baseLufs = -20 + gain;
+                const compEffect = (compRatio - 1) * 0.5; // 1:1 = 0, 4:1 = 1.5, 10:1 = 4.5
+                let lufs = baseLufs + compEffect;
+
+                // Clipping si gain > 10
+                const isClipping = gain > 10;
+                if (isClipping) lufs = Math.min(lufs, -5); // LUFS ne peut pas dépasser -5 en clipping
+
+                // Limiter entre -25 et 0
+                lufs = Math.max(-25, Math.min(0, lufs));
+
+                // Mettre à jour l'interface
+                const meterWidth = ((lufs + 25) / 25) * 100; // -25 = 0%, 0 = 100%
+                meter.style.width = `${meterWidth}%`;
+
+                // Couleur du meter
+                if (isClipping) {
+                    meter.style.backgroundColor = '#ef4444'; // Rouge (clipping)
+                    value.style.color = '#ef4444';
+                } else if (lufs >= -14) {
+                    meter.style.backgroundColor = '#10b981'; // Vert (parfait)
+                    value.style.color = '#10b981';
+                } else if (lufs >= -20) {
+                    meter.style.backgroundColor = '#fbbf24'; // Orange (proche)
+                    value.style.color = '#fbbf24';
+                } else {
+                    meter.style.backgroundColor = '#6b7280'; // Gris (trop bas)
+                    value.style.color = '#6b7280';
+                }
+
+                value.textContent = `${Math.round(lufs)} LUFS`;
+            }
+
+            gainSlider.addEventListener('input', () => {
+                document.getElementById('lufs-gain-val').textContent = `${gainSlider.value}dB`;
+                updateLufsDisplay();
+            });
+
+            compSlider.addEventListener('input', () => {
+                document.getElementById('lufs-comp-val').textContent = `${compSlider.value}:1`;
+                updateLufsDisplay();
+            });
+
+            updateLufsDisplay();
+        }
+
+        function validateLufsWar() {
+            const gain = parseInt(document.getElementById('lufs-gain').value);
+            const compRatio = parseInt(document.getElementById('lufs-comp').value);
+            const baseLufs = -20 + gain;
+            const compEffect = (compRatio - 1) * 0.5;
+            let lufs = baseLufs + compEffect;
+            lufs = Math.max(-25, Math.min(0, lufs));
+
+            const isClipping = gain > 10;
+
+            if (isClipping) {
+                state.rep = Math.max(0, state.rep - 5);
+                showToast("❌ CLIPPING DÉTECTÉ ! -5 REP", "error");
+                playError();
+            } else if (lufs >= -14) {
+                state.multiplier = Math.min(1.5, state.multiplier + 0.1); // +10% (max +50%)
+                showToast("✅ LUFS parfait ! +10% multiplicateur permanent", "success");
+                playSuccess();
+                if (typeof fireConfetti === 'function') fireConfetti('achievement');
+            } else {
+                showToast("⚠️ LUFS trop bas. Essaye encore.", "info");
+                playBleep();
+            }
+            closeLufsWar();
+        }
+
+        function closeLufsWar() {
+            state.isEventActive = false;
+            document.getElementById('lufs-war-overlay')?.remove();
+        }
+
+        function startBlankPageMiniGame() {
+            state.isEventActive = true;
+
+            const overlay = document.createElement('div');
+            overlay.id = 'blank-page-overlay';
+            overlay.innerHTML = `
+                <div class="fixed inset-0 bg-black/95 flex flex-col items-center justify-center z-[1000] p-4">
+                    <h2 class="text-3xl font-bold text-white mb-2">🎵 SYNDROME DE LA PAGE BLANCHE</h2>
+                    <p class="text-gray-400 text-sm mb-4">Clique sur les notes pour retrouver l'inspiration !</p>
+
+                    <div id="blank-page-notes" class="relative w-full h-96 bg-black/60 rounded-2xl overflow-hidden border border-white/10"></div>
+
+                    <div class="mt-4 w-full max-w-md">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-white font-bold">TEMPS</span>
+                            <div class="w-64 h-2 bg-gray-700 rounded-full">
+                                <div id="blank-page-timer" class="h-full bg-[var(--accent)] rounded-full transition-all duration-100" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-white font-bold">NOTES</span>
+                            <span id="blank-page-score" class="text-white font-bold">0/20</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            const notesContainer = document.getElementById('blank-page-notes');
+            const timer = document.getElementById('blank-page-timer');
+            const scoreEl = document.getElementById('blank-page-score');
+
+            let notesCaptured = 0;
+            let totalNotes = 0;
+            let timeLeft = 30;
+            const notes = [];
+            const noteSymbols = ['🎵', '🎶', '🎹', '🎻', '🥁', '🎤', '🎧', '🎼'];
+
+            // Générer des notes aléatoirement
+            function spawnNote() {
+                if (timeLeft <= 0 || totalNotes >= 20) return;
+
+                totalNotes++;
+                const note = document.createElement('div');
+                note.className = 'blank-page-note absolute cursor-pointer transition-transform';
+                note.innerHTML = noteSymbols[Math.floor(Math.random() * noteSymbols.length)];
+                note.style.left = `${Math.random() * 80 + 10}%`;
+                note.style.top = `${Math.random() * 80 + 10}%`;
+                note.style.fontSize = '24px';
+                note.style.transform = 'scale(0)';
+                note.style.opacity = '0';
+                note.style.animation = 'blank-page-note-float 2s linear forwards';
+
+                notesContainer.appendChild(note);
+                notes.push(note);
+
+                // Animation d'apparition
+                setTimeout(() => {
+                    note.style.transform = 'scale(1)';
+                    note.style.opacity = '1';
+                }, 10);
+
+                // Supprimer après 2 secondes si non cliqué
+                setTimeout(() => {
+                    if (note.parentElement) {
+                        note.style.transform = 'scale(0)';
+                        note.style.opacity = '0';
+                        setTimeout(() => {
+                            if (note.parentElement) {
+                                note.remove();
+                                const index = notes.indexOf(note);
+                                if (index !== -1) notes.splice(index, 1);
+                            }
+                        }, 200);
+                    }
+                }, 2000);
+            }
+
+            // Spawn une note toutes les 0.5 secondes
+            const spawnInterval = setInterval(spawnNote, 500);
+
+            // Gestion du clic sur les notes
+            notesContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('blank-page-note')) {
+                    notesCaptured++;
+                    scoreEl.textContent = `${notesCaptured}/${totalNotes}`;
+                    e.target.style.transform = 'scale(1.5)';
+                    e.target.style.opacity = '0';
+                    setTimeout(() => e.target.remove(), 200);
+                    const index = notes.indexOf(e.target);
+                    if (index !== -1) notes.splice(index, 1);
+                    playTone(400 + Math.random() * 400, 'sine', 0.1, 0.1);
+                }
+            });
+
+            // Timer
+            const timerInterval = setInterval(() => {
+                timeLeft--;
+                timer.style.width = `${(timeLeft / 30) * 100}%`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(spawnInterval);
+                    clearInterval(timerInterval);
+
+                    // Calculer le score
+                    const ratio = notesCaptured / totalNotes;
+                    let inspiGain = notesCaptured * 5; // +5% par note
+
+                    if (ratio >= 0.8) {
+                        inspiGain += 20;
+                        showToast(`✅ Syndrome vaincu ! +${inspiGain}% inspiration`, "success");
+                        playSuccess();
+                    } else if (ratio >= 0.5) {
+                        showToast(`👍 Pas mal ! +${inspiGain}% inspiration`, "info");
+                        playBleep();
+                    } else {
+                        inspiGain = -10;
+                        showToast(`❌ Échec... -10% inspiration`, "error");
+                        playError();
+                    }
+
+                    state.inspi = Math.min(100, Math.max(0, state.inspi + inspiGain));
+                    state.isEventActive = false;
+                    overlay.remove();
+                    updateHUD();
+                }
+            }, 1000);
+        }
+
+        function startPluginQuiz() {
+            state.isEventActive = true;
+
+            const question = PLUGIN_QUIZ_QUESTIONS[Math.floor(Math.random() * PLUGIN_QUIZ_QUESTIONS.length)];
+
+            const overlay = document.createElement('div');
+            overlay.id = 'plugin-quiz-overlay';
+            overlay.innerHTML = `
+                <div class="fixed inset-0 bg-black/90 flex items-center justify-center z-[1000] p-4">
+                    <div class="bg-[#18181b] rounded-2xl border border-white/20 w-full max-w-md p-6 shadow-2xl">
+                        <h2 class="text-2xl font-bold text-white mb-4 text-center">🎛️ LE BON CHOIX DE PLUGIN</h2>
+                        <p class="text-gray-400 text-sm mb-6 text-center">${question.question}</p>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            ${question.options.map((option, i) => `
+                                <button onclick="selectPluginQuizOption(${i})" class="bg-gray-800 hover:bg-gray-700 p-4 rounded-lg border border-gray-700 text-left transition-colors">
+                                    <p class="text-white font-bold">${option.name}</p>
+                                    <p class="text-gray-400 text-xs mt-1">${option.desc}</p>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            // Stocker la question actuelle
+            window.currentPluginQuiz = question;
+        }
+
+        function selectPluginQuizOption(index) {
+            const question = window.currentPluginQuiz;
+            const selected = question.options[index];
+
+            if (selected.correct) {
+                state.plugins += 1;
+                showToast(`✅ Bonne réponse ! +1 plugin légal (${state.plugins} au total)`, "success");
+                playSuccess();
+                if (typeof fireConfetti === 'function') fireConfetti('store');
+            } else {
+                state.inspi = Math.max(0, state.inspi - 5);
+                showToast(`❌ Mauvaise réponse... -5% inspiration`, "error");
+                playError();
+            }
+
+            state.isEventActive = false;
+            document.getElementById('plugin-quiz-overlay')?.remove();
+        }
+
+        window.startLufsWarMiniGame = startLufsWarMiniGame;
+        window.validateLufsWar = validateLufsWar;
+        window.closeLufsWar = closeLufsWar;
+        window.startBlankPageMiniGame = startBlankPageMiniGame;
+        window.startPluginQuiz = startPluginQuiz;
+        window.selectPluginQuizOption = selectPluginQuizOption;
 
         // ==========================================
         // 13. GAME TICK
@@ -9727,6 +10087,11 @@ function triggerRankUp(oldRank, newRank) {
 
             // Régénération passive de l'inspiration (+1 point toutes les 5 minutes in-game)
             state.inspi = Math.min(100, (parseFloat(state.inspi) || 0) + 1);
+
+            // Syndrome de la page blanche hook (si l'inspiration tombe sous 20%, 15% de chance de déclencher)
+            if (state.inspi < 20 && !state.isEventActive && Math.random() < 0.15) { 
+                startBlankPageMiniGame(); 
+            }
 
             if (state.timeMins >= 180 && state.timeMins <= 200 && !easterEgg3AM) {
                 showToast("3AM... le moment où les meilleurs sons sortent.", "discreet");
@@ -10075,7 +10440,7 @@ function triggerRankUp(oldRank, newRank) {
                     throw new Error("Sauvegarde invalide");
                 }
                 
-                state = { ...JSON.parse(JSON.stringify(DEFAULT_STATE)), ...parsed };
+                state = normalizeState(parsed);
                 
                 recalculateActivePerks();
                 syncFurniture3DVisibility();
@@ -10274,6 +10639,12 @@ function triggerRankUp(oldRank, newRank) {
         let zIndexCounter = 50;
 
         function openApp(id) {
+            if (id === 'app-browser') {
+                if (!state.isEventActive && Math.random() < 0.20) {
+                    startPluginQuiz();
+                    return;
+                }
+            }
             // 1. Fermeture automatique des autres apps (Exclusivité stricte Desktop & Mobile)
             document.querySelectorAll('.os-window').forEach(win => {
                 if (win.id !== id && win.style.display !== 'none') {
@@ -10733,8 +11104,9 @@ function triggerRankUp(oldRank, newRank) {
             updateTopChartsWidget();
             updateDawGenres();
 
-            // Update challenge progress for exports (validated)
             try { checkChallengeProgress('export', { genre: genre, bpm: bpm, score: finalTrackScore, pluginId: consumedPluginId }); } catch(e) {}
+
+            if (!state.isEventActive && Math.random() < 0.10) { setTimeout(startLufsWarMiniGame, 1500); }
 
             updateHUD(); // Forcer la mise à jour visuelle de la barre d'Inspiration
             showTrackReview(trackScore, trackTitle, null);
