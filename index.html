@@ -1765,6 +1765,24 @@
                 <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('fol', this)" onmouseenter="!isMobile && showTooltip('fol', this)" onmouseleave="!isMobile && hideTooltip()">
                     <span class="text-[var(--accent)] drop-shadow-[0_0_5px_var(--accent)] text-[10px] md:text-lg">FOL</span> <span id="hud-foll" class="text-white text-[11px] md:text-lg">0</span>
                 </div>
+
+                <!-- HYPE METER -->
+                <div class="flex flex-col justify-center cursor-pointer px-2 md:px-4 py-1.5 md:py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('hype', this)" onmouseenter="!isMobile && showTooltip('hype', this)" onmouseleave="!isMobile && hideTooltip()">
+                    <div class="flex items-center justify-between w-full mb-1">
+                        <span class="text-pink-500 drop-shadow-[0_0_5px_rgba(236,72,153,0.5)] text-[10px] md:text-[11px] font-bold tracking-widest">HYPE</span>
+                        <span id="hud-hype-num" class="text-white text-[11px] md:text-sm font-bold ml-2">50%</span>
+                    </div>
+                    <div class="relative min-w-[70px] md:min-w-[100px] h-2 bg-black/60 rounded-full shadow-inner border border-white/5 overflow-hidden" role="progressbar" aria-label="Hype" aria-valuemin="0" aria-valuemax="100">
+                        <div id="hud-hype-fill" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-pink-500 to-rose-400 shadow-[0_0_10px_rgba(236,72,153,0.4)] rounded-full transition-all duration-500 ease-out" style="width: 50%;"></div>
+                    </div>
+                </div>
+
+                <!-- STREAK WIDGET -->
+                <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('streak', this)" onmouseenter="!isMobile && showTooltip('streak', this)" onmouseleave="!isMobile && hideTooltip()">
+                    <span class="text-amber-500 drop-shadow-[0_0_5px_rgba(245,158,11,0.5)] text-[10px] md:text-lg">🔥</span> 
+                    <span id="hud-streak" class="text-white text-[11px] md:text-lg font-bold">0</span>
+                    <span class="text-[9px] text-[var(--text-muted)] hidden md:inline ml-1">(max <span id="hud-maxstreak">0</span>)</span>
+                </div>
             </div>
             
             <div class="font-retro text-right hidden md:flex flex-col justify-center items-end shrink-0 pr-2 pointer-events-none">
@@ -2508,6 +2526,15 @@ const DEFAULT_STATE = {
             lastGenres: [],
             recentExports: [],
             flowStateActive: false,
+            streakDays: 0,
+            lastPlayedDay: 0,
+            maxStreak: 0,
+            dailyQuests: [],
+            dailyQuestsLastReset: 0,
+            hype: 50,
+            viralActive: false,
+            viralEndTime: 0,
+            permanentMixBonus: 0,
             // --- AJOUT DES VOLUMES PAR DÉFAUT ---
             masterVolume: 1.0,
             musicVolume: 0.8,
@@ -6466,6 +6493,19 @@ function triggerRankUp(oldRank, newRank) {
                 html += '</div>';
                 globalTooltip.innerHTML = html;
             }
+            if (type === 'hype') {
+                const boost = Math.floor((state.hype / 100) * 20);
+                globalTooltip.innerHTML = `<div class="text-pink-500 mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Hype Meter</div>
+                    <div class="text-gray-300 text-[11px]">Hype actuelle : <b>${Math.floor(state.hype)}%</b></div>
+                    <div class="text-gray-300 text-[11px] mt-1">Multiplicateur de gains : <span class="text-pink-400 font-bold">+${boost}%</span></div>
+                    <div class="text-gray-500 text-[9px] mt-2">La hype diminue lentement avec le temps. Publie des stories et sors des Bangers pour la recharger !</div>`;
+            }
+            if (type === 'streak') {
+                globalTooltip.innerHTML = `<div class="text-amber-500 mb-3 border-b border-white/10 pb-2 font-bold text-xs uppercase tracking-widest">Daily Streak</div>
+                    <div class="text-gray-300 text-[11px]">Jours consécutifs joués : <b>${state.streakDays || 0}</b></div>
+                    <div class="text-gray-300 text-[11px] mt-1">Record de Streak : <b>${state.maxStreak || 0} jours</b></div>
+                    <div class="text-gray-500 text-[9px] mt-2">Connecte-toi chaque jour in-game pour conserver ton multiplicateur et décrocher des bonus exclusifs !</div>`;
+            }
         }
         function hideTooltip() {
         globalTooltip.style.opacity = '0';
@@ -8115,6 +8155,9 @@ function triggerRankUp(oldRank, newRank) {
                 hudAvatar.classList.add('animate-money-pulse');
                 setTimeout(() => hudAvatar.classList.remove('animate-money-pulse'), 300);
             }
+            if (reason && !reason.startsWith("Quête")) {
+                if (typeof checkDailyQuests === 'function') checkDailyQuests('earn_money', amount);
+            }
         } else if (amount < 0) {
             const hud = document.getElementById('hud');
             if (hud) {
@@ -8154,7 +8197,11 @@ function triggerRankUp(oldRank, newRank) {
         }
         function logFollower(amount) {
             if (amount > 0) {
-                state.followers = (parseInt(state.followers, 10) || 0) + amount;
+                let actualAmount = amount;
+                if (state.viralActive) {
+                    actualAmount *= 10;
+                }
+                state.followers = (parseInt(state.followers, 10) || 0) + actualAmount;
                 state.history.followers.unshift(generateFanName());
                 if (state.history.followers.length > 4) state.history.followers.pop();
                 checkAchievement('dans_la_sauce', () => state.followers >= 15000);
@@ -9329,6 +9376,15 @@ function triggerRankUp(oldRank, newRank) {
                     state.lastGenres = Array.isArray(state.lastGenres) ? state.lastGenres : [];
                     state.recentExports = Array.isArray(state.recentExports) ? state.recentExports : [];
                     state.flowStateActive = !!state.flowStateActive;
+                    state.streakDays = parseInt(state.streakDays, 10) || 0;
+                    state.lastPlayedDay = parseInt(state.lastPlayedDay, 10) || 0;
+                    state.maxStreak = parseInt(state.maxStreak, 10) || 0;
+                    state.dailyQuests = Array.isArray(state.dailyQuests) ? state.dailyQuests : [];
+                    state.dailyQuestsLastReset = parseInt(state.dailyQuestsLastReset, 10) || 0;
+                    state.hype = (state.hype !== undefined && state.hype !== null) ? parseFloat(state.hype) : 50;
+                    state.viralActive = !!state.viralActive;
+                    state.viralEndTime = parseInt(state.viralEndTime, 10) || 0;
+                    state.permanentMixBonus = parseFloat(state.permanentMixBonus) || 0;
                     state.multiplier      = parseFloat(state.multiplier) || 1.0;
                     state.plugins         = parseInt(state.plugins, 10) || 0;
                     state.energy          = parseFloat(state.energy) || 100;
@@ -9497,9 +9553,141 @@ function triggerRankUp(oldRank, newRank) {
         window.updateCooldownUIs = function() {
         // Logique de rafraîchissement des cooldowns de l'interface (à étoffer selon les besoins)
         };
+
+        window.generateDailyQuests = function() {
+            const pool = [
+                { id: 'export_tracks', text: "Exporter 3 sons", current: 0, target: 3, rewardMoney: 300, rewardRep: 5, done: false },
+                { id: 'buy_furniture', text: "Acheter 1 meuble", current: 0, target: 1, rewardMoney: 200, rewardRep: 3, done: false },
+                { id: 'high_energy', text: "Dormir et dépasser 90 d'énergie", current: 0, target: 90, rewardMoney: 150, rewardRep: 2, done: false },
+                { id: 'earn_money', text: "Gagner 400$ avec des prods", current: 0, target: 400, rewardMoney: 250, rewardRep: 4, done: false }
+            ];
+            const shuffled = pool.sort(() => 0.5 - Math.random());
+            state.dailyQuests = shuffled.slice(0, 3);
+            state.dailyQuestsLastReset = state.day;
+            showToast("📅 Nouvelles quêtes journalières disponibles !", "info");
+        };
+
+        window.checkDailyQuests = function(type, value) {
+            if (!state.dailyQuests) return;
+            state.dailyQuests.forEach(q => {
+                if (q.done) return;
+                if (q.id === type) {
+                    if (type === 'high_energy' || type === 'reach_hype') {
+                        q.current = value;
+                    } else {
+                        q.current += value;
+                    }
+                    if (q.current >= q.target) {
+                        q.current = q.target;
+                        q.done = true;
+                        logMoney(q.rewardMoney, `Quête: ${q.text}`);
+                        state.rep = (parseInt(state.rep, 10) || 0) + q.rewardRep;
+                        showToast(`✅ Quête Réussie : ${q.text} ! +$${q.rewardMoney} / +${q.rewardRep} REP`, "success");
+                        if (typeof fireConfetti === 'function') fireConfetti('store');
+                    }
+                }
+            });
+            updateHUD();
+        };
+
+        window.updateHype = function(amount) {
+            state.hype = Math.max(0, Math.min(100, (parseFloat(state.hype) || 50) + amount));
+            updateHUD();
+        };
+
+        window.triggerMonoMixMiniGame = function(onDoneCallback) {
+            const container = document.createElement('div');
+            container.id = 'mono-mix-modal';
+            container.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md px-4';
+            
+            let bass = Math.floor(Math.random() * 80) + 10;
+            let mid = Math.floor(Math.random() * 80) + 10;
+            let treble = Math.floor(Math.random() * 80) + 10;
+            
+            while (Math.abs(bass - mid) <= 10 && Math.abs(mid - treble) <= 10 && Math.abs(bass - treble) <= 10) {
+                mid = Math.floor(Math.random() * 80) + 10;
+                treble = Math.floor(Math.random() * 80) + 10;
+            }
+
+            container.innerHTML = `
+                <div class="liquid-glass-heavy border border-white/10 w-full max-w-md p-6 rounded-2xl flex flex-col items-center gap-6 text-white text-center shadow-2xl relative">
+                    <div class="absolute top-4 right-4 text-xs font-bold text-[var(--accent)] tracking-widest animate-pulse">MONO MIX MODE</div>
+                    <div class="space-y-2 mt-4">
+                        <h2 class="text-xl font-bold font-retro tracking-widest text-white">⚡ MIXAGE EN MONO</h2>
+                        <p class="text-xs text-[var(--text-muted)] max-w-sm">
+                            Équilibre les 3 bandes de fréquences (Bass, Mid, Treble) afin qu'elles aient <b>la même valeur</b> (différence maximum de ±10).
+                        </p>
+                    </div>
+
+                    <div class="w-full space-y-4 font-retro text-left text-xs tracking-wider">
+                        <div class="space-y-1">
+                            <div class="flex justify-between font-bold">
+                                <span class="text-red-400">BASS</span>
+                                <span id="val-bass">${bass}%</span>
+                            </div>
+                            <input type="range" id="slider-bass" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-red-400" min="0" max="100" value="${bass}">
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="flex justify-between font-bold">
+                                <span class="text-yellow-400">MID</span>
+                                <span id="val-mid">${mid}%</span>
+                            </div>
+                            <input type="range" id="slider-mid" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-yellow-400" min="0" max="100" value="${mid}">
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="flex justify-between font-bold">
+                                <span class="text-blue-400">TREBLE</span>
+                                <span id="val-treble">${treble}%</span>
+                            </div>
+                            <input type="range" id="slider-treble" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-blue-400" min="0" max="100" value="${treble}">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 w-full justify-center">
+                        <button id="btn-mono-mix-validate" class="btn-action py-2.5 px-6 rounded-lg text-xs font-retro tracking-wider">VALIDER LE MIX</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(container);
+
+            const sB = container.querySelector('#slider-bass');
+            const sM = container.querySelector('#slider-mid');
+            const sT = container.querySelector('#slider-treble');
+            
+            sB.addEventListener('input', (e) => { bass = parseInt(e.target.value); container.querySelector('#val-bass').innerText = bass + '%'; playTone(120 + bass, 'sine', 0.05, 0.05); });
+            sM.addEventListener('input', (e) => { mid = parseInt(e.target.value); container.querySelector('#val-mid').innerText = mid + '%'; playTone(300 + mid, 'sine', 0.05, 0.05); });
+            sT.addEventListener('input', (e) => { treble = parseInt(e.target.value); container.querySelector('#val-treble').innerText = treble + '%'; playTone(800 + treble, 'sine', 0.05, 0.05); });
+
+            container.querySelector('#btn-mono-mix-validate').addEventListener('click', () => {
+                const diffBM = Math.abs(bass - mid);
+                const diffMT = Math.abs(mid - treble);
+                const diffBT = Math.abs(bass - treble);
+
+                if (diffBM <= 10 && diffMT <= 10 && diffBT <= 10) {
+                    state.permanentMixBonus = Math.min(25, (state.permanentMixBonus || 0) + 5);
+                    state.multiplier = 1.0 + (state.permanentMixBonus / 100);
+                    showToast(`🔥 Mix mono parfait ! Multiplicateur permanent +5% (Total: +${state.permanentMixBonus}%)`, 'success');
+                    playTone(600, 'sine', 0.1);
+                    setTimeout(() => playTone(800, 'sine', 0.15), 100);
+                    if (typeof fireConfetti === 'function') fireConfetti('store');
+                } else {
+                    state.inspi = Math.max(0, state.inspi - 10);
+                    showToast("❌ Fréquences mal équilibrées. Mixage raté, -10 Inspiration.", 'error');
+                    playTone(200, 'square', 0.3);
+                }
+                
+                document.body.removeChild(container);
+                updateHUD();
+                if (typeof onDoneCallback === 'function') onDoneCallback();
+            });
+        };
+
         window.dailyReset = function() {
-        showToast("Nouveau jour ! Les compteurs sont remis à zéro.", "info");
-        saveGame();
+            showToast("Nouveau jour ! Les compteurs sont remis à zéro.", "info");
+            generateDailyQuests();
+            saveGame();
         };
 
         if (window.gameInterval) { clearInterval(window.gameInterval); window.gameInterval = null; }
@@ -9508,6 +9696,9 @@ function triggerRankUp(oldRank, newRank) {
     // Libération du verrou SEULEMENT ici, avec un léger délai pour laisser le DOM respirer
     setTimeout(() => {
         window.isBooting = false;
+        if (!state.dailyQuests || state.dailyQuests.length === 0) {
+            generateDailyQuests();
+        }
     }, 1000);
 }
 
@@ -9525,6 +9716,15 @@ function triggerRankUp(oldRank, newRank) {
             state.timeMins = (parseInt(state.timeMins, 10) || 0) + 5;
             state.day      =  parseInt(state.day, 10) || 1;
 
+            // Décroissance lente de la Hype (-0.5% toutes les 5 min in-game)
+            state.hype = Math.max(0, (parseFloat(state.hype) || 50) - 0.5);
+
+            // Fin de la viralité si le temps est écoulé
+            if (state.viralActive && getTotalMins() >= state.viralEndTime) {
+                state.viralActive = false;
+                showToast("📉 L'effet de viralité s'est estompé.", "info");
+            }
+
             // Régénération passive de l'inspiration (+1 point toutes les 5 minutes in-game)
             state.inspi = Math.min(100, (parseFloat(state.inspi) || 0) + 1);
 
@@ -9536,6 +9736,32 @@ function triggerRankUp(oldRank, newRank) {
             if (state.timeMins >= 1440) {
                 state.timeMins -= 1440;
                 state.day += 1;
+
+                // Logique de Streak de jours
+                const dayDiff = state.day - (state.lastPlayedDay || 0);
+                if (state.lastPlayedDay > 0 && dayDiff > 1) {
+                    state.streakDays = 0;
+                    showToast("Streak de jours rompu ! Inactivité trop longue.", "error");
+                }
+                state.streakDays = (state.streakDays || 0) + 1;
+                state.lastPlayedDay = state.day;
+                state.maxStreak = Math.max(state.maxStreak || 0, state.streakDays);
+
+                if (state.streakDays === 3) {
+                    logMoney(500, "Streak 3 Jours");
+                    showToast("🔥 Streak de 3 jours ! +500$", "success");
+                    if (typeof fireConfetti === 'function') fireConfetti('store');
+                } else if (state.streakDays === 7) {
+                    logMoney(2000, "Streak 7 Jours");
+                    state.rep = (parseInt(state.rep, 10) || 0) + 20;
+                    showToast("👑 Streak de 7 jours ! +2000$ & +20 REP", "success");
+                    if (typeof fireConfetti === 'function') fireConfetti('store');
+                } else if (state.streakDays === 14) {
+                    logMoney(5000, "Streak 14 Jours");
+                    state.rep = (parseInt(state.rep, 10) || 0) + 50;
+                    showToast("🏆 STREAK DE 14 JOURS ! +5000$ & +50 REP", "success");
+                    if (typeof fireConfetti === 'function') fireConfetti('store');
+                }
 
                 if ([10, 50, 100].includes(state.day)) {
                     showToast("🎂 Jour " + state.day + ". Ça fait un bail que tu te la butes là.", "success");
@@ -9617,6 +9843,9 @@ function triggerRankUp(oldRank, newRank) {
             document.getElementById('hud-day').innerText   = `JOUR ${state.day}`;
 
             const energyVal = Math.floor(state.energy);
+            if (energyVal >= 90) {
+                if (typeof checkDailyQuests === 'function') checkDailyQuests('high_energy', energyVal);
+            }
             const energyFill = document.getElementById('meter-energy-fill');
             if (energyFill) energyFill.style.height = `${energyVal}%`;
             const energyValEl = document.getElementById('meter-energy-val');
@@ -9706,6 +9935,25 @@ function triggerRankUp(oldRank, newRank) {
                     repFillEl.parentElement && repFillEl.parentElement.setAttribute('title', `${pct}% toward next rank`);
                 }
             } catch(e) {}
+            // --- HYPE GAUGE & NUM: show current hype (0-100) ---
+            try {
+                const hypeFill = document.getElementById('hud-hype-fill');
+                const hypeNum = document.getElementById('hud-hype-num');
+                if (hypeFill) {
+                    const hv = Math.max(0, Math.min(100, Math.floor(Number(state.hype) || 50)));
+                    hypeFill.style.width = hv + '%';
+                    if (hypeNum) hypeNum.innerText = hv + '%';
+                }
+            } catch(e) {}
+
+            // --- STREAK & MAX STREAK WIDGETS ---
+            try {
+                const streakEl = document.getElementById('hud-streak');
+                const maxStreakEl = document.getElementById('hud-maxstreak');
+                if (streakEl) streakEl.innerText = state.streakDays || 0;
+                if (maxStreakEl) maxStreakEl.innerText = state.maxStreak || 0;
+            } catch(e) {}
+
             // --- INSPI GAUGE: show creative inspiration (0-100) ---
             try {
                 const inspFill = document.getElementById('meter-inspi-fill');
@@ -10326,6 +10574,33 @@ function triggerRankUp(oldRank, newRank) {
             }
             checkAchievement('productivite_toxique', () => state.stats.consecutiveFlops >= 5);
 
+            // 1. Update Hype Meter
+            if (result.score === 3) {
+                updateHype(5);
+            } else if (result.score === 0) {
+                updateHype(-5);
+            }
+
+            // 2. Compute and apply Hype multiplier (+20% max at 100% hype)
+            const hypeMult = 1 + (((state.hype || 50) / 100) * 0.20);
+            moneyGain = Math.floor(moneyGain * hypeMult);
+            follGain = Math.floor(follGain * hypeMult);
+
+            // 3. Daily Quest progress
+            checkDailyQuests('export_tracks', 1);
+
+            // 4. Calculate Viral Chance (Base 1% + score/hype/followers bonuses)
+            const viralChance = 0.01 + (result.score === 3 ? 0.04 : 0.01) + Math.min(0.05, ((state.hype || 50) / 100) * 0.05) + Math.min(0.05, ((state.followers || 0) / 100000) * 0.05);
+            if (Math.random() < viralChance) {
+                state.viralActive = true;
+                state.viralEndTime = getTotalMins() + 1440; // 24 hours in-game
+                critique += "\n⚡ VIRALITÉ EXPRÈS : Ta prod a percé sur l'algorithme ! Fans x10 pendant 24h !";
+                setTimeout(() => {
+                    showToast("🚀 TA PROD DEVIENT VIRALE ! Gains de fans x10 pendant 24h !", "success");
+                    if (typeof fireConfetti === 'function') fireConfetti('store');
+                }, 1200);
+            }
+
             // Flow State bonus multiplier application
             let flowStateApplied = false;
             if (state.flowStateActive) {
@@ -10685,6 +10960,7 @@ function triggerRankUp(oldRank, newRank) {
             
             if (!state.ownedFurniture) state.ownedFurniture = [];
             state.ownedFurniture.push(id);
+            checkDailyQuests('buy_furniture', 1);
 
             if (state.ownedFurniture.length === FURNITURE_CATALOG.length) {
                 showToast("Studio complet. Tu n'as plus d'excuses pour pas sortir un classique.", "success");
@@ -11037,6 +11313,12 @@ function triggerRankUp(oldRank, newRank) {
                 setTimeout(() => {
                     startLiveChat(d.track);
                 }, 400);
+            }
+            // Trigger Mono Mix Mini Game: 30% chance if tracks exported > 5
+            if (state.stats.tracks > 5 && Math.random() < 0.30) {
+                setTimeout(() => {
+                    triggerMonoMixMiniGame();
+                }, 2000);
             }
             window.pendingReviewData = null; // Nettoyage après déclenchement
         }
