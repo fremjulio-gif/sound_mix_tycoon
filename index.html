@@ -1715,6 +1715,63 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.8; }
         }
+
+                /* =========================================
+           STUDIO FURNITURE TOOLTIP (ACHAT MEUBLES 3D)
+           ========================================= */
+        #studio-buy-tooltip {
+            position: fixed; /* Fixed pour suivre parfaitement la souris sur l'écran */
+            z-index: 9999; /* Toujours au-dessus de la 3D */
+            width: 280px;
+            background: rgba(10, 10, 15, 0.85); /* Look Glassmorphism foncé */
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            
+            /* 🚨 LIGNE CRITIQUE : Autorise le clic à l'intérieur du tooltip */
+            pointer-events: auto !important; 
+            
+            display: none; /* Géré dynamiquement par le JS */
+            flex-direction: column;
+            gap: 8px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        #studio-buy-tooltip .s-tooltip-title {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent); /* Couleur dynamique selon le meuble */
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 6px;
+        }
+
+        #studio-buy-tooltip .s-tooltip-desc {
+            margin: 0;
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        #studio-buy-tooltip .s-tooltip-reqs {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--retro-red);
+            margin-top: 4px;
+        }
+
+        #s-tooltip-buy-btn {
+            margin-top: 8px;
+            width: 100%;
+            padding: 10px;
+            text-align: center;
+        }
+
         </style>
     </head>
 
@@ -1912,7 +1969,7 @@
 
         <div id="room-ui"></div>
 
-        <button id="audio-settings-gear" class="btn-system" onclick="openAudioSettings()" title="Paramètres">
+        <button id="audio-settings-gear" class="btn-system" style="display: none;" onclick="openAudioSettings()" title="Paramètres">
             <svg class="w-6 h-6 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
         </button>
@@ -2198,6 +2255,27 @@
             <div id="challenge-reward" class="text-yellow-300">+0 REP</div>
         </div>
     </div>
+
+    <div class="widget flex flex-col gap-3 md:hidden">
+    <div class="border-b border-white/10 pb-2 mb-1">
+        <span class="text-[10px] font-retro text-[var(--text-muted)] tracking-widest uppercase">Mobile Dashboard</span>
+    </div>
+    
+    <div>
+        <div class="flex justify-between text-[9px] font-retro text-gray-400 mb-1 tracking-widest">
+            <span>HYPE METER</span>
+            <span id="os-mobile-hype-val" class="text-pink-500 font-bold">50%</span>
+        </div>
+        <div class="w-full h-1.5 bg-black/50 rounded-full overflow-hidden">
+            <div id="os-mobile-hype-fill" class="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300" style="width: 50%"></div>
+        </div>
+    </div>
+    
+    <div class="flex justify-between items-center pt-2 border-t border-white/5">
+        <span class="text-[9px] font-retro text-gray-400 uppercase tracking-widest">Daily Streak</span>
+        <span id="os-mobile-streak-val" class="text-amber-500 font-bold text-xs font-retro">0 🔥</span>
+    </div>
+</div>
 
     <div id="secret-tape-widget" class="desktop-widget liquid-glass p-5 md:p-4 cursor-pointer hover:border-[var(--retro-red)] transition-colors" onclick="toggleSecretTape()">
         <div class="flex justify-between items-center mb-4">
@@ -6466,6 +6544,26 @@ function triggerRankUp(oldRank, newRank) {
             const margin = 12;
             leftPos = Math.max(margin, Math.min(window.innerWidth - tooltipWidth - margin, leftPos));
 
+            const tooltip = document.getElementById('studio-buy-tooltip');
+            
+            // On récupère les dimensions du tooltip (valeurs par défaut si non chargées)
+            const tw = tooltip.offsetWidth || 280; 
+            const th = tooltip.offsetHeight || 120;
+            const margin = 20; // Marge de sécurité avec le bord de l'écran
+
+            // Position de base (décalée du curseur)
+            let posX = e.clientX + 15;
+            let posY = e.clientY + 15;
+
+            // Bloquer le débordement à droite
+            if (posX + tw > window.innerWidth - margin) {
+                posX = window.innerWidth - tw - margin;
+            }
+            // Bloquer le débordement en bas
+            if (posY + th > window.innerHeight - margin) {
+                posY = window.innerHeight - th - margin;
+            }
+
             globalTooltip.style.left = `${leftPos}px`;
             globalTooltip.style.transform = 'none';
             globalTooltip.style.top = `${rect.bottom + 8}px`;
@@ -6573,6 +6671,7 @@ function triggerRankUp(oldRank, newRank) {
                     <div class="text-gray-500 text-[9px] mt-2">Connecte-toi chaque jour in-game pour conserver ton multiplicateur et décrocher des bonus exclusifs !</div>`;
             }
         }
+
         function hideTooltip() {
         globalTooltip.style.opacity = '0';
         clearTimeout(tooltipTimeout);
@@ -9598,6 +9697,7 @@ function triggerRankUp(oldRank, newRank) {
 
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('room-ui').style.display = 'flex';
+            document.getElementById('audio-settings-gear').style.display = 'flex'; // Fait apparaître les paramètres
             document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="pixelated w-full h-full object-cover object-center scale-[1.6] origin-center" />`;
             document.getElementById('hud-name').innerText = state.username;
 
@@ -10340,6 +10440,22 @@ function triggerRankUp(oldRank, newRank) {
             animateHUDNumber('os-stat-rep', state.rep, 'rep');
             animateHUDNumber('os-stat-fol', state.followers, 'foll');
 
+                        // --- MAJ DU WIDGET MOBILE (HYPE & STREAK) ---
+            try {
+                const osHypeFill = document.getElementById('os-mobile-hype-fill');
+                const osHypeVal = document.getElementById('os-mobile-hype-val');
+                const osStreakVal = document.getElementById('os-mobile-streak-val');
+
+                if (osHypeFill && osHypeVal) {
+                    const hv = Math.max(0, Math.min(100, Math.floor(Number(state.hype) || 50)));
+                    osHypeFill.style.width = hv + '%';
+                    osHypeVal.innerText = hv + '%';
+                }
+                if (osStreakVal) {
+                    osStreakVal.innerText = (state.streakDays || 0) + ' 🔥';
+                }
+            } catch(e) {}
+
             document.getElementById('hud-day').innerText   = `JOUR ${state.day}`;
 
             const energyVal = Math.floor(state.energy);
@@ -10468,9 +10584,7 @@ function triggerRankUp(oldRank, newRank) {
             document.getElementById('widget-clock-date').innerText = `Virtual Day ${state.day}`;
         }
 
-        // ==========================================
-        // 15. COOLDOWN UIs
-        // ==========================================
+        
                 // ==========================================
         // 15. COOLDOWN UIs (AVEC JUICY BUTTONS)
         // ==========================================
@@ -11539,7 +11653,13 @@ function triggerRankUp(oldRank, newRank) {
             updateHUD();
         }
 
-        window.buyFurnitureDirect = function() {
+                window.buyFurnitureDirect = function(event) {
+            // SÉCURITÉ : Empêche le clic de "traverser" l'UI et d'annuler l'action dans la 3D
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
             const btn = document.getElementById('s-tooltip-buy-btn');
             const id = btn ? btn.getAttribute('data-id') : null;
             if (id) {
