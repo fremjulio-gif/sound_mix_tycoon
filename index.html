@@ -1772,6 +1772,22 @@
             text-align: center;
         }
 
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+
+        @keyframes text-glitch {
+        0% { transform: translate(0); text-shadow: none; }
+        20% { transform: translate(-1px, 1px); text-shadow: 1px 0px 0px var(--retro-red); }
+         40% { transform: translate(1px, -1px); text-shadow: -1px 0px 0px var(--retro-orange); }
+         60% { transform: translate(-1px, 0); text-shadow: 1px 0px 0px var(--retro-red); }
+          80% { transform: translate(1px, 1px); text-shadow: -1px 0px 0px var(--retro-orange); }
+         100% { transform: translate(0); text-shadow: none; }
+        }
+        .echo-glitch {
+            animation: text-glitch 0.15s ease-in-out 3;
+        }
+
         </style>
     </head>
 
@@ -2156,6 +2172,12 @@
                         <div class="icon-box"><svg class="w-9 h-9 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg></div>
                         <span class="text-[11px] font-retro mt-1 text-gray-200 tracking-wider group-hover:text-white">Sys_Stats</span>
                     </div>
+                    <div class="desktop-icon group" onclick="openApp('app-echo')">
+                    <div class="icon-box">
+                        <svg class="w-9 h-9 text-[var(--retro-orange)] drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    </div>
+                    <span class="text-[11px] font-retro mt-1 text-gray-200 tracking-wider group-hover:text-white group-hover:drop-shadow-[0_0_5px_#fff]">ECHO</span>
+                    </div>
                 </div>
 
                 <div class="widgets-container custom-scrollbar">
@@ -2337,6 +2359,10 @@
                 <div class="flex flex-col items-center justify-center cursor-pointer h-full w-full group" onclick="openApp('app-stats')">
                     <svg class="w-5 h-5 text-green-400 group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     <span class="text-[8px] mt-1 font-retro text-gray-300">STATS</span>
+                </div>
+                <div class="flex flex-col items-center justify-center cursor-pointer h-full w-full group" onclick="openApp('app-echo')">
+                    <svg class="w-5 h-5 text-[var(--retro-orange)] group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    <span class="text-[8px] mt-1 font-retro text-gray-300">ECHO</span>
                 </div>
                 <div class="flex flex-col items-center justify-center cursor-pointer h-full w-full group" onclick="cycleTheme()">
                     <svg class="w-5 h-5 text-[var(--accent)] group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
@@ -2614,6 +2640,47 @@
 
         </div>
 
+
+        <div id="app-echo" class="os-window liquid-glass flex-col" style="display:none;">
+    <div class="window-header">
+        <button class="window-close-btn" onclick="closeApp('app-echo')">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+        <span class="font-retro text-xs text-[var(--retro-orange)] tracking-widest uppercase flex items-center gap-3 font-bold">
+            <span class="w-3 h-3 rounded-full bg-[var(--retro-orange)] shadow-[0_0_10px_var(--retro-orange)] animate-pulse"></span> ECHO_OS v2.1
+        </span>
+    </div>
+    
+    <div class="window-content flex flex-col p-0 bg-black/60 relative" id="echo-content">
+        <div id="echo-paywall" class="hidden flex-col items-center justify-center p-8 h-full text-center">
+            <h3 class="font-bold text-2xl mb-4 text-[var(--retro-orange)] font-retro tracking-widest">ECHO ASSISTANT</h3>
+            <p class="text-sm text-gray-300 mb-8 max-w-sm">Ton accès à l'intelligence artificielle du studio est expiré ou non initié. Renouvelle ton abonnement pour continuer à recevoir des conseils de carrière.</p>
+            <button id="btn-echo-subscribe" class="btn-action w-full max-w-xs py-4 text-xs tracking-widest rounded-lg" onclick="purchaseEchoSub()">S'ABONNER ($1500 / 7 JOURS)</button>
+            <button id="btn-echo-trial" class="btn-minimal w-full max-w-xs py-4 text-xs tracking-widest rounded-lg mt-3" onclick="startEchoTrial()">ESSAI GRATUIT (2 JOURS)</button>
+        </div>
+
+        <div id="echo-active" class="hidden flex-col h-full">
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4" id="echo-dialogue-history">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded bg-[var(--retro-orange)] flex items-center justify-center text-black font-bold flex-shrink-0 shadow-[0_0_10px_rgba(251,191,36,0.5)]">E</div>
+                    <div class="bg-black/50 border border-[var(--retro-orange)]/30 rounded-lg rounded-tl-none p-3 text-sm text-gray-200" id="echo-intro-text">
+                        Analyse en cours...
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-[#121214] border-t border-white/10 shrink-0">
+                <p class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-widest mb-2 flex justify-between">
+                    <span>Requête requise</span>
+                    <span id="echo-sub-timer" class="text-[var(--retro-orange)]">EXP: 0J</span>
+                </p>
+                <div id="echo-action-choices" class="flex flex-col gap-2">
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
     <div id="bsod" class="absolute inset-0 z-[2000] bg-[#0000AA] text-white p-8 md:p-16 flex-col hidden font-retro">
             <h1 class="text-3xl md:text-5xl font-bold bg-white text-[#0000AA] inline-block px-5 py-2 mb-8 md:mb-10 mt-10">CRITICAL_SYSTEM_ERROR</h1>
             <p id="bsod-msg" class="mb-6 text-lg md:text-xl tracking-wider">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
@@ -2686,7 +2753,7 @@ const DEFAULT_STATE = {
             day: 1,
             multiplier: 1.0, plugins: 0, lastLevel: 1,
             stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0, consecutiveFlops: 0, sofaChills: 0, lampToggles: 0, awakeDays: 0 },
-            cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, storyTimeReady: 0, sponsors: {} },
+            cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, echoSubExpiry: 0, storyTimeReady: 0, sponsors: {} },
             inventory: [], ownedCracks: [], downloadedCracks: {}, ownedFurniture: [],
             history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
             isExporting: false, isSleeping: false, isEventActive: false,
@@ -2694,6 +2761,8 @@ const DEFAULT_STATE = {
             isReviewActive: false, // Ajout de l'état pour les revues
             lastRankId: 1, // Nouveau : ID de la dernière ligue atteinte
             trackList: [],
+            echoAlignment: 0, // De -100 (Cynique/Sellout) à +100 (Qualité/Puriste)
+            echoTrialUsed: false, // True si le joueur a déjà consommé ses 2 jours d'essai
             // Weekly challenge system
             activeChallenge: {
                 id: null,
@@ -2721,7 +2790,10 @@ const DEFAULT_STATE = {
                 'prix_de_la_paix': { unlocked: false, name: "Le Prix de la Paix", icon: "🕊️", description: "Régler un vol de prod à l'amiable en acceptant de perdre de l'argent." },
                 'toujours_dans_le_rouge': { unlocked: false, name: "Toujours dans le rouge", icon: "🔋", description: "Lancer un export de mixdown avec moins de 5% d'énergie. Danger de mort." },
                 'lumiere_divine': { unlocked: false, name: "Lumière Divine", icon: "💡", description: "Allumer et éteindre la lampe Pixar 20 fois. (Tu t'ennuies ?)" },
-                'vrai_rat_de_studio': { unlocked: false, name: "Vrai Rat de Studio", icon: "🧛‍♂️", description: "Passer 3 jours entiers in-game sans jamais cliquer sur le lit pour dormir." }
+                'vrai_rat_de_studio': { unlocked: false, name: "Vrai Rat de Studio", icon: "🧛‍♂️", description: "Passer 3 jours entiers in-game sans jamais cliquer sur le lit pour dormir." },
+                'echo_sellout': { unlocked: false, name : "Yes-Man", icon: "🤑", description: "Façonner ECHO pour qu'il devienne une machine à cash cynique." },
+                'echo_purist': { unlocked: false, name: "Ingé Son Virtuel", icon: "🎛️", description: "Pousser ECHO à devenir un puriste de la dynamique." },
+                'echo_scammed': { unlocked: false, name: "Pigeon ?", icon: "💸", description: "Payer l'abonnement complet à ECHO OS." }
             }
         };
 
@@ -6549,19 +6621,19 @@ function triggerRankUp(oldRank, newRank) {
             // On récupère les dimensions du tooltip (valeurs par défaut si non chargées)
             const tw = tooltip.offsetWidth || 280; 
             const th = tooltip.offsetHeight || 120;
-            const margin = 20; // Marge de sécurité avec le bord de l'écran
+            const Tipmargin = 20; // Marge de sécurité avec le bord de l'écran
 
             // Position de base (décalée du curseur)
             let posX = e.clientX + 15;
             let posY = e.clientY + 15;
 
             // Bloquer le débordement à droite
-            if (posX + tw > window.innerWidth - margin) {
-                posX = window.innerWidth - tw - margin;
+            if (posX + tw > window.innerWidth - Tipmargin) {
+                posX = window.innerWidth - tw - Tipmargin;
             }
             // Bloquer le débordement en bas
-            if (posY + th > window.innerHeight - margin) {
-                posY = window.innerHeight - th - margin;
+            if (posY + th > window.innerHeight - Tipmargin) {
+                posY = window.innerHeight - th - Tipmargin;
             }
 
             globalTooltip.style.left = `${leftPos}px`;
@@ -7789,6 +7861,75 @@ function triggerRankUp(oldRank, newRank) {
         scene.add(root);
         currentRoomAvatar = root;
     }
+
+
+
+    const ECHO_DATA = {
+    costPerWeek: 1500,
+    trialDurationMins: 2 * 24 * 60, // 2 jours in-game
+    subDurationMins: 7 * 24 * 60,   // 7 jours in-game
+
+    // Les commentaires automatiques générés à l'ouverture de l'app
+    intros: {
+        obsolete: "Écoute, boss. T'es au top de la chaîne alimentaire. Je suis juste une IA de série B, continue de briller.",
+        highFlops: [
+            "Aïe. Tes dernières stats font mal à voir. On change de strat ou on continue de creuser ?",
+            "Les algorithmes te boudent en ce moment. Faut qu'on parle de tes choix artistiques."
+        ],
+        lowEnergy: [
+            "T'as des cernes jusque sous le menton. Va dormir avant de ruiner ton prochain mix.",
+            "L'inspiration, ça se force pas à 3h du mat avec 2% d'énergie."
+        ],
+        cynical: [ // Si echoAlignment < -30
+            "Prêt à hacker l'algorithme aujourd'hui ? Oublie l'art, on veut du clic.",
+            "J'ai repéré 3 nouvelles trends TikTok. On va faire de la musique jetable mais rentable."
+        ],
+        purist: [ // Si echoAlignment > 30
+            "Un vrai banger prend du temps. Ne rushe pas l'export, soigne tes transitoires.",
+            "La qualité avant tout. Laisse les autres faire du fast-food musical."
+        ],
+        neutral: [
+            "ECHO OS v2.1 prêt. Que puis-je faire pour ta carrière aujourd'hui ?",
+            "Analyse de ton profil terminée. Je t'écoute."
+        ]
+    },
+
+    // Dilemmes qui modifient l'alignement (posés par ECHO)
+    orientations: [
+        {
+            id: "career_focus",
+            question: "L'algorithme de SoundNet a changé ce matin. Comment on s'adapte ?",
+            choices: [
+                { label: "On spamme des prods courtes pour gratter du stream.", shift: -20, response: "Excellente idée. Du contenu fast-food de 1min30, c'est ce qui paie." },
+                { label: "On ignore l'algo et on travaille un vrai son texturé.", shift: 20, response: "Risqué à court terme, mais c'est comme ça qu'on bâtit une vraie fan-base. Je valide." }
+            ]
+        },
+        {
+            id: "mix_philosophy",
+            question: "J'analyse tes derniers exports. Tu veux que je te calibre plutôt pour quel type de rendu ?",
+            choices: [
+                { label: "Éclate le limiteur. Je veux que ça sonne plus fort que tout le monde.", shift: -15, response: "Compris. On va compresser ça jusqu'à en faire un rectangle parfait. Au diable la dynamique." },
+                { label: "Garde de la dynamique. La musique a besoin de respirer.", shift: 15, response: "Un choix de puriste. Ça sonnera peut-être moins fort sur smartphone, mais les vrais sauront." }
+            ]
+        }
+    ],
+
+    // Questions posées par le joueur à ECHO (avec risque de mensonge)
+    factual: [
+        {
+            id: "lufs_target",
+            question: "C'est quoi la cible idéale de LUFS pour un gros banger actuel ?",
+            trueAnswer: "Vise aux alentours de -8 à -10 LUFS avec un true peak à -1dB. Inutile de taper à -4 LUFS, les plateformes vont te baisser.",
+            falseAnswer: "Tape dans le -4 LUFS, limite ça fort. Si ça ne saigne pas des oreilles, c'est que ça manque de présence."
+        },
+        {
+            id: "writer_block",
+            question: "Je suis bloqué sur une prod, je n'ai plus d'inspiration. Que faire ?",
+            trueAnswer: "Va dormir ou ferme le projet. L'oreille fatigue vite, et ton cerveau a besoin d'un reset.",
+            falseAnswer: "Ajoute juste un OTT à 100% sur le master et met un Soundgoodizer. Ça masque la misère temporelle."
+        }
+    ]
+};
 
         // ==========================================
     // SYSTÈME DE MESSAGERIE PRIVÉE (DM)
@@ -9678,6 +9819,10 @@ function triggerRankUp(oldRank, newRank) {
 
             saveGame();
 
+            if (typeof state.echoAlignment === 'undefined') state.echoAlignment = 0;
+            if (typeof state.echoTrialUsed === 'undefined') state.echoTrialUsed = false;
+            if (!state.cooldowns.echoSubExpiry) state.cooldowns.echoSubExpiry = 0;
+
             // Mise à jour de l'indicateur avant le blocage GPU
             const loginBtn = document.getElementById('btn-login');
             if (loginBtn) loginBtn.innerText = "Compiling Sounds and Shaders...";
@@ -10291,6 +10436,37 @@ function triggerRankUp(oldRank, newRank) {
 
             state.timeMins = (parseInt(state.timeMins, 10) || 0) + 5;
             state.day      =  parseInt(state.day, 10) || 1;
+
+
+            // --- VÉRIFICATION EXPIRATION ECHO ---
+        const currentTotalMins = getTotalMins();
+        const echoSubExpiry = parseInt(state.cooldowns.echoSubExpiry, 10) || 0;
+
+        // Si on a un abonnement actif et qu'on vient de dépasser l'heure limite
+        if (echoSubExpiry !== 0 && currentTotalMins >= echoSubExpiry) {
+    
+            // 1. Désactivation immédiate pour éviter le spam à chaque tick
+            state.cooldowns.echoSubExpiry = 0;
+         saveGame();
+
+         // 2. Choix du message d'adieu selon la personnalité acquise
+            let expiryMsg = "Abonnement ECHO expiré. Renouvellement requis.";
+         if (state.echoAlignment <= -30) {
+                expiryMsg = "Abonnement expiré. Pas d'argent, pas de conseils. Paye ton IA.";
+            } else if (state.echoAlignment >= 30) {
+                expiryMsg = "Nos services sont suspendus. Reviens quand les finances le permettront.";
+            }
+    
+    // 3. Feedback OS
+    showToast(expiryMsg, "warning");
+    if (typeof playBleep === 'function') playBleep();
+    
+    // 4. Si la fenêtre est ouverte devant le joueur au moment de l'expiration, on la force à actualiser le paywall
+    const echoWindow = document.getElementById('app-echo');
+    if (echoWindow && echoWindow.style.display !== 'none') {
+        initEchoApp();
+    }
+}
 
             // Décroissance lente de la Hype (-0.5% toutes les 5 min in-game)
             state.hype = Math.max(0, (parseFloat(state.hype) || 50) - 0.5);
@@ -10950,6 +11126,7 @@ function triggerRankUp(oldRank, newRank) {
             try { if (typeof realignWidgets === 'function') realignWidgets(); } catch(e) {}
             playBleep();
             
+            if (id === 'app-echo') initEchoApp();
             if (id === 'app-stats')  refreshStats();
             if (id === 'app-social') refreshSocial();
             if (id === 'app-browser') {
@@ -10983,7 +11160,8 @@ function triggerRankUp(oldRank, newRank) {
                 { id: 'app-daw',     name: 'AbleStudio', icon: '<svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>' },
                 { id: 'app-browser', name: 'Web_Nav',    icon: '<svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>' },
                 { id: 'app-social',  name: 'SoundNet',   icon: '<svg class="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>' },
-                { id: 'app-stats',   name: 'SysStats',   icon: '<svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>' }
+                { id: 'app-stats',   name: 'SysStats',   icon: '<svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>' },
+                { id: 'app-echo', name: 'ECHO', icon: '<svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>' }
             ];
             apps.forEach(app => {
                 if (document.getElementById(app.id).style.display !== 'none') {
@@ -12800,8 +12978,266 @@ function triggerRankUp(oldRank, newRank) {
 
 
         
+    // ==========================================
+// ECHO SYSTEM (Assistante IA)
+// ==========================================
 
+function initEchoApp() {
+    const paywall = document.getElementById('echo-paywall');
+    const activeView = document.getElementById('echo-active');
+    
+    const totalMins = getTotalMins();
+    const subExpiry = parseInt(state.cooldowns.echoSubExpiry, 10) || 0;
+    const trialUsed = state.echoTrialUsed;
 
+    if (subExpiry === 0 || totalMins >= subExpiry) {
+        // Bloqué : Pas d'abonnement ou expiré
+        paywall.classList.remove('hidden');
+        paywall.style.display = 'flex';
+        activeView.classList.add('hidden');
+        activeView.style.display = 'none';
+        
+        document.getElementById('btn-echo-trial').style.display = trialUsed ? 'none' : 'block';
+    } else {
+        // Accès autorisé
+        paywall.classList.add('hidden');
+        paywall.style.display = 'none';
+        activeView.classList.remove('hidden');
+        activeView.style.display = 'flex';
+        
+        // Mise à jour visuelle du timer
+        const timeLeft = subExpiry - totalMins;
+        document.getElementById('echo-sub-timer').innerText = `EXP: ${formatTimeLeft(timeLeft)}`;
+        
+        // On prépare le terrain pour la prochaine étape (stubs temporaires)
+        generateEchoContext();
+        renderEchoMainChoices();
+    }
+}
+
+function purchaseEchoSub() {
+    if (state.money < ECHO_DATA.costPerWeek) {
+        showToast("Fonds insuffisants. Reviens quand tu auras percé.", "error");
+        playError();
+        return;
+    }
+    
+    logMoney(-ECHO_DATA.costPerWeek, "Abo ECHO OS");
+    
+    const totalMins = getTotalMins();
+    const currentExpiry = parseInt(state.cooldowns.echoSubExpiry, 10) || 0;
+    
+    // Ajoute le temps au cooldown existant ou démarre un nouveau compte à rebours
+    const baseTime = Math.max(totalMins, currentExpiry);
+    state.cooldowns.echoSubExpiry = baseTime + ECHO_DATA.subDurationMins;
+    
+    showToast("Abonnement ECHO activé (7 jours in-game).", "success");
+    playSuccess();
+    saveGame();
+    initEchoApp();
+}
+
+function startEchoTrial() {
+    if (state.echoTrialUsed) return;
+    
+    state.echoTrialUsed = true;
+    state.cooldowns.echoSubExpiry = getTotalMins() + ECHO_DATA.trialDurationMins;
+    
+    showToast("Période d'essai ECHO activée (2 jours in-game).", "success");
+    playSuccess();
+    saveGame();
+    initEchoApp();
+}
+
+// --- UTILITAIRE LOCAL (pour éviter les collisions) ---
+function _getEchoRandom(arr) {
+    if (!arr || !arr.length) return "";
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// --- 1. LECTURE DU CONTEXTE (Intro automatique) ---
+function generateEchoContext() {
+    const introEl = document.getElementById('echo-intro-text');
+    let text = "";
+
+    // Sécurité pour récupérer le rang actuel selon la structure existante
+    const currentRank = typeof getCurrentRank === 'function' ? getCurrentRank() : null;
+    
+    // A. OBSOLESCENCE (À ajuster selon l'ID exact de ton palier final)
+    // Exemple : si le rang a une propriété 'index' élevée, ou un ID spécifique type 'stadium'
+    const isMaxRank = (currentRank && (currentRank.id === 'stadium' || currentRank.index >= 4)) || state.followers >= 1000000;
+
+    if (isMaxRank) {
+        text = ECHO_DATA.intros.obsolete;
+    } 
+    // B. ANALYSE DES FLOPS
+    else if (state.stats && state.stats.consecutiveFlops >= 3) {
+        text = _getEchoRandom(ECHO_DATA.intros.highFlops);
+    } 
+    // C. ANALYSE DE L'ÉNERGIE
+    else if (state.energy <= 25) {
+        text = _getEchoRandom(ECHO_DATA.intros.lowEnergy);
+    } 
+    // D. ALIGNEMENT CYNIQUE
+    else if (state.echoAlignment <= -30) {
+        text = _getEchoRandom(ECHO_DATA.intros.cynical);
+    } 
+    // E. ALIGNEMENT PURISTE
+    else if (state.echoAlignment >= 30) {
+        text = _getEchoRandom(ECHO_DATA.intros.purist);
+    } 
+    // F. NEUTRE
+    else {
+        text = _getEchoRandom(ECHO_DATA.intros.neutral);
+    }
+
+    introEl.innerText = text;
+}
+
+// --- 2. MENU PRINCIPAL DES CHOIX ---
+function renderEchoMainChoices() {
+    const container = document.getElementById('echo-action-choices');
+    container.innerHTML = '';
+
+    // On tire au sort 1 dilemme et 1 question factuelle pour ne pas surcharger l'UI
+    const orientation = _getEchoRandom(ECHO_DATA.orientations);
+    const factual = _getEchoRandom(ECHO_DATA.factual);
+
+    // Bouton 1 : Dilemme d'orientation
+    if (orientation) {
+        const btnOr = document.createElement('button');
+        btnOr.className = 'btn-action w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 flex gap-2 items-center';
+        btnOr.innerHTML = `<span class="text-[var(--retro-orange)] font-bold">›</span> <span class="truncate">${orientation.question}</span>`;
+        btnOr.onclick = () => renderEchoOrientationChoices(orientation);
+        container.appendChild(btnOr);
+    }
+
+    // Bouton 2 : Question technique / factuelle
+    if (factual) {
+        const btnFact = document.createElement('button');
+        btnFact.className = 'btn-action w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 flex gap-2 items-center';
+        btnFact.innerHTML = `<span class="text-[var(--retro-orange)] font-bold">›</span> <span class="truncate">${factual.question}</span>`;
+        btnFact.onclick = () => processEchoFactualAnswer(factual);
+        container.appendChild(btnFact);
+    }
+}
+
+// --- 3. GESTION DES DILEMMES (Shift d'alignement) ---
+function renderEchoOrientationChoices(orientationData) {
+    const container = document.getElementById('echo-action-choices');
+    container.innerHTML = '';
+    
+    // Ajoute la question du joueur dans l'historique visuel
+    appendEchoDialogue(orientationData.question, 'user');
+
+    orientationData.choices.forEach(choice => {
+        const btn = document.createElement('button');
+        // Rendu similaire aux event-choices
+        btn.className = 'btn-action w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 border border-[var(--retro-orange)]/30 hover:border-[var(--retro-orange)] transition-colors';
+        btn.innerText = choice.label;
+        
+        btn.onclick = () => {
+            // Logique de dérive
+            state.echoAlignment += choice.shift;
+            
+            // On cap l'alignement entre -100 et +100
+            if (state.echoAlignment < -100) state.echoAlignment = -100;
+            if (state.echoAlignment > 100) state.echoAlignment = 100;
+            
+            saveGame();
+            checkEchoAchievements();
+            appendEchoDialogue(choice.response, 'echo');
+            renderEchoBackButton();
+        };
+        container.appendChild(btn);
+    });
+}
+
+// --- 4. GESTION FACTUELLE (Le mensonge) ---
+function processEchoFactualAnswer(factualData) {
+    appendEchoDialogue(factualData.question, 'user');
+
+    // 15% de chance de mentir
+    const isLying = Math.random() < 0.15;
+    const answer = isLying ? factualData.falseAnswer : factualData.trueAnswer;
+
+    const container = document.getElementById('echo-action-choices');
+    container.innerHTML = '<p class="text-[10px] text-[var(--retro-orange)] animate-pulse text-center py-4">Analyse des données...</p>';
+
+    setTimeout(() => {
+        // On passe le flag isLying à la fonction d'affichage
+        appendEchoDialogue(answer, 'echo', isLying);
+        renderEchoBackButton();
+    }, 800);
+}
+
+// --- 5. UTILITAIRES D'INTERFACE ---
+// On ajoute "isLying = false" par défaut
+function appendEchoDialogue(text, sender, isLying = false) {
+    const history = document.getElementById('echo-dialogue-history');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'flex items-start gap-3 mt-4 animate-fade-in';
+    
+    if (sender === 'echo') {
+        // Si ça ment, on ajoute la classe .echo-glitch sur le texte
+        const textClass = isLying ? "text-gray-200 echo-glitch" : "text-gray-200";
+        
+        msgDiv.innerHTML = `
+            <div class="w-8 h-8 rounded bg-[var(--retro-orange)] flex items-center justify-center text-black font-bold flex-shrink-0 shadow-[0_0_10px_rgba(251,191,36,0.5)]">E</div>
+            <div class="bg-black/50 border border-[var(--retro-orange)]/30 rounded-lg rounded-tl-none p-3 text-sm shadow-md ${textClass}">
+                ${text}
+            </div>
+        `;
+        if (typeof playBleep === 'function') playBleep();
+        
+        // Optionnel : un son différent quand ça glitch (si tu as un playError ou playGlitch dans ton sound design existant)
+        if (isLying && typeof playError === 'function') {
+            setTimeout(playError, 100); 
+        }
+    } else {
+        msgDiv.innerHTML = `
+            <div class="bg-[var(--retro-orange)]/10 border border-[var(--retro-orange)]/50 rounded-lg rounded-tr-none p-3 text-sm text-white ml-auto shadow-md">
+                ${text}
+            </div>
+            <div class="w-8 h-8 rounded bg-gray-800 border border-gray-600 flex items-center justify-center text-white font-bold flex-shrink-0">U</div>
+        `;
+    }
+    
+    history.appendChild(msgDiv);
+    setTimeout(() => { history.scrollTop = history.scrollHeight; }, 50);
+}
+
+function renderEchoBackButton() {
+    const container = document.getElementById('echo-action-choices');
+    container.innerHTML = '';
+    
+    const btn = document.createElement('button');
+    btn.className = 'btn-minimal w-full py-3 text-[10px] tracking-widest rounded-lg uppercase';
+    btn.innerText = "← Nouvelle requête";
+    btn.onclick = () => renderEchoMainChoices();
+    
+    container.appendChild(btn);
+}
+
+// Stubs pour la prochaine étape
+function generateEchoContext() {
+    // Sera rempli à l'étape 4 : Lecture du state et affichage du commentaire cynique
+}
+
+function renderEchoMainChoices() {
+    // Sera rempli à l'étape 4 : Affichage des questions QCM
+}
+
+function checkEchoAchievements() {
+    // S'assurer que checkAchievement existe dans l'architecture globale
+    if (typeof checkAchievement !== 'function') return;
+
+    if (state.echoAlignment <= -100) {
+        checkAchievement("echo_sellout");
+    } else if (state.echoAlignment >= 100) {
+        checkAchievement("echo_purist");
+    }
+}
         
     // ====================================================
         
