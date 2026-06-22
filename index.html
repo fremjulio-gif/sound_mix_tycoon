@@ -6033,7 +6033,27 @@ const DEFAULT_STATE = {
                         const screenX = (pos3D.x * widthHalf) + widthHalf + rect.left;
                         const screenY = -(pos3D.y * heightHalf) + heightHalf + rect.top;
 
-                        if (tooltipEl) {
+                    if (tooltipEl) {
+                            // Utilise "let" au lieu de "const" pour pouvoir les réajuster
+                    let screenX = (pos3D.x * widthHalf) + widthHalf + rect.left;
+                    let screenY = -(pos3D.y * heightHalf) + heightHalf + rect.top;
+    // --- NOUVEAU : ANTI-DÉBORDEMENT POUR LES OBJETS AUX EXTRÉMITÉS (Ex: Guitare) ---
+    const tw = tooltipEl.offsetWidth || 280;
+    const th = tooltipEl.offsetHeight || 120;
+    const margin = 15;
+
+    // Contrainte X : le CSS décale de -50%, on bloque donc par rapport à la moitié du tooltip
+    if (screenX - (tw / 2) < margin) {
+        screenX = (tw / 2) + margin;
+    } else if (screenX + (tw / 2) > window.innerWidth - margin) {
+        screenX = window.innerWidth - (tw / 2) - margin;
+    }
+
+    // Contrainte Y : le CSS décale de -100% avec un margin-top de -30px
+    if (screenY - th - 30 < margin) {
+        screenY = th + 30 + margin; 
+    }
+
                             document.getElementById('s-tooltip-name').innerText = item.name;
                             document.getElementById('s-tooltip-category').innerText = item.category.toUpperCase();
                             document.getElementById('s-tooltip-perk').innerText = item.perk;
@@ -6616,25 +6636,7 @@ function triggerRankUp(oldRank, newRank) {
             const margin = 12;
             leftPos = Math.max(margin, Math.min(window.innerWidth - tooltipWidth - margin, leftPos));
 
-            const tooltip = document.getElementById('studio-buy-tooltip');
             
-            // On récupère les dimensions du tooltip (valeurs par défaut si non chargées)
-            const tw = tooltip.offsetWidth || 280; 
-            const th = tooltip.offsetHeight || 120;
-            const Tipmargin = 20; // Marge de sécurité avec le bord de l'écran
-
-            // Position de base (décalée du curseur)
-            let posX = e.clientX + 15;
-            let posY = e.clientY + 15;
-
-            // Bloquer le débordement à droite
-            if (posX + tw > window.innerWidth - Tipmargin) {
-                posX = window.innerWidth - tw - Tipmargin;
-            }
-            // Bloquer le débordement en bas
-            if (posY + th > window.innerHeight - Tipmargin) {
-                posY = window.innerHeight - th - Tipmargin;
-            }
 
             globalTooltip.style.left = `${leftPos}px`;
             globalTooltip.style.transform = 'none';
