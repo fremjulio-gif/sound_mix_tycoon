@@ -10251,12 +10251,11 @@ function triggerRankUp(oldRank, newRank) {
             const overlay = document.createElement('div');
             overlay.id = 'blank-page-overlay';
             overlay.innerHTML = `
-                <div class="fixed inset-0 bg-black/95 flex flex-col items-center justify-center z-[1000] p-4">
-                    <h2 class="text-3xl font-bold text-white mb-2">🎵 SYNDROME DE LA PAGE BLANCHE</h2>
-                    <p class="text-gray-400 text-sm mb-4">Clique sur les notes pour retrouver l'inspiration !</p>
-
-                    <div id="blank-page-notes" class="relative w-full h-96 bg-black/60 rounded-2xl overflow-hidden border border-white/10"></div>
-
+               <div class="fixed inset-0 bg-black/95 flex flex-col items-center justify-center z-[1000] p-4">
+    <h2 class="text-xl md:text-3xl font-bold text-white mb-2 text-center">🎵 SYNDROME DE LA PAGE BLANCHE</h2>
+    <p class="text-gray-400 text-sm mb-4 text-center">Clique sur les notes pour retrouver l'inspiration !</p>
+    
+    <div id="blank-page-notes" class="relative w-full flex-1 max-h-[50vh] md:max-h-96 bg-black/60 rounded-2xl overflow-hidden border border-white/10 mt-2 mb-4"></div>
                     <div class="mt-4 w-full max-w-md">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-white font-bold">TEMPS</span>
@@ -10291,9 +10290,16 @@ function triggerRankUp(oldRank, newRank) {
                 const note = document.createElement('div');
                 note.className = 'blank-page-note absolute cursor-pointer transition-transform';
                 note.innerHTML = noteSymbols[Math.floor(Math.random() * noteSymbols.length)];
-                note.style.left = `${Math.random() * 80 + 10}%`;
-                note.style.top = `${Math.random() * 80 + 10}%`;
-                note.style.fontSize = '24px';
+                // Restreint la zone d'apparition pour éviter de déborder hors de l'écran
+                note.style.left = `${Math.random() * 70 + 10}%`; 
+                note.style.top = `${Math.random() * 70 + 10}%`;
+
+// Règle la taille dynamiquement : gigantesque sur mobile, normal sur PC
+                note.style.fontSize = (typeof isMobile !== 'undefined' && isMobile) ? '45px' : '28px';
+
+// Ajoute du padding invisible pour élargir la zone de clic (Hitbox) au doigt
+                note.style.padding = '15px'; 
+
                 note.style.transform = 'scale(0)';
                 note.style.opacity = '0';
                 note.style.animation = 'blank-page-note-float 2s linear forwards';
@@ -10483,9 +10489,10 @@ function triggerRankUp(oldRank, newRank) {
             state.inspi = Math.min(100, (parseFloat(state.inspi) || 0) + 1.2);
 
             // Syndrome de la page blanche hook (si l'inspiration tombe sous 20%, 15% de chance de déclencher)
-            if (state.inspi < 20 && !state.isEventActive && Math.random() < 0.15) { 
-                startBlankPageMiniGame(); 
-            }
+            if (state.inspi < 20 && !state.isEventActive && Math.random() < 0.01) {
+    startBlankPageMiniGame();
+}
+
 
             if (state.timeMins >= 180 && state.timeMins <= 200 && !easterEgg3AM) {
                 showToast("3AM... le moment où les meilleurs sons sortent.", "discreet");
