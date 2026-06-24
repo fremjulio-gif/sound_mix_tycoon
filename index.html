@@ -9945,6 +9945,11 @@ function triggerRankUp(oldRank, newRank) {
             window.isIntroAnimating = true;
             window.introProgress = 0;
 
+            if (window.gameInterval) { clearInterval(window.gameInterval); window.gameInterval = null; }
+            window.gameInterval = setInterval(gameTick, 1000);
+
+            try {
+
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('room-ui').style.display = 'flex';
             document.getElementById('audio-settings-gear').style.display = 'flex'; // Fait apparaître les paramètres
@@ -10165,14 +10170,18 @@ function triggerRankUp(oldRank, newRank) {
     });
 };
 
+            } catch (bootErr) {
+                console.error("Erreur critique pendant le boot (post-login):", bootErr);
+            }
+
+
         window.dailyReset = function() {
             showToast("Nouveau jour ! Les compteurs sont remis à zéro.", "info");
             generateDailyQuests();
             saveGame();
         };
 
-        if (window.gameInterval) { clearInterval(window.gameInterval); window.gameInterval = null; }
-    window.gameInterval = setInterval(gameTick, 1000);
+        // Interval already started above.
     
     // Libération du verrou SEULEMENT ici, avec un léger délai pour laisser le DOM respirer
     setTimeout(() => {
@@ -11404,6 +11413,7 @@ function triggerRankUp(oldRank, newRank) {
         }, 50); // Le temps de laisser l'impact visuel à l'écran
     }
 
+        window.exportTrack = exportTrack;
         function exportTrack() {
             if (getTotalMins() < (parseInt(state.cooldowns.dawTimeReady, 10) || 0) || state.isExporting) return;
 
