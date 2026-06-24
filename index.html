@@ -5914,14 +5914,17 @@ const DEFAULT_STATE = {
                 // The original logic for object interaction is here.
                 // We need to ensure it runs.
                 try {
-                    // --- CORRECTION DU RAYCASTER (Safe Navigation) ---
-                    // Utilisation de l'Optional Chaining pour prévenir les crashs TypeError
-                    const clickedObj = intersects[0] ? intersects[0].object : interactableHit.object;
-                    const objId = clickedObj.parent?.userData?.id || clickedObj.userData?.id;
+                    const objName = interactableHit.object.name;
                     
-                    if (objId && state && state.ownedFurniture && !state.ownedFurniture.includes(objId)) {
-                        showToast("Tu dois d'abord acheter cet objet dans Studio+ !", "warning");
-                        return; // Stoppe l'action si l'objet n'est pas possédé
+                    // --- CORRECTION DU RAYCASTER (Safe Navigation) ---
+                    if (intersects.length > 0) {
+                        const clickedObj = intersects[0].object;
+                        const objId = clickedObj.parent?.userData?.id || clickedObj.userData?.id;
+                        
+                        if (objId && state && Array.isArray(state.ownedFurniture) && !state.ownedFurniture.includes(objId)) {
+                            showToast("Tu dois d'abord acheter cet objet dans Studio+ !", "warning");
+                            return; // Stoppe l'action si l'objet n'est pas possédé
+                        }
                     }
 
                     const worldPos = new THREE.Vector3();
