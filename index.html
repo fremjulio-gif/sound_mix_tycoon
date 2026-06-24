@@ -9960,93 +9960,107 @@ function triggerRankUp(oldRank, newRank) {
         };
 
         window.triggerMonoMixMiniGame = function(onDoneCallback) {
-            const container = document.createElement('div');
-            container.id = 'mono-mix-modal';
-            container.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md px-4';
+    state.isEventActive = true;
+    const container = document.createElement('div');
+    container.id = 'mono-mix-modal';
+    container.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md px-4';
+    
+    let bass = Math.floor(Math.random() * 80) + 10;
+    let mid = Math.floor(Math.random() * 80) + 10;
+    let treble = Math.floor(Math.random() * 80) + 10;
+    
+    while (Math.abs(bass - mid) <= 10 && Math.abs(mid - treble) <= 10 && Math.abs(bass - treble) <= 10) {
+        mid = Math.floor(Math.random() * 80) + 10;
+        treble = Math.floor(Math.random() * 80) + 10;
+    }
+
+    container.innerHTML = `
+        <div class="liquid-glass-heavy border border-white/10 w-full max-w-md p-6 rounded-2xl flex flex-col items-center gap-6 text-white text-center shadow-2xl relative">
+            <div class="space-y-2 mt-2">
+                <h2 class="text-xl font-bold font-retro tracking-widest text-white uppercase">⚡ Équilibre Spectral</h2>
+                <p class="text-[11px] text-[var(--text-muted)] max-w-sm">
+                    Aligne la puissance des 3 bandes de fréquences pour obtenir un signal plat (différence maximum de ±10 entre chaque bande).
+                </p>
+            </div>
             
-            let bass = Math.floor(Math.random() * 80) + 10;
-            let mid = Math.floor(Math.random() * 80) + 10;
-            let treble = Math.floor(Math.random() * 80) + 10;
-            
-            while (Math.abs(bass - mid) <= 10 && Math.abs(mid - treble) <= 10 && Math.abs(bass - treble) <= 10) {
-                mid = Math.floor(Math.random() * 80) + 10;
-                treble = Math.floor(Math.random() * 80) + 10;
-            }
+            <div class="flex items-end justify-center gap-6 h-16 w-full border-b border-white/20 pb-2">
+                <div id="bar-bass" class="w-8 bg-red-400 rounded-t-md transition-all duration-300" style="height: ${bass}%"></div>
+                <div id="bar-mid" class="w-8 bg-yellow-400 rounded-t-md transition-all duration-300" style="height: ${mid}%"></div>
+                <div id="bar-treble" class="w-8 bg-blue-400 rounded-t-md transition-all duration-300" style="height: ${treble}%"></div>
+            </div>
 
-            container.innerHTML = `
-                <div class="liquid-glass-heavy border border-white/10 w-full max-w-md p-6 rounded-2xl flex flex-col items-center gap-6 text-white text-center shadow-2xl relative">
-                    <div class="absolute top-4 right-4 text-xs font-bold text-[var(--accent)] tracking-widest animate-pulse">MONO MIX MODE</div>
-                    <div class="space-y-2 mt-4">
-                        <h2 class="text-xl font-bold font-retro tracking-widest text-white">⚡ MIXAGE EN MONO</h2>
-                        <p class="text-xs text-[var(--text-muted)] max-w-sm">
-                            Équilibre les 3 bandes de fréquences (Bass, Mid, Treble) afin qu'elles aient <b>la même valeur</b> (différence maximum de ±10).
-                        </p>
+            <div class="w-full space-y-5 font-retro text-left text-xs tracking-wider">
+                <div class="space-y-2">
+                    <div class="flex justify-between font-bold text-[10px]">
+                        <span class="text-red-400">LOWS (Sub/Bass)</span> <span id="val-bass">${bass}%</span>
                     </div>
-
-                    <div class="w-full space-y-4 font-retro text-left text-xs tracking-wider">
-                        <div class="space-y-1">
-                            <div class="flex justify-between font-bold">
-                                <span class="text-red-400">BASS</span>
-                                <span id="val-bass">${bass}%</span>
-                            </div>
-                            <input type="range" id="slider-bass" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-red-400" min="0" max="100" value="${bass}">
-                        </div>
-
-                        <div class="space-y-1">
-                            <div class="flex justify-between font-bold">
-                                <span class="text-yellow-400">MID</span>
-                                <span id="val-mid">${mid}%</span>
-                            </div>
-                            <input type="range" id="slider-mid" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-yellow-400" min="0" max="100" value="${mid}">
-                        </div>
-
-                        <div class="space-y-1">
-                            <div class="flex justify-between font-bold">
-                                <span class="text-blue-400">TREBLE</span>
-                                <span id="val-treble">${treble}%</span>
-                            </div>
-                            <input type="range" id="slider-treble" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-blue-400" min="0" max="100" value="${treble}">
-                        </div>
-                    </div>
-
-                    <div class="flex gap-4 w-full justify-center">
-                        <button id="btn-mono-mix-validate" class="btn-action py-2.5 px-6 rounded-lg text-xs font-retro tracking-wider">VALIDER LE MIX</button>
-                    </div>
+                    <input type="range" id="slider-bass" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-red-400" min="0" max="100" value="${bass}">
                 </div>
-            `;
-            document.body.appendChild(container);
+                <div class="space-y-2">
+                    <div class="flex justify-between font-bold text-[10px]">
+                        <span class="text-yellow-400">MIDS (Vocals/Snare)</span> <span id="val-mid">${mid}%</span>
+                    </div>
+                    <input type="range" id="slider-mid" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-yellow-400" min="0" max="100" value="${mid}">
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between font-bold text-[10px]">
+                        <span class="text-blue-400">HIGHS (Air/Hats)</span> <span id="val-treble">${treble}%</span>
+                    </div>
+                    <input type="range" id="slider-treble" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-blue-400" min="0" max="100" value="${treble}">
+                </div>
+            </div>
+            <div class="flex gap-4 w-full justify-center">
+                <button id="btn-mono-mix-validate" class="btn-action w-full py-3 rounded-lg text-xs font-retro tracking-wider">APPLIQUER L'EQ</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(container);
 
-            const sB = container.querySelector('#slider-bass');
-            const sM = container.querySelector('#slider-mid');
-            const sT = container.querySelector('#slider-treble');
-            
-            sB.addEventListener('input', (e) => { bass = parseInt(e.target.value); container.querySelector('#val-bass').innerText = bass + '%'; playTone(120 + bass, 'sine', 0.05, 0.05); });
-            sM.addEventListener('input', (e) => { mid = parseInt(e.target.value); container.querySelector('#val-mid').innerText = mid + '%'; playTone(300 + mid, 'sine', 0.05, 0.05); });
-            sT.addEventListener('input', (e) => { treble = parseInt(e.target.value); container.querySelector('#val-treble').innerText = treble + '%'; playTone(800 + treble, 'sine', 0.05, 0.05); });
+    const sB = container.querySelector('#slider-bass');
+    const sM = container.querySelector('#slider-mid');
+    const sT = container.querySelector('#slider-treble');
+    const barB = container.querySelector('#bar-bass');
+    const barM = container.querySelector('#bar-mid');
+    const barT = container.querySelector('#bar-treble');
 
-            container.querySelector('#btn-mono-mix-validate').addEventListener('click', () => {
-                const diffBM = Math.abs(bass - mid);
-                const diffMT = Math.abs(mid - treble);
-                const diffBT = Math.abs(bass - treble);
+    sB.addEventListener('input', (e) => {
+        bass = parseInt(e.target.value);
+        container.querySelector('#val-bass').innerText = bass + '%';
+        barB.style.height = bass + '%';
+        if (typeof playTone === 'function') playTone(80 + (bass * 0.5), 'sine', 0.08, 0.05);
+    });
+    sM.addEventListener('input', (e) => {
+        mid = parseInt(e.target.value);
+        container.querySelector('#val-mid').innerText = mid + '%';
+        barM.style.height = mid + '%';
+        if (typeof playTone === 'function') playTone(300 + (mid * 2), 'triangle', 0.05, 0.05);
+    });
+    sT.addEventListener('input', (e) => {
+        treble = parseInt(e.target.value);
+        container.querySelector('#val-treble').innerText = treble + '%';
+        barT.style.height = treble + '%';
+        if (typeof playTone === 'function') playTone(2000 + (treble * 10), 'square', 0.02, 0.05);
+    });
 
-                if (diffBM <= 10 && diffMT <= 10 && diffBT <= 10) {
-                    state.permanentMixBonus = Math.min(25, (state.permanentMixBonus || 0) + 5);
-                    state.multiplier = Math.min(3.0, 1.0 + (state.permanentMixBonus / 100));
-                    showToast(`🔥 Mix mono parfait ! Multiplicateur permanent +5% (Total: +${state.permanentMixBonus}%)`, 'success');
-                    playTone(600, 'sine', 0.1);
-                    setTimeout(() => playTone(800, 'sine', 0.15), 100);
-                    if (typeof fireConfetti === 'function') fireConfetti('store');
-                } else {
-                    state.inspi = Math.max(0, state.inspi - 10);
-                    showToast("❌ Fréquences mal équilibrées. Mixage raté, -10 Inspiration.", 'error');
-                    playTone(200, 'square', 0.3);
-                }
-                
-                document.body.removeChild(container);
-                updateHUD();
-                if (typeof onDoneCallback === 'function') onDoneCallback();
-            });
-        };
+    container.querySelector('#btn-mono-mix-validate').addEventListener('click', () => {
+        if (Math.abs(bass - mid) <= 10 && Math.abs(mid - treble) <= 10 && Math.abs(bass - treble) <= 10) {
+            state.permanentMixBonus = Math.min(25, (state.permanentMixBonus || 0) + 5);
+            state.multiplier = Math.min(3.0, 1.0 + (state.permanentMixBonus / 100));
+            showToast(`🔥 Mix Plat ! Master hyper propre. Multiplicateur de base +5%.`, 'success');
+            playTone(440, 'sine', 0.1, 0.1);
+            setTimeout(() => playTone(660, 'sine', 0.1, 0.2), 100);
+            if (typeof fireConfetti === 'function') fireConfetti('store');
+        } else {
+            state.inspi = Math.max(0, state.inspi - 10);
+            showToast("❌ Déséquilibre tonal massif. Le mix sonne boueux. -10 Inspiration.", 'error');
+            playError();
+        }
+        document.body.removeChild(container);
+        state.isEventActive = false;
+        updateHUD();
+        if (typeof onDoneCallback === 'function') onDoneCallback();
+    });
+};
 
         window.dailyReset = function() {
             showToast("Nouveau jour ! Les compteurs sont remis à zéro.", "info");
@@ -10071,34 +10085,52 @@ function triggerRankUp(oldRank, newRank) {
         // ==========================================
 
         const PLUGIN_QUIZ_QUESTIONS = [
-            {
-                question: "Quel processeur de dynamique est idéal pour atténuer les pics rapides d'une caisse claire sans détruire son punch ?",
-                options: [
-                    { name: "Compresseur Optique (ex: LA-2A)", desc: "Temps d'attaque très lent, couleur vintage chaleureuse.", correct: false },
-                    { name: "Limiteur de crêtes ultra-rapide", desc: "Écrête instantanément mais détruit le transient d'attaque.", correct: false },
-                    { name: "Compresseur VCA (ex: SSL G-Comp)", desc: "Attaque rapide réglable et contrôle précis des transitoires.", correct: true },
-                    { name: "Expandeur dynamique", desc: "Augmente la plage dynamique globale au lieu de la réduire.", correct: false }
-                ]
-            },
-            {
-                question: "Comment éviter les problèmes de phase lors du mixage d'un kick 808 avec une basse électrique ?",
-                options: [
-                    { name: "Inverser la polarité de l'un des canaux", desc: "Vérifie si les basses fréquences s'additionnent ou s'annulent.", correct: true },
-                    { name: "Ajouter une distorsion harmonique lourde", desc: "Masque le problème de phase sous du bruit saturé.", correct: false },
-                    { name: "Appliquer un filtre passe-haut à 150Hz", desc: "Supprime complètement les fréquences fondamentales de la basse.", correct: false },
-                    { name: "Compresser à un ratio de 20:1", desc: "Écrase le signal sans toucher aux relations temporelles.", correct: false }
-                ]
-            },
-            {
-                question: "Pour obtenir une voix pop ultra-brillante sans sibilance agressive, quel chaînage est recommandé ?",
-                options: [
-                    { name: "De-esser avant et après une égalisation additive", desc: "Permet de sculpter l'air de la voix tout en domptant les 'S'.", correct: true },
-                    { name: "Égaliseur avec un boost massif à 10kHz uniquement", desc: "Rend les aigus criards et perce les oreilles sur les 'S'.", correct: false },
-                    { name: "Compresseur en sidechain sur toute la batterie", desc: "Atténue la voix chaque fois que le kick tape.", correct: false },
-                    { name: "Filtre coupe-bas à 800Hz", desc: "Fait sonner la voix comme si elle sortait d'un téléphone.", correct: false }
-                ]
-            }
-        ];
+    {
+        question: "Selon le théorème de Nyquist-Shannon, quelle doit être la fréquence d'échantillonnage minimale pour capturer fidèlement une fréquence de 20 kHz ?",
+        options: [
+            { name: "40 kHz", desc: "Le double de la fréquence maximale (Fréquence de Nyquist).", correct: true },
+            { name: "44.1 kHz", desc: "Le standard CD, mais ce n'est pas le minimum mathématique absolu.", correct: false },
+            { name: "20 kHz", desc: "Créera un repliement de spectre (Aliasing) sévère.", correct: false },
+            { name: "10 kHz", desc: "Ne capturera que les fréquences jusqu'à 5 kHz.", correct: false }
+        ]
+    },
+    {
+        question: "À quoi sert l'ajout de Dither lors de l'export d'un mixage de 24 bits vers 16 bits ?",
+        options: [
+            { name: "Masquer l'erreur de quantification", desc: "Ajoute un bruit de bas niveau pour éviter la distorsion harmonique de troncature.", correct: true },
+            { name: "Augmenter le LUFS", desc: "Le dither n'affecte pas le niveau de Loudness perçu.", correct: false },
+            { name: "Élargir l'image stéréo", desc: "C'est le rôle d'un élargisseur stéréo, pas du dither.", correct: false },
+            { name: "Couper les sub-basses inutiles", desc: "Ça, c'est le travail d'un filtre passe-haut (HPF).", correct: false }
+        ]
+    },
+    {
+        question: "Qu'est-ce que l'effet de proximité sur un microphone directionnel ?",
+        options: [
+            { name: "Une augmentation des basses fréquences", desc: "Les graves s'amplifient quand la source est très proche de la capsule.", correct: true },
+            { name: "Une réverbération naturelle de la pièce", desc: "C'est l'acoustique de la pièce, captée par un micro omni par exemple.", correct: false },
+            { name: "Une saturation de la membrane", desc: "C'est dû à un SPL trop élevé, pas à la proximité en soi.", correct: false },
+            { name: "Un déphasage stéréo", desc: "Arrive avec des configurations multi-micros mal espacées (Règle des 3:1).", correct: false }
+        ]
+    },
+    {
+        question: "Dans un compresseur, quel paramètre détermine la vitesse à laquelle la réduction de gain s'arrête ?",
+        options: [
+            { name: "Le Release", desc: "Le temps mis par le compresseur pour revenir à un gain unitaire (0 dB de GR).", correct: true },
+            { name: "L'Attack", desc: "Le temps mis pour réagir aux transitoires dépassant le threshold.", correct: false },
+            { name: "Le Ratio", desc: "La sévérité de l'écrasement une fois le threshold dépassé.", correct: false },
+            { name: "Le Knee", desc: "La douceur ou la rudesse de la transition vers la compression.", correct: false }
+        ]
+    },
+    {
+        question: "Sur un égaliseur paramétrique, à quoi correspond le paramètre 'Q' ?",
+        options: [
+            { name: "Au Facteur de Qualité (Largeur de bande)", desc: "Un Q élevé affecte une zone étroite (chirurgicale), un Q bas une zone large (musicale).", correct: true },
+            { name: "À la quantité de Gain", desc: "C'est le paramètre de Gain (Boost/Cut).", correct: false },
+            { name: "À la fréquence de coupure", desc: "C'est le paramètre Freq (Hz/kHz).", correct: false },
+            { name: "Au Q-Routing du signal", desc: "Ceci est un terme inventé.", correct: false }
+        ]
+    }
+];
 
         function startLufsWarMiniGame() {
             state.isEventActive = true;
@@ -10247,135 +10279,152 @@ function triggerRankUp(oldRank, newRank) {
 
         function startBlankPageMiniGame() {
             state.isEventActive = true;
-
-            const overlay = document.createElement('div');
-            overlay.id = 'blank-page-overlay';
-            overlay.innerHTML = `
-                <div class="fixed inset-0 bg-black/95 flex flex-col items-center justify-center z-[1000] p-4">
-                    <h2 class="text-xl md:text-3xl font-bold text-white mb-2 text-center">🎵 SYNDROME DE LA PAGE BLANCHE</h2>
-                    <p class="text-gray-400 text-sm mb-4 text-center">Clique sur les notes pour retrouver l'inspiration !</p>
-    
-                 <div id="blank-page-notes" class="relative w-full flex-1 max-h-[50vh] md:max-h-96 bg-black/60 rounded-2xl overflow-hidden border border-white/10 mt-2 mb-4"></div>
-
-                    <div class="mt-4 w-full max-w-md">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-white font-bold">TEMPS</span>
-                            <div class="w-64 h-2 bg-gray-700 rounded-full">
-                                <div id="blank-page-timer" class="h-full bg-[var(--accent)] rounded-full transition-all duration-100" style="width: 100%"></div>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-white font-bold">NOTES</span>
-                            <span id="blank-page-score" class="text-white font-bold">0/20</span>
-                        </div>
+    const overlay = document.createElement('div');
+    overlay.id = 'blank-page-overlay';
+    overlay.innerHTML = `
+        <div class="fixed inset-0 bg-black/95 flex flex-col items-center justify-center z-[1000] p-4 font-sans backdrop-blur-md">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-2 text-center font-retro tracking-widest uppercase">🎵 Syndrome de la Page Blanche</h2>
+            <p class="text-[var(--text-muted)] text-xs md:text-sm mb-4 text-center uppercase tracking-widest">Retrouve le flow. Clique sur les notes à temps.</p>
+            
+            <div id="blank-page-notes" class="relative w-full flex-1 max-h-[50vh] md:max-h-[400px] max-w-2xl bg-[#09090b] rounded-2xl overflow-hidden border border-white/10 mt-2 mb-4 shadow-inner cursor-crosshair"></div>
+            
+            <div class="w-full max-w-2xl bg-black/50 p-4 rounded-xl border border-white/10 flex flex-col gap-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-white font-bold text-xs font-retro tracking-widest">TEMPS</span>
+                    <div class="flex-1 mx-4 h-3 bg-black rounded-full overflow-hidden border border-white/5">
+                        <div id="blank-page-timer" class="h-full bg-[var(--accent)] rounded-full transition-all duration-[1000ms] ease-linear" style="width: 100%"></div>
                     </div>
                 </div>
-            `;
-            document.body.appendChild(overlay);
+                <div class="flex justify-between items-center font-retro text-xs tracking-widest">
+                    <span class="text-gray-400">COMBO: <span id="blank-page-combo" class="text-white text-base">x0</span></span>
+                    <span class="text-gray-400">SCORE: <span id="blank-page-score" class="text-[var(--retro-green)] text-lg">0</span></span>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
 
-            const notesContainer = document.getElementById('blank-page-notes');
-            const timer = document.getElementById('blank-page-timer');
-            const scoreEl = document.getElementById('blank-page-score');
+    const notesContainer = document.getElementById('blank-page-notes');
+    const timer = document.getElementById('blank-page-timer');
+    const scoreEl = document.getElementById('blank-page-score');
+    const comboEl = document.getElementById('blank-page-combo');
+    
+    let score = 0;
+    let combo = 0;
+    let timeLeft = 20;
+    let spawnSpeed = 600;
+    const activeNotes = [];
 
-            let notesCaptured = 0;
-            let totalNotes = 0;
-            let timeLeft = 30;
-            const notes = [];
-            const noteSymbols = ['🎵', '🎶', '🎹', '🎻', '🥁', '🎤', '🎧', '🎼'];
+    // Gamme Pentatonique Majeure (C Major Penta) - Impossible de faire une fausse note
+    const pentatonicScale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
 
-            // Générer des notes aléatoirement
-            function spawnNote() {
-                if (timeLeft <= 0 || totalNotes >= 20) return;
+    function spawnNote() {
+        if (timeLeft <= 0) return;
+        
+        const note = document.createElement('div');
+        note.className = 'absolute cursor-pointer flex items-center justify-center rounded-full bg-[var(--accent)]/20 border-2 border-[var(--accent)] shadow-[0_0_15px_rgba(129,140,248,0.5)] transition-transform duration-100 ease-out';
+        
+        // Taille adaptée au mobile/PC pour hitbox confortable
+        const size = (typeof isMobile !== 'undefined' && isMobile) ? 60 : 50;
+        note.style.width = `${size}px`;
+        note.style.height = `${size}px`;
+        note.style.left = `calc(${Math.random() * 80 + 10}% - ${size/2}px)`;
+        note.style.top = `calc(${Math.random() * 70 + 10}% - ${size/2}px)`;
+        note.style.transform = 'scale(0)';
+        
+        // Cercle interne (Bullseye effect)
+        const inner = document.createElement('div');
+        inner.className = 'w-1/3 h-1/3 bg-white rounded-full pointer-events-none';
+        note.appendChild(inner);
 
-                totalNotes++;
-                const note = document.createElement('div');
-                note.className = 'blank-page-note absolute cursor-pointer transition-transform';
-                note.innerHTML = noteSymbols[Math.floor(Math.random() * noteSymbols.length)];
-                // Restreint la zone d'apparition pour éviter de déborder hors de l'écran
-                note.style.left = `${Math.random() * 70 + 10}%`; 
-                note.style.top = `${Math.random() * 70 + 10}%`;
+        notesContainer.appendChild(note);
+        activeNotes.push(note);
 
-                note.style.fontSize = (typeof isMobile !== 'undefined' && isMobile) ? '45px' : '28px';
+        // Apparition "pop"
+        requestAnimationFrame(() => {
+            note.style.transform = 'scale(1)';
+        });
+
+        // Durée de vie de la note avant "miss" (se réduit avec le temps)
+        const lifeTime = Math.max(700, 1500 - (score * 30));
+        
+        note.timeout = setTimeout(() => {
+            if (note.parentElement) {
+                note.style.borderColor = 'var(--retro-red)';
                 note.style.transform = 'scale(0)';
-                note.style.opacity = '0';
-                note.style.animation = 'blank-page-note-float 2s linear forwards';
-                // Ajoute du padding invisible pour élargir la zone de clic (Hitbox) au doigt
-                note.style.padding = '15px'; 
-                notesContainer.appendChild(note);
-                notes.push(note);
-
-                // Animation d'apparition
-                setTimeout(() => {
-                    note.style.transform = 'scale(1)';
-                    note.style.opacity = '1';
-                }, 10);
-
-                // Supprimer après 2 secondes si non cliqué
-                setTimeout(() => {
-                    if (note.parentElement) {
-                        note.style.transform = 'scale(0)';
-                        note.style.opacity = '0';
-                        setTimeout(() => {
-                            if (note.parentElement) {
-                                note.remove();
-                                const index = notes.indexOf(note);
-                                if (index !== -1) notes.splice(index, 1);
-                            }
-                        }, 200);
-                    }
-                }, 2000);
+                combo = 0; // Break combo
+                comboEl.innerText = `x${combo}`;
+                comboEl.style.color = 'white';
+                setTimeout(() => note.remove(), 100);
             }
+        }, lifeTime);
 
-            // Spawn une note toutes les 0.5 secondes
-            const spawnInterval = setInterval(spawnNote, 500);
+        // Augmente la difficulté progressivement
+        spawnSpeed = Math.max(300, 700 - (score * 15));
+        if (timeLeft > 0) setTimeout(spawnNote, spawnSpeed);
+    }
 
-            // Gestion du clic sur les notes
-            notesContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('blank-page-note')) {
-                    notesCaptured++;
-                    scoreEl.textContent = `${notesCaptured}/${totalNotes}`;
-                    e.target.style.transform = 'scale(1.5)';
-                    e.target.style.opacity = '0';
-                    setTimeout(() => e.target.remove(), 200);
-                    const index = notes.indexOf(e.target);
-                    if (index !== -1) notes.splice(index, 1);
-                    playTone(400 + Math.random() * 400, 'sine', 0.1, 0.1);
-                }
-            });
+    setTimeout(spawnNote, 500);
 
-            // Timer
-            const timerInterval = setInterval(() => {
-                timeLeft--;
-                timer.style.width = `${(timeLeft / 30) * 100}%`;
+    notesContainer.addEventListener('mousedown', (e) => {
+        const note = e.target.closest('div.absolute');
+        if (note && notesContainer.contains(note)) {
+            clearTimeout(note.timeout);
+            score += 10 + (combo * 2);
+            combo++;
+            
+            scoreEl.textContent = score;
+            comboEl.textContent = `x${combo}`;
+            
+            if (combo > 5) comboEl.style.color = 'var(--retro-orange)';
+            if (combo > 10) comboEl.style.color = 'var(--retro-green)';
 
-                if (timeLeft <= 0) {
-                    clearInterval(spawnInterval);
-                    clearInterval(timerInterval);
-
-                    // Calculer le score
-                    const ratio = notesCaptured / totalNotes;
-                    let inspiGain = notesCaptured * 5; // +5% par note
-
-                    if (ratio >= 0.8) {
-                        inspiGain += 20;
-                        showToast(`✅ Syndrome vaincu ! +${inspiGain}% inspiration`, "success");
-                        playSuccess();
-                    } else if (ratio >= 0.5) {
-                        showToast(`👍 Pas mal ! +${inspiGain}% inspiration`, "info");
-                        playBleep();
-                    } else {
-                        inspiGain = -10;
-                        showToast(`❌ Échec... -10% inspiration`, "error");
-                        playError();
-                    }
-
-                    state.inspi = Math.min(100, Math.max(0, state.inspi + inspiGain));
-                    state.isEventActive = false;
-                    overlay.remove();
-                    updateHUD();
-                }
-            }, 1000);
+            // Feedback auditif musical
+            const freq = pentatonicScale[Math.floor(Math.random() * pentatonicScale.length)];
+            if (typeof playTone === 'function') playTone(freq, 'sine', 0.1, 0.2);
+            
+            // Animation explosion
+            note.style.transform = 'scale(1.5)';
+            note.style.opacity = '0';
+            setTimeout(() => note.remove(), 150);
         }
+    });
+    // Support Touch direct pour éviter le délai du mousedown sur mobile
+    notesContainer.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (target && target.closest) {
+            const note = target.closest('div.absolute');
+            if (note) note.dispatchEvent(new Event('mousedown', { bubbles: true }));
+        }
+    }, { passive: false });
+
+    const timerInterval = setInterval(() => {
+        timeLeft--;
+        timer.style.width = `${(timeLeft / 20) * 100}%`;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            let inspiGain = Math.floor(score / 20); 
+            if (score > 150) {
+                showToast(`🔥 Masterclass ! Flow retrouvé. +${inspiGain}% Inspiration`, "success");
+                playSuccess();
+                if (typeof fireConfetti === 'function') fireConfetti('store');
+            } else if (score > 50) {
+                showToast(`👍 Pas mal, quelques idées reviennent. +${inspiGain}% Inspiration`, "info");
+                playBleep();
+            } else {
+                inspiGain = -10;
+                showToast(`❌ Cerveau vide. Impossible de poser une note. -10% Inspi`, "error");
+                playError();
+            }
+            state.inspi = Math.min(100, Math.max(0, state.inspi + inspiGain));
+            state.isEventActive = false;
+            overlay.remove();
+            updateHUD();
+        }
+    }, 1000);
+};
 
         function startPluginQuiz() {
             state.isEventActive = true;
