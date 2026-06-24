@@ -5840,7 +5840,16 @@ const DEFAULT_STATE = {
             mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mousePos, camera);
 
-            const intersects = raycaster.intersectObjects(scene.children, true);
+            const intersects = raycaster.intersectObjects(scene.children, true).filter(hit => {
+                let isVisibleMesh = hit.object.isMesh && hit.object.visible;
+                if (!isVisibleMesh) return false;
+                let curr = hit.object.parent;
+                while (curr) {
+                    if (!curr.visible) return false;
+                    curr = curr.parent;
+                }
+                return true;
+            });
             
             // 1. Priorité aux interactions objets (PC, Lit, etc.)
             const interactableHit = intersects.find(hit => interactableNames.includes(hit.object.name));
@@ -5984,7 +5993,16 @@ const DEFAULT_STATE = {
                     mousePos.x = (clientX / rect.width) * 2 - 1;
                     mousePos.y = -(clientY / rect.height) * 2 + 1;
                     raycaster.setFromCamera(mousePos, camera);
-                    const intersects = raycaster.intersectObjects(scene.children, true);
+                    const intersects = raycaster.intersectObjects(scene.children, true).filter(hit => {
+                        let isVisibleMesh = hit.object.isMesh && hit.object.visible;
+                        if (!isVisibleMesh) return false;
+                        let curr = hit.object.parent;
+                        while (curr) {
+                            if (!curr.visible) return false;
+                            curr = curr.parent;
+                        }
+                        return true;
+                    });
 
                     // 1. Check if we hover over a silhouette (FURNITURE_CATALOG item, but not owned)
                     let foundSilhouette = null;
@@ -6025,6 +6043,12 @@ const DEFAULT_STATE = {
                         const pos3D = new THREE.Vector3();
                         const box = new THREE.Box3().setFromObject(group);
                         box.getCenter(pos3D);
+                        
+                        // Calcul de la distance et de l'échelle dynamique
+                        const distToCam = camera.position.distanceTo(pos3D);
+                        let scaleValue = 35 / distToCam;
+                        scaleValue = Math.max(0.4, Math.min(1.5, scaleValue));
+
                         pos3D.y += (box.max.y - box.min.y) * 0.4 + 0.3;
                         pos3D.project(camera);
 
@@ -6095,6 +6119,7 @@ const DEFAULT_STATE = {
 
                             tooltipEl.style.left = `${screenX}px`;
                             tooltipEl.style.top = `${screenY}px`;
+                            tooltipEl.style.transform = `translate(-50%, -100%) scale(${scaleValue})`;
                             tooltipEl.style.display = 'flex';
                         }
 
