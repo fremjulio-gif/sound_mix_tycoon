@@ -5914,7 +5914,16 @@ const DEFAULT_STATE = {
                 // The original logic for object interaction is here.
                 // We need to ensure it runs.
                 try {
-                    const objName = interactableHit.object.name;
+                    // --- CORRECTION DU RAYCASTER (Safe Navigation) ---
+                    // Utilisation de l'Optional Chaining pour prévenir les crashs TypeError
+                    const clickedObj = intersects[0] ? intersects[0].object : interactableHit.object;
+                    const objId = clickedObj.parent?.userData?.id || clickedObj.userData?.id;
+                    
+                    if (objId && state && state.ownedFurniture && !state.ownedFurniture.includes(objId)) {
+                        showToast("Tu dois d'abord acheter cet objet dans Studio+ !", "warning");
+                        return; // Stoppe l'action si l'objet n'est pas possédé
+                    }
+
                     const worldPos = new THREE.Vector3();
                     interactableHit.object.getWorldPosition(worldPos);
                     const dist = Math.hypot(worldPos.x - currentRoomAvatar.position.x, worldPos.z - currentRoomAvatar.position.z);
@@ -9792,6 +9801,13 @@ function triggerRankUp(oldRank, newRank) {
             merged.ownedFurniture = Array.isArray(merged.ownedFurniture) ? merged.ownedFurniture : [];
             merged.dailyQuests = Array.isArray(merged.dailyQuests) ? merged.dailyQuests : [];
             
+            // DÉBLOCAGE SAUVEGARDES : Forcer la réinitialisation des deadlocks
+            merged.isExporting = false;
+            merged.isReviewActive = false;
+            merged.isEventActive = false;
+            merged.isSitting = false;
+            merged.isSleeping = false;
+            
             return merged;
         }
 
@@ -10570,7 +10586,9 @@ function triggerRankUp(oldRank, newRank) {
         // 13. GAME TICK
         // ==========================================
         function gameTick() {
-            if (state.isEventActive || state.isReviewActive) return; // Le temps s'arrête seulement pour les événements et les revues
+            try {
+                if (!state) return;
+                if (state.isEventActive || state.isReviewActive) return; // Le temps s'arrête seulement pour les événements et les revues
 
             state.timeMins = (parseInt(state.timeMins, 10) || 0) + 5;
             state.day      =  parseInt(state.day, 10) || 1;
@@ -10736,6 +10754,9 @@ function triggerRankUp(oldRank, newRank) {
                         if (Math.random() < dmChance) spawnRandomDM();
                     }
                 }
+            }
+            } catch (err) {
+                console.error("Critical error in gameTick:", err);
             }
         }
 
@@ -11903,69 +11924,99 @@ function triggerRankUp(oldRank, newRank) {
         }
 
         function buyFurniture(id) {
-            const item = FURNITURE_CATALOG.find(f => f.id === id);
-            if (!item) return;
+            try {
+                let item = null;
 
-            if (state.ownedFurniture && state.ownedFurniture.includes(id)) {
-                showToast("Tu possèdes déjà cet équipement !", "warning");
-                return;
-            }
-
-            const scaledPrice = getScaledPrice(item.price);
-
-            const hasMoney = Number(state.money) >= scaledPrice;
-            if (!hasMoney) {
-                showToast("Fonds insuffisants !", "error");
-                playError();
-                return;
-            }
-
-            const hasRep = Number(state.rep) >= (item.reqRep || 0);
-            const hasFollowers = Number(state.followers) >= (item.reqFollowers || 0);
-            if (!hasRep || !hasFollowers) {
-                showToast("Tu ne respectes pas les prérequis de réputation ou de fans !", "error");
-                playError();
-                return;
-            }
-
-            logMoney(-scaledPrice, 'Studio+: ' + item.name);
-            
-            if (!state.ownedFurniture) state.ownedFurniture = [];
-            state.ownedFurniture.push(id);
-            checkDailyQuests('buy_furniture', 1);
-
-            if (state.ownedFurniture.length === FURNITURE_CATALOG.length) {
-                showToast("Studio complet. Tu n'as plus d'excuses pour pas sortir un classique.", "success");
-            }
-
-            // Recalculate perks
-            recalculateActivePerks();
-
-            if (item.effect) {
-                if (item.effect.type === 'multiplier') {
-                    state.multiplier = Math.min(3.0, (parseFloat(state.multiplier) || 1.0) + item.effect.value);
-                    showToast(`Équipement installé ! Multiplicateur permanent +${item.effect.value}x`, "success");
-                } else {
-                    applyFurniturePerk(item.effect);
-                    showToast(`Équipement installé : ${item.name}`, "success");
+                // 1. Priorité au catalogue dynamique s'il est défini
+                if (typeof FURNITURE_CATALOG !== 'undefined' && Array.isArray(FURNITURE_CATALOG)) {
+                    item = FURNITURE_CATALOG.find(f => f.id === id);
                 }
+
+                // 2. Fallback Hardcodé : Si FURNITURE_CATALOG échoue ou si le nom de variable diffère (ex: furnitureCatalog)
+                if (!item) {
+                    let fallbackPrice = 0, fallbackRep = 0, fallbackFoll = 0, fallbackName = id, fallbackSceneObj = null;
+                    switch(id) {
+                        case 'sofa': fallbackPrice = 600; fallbackRep = 20; fallbackName = 'Canapé en cuir'; fallbackSceneObj = 'sofaGroup'; break;
+                        case 'table': fallbackPrice = 300; fallbackRep = 10; fallbackName = 'Table basse'; fallbackSceneObj = 'tableGroup'; break;
+                        case 'rug': fallbackPrice = 200; fallbackRep = 5; fallbackName = 'Tapis vintage'; fallbackSceneObj = 'rugMesh'; break;
+                        case 'vinyls': fallbackPrice = 1000; fallbackRep = 40; fallbackName = 'Meuble à Vinyles'; fallbackSceneObj = 'crateGroup'; break;
+                        case 'tv': fallbackPrice = 800; fallbackRep = 50; fallbackName = 'TV Cathodique'; fallbackSceneObj = 'tvGroup'; break;
+                        case 'rack_lamp': fallbackPrice = 2000; fallbackRep = 80; fallbackName = 'Rack & Lampe'; fallbackSceneObj = 'rackGroup'; break;
+                        case 'led_panel_l': fallbackPrice = 1250; fallbackFoll = 25; fallbackName = 'Panneau LED (Gauche)'; fallbackSceneObj = 'acousticGroupL'; break;
+                        case 'led_panel_r': fallbackPrice = 1250; fallbackFoll = 25; fallbackName = 'Panneau LED (Droit)'; fallbackSceneObj = 'acousticGroupR'; break;
+                        case 'synth': fallbackPrice = 3500; fallbackFoll = 100; fallbackName = 'Synthétiseur'; fallbackSceneObj = 'synthGroup'; break;
+                        case 'guitar': fallbackPrice = 1800; fallbackFoll = 1000; fallbackName = 'Guitare Murale'; fallbackSceneObj = 'guitarGroup'; break;
+                    }
+                    if (fallbackPrice > 0) {
+                        item = { id: id, name: fallbackName, price: fallbackPrice, reqRep: fallbackRep, reqFollowers: fallbackFoll, sceneObject: fallbackSceneObj };
+                    }
+                }
+
+                if (!item) {
+                    console.error("Item introuvable dans le catalogue ou le fallback pour ID :", id);
+                    return;
+                }
+
+                if (!state.ownedFurniture) state.ownedFurniture = [];
+                if (state.ownedFurniture.includes(id)) {
+                    if (typeof showToast === 'function') showToast("Tu possèdes déjà cet équipement !", "warning");
+                    return;
+                }
+
+                const scaledPrice = typeof getScaledPrice === 'function' ? getScaledPrice(item.price) : item.price;
+                if (Number(state.money) < scaledPrice) {
+                    if (typeof showToast === 'function') showToast("Fonds insuffisants !", "error");
+                    if (typeof playError === 'function') playError();
+                    return;
+                }
+
+                if (Number(state.rep) < (item.reqRep || 0) || Number(state.followers) < (item.reqFollowers || 0)) {
+                    if (typeof showToast === 'function') showToast("Tu ne respectes pas les prérequis de réputation ou de fans !", "error");
+                    if (typeof playError === 'function') playError();
+                    return;
+                }
+
+                if (typeof logMoney === 'function') logMoney(-scaledPrice, 'Studio+: ' + item.name);
+                state.ownedFurniture.push(id);
+                if (typeof checkDailyQuests === 'function') checkDailyQuests('buy_furniture', 1);
+
+                if (typeof recalculateActivePerks === 'function') recalculateActivePerks();
+
+                if (item.effect) {
+                    if (item.effect.type === 'multiplier') {
+                        state.multiplier = Math.min(3.0, (parseFloat(state.multiplier) || 1.0) + item.effect.value);
+                    } else if (typeof applyFurniturePerk === 'function') {
+                        applyFurniturePerk(item.effect);
+                    }
+                }
+
+                const tooltip = document.getElementById('studio-buy-tooltip');
+                if (tooltip) tooltip.style.display = 'none';
+
+                // Application Visuelle
+                try {
+                    if (typeof syncFurniture3DVisibility === 'function') syncFurniture3DVisibility();
+                } catch(e) { console.warn("syncFurniture3DVisibility warning:", e); }
+
+                if (typeof getFurniture3DObject === 'function' && item.sceneObject) {
+                    const obj = getFurniture3DObject(item.sceneObject);
+                    if (obj) {
+                        obj.visible = true;
+                        try {
+                            if (typeof playMaterializationEffect === 'function') playMaterializationEffect(obj);
+                        } catch(e) { console.warn("playMaterializationEffect warning:", e); }
+                    }
+                }
+
+                if (typeof fireConfetti === 'function') fireConfetti('store');
+                if (typeof playSuccess === 'function') playSuccess();
+                
+                if (typeof saveGame === 'function') saveGame();
+                if (typeof updateHUD === 'function') updateHUD();
+
+            } catch (err) {
+                console.error("Erreur critique dans buyFurniture:", err);
             }
-
-            syncFurniture3DVisibility();
-
-            const obj = getFurniture3DObject(item.sceneObject);
-            if (obj) {
-                playMaterializationEffect(obj);
-            }
-
-            const tooltip = document.getElementById('studio-buy-tooltip');
-            if (tooltip) tooltip.style.display = 'none';
-
-            if (typeof fireConfetti === 'function') fireConfetti('store');
-            playSuccess();
-            
-            saveGame();
-            updateHUD();
         }
 
                 window.buyFurnitureDirect = function(event) {
