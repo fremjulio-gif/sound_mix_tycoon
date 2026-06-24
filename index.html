@@ -11445,7 +11445,6 @@ function triggerRankUp(oldRank, newRank) {
                     repGain = -2;
                 }
             }
-            checkAchievement('productivite_toxique', () => state.stats.consecutiveFlops >= 5);
 
             // 1. Update Hype Meter
             if (result.score === 3) {
@@ -11574,7 +11573,6 @@ function triggerRankUp(oldRank, newRank) {
 
             state.stats.tracks++;
             if (typeof window.updateVinylCrate === 'function') window.updateVinylCrate();
-            checkAchievement('first_blood', () => state.stats.tracks >= 1);
             
             state.trackList.push({
                 title: trackTitle,
@@ -12200,6 +12198,11 @@ function triggerRankUp(oldRank, newRank) {
             state.rep = Math.max(0, state.rep + d.rep);
             logFollower(d.fans);
             checkAchievement('dans_la_sauce', () => state.followers >= 100000);
+            checkAchievement('first_blood', () => state.stats.tracks >= 1);
+            checkAchievement('productivite_toxique', () => state.stats.consecutiveFlops >= 5);
+            if (d.avgReviewScore) {
+                checkAchievement('certifie_classique', () => d.avgReviewScore === "10.0");
+            }
             if (d.money > 0) playCashSound();
             showToast(d.toast.msg, d.toast.type);
             updateHUD();
@@ -12533,6 +12536,9 @@ function triggerRankUp(oldRank, newRank) {
                 reviews.push({ type: pool.type, name, score: individualScore, comment });
             }
             const avg = (reviews.reduce((s, r) => s + r.score, 0) / reviews.length).toFixed(1);
+            if (window.pendingReviewData) {
+                window.pendingReviewData.avgReviewScore = avg;
+            }
 
             // Textes de suspense progressifs
             const suspenseSteps = [
@@ -12614,10 +12620,6 @@ function triggerRankUp(oldRank, newRank) {
         if (toastData) {
             showToast(toastData.msg, toastData.type);
         }
-        
-
-        // Déclencheur pour l'achievement "Certifié Classique"
-        checkAchievement('certifie_classique', () => avg === "10.0");
     }, reviews.length * 800 + 300);
 
 
