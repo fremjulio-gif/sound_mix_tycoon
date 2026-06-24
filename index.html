@@ -2689,7 +2689,7 @@
             <p class="mt-12 text-sm md:text-base glitch text-gray-400">Do not turn off your workstation.</p>
         </div>
 
-        <div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[999999] pointer-events-none w-[calc(100vw-32px)] md:w-80"></div>
+        <div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[10000000] pointer-events-none w-[calc(100vw-32px)] md:w-80" style="z-index: 10000000 !important;"></div>
 
         <div id="studio-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500" style="background: radial-gradient(circle at center, #1e1b4b 0%, #050508 100%);">
             <div class="splash-card">
@@ -9737,6 +9737,12 @@ function triggerRankUp(oldRank, newRank) {
                 if (savedData && savedData !== "undefined" && savedData !== "null") {
                     const parsed = JSON.parse(savedData);
                     state = normalizeState(parsed);
+                    // Réinitialisation forcée des flags temporaires pour éviter les deadlocks après reload
+                    state.isExporting = false;
+                    state.isReviewActive = false;
+                    state.isEventActive = false;
+                    state.isSitting = false;
+                    state.isSleeping = false;
                     state.username = username;
 
                     recalculateActivePerks();
