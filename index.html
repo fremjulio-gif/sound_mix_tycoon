@@ -7995,16 +7995,40 @@ function triggerRankUp(oldRank, newRank) {
             id: "career_focus",
             question: "L'algorithme de SoundNet a changé ce matin. Comment on s'adapte ?",
             choices: [
-                { label: "On spamme des prods courtes pour gratter du stream.", shift: -20, response: "Excellente idée. Du contenu fast-food de 1min30, c'est ce qui paie." },
-                { label: "On ignore l'algo et on travaille un vrai son texturé.", shift: 20, response: "Risqué à court terme, mais c'est comme ça qu'on bâtit une vraie fan-base. Je valide." }
+                {
+                    label: "On spamme des prods courtes pour gratter du stream.",
+                    shift: -10,
+                    response: "Excellente idée. Du contenu fast-food de 1min30. Mais es-tu prêt à sacrifier ta crédibilité ?",
+                    nextChoices: [
+                        { label: "Oui, le cash avant tout.", shift: -10, response: "Compris. On va compresser ça pour TikTok. $$$" },
+                        { label: "Non, je veux garder du respect.", shift: 5, response: "Sage décision. L'intégrité finit par payer." }
+                    ]
+                },
+                {
+                    label: "On ignore l'algo et on travaille un vrai son texturé.",
+                    shift: 20,
+                    response: "Risqué à court terme, mais c'est comme ça qu'on bâtit une vraie fan-base. Je valide."
+                }
             ]
         },
         {
             id: "mix_philosophy",
             question: "J'analyse tes derniers exports. Tu veux que je te calibre plutôt pour quel type de rendu ?",
             choices: [
-                { label: "Éclate le limiteur. Je veux que ça sonne plus fort que tout le monde.", shift: -15, response: "Compris. On va compresser ça jusqu'à en faire un rectangle parfait. Au diable la dynamique." },
-                { label: "Garde de la dynamique. La musique a besoin de respirer.", shift: 15, response: "Un choix de puriste. Ça sonnera peut-être moins fort sur smartphone, mais les vrais sauront." }
+                {
+                    label: "Éclate le limiteur. Je veux que ça sonne plus fort que tout le monde.",
+                    shift: -15,
+                    response: "Compris. On va compresser ça jusqu'à en faire un rectangle parfait. Au diable la dynamique."
+                },
+                {
+                    label: "Garde de la dynamique. La musique a besoin de respirer.",
+                    shift: 10,
+                    response: "Un choix de puriste. Mais ça manquera de patate en club. Tu confirmes ?",
+                    nextChoices: [
+                        { label: "Oui, la dynamique avant tout.", shift: 10, response: "Très bien. Les audiophiles apprécieront." },
+                        { label: "Bon... booste un peu les basses quand même.", shift: -5, response: "Compromis accepté. Un peu de chaleur dans ce monde de brique." }
+                    ]
+                }
             ]
         },
         {
@@ -11672,224 +11696,229 @@ function triggerRankUp(oldRank, newRank) {
             }, 30);
         
 
-                function finishExport(genre, bpm, voice, pads, pluginId, trackTitle) {
-            const result = calculateSuccess(genre, bpm, voice);
-            let moneyGain = 0, repGain = 0, follGain = 0, resultTxt = "", critique = "";
+        function finishExport(genre, bpm, voice, pads, pluginId, trackTitle) {
+            try {
+                const result = calculateSuccess(genre, bpm, voice);
+                let moneyGain = 0, repGain = 0, follGain = 0, resultTxt = "", critique = "";
 
-            if (pluginId === 'crk3' && result.score === 0 && result.wrongVoice) { result.score = 1; critique = "\nVocalTune activé : Voix robotique, mais ça passe pour TikTok."; }
-            if (pluginId === 'crk15') {
-                result.score = 3;
-                if (Math.random() > 0.5) { critique = "\nXray Antidote : Hit absolu, mais Bad Buzz de tricheur (-20 REP)."; repGain -= 20; }
-                else critique = "\nXray Antidote : Algos bypassés. Personne n'a remarqué. Hit assuré.";
-            }
-            
-            if (result.score === 3) {
-                resultTxt = "🔥 PERFECT BANGER! (Top Charts)"; state.stats.bangers++; 
-                state.stats.consecutiveFlops = 0; 
-                if (result.rewardType === 'money')     { moneyGain = 600;  repGain += 15; }
-                if (result.rewardType === 'followers') { moneyGain = 100;  follGain = 5000; repGain += 20; }
-                if (result.rewardType === 'stable')    { moneyGain = 300;  repGain += 15; }
-                if (result.rewardType === 'rep')       { moneyGain = 100;  repGain += 45; follGain = 1000; }
-            } else if (result.score === 1) {
-                resultTxt = "👍 Decent track. It'll stream."; 
-                state.stats.consecutiveFlops = 0; 
-                if (result.rewardType === 'money')     { moneyGain = 150;  repGain += 7; }
-                if (result.rewardType === 'followers') { moneyGain = 35;   follGain = 800; repGain += 8; }
-                if (result.rewardType === 'stable')    { moneyGain = 100;  repGain += 1; }
-                if (result.rewardType === 'rep')       { moneyGain = 30;   repGain += 15; }
-            } else {
-                resultTxt = "🗑️ MASSIVE FLOP. Wrong vibe for 2026.";
-                moneyGain = 15;
-                state.stats.flops++; 
-                state.stats.consecutiveFlops++; 
+                if (pluginId === 'crk3' && result.score === 0 && result.wrongVoice) { result.score = 1; critique = "\nVocalTune activé : Voix robotique, mais ça passe pour TikTok."; }
+                if (pluginId === 'crk15') {
+                    result.score = 3;
+                    if (Math.random() > 0.5) { critique = "\nXray Antidote : Hit absolu, mais Bad Buzz de tricheur (-20 REP)."; repGain -= 20; }
+                    else critique = "\nXray Antidote : Algos bypassés. Personne n'a remarqué. Hit assuré.";
+                }
                 
-                // Nerf the flop spiral: base is -2 REP, pity is +1 REP if consecutiveFlops >= 3
-                if (state.stats.consecutiveFlops >= 3) {
-                    repGain = 1;
-                    critique += "\n[Pitié] Flops consécutifs élevés. Bonus pitié +1 REP.";
+                if (result.score === 3) {
+                    resultTxt = "🔥 PERFECT BANGER! (Top Charts)"; state.stats.bangers++; 
+                    state.stats.consecutiveFlops = 0; 
+                    if (result.rewardType === 'money')     { moneyGain = 600;  repGain += 15; }
+                    if (result.rewardType === 'followers') { moneyGain = 100;  follGain = 5000; repGain += 20; }
+                    if (result.rewardType === 'stable')    { moneyGain = 300;  repGain += 15; }
+                    if (result.rewardType === 'rep')       { moneyGain = 100;  repGain += 45; follGain = 1000; }
+                } else if (result.score === 1) {
+                    resultTxt = "👍 Decent track. It'll stream."; 
+                    state.stats.consecutiveFlops = 0; 
+                    if (result.rewardType === 'money')     { moneyGain = 150;  repGain += 7; }
+                    if (result.rewardType === 'followers') { moneyGain = 35;   follGain = 800; repGain += 8; }
+                    if (result.rewardType === 'stable')    { moneyGain = 100;  repGain += 1; }
+                    if (result.rewardType === 'rep')       { moneyGain = 30;   repGain += 15; }
                 } else {
-                    repGain = -2;
-                }
-            }
-
-            // 1. Update Hype Meter
-            if (result.score === 3) {
-                updateHype(5);
-            } else if (result.score === 0) {
-                updateHype(-5);
-            }
-
-            // 2. Compute and apply Hype multiplier (+20% max at 100% hype)
-            const hypeMult = 1 + (((state.hype || 50) / 100) * 0.20);
-            moneyGain = Math.floor(moneyGain * hypeMult);
-            follGain = Math.floor(follGain * hypeMult);
-
-            // 3. Daily Quest progress
-            checkDailyQuests('export_tracks', 1);
-
-            // 4. Calculate Viral Chance (Base 1% + score/hype/followers bonuses)
-            const viralChance = 0.01 + (result.score === 3 ? 0.04 : 0.01) + Math.min(0.05, ((state.hype || 50) / 100) * 0.05) + Math.min(0.05, ((state.followers || 0) / 100000) * 0.05);
-            if (Math.random() < viralChance) {
-                state.viralActive = true;
-                state.viralEndTime = getTotalMins() + 1440; // 24 hours in-game
-                critique += "\n⚡ VIRALITÉ EXPRÈS : Ta prod a percé sur l'algorithme ! Fans x10 pendant 24h !";
-                setTimeout(() => {
-                    showToast("🚀 TA PROD DEVIENT VIRALE ! Gains de fans x10 pendant 24h !", "success");
-                    if (typeof fireConfetti === 'function') fireConfetti('store');
-                }, 1200);
-            }
-
-            // Flow State bonus multiplier application
-            let flowStateApplied = false;
-            if (state.flowStateActive) {
-                moneyGain = Math.floor(moneyGain * 1.05);
-                follGain = Math.floor(follGain * 1.05);
-                flowStateApplied = true;
-                state.flowStateActive = false; // consume flow state
-            }
-
-            // Track recent exports to check for next Flow State trigger
-            state.recentExports = state.recentExports || [];
-            state.recentExports.push(getTotalMins());
-            if (state.recentExports.length > 5) state.recentExports.shift();
-            
-            if (state.recentExports.length >= 3) {
-                const len = state.recentExports.length;
-                const timeDiff = state.recentExports[len - 1] - state.recentExports[len - 3];
-                if (timeDiff <= 10) {
-                    state.flowStateActive = true;
-                    setTimeout(() => {
-                        showToast("⚡ Flow State activé ! Prochain export : +5% de gains !", "success");
-                    }, 800);
-                }
-            }
-
-            if (flowStateApplied) {
-                critique += "\n[Flow State] Multiplicateur +5% appliqué aux gains !";
-            }
-
-            if (state.earlyGameBoost) {
-                if (state.stats.tracks < 10) {
-                    moneyGain = Math.floor(moneyGain * 1.5);
-                    follGain = Math.floor(follGain * 1.5);
-                    critique += "\n[Boost Débutant] Gains x1.5 (Actif jusqu'à 10 prods) !";
-                } else {
-                    state.earlyGameBoost = false;
-                    setTimeout(() => {
-                        showToast("Fin du boost de débutant. À toi de jouer maintenant.", "info");
-                    }, 2000);
-                }
-            }
-
-            moneyGain = Math.floor(moneyGain * state.multiplier);
-            
-            if (pads > 8) { moneyGain += 20; }
-
-            if (pluginId) {
-                const usedCrack = cracks.find(c => c.id === pluginId);
-                if (usedCrack) {
-                    const match = usedCrack.desc.match(/\+(\d+)%/);
-                    if (match) {
-                        const bonusPercent = parseInt(match[1], 10);
-                        const multiplier = 1 + (bonusPercent / 100);
-                        moneyGain = Math.floor(moneyGain * multiplier);
-                        critique += `\n[${usedCrack.name}] : Bonus +${bonusPercent}% sur les royalties !`;
+                    resultTxt = "🗑️ MASSIVE FLOP. Wrong vibe for 2026.";
+                    moneyGain = 15;
+                    state.stats.flops++; 
+                    state.stats.consecutiveFlops++; 
+                    
+                    // Nerf the flop spiral: base is -2 REP, pity is +1 REP if consecutiveFlops >= 3
+                    if (state.stats.consecutiveFlops >= 3) {
+                        repGain = 1;
+                        critique += "\n[Pitié] Flops consécutifs élevés. Bonus pitié +1 REP.";
+                    } else {
+                        repGain = -2;
                     }
                 }
-            }
-            
-            let snowballBonus = Math.floor(state.followers * 0.01);
-            if (snowballBonus > 2000) {
-                snowballBonus = 2000 + Math.floor(Math.sqrt(snowballBonus - 2000)); 
-            }
-            follGain += snowballBonus;
 
-            let toastMsg = `${resultTxt}${critique}\n+$${moneyGain}`;
-            if (follGain > 0) toastMsg += ` | +${follGain} Fans`;
-            if (repGain !== 0) toastMsg += ` | ${repGain > 0 ? '+' : ''}${repGain} Rep`;
-
-            // 🚨 CORRECTION CRITIQUE : LE SCORE EST CALCULÉ EN PREMIER !
-            const trackScore = result.score === 3 ? Math.floor(7 + Math.random() * 3) :
-                    result.score === 1 ? Math.floor(4 + Math.random() * 3) :
-                                            Math.floor(1 + Math.random() * 3);
-            // --- Review penalty for creative block: if inspi <= 0 apply random -1..-3 to final score ---
-            let finalTrackScore = trackScore;
-            try {
-                if ((Number(state.inspi) || 0) <= 0) {
-                    const pen = Math.floor(Math.random() * 3) + 1; // 1..3
-                    finalTrackScore = Math.max(1, finalTrackScore - pen);
-                    // inform player
-                    showToast(`Syndrome de la page blanche : -${pen} au score final`, 'error');
+                // 1. Update Hype Meter
+                if (typeof window.updateHype === 'function') {
+                    if (result.score === 3) {
+                        window.updateHype(5);
+                    } else if (result.score === 0) {
+                        window.updateHype(-5);
+                    }
                 }
-            } catch(e) {}
 
-            if (activePerks && activePerks.reviewBonus) {
-                finalTrackScore = Math.min(10, finalTrackScore + activePerks.reviewBonus);
-            }
+                // 2. Compute and apply Hype multiplier (+20% max at 100% hype)
+                const hypeMult = 1 + (((state.hype || 50) / 100) * 0.20);
+                moneyGain = Math.floor(moneyGain * hypeMult);
+                follGain = Math.floor(follGain * hypeMult);
 
-            // Stockage des gains pour application à la fermeture de la review
-            window.pendingReviewData = {
-                money: moneyGain,
-                rep: repGain,
-                fans: follGain,
-                toast: { msg: toastMsg, type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error') },
-                // La variable trackScore est maintenant correctement injectée
-                track: { title: trackTitle, genre: genre.toUpperCase(), score: finalTrackScore, voice: voice }
-            };
+                // 3. Daily Quest progress
+                if (typeof window.checkDailyQuests === 'function') {
+                    window.checkDailyQuests('export_tracks', 1);
+                }
 
-            state.stats.tracks++;
-            if (typeof window.updateVinylCrate === 'function') window.updateVinylCrate();
-            
-            state.trackList.push({
-                title: trackTitle,
-                genre: genre.toUpperCase(),
-                score: finalTrackScore,
-                money: moneyGain,
-                fans: follGain,
-                date: state.day
-            });
+                // 4. Calculate Viral Chance (Base 1% + score/hype/followers bonuses)
+                const viralChance = 0.01 + (result.score === 3 ? 0.04 : 0.01) + Math.min(0.05, ((state.hype || 50) / 100) * 0.05) + Math.min(0.05, ((state.followers || 0) / 100000) * 0.05);
+                if (Math.random() < viralChance) {
+                    state.viralActive = true;
+                    state.viralEndTime = getTotalMins() + 1440; // 24 hours in-game
+                    critique += "\n⚡ VIRALITÉ EXPRÈS : Ta prod a percé sur l'algorithme ! Fans x10 pendant 24h !";
+                    setTimeout(() => {
+                        showToast("🚀 TA PROD DEVIENT VIRALE ! Gains de fans x10 pendant 24h !", "success");
+                        if (typeof fireConfetti === 'function') fireConfetti('store');
+                    }, 1200);
+                }
 
-            // --- Creative fatigue: record last genres and apply inspi penalty for repetition ---
-            try {
-                // NOTE: La consommation de base d'inspiration (-30) a déjà été prélevée dans exportTrack() au démarrage du bounce.
-                // L'export ne redonne JAMAIS d'inspiration !
+                // Flow State bonus multiplier application
+                let flowStateApplied = false;
+                if (state.flowStateActive) {
+                    moneyGain = Math.floor(moneyGain * 1.05);
+                    follGain = Math.floor(follGain * 1.05);
+                    flowStateApplied = true;
+                    state.flowStateActive = false; // consume flow state
+                }
+
+                // Track recent exports to check for next Flow State trigger
+                state.recentExports = state.recentExports || [];
+                state.recentExports.push(getTotalMins());
+                if (state.recentExports.length > 5) state.recentExports.shift();
                 
-                state.lastGenres = Array.isArray(state.lastGenres) ? state.lastGenres : [];
-                const newGenre = (genre || '').toString().toLowerCase();
-                state.lastGenres.push(newGenre);
-                while (state.lastGenres.length > 5) state.lastGenres.shift();
+                if (state.recentExports.length >= 3) {
+                    const len = state.recentExports.length;
+                    const timeDiff = state.recentExports[len - 1] - state.recentExports[len - 3];
+                    if (timeDiff <= 10) {
+                        state.flowStateActive = true;
+                        setTimeout(() => {
+                            showToast("⚡ Flow State activé ! Prochain export : +5% de gains !", "success");
+                        }, 800);
+                    }
+                }
 
-                try {
-                    const len = state.lastGenres.length;
-                    if (len >= 3) {
-                        if (state.lastGenres[len - 1] === state.lastGenres[len - 2] && state.lastGenres[len - 2] === state.lastGenres[len - 3]) {
-                            state.inspi = Math.max(0, (Number(state.inspi) || 0) - 35);
-                            showToast("Inspi: redondance créative — grosse perte d'inspiration (-35)", 'error');
+                if (flowStateApplied) {
+                    critique += "\n[Flow State] Multiplicateur +5% appliqué aux gains !";
+                }
+
+                if (state.earlyGameBoost) {
+                    if (state.stats.tracks < 10) {
+                        moneyGain = Math.floor(moneyGain * 1.5);
+                        follGain = Math.floor(follGain * 1.5);
+                        critique += "\n[Boost Débutant] Gains x1.5 (Actif jusqu'à 10 prods) !";
+                    } else {
+                        state.earlyGameBoost = false;
+                        setTimeout(() => {
+                            showToast("Fin du boost de débutant. À toi de jouer maintenant.", "info");
+                        }, 2000);
+                    }
+                }
+
+                moneyGain = Math.floor(moneyGain * state.multiplier);
+                
+                if (pads > 8) { moneyGain += 20; }
+
+                if (pluginId) {
+                    const usedCrack = cracks.find(c => c.id === pluginId);
+                    if (usedCrack) {
+                        const match = usedCrack.desc.match(/\+(\d+)%/);
+                        if (match) {
+                            const bonusPercent = parseInt(match[1], 10);
+                            const multiplier = 1 + (bonusPercent / 100);
+                            moneyGain = Math.floor(moneyGain * multiplier);
+                            critique += `\n[${usedCrack.name}] : Bonus +${bonusPercent}% sur les royalties !`;
                         }
                     }
-                    if (len >= 5 && state.lastGenres.every(g => g === state.lastGenres[0])) {
-                        showToast("Même recette à chaque fois... t'as pas peur de tourner en rond ?", "discreet");
+                }
+                
+                let snowballBonus = Math.floor(state.followers * 0.01);
+                if (snowballBonus > 2000) {
+                    snowballBonus = 2000 + Math.floor(Math.sqrt(snowballBonus - 2000)); 
+                }
+                follGain += snowballBonus;
+
+                let toastMsg = `${resultTxt}${critique}\n+$${moneyGain}`;
+                if (follGain > 0) toastMsg += ` | +${follGain} Fans`;
+                if (repGain !== 0) toastMsg += ` | ${repGain > 0 ? '+' : ''}${repGain} Rep`;
+
+                const trackScore = result.score === 3 ? Math.floor(7 + Math.random() * 3) :
+                        result.score === 1 ? Math.floor(4 + Math.random() * 3) :
+                                                Math.floor(1 + Math.random() * 3);
+
+                let finalTrackScore = trackScore;
+                try {
+                    if ((Number(state.inspi) || 0) <= 0) {
+                        const pen = Math.floor(Math.random() * 3) + 1; // 1..3
+                        finalTrackScore = Math.max(1, finalTrackScore - pen);
+                        showToast(`Syndrome de la page blanche : -${pen} au score final`, 'error');
                     }
                 } catch(e) {}
-            } catch(e) {}
 
-            // Trie le tableau du meilleur au pire score
-            state.trackList.sort((a, b) => b.score - a.score);
+                if (activePerks && activePerks.reviewBonus) {
+                    finalTrackScore = Math.min(10, finalTrackScore + activePerks.reviewBonus);
+                }
 
-            if (state.trackList.length > 15) {
-                state.trackList.length = 15;
+                // Stockage des gains pour application à la fermeture de la review
+                window.pendingReviewData = {
+                    money: moneyGain,
+                    rep: repGain,
+                    fans: follGain,
+                    toast: { msg: toastMsg, type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error') },
+                    track: { title: trackTitle, genre: (genre || 'drill').toUpperCase(), score: finalTrackScore, voice: voice }
+                };
+
+                state.stats.tracks++;
+                if (typeof window.updateVinylCrate === 'function') window.updateVinylCrate();
+                
+                state.trackList.push({
+                    title: trackTitle,
+                    genre: (genre || 'drill').toUpperCase(),
+                    score: finalTrackScore,
+                    money: moneyGain,
+                    fans: follGain,
+                    date: state.day
+                });
+
+                try {
+                    state.lastGenres = Array.isArray(state.lastGenres) ? state.lastGenres : [];
+                    const newGenre = (genre || '').toString().toLowerCase();
+                    state.lastGenres.push(newGenre);
+                    while (state.lastGenres.length > 5) state.lastGenres.shift();
+
+                    try {
+                        const len = state.lastGenres.length;
+                        if (len >= 3) {
+                            if (state.lastGenres[len - 1] === state.lastGenres[len - 2] && state.lastGenres[len - 2] === state.lastGenres[len - 3]) {
+                                state.inspi = Math.max(0, (Number(state.inspi) || 0) - 35);
+                                showToast("Inspi: redondance créative — grosse perte d'inspiration (-35)", 'error');
+                            }
+                        }
+                        if (len >= 5 && state.lastGenres.every(g => g === state.lastGenres[0])) {
+                            showToast("Même recette à chaque fois... t'as pas peur de tourner en rond ?", "discreet");
+                        }
+                    } catch(e) {}
+                } catch(e) {}
+
+                state.trackList.sort((a, b) => b.score - a.score);
+
+                if (state.trackList.length > 15) {
+                    state.trackList.length = 15;
+                }
+
+                updateTopChartsWidget();
+                updateDawGenres();
+
+                try { checkChallengeProgress('export', { genre: genre, bpm: bpm, score: finalTrackScore, pluginId: consumedPluginId }); } catch(e) {}
+
+                if (!state.isEventActive && Math.random() < 0.10) { 
+                    if (typeof startLufsWarMiniGame === 'function') {
+                        setTimeout(startLufsWarMiniGame, 1500); 
+                    }
+                }
+
+                updateHUD();
+                showTrackReview(trackScore, trackTitle, null);
+                saveGame(); updateHUD(); updateCooldownUIs();
+            } catch (err) {
+                console.error("Error in finishExport:", err);
+                showToast("Erreur fatale dans finishExport : " + err.message, "error");
             }
-
-            updateTopChartsWidget();
-            updateDawGenres();
-
-            try { checkChallengeProgress('export', { genre: genre, bpm: bpm, score: finalTrackScore, pluginId: consumedPluginId }); } catch(e) {}
-
-            if (!state.isEventActive && Math.random() < 0.10) { setTimeout(startLufsWarMiniGame, 1500); }
-
-            updateHUD(); // Forcer la mise à jour visuelle de la barre d'Inspiration
-            showTrackReview(trackScore, trackTitle, null);
-            saveGame(); updateHUD(); updateCooldownUIs();
         } // fin finishExport
 
         } // fin exportTrack
@@ -12807,111 +12836,115 @@ function triggerRankUp(oldRank, newRank) {
             return ["..."];
         }
 
-        // FIX : La fonction reçoit désormais toastData pour l'afficher à la fin du suspense
         function showTrackReview(trackScore, trackTitle, toastData) {
-            // GARDE DE SÉCURITÉ : jamais pendant le boot ou si le jeu charge
-            if (window.isBooting) { console.warn('[showTrackReview] Blocked during boot.'); return; }
-            const overlay = document.getElementById('review-overlay');
-            const phaseSuspense = document.getElementById('review-phase-suspense');
-            const phaseResults = document.getElementById('review-phase-results');
-            const reviewList = document.getElementById('review-list');
-            const avgEl = document.getElementById('review-average');
-            const trackNameEl = document.getElementById('review-track-name');
-            const suspenseTitle = document.getElementById('suspense-title');
-            const suspenseGenre = document.getElementById('suspense-genre');
-            const suspenseText = document.getElementById('suspense-text');
-            state.isReviewActive = true; // Active l'état de revue
-            if (!overlay || !phaseSuspense || !phaseResults || !reviewList || !avgEl || !trackNameEl || !suspenseTitle || !suspenseGenre || !suspenseText) {
-                console.warn('Review overlay missing DOM nodes');
-                return;
-            }
-
-            // Reset
-            phaseSuspense.classList.remove('hidden');
-            phaseSuspense.style.display = 'flex';
-            phaseResults.classList.add('hidden');
-            phaseResults.style.display = 'none';
-
-            trackNameEl.innerText = `"${trackTitle}" — ${currentDawGenre.toUpperCase()} / ${currentDawVoice.toUpperCase()}`;
-            suspenseTitle.innerText = `"${trackTitle}"`;
-            suspenseGenre.innerText = `${currentDawGenre.toUpperCase()} · ${currentDawVoice.toUpperCase()} · DAY ${state.day}`;
-
-            // Génère les reviews
-            const reviews = [];
-            const usedTypes = [];
-            while (reviews.length < 3) {
-                const pool = reviewers[Math.floor(Math.random() * reviewers.length)];
-                if (usedTypes.includes(pool.type)) continue;
-                usedTypes.push(pool.type);
-                const individualScore = Math.min(10, Math.max(1, trackScore + Math.floor(Math.random() * 5) - 2));
-                const name = pool.names[Math.floor(Math.random() * pool.names.length)];
-                const comments = getReviewerComment(pool.type, individualScore);
-                const comment = comments[Math.floor(Math.random() * comments.length)];
-                reviews.push({ type: pool.type, name, score: individualScore, comment });
-            }
-            const avg = (reviews.reduce((s, r) => s + r.score, 0) / reviews.length).toFixed(1);
-            if (window.pendingReviewData) {
-                window.pendingReviewData.avgReviewScore = avg;
-            }
-
-            // Textes de suspense progressifs
-            const suspenseSteps = [
-                "Les critiques écoutent...",
-                "Ils prennent des notes...",
-                "Le verdict approche...",
-                "⚡ Résultats imminents..."
-            ];
-
-            // Affichage de l'overlay
-            overlay.classList.remove('hidden', 'pointer-events-none', 'opacity-0');
-            overlay.classList.add('pointer-events-auto', 'opacity-100');
-            overlay.style.display = 'flex';
-            overlay.style.opacity = '1';
-            overlay.style.pointerEvents = 'auto';
-
-            playTone(300, 'sine', 0.4, 0.05);
-
-            // Animation du suspense
-            let step = 0;
-            const suspenseInterval = setInterval(() => {
-                step++;
-                if (step < suspenseSteps.length) {
-                    suspenseText.innerText = suspenseSteps[step];
-                    playTone(200 + step * 80, 'sine', 0.15, 0.04);
+            try {
+                // GARDE DE SÉCURITÉ : jamais pendant le boot ou si le jeu charge
+                if (window.isBooting) { console.warn('[showTrackReview] Blocked during boot.'); return; }
+                const overlay = document.getElementById('review-overlay');
+                const phaseSuspense = document.getElementById('review-phase-suspense');
+                const phaseResults = document.getElementById('review-phase-results');
+                const reviewList = document.getElementById('review-list');
+                const avgEl = document.getElementById('review-average');
+                const trackNameEl = document.getElementById('review-track-name');
+                const suspenseTitle = document.getElementById('suspense-title');
+                const suspenseGenre = document.getElementById('suspense-genre');
+                const suspenseText = document.getElementById('suspense-text');
+                state.isReviewActive = true; // Active l'état de revue
+                if (!overlay || !phaseSuspense || !phaseResults || !reviewList || !avgEl || !trackNameEl || !suspenseTitle || !suspenseGenre || !suspenseText) {
+                    console.warn('Review overlay missing DOM nodes');
+                    return;
                 }
-            }, 1200);
 
-            // Révélation des résultats après 5s
-            setTimeout(() => {
-                clearInterval(suspenseInterval);
+                // Reset
+                phaseSuspense.classList.remove('hidden');
+                phaseSuspense.style.display = 'flex';
+                phaseResults.classList.add('hidden');
+                phaseResults.style.display = 'none';
 
-                // Transition entre les deux phases
-                phaseSuspense.style.display = 'none';
-                phaseSuspense.classList.add('hidden');
+                const safeGenre = (currentDawGenre || 'drill').toUpperCase();
+                const safeVoice = (currentDawVoice || 'm').toUpperCase();
 
-                const typeColors = { critique: 'text-[var(--retro-blue)]', internaute: 'text-[var(--retro-green)]', rappeur: 'text-[var(--retro-orange)]' };
-                const typeLabels = { critique: '📰 CRITIQUE', internaute: '💬 INTERNAUTE', rappeur: '🎤 RAPPEUR' };
+                trackNameEl.innerText = `"${trackTitle}" — ${safeGenre} / ${safeVoice}`;
+                suspenseTitle.innerText = `"${trackTitle}"`;
+                suspenseGenre.innerText = `${safeGenre} · ${safeVoice} · DAY ${state.day || 1}`;
 
-                // Affiche les reviews une par une
-                reviewList.innerHTML = '';
-                reviews.forEach((r, i) => {
-                    setTimeout(() => {
-                        const div = document.createElement('div');
-                        div.className = 'bg-black/40 border border-white/10 rounded-lg p-4 opacity-0 transition-opacity duration-500';
-                        div.innerHTML = `
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-[10px] font-retro ${typeColors[r.type]}">${typeLabels[r.type]}</span>
-                                <span class="text-[10px] font-retro text-white">${r.name}</span>
-                            </div>
-                            <div class="flex justify-between items-center gap-3">
-                                <p class="text-sm text-gray-300 italic flex-1">"${r.comment}"</p>
-                                <span class="text-2xl font-bold font-retro flex-shrink-0 ${r.score >= 7 ? 'text-[var(--retro-green)]' : r.score >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]'}">${r.score}/10</span>
-                            </div>`;
-                        reviewList.appendChild(div);
-                        setTimeout(() => div.style.opacity = '1', 50);
-                        playTone(300 + (r.score * 40), 'sine', 0.15, 0.06);
-                    }, i * 800);
-                });
+                // Génère les reviews
+                const reviews = [];
+                const usedTypes = [];
+                while (reviews.length < 3) {
+                    const pool = reviewers[Math.floor(Math.random() * reviewers.length)];
+                    if (!pool) continue;
+                    if (usedTypes.includes(pool.type)) continue;
+                    usedTypes.push(pool.type);
+                    const individualScore = Math.min(10, Math.max(1, trackScore + Math.floor(Math.random() * 5) - 2));
+                    const name = pool.names[Math.floor(Math.random() * pool.names.length)];
+                    const comments = getReviewerComment(pool.type, individualScore);
+                    const comment = comments[Math.floor(Math.random() * comments.length)];
+                    reviews.push({ type: pool.type, name, score: individualScore, comment });
+                }
+                const avg = (reviews.reduce((s, r) => s + r.score, 0) / reviews.length).toFixed(1);
+                if (window.pendingReviewData) {
+                    window.pendingReviewData.avgReviewScore = avg;
+                }
+
+                // Textes de suspense progressifs
+                const suspenseSteps = [
+                    "Les critiques écoutent...",
+                    "Ils prennent des notes...",
+                    "Le verdict approche...",
+                    "⚡ Résultats imminents..."
+                ];
+
+                // Affichage de l'overlay
+                overlay.classList.remove('hidden', 'pointer-events-none', 'opacity-0');
+                overlay.classList.add('pointer-events-auto', 'opacity-100');
+                overlay.style.display = 'flex';
+                overlay.style.opacity = '1';
+                overlay.style.pointerEvents = 'auto';
+
+                playTone(300, 'sine', 0.4, 0.05);
+
+                // Animation du suspense
+                let step = 0;
+                const suspenseInterval = setInterval(() => {
+                    step++;
+                    if (step < suspenseSteps.length) {
+                        suspenseText.innerText = suspenseSteps[step];
+                        playTone(200 + step * 80, 'sine', 0.15, 0.04);
+                    }
+                }, 1200);
+
+                // Révélation des résultats après 5s
+                setTimeout(() => {
+                    clearInterval(suspenseInterval);
+
+                    // Transition entre les deux phases
+                    phaseSuspense.style.display = 'none';
+                    phaseSuspense.classList.add('hidden');
+
+                    const typeColors = { critique: 'text-[var(--retro-blue)]', internaute: 'text-[var(--retro-green)]', rappeur: 'text-[var(--retro-orange)]' };
+                    const typeLabels = { critique: '📰 CRITIQUE', internaute: '💬 INTERNAUTE', rappeur: '🎤 RAPPEUR' };
+
+                    // Affiche les reviews une par une
+                    reviewList.innerHTML = '';
+                    reviews.forEach((r, i) => {
+                        setTimeout(() => {
+                            const div = document.createElement('div');
+                            div.className = 'bg-black/40 border border-white/10 rounded-lg p-4 opacity-0 transition-opacity duration-500';
+                            div.innerHTML = `
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-[10px] font-retro ${typeColors[r.type]}">${typeLabels[r.type]}</span>
+                                    <span class="text-[10px] font-retro text-white">${r.name}</span>
+                                </div>
+                                <div class="flex justify-between items-center gap-3">
+                                    <p class="text-sm text-gray-300 italic flex-1">"${r.comment}"</p>
+                                    <span class="text-2xl font-bold font-retro flex-shrink-0 ${r.score >= 7 ? 'text-[var(--retro-green)]' : r.score >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]'}">${r.score}/10</span>
+                                </div>`;
+                            reviewList.appendChild(div);
+                            setTimeout(() => div.style.opacity = '1', 50);
+                            playTone(300 + (r.score * 40), 'sine', 0.15, 0.06);
+                        }, i * 800);
+                    });
 
                 // Score final après toutes les reviews et affichage du toast
     setTimeout(() => {
@@ -12936,7 +12969,11 @@ function triggerRankUp(oldRank, newRank) {
             phaseResults.classList.remove('hidden');
 
         }, 5000);
+    } catch (err) {
+        console.error("Error in showTrackReview:", err);
+        showToast("Erreur lors de l'affichage des critiques : " + err.message, "error");
     }
+}
 
     // ==========================================
         // GESTION DU ZOOM (MÉTHODE BLINDÉE GLOBALE)
@@ -13529,34 +13566,57 @@ function renderEchoMainChoices() {
     }
 }
 
-// --- 3. GESTION DES DILEMMES (Shift d'alignement) ---
+// --- 3. GESTION DES DILEMMES (Shift d'alignement & Tiroirs) ---
 function renderEchoOrientationChoices(orientationData) {
     const container = document.getElementById('echo-action-choices');
     container.innerHTML = '';
     
-    // Ajoute la question du joueur dans l'historique visuel
-    appendEchoDialogue(orientationData.question, 'user');
+    // ECHO pose le dilemme (dialogue ping-pong)
+    appendEchoDialogue(orientationData.question, 'echo');
 
-    orientationData.choices.forEach(choice => {
+    renderPlayerChoiceButtons(orientationData.choices);
+}
+
+function renderPlayerChoiceButtons(choices) {
+    const container = document.getElementById('echo-action-choices');
+    container.innerHTML = '';
+
+    choices.forEach(choice => {
         const btn = document.createElement('button');
         btn.className = 'btn-action w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 border border-[var(--retro-orange)]/30 hover:border-[var(--retro-orange)] transition-colors';
         btn.innerText = choice.label;
         
         btn.onclick = () => {
-            // Logique de dérive
-            state.echoAlignment += choice.shift;
+            // Le joueur répond à l'IA
+            appendEchoDialogue(choice.label, 'user');
             
-            // On cap l'alignement entre -100 et +100
-            if (state.echoAlignment < -100) state.echoAlignment = -100;
-            if (state.echoAlignment > 100) state.echoAlignment = 100;
+            // On applique le shift d'alignement
+            if (typeof choice.shift === 'number') {
+                state.echoAlignment += choice.shift;
+                if (state.echoAlignment < -100) state.echoAlignment = -100;
+                if (state.echoAlignment > 100) state.echoAlignment = 100;
+            }
             
             // Amélioration 1 - Set Cooldown
             state.cooldowns.echoQueryReady = getTotalMins() + 30;
             
             saveGame();
             checkEchoAchievements();
-            appendEchoDialogue(choice.response, 'echo');
-            renderEchoBackButton();
+            
+            const container = document.getElementById('echo-action-choices');
+            container.innerHTML = '<p class="text-[10px] text-[var(--retro-orange)] animate-pulse text-center py-4">Réflexion de l\'IA...</p>';
+
+            setTimeout(() => {
+                // Si la branche a des sous-choix (Format B - À tiroirs)
+                if (choice.nextChoices && choice.nextChoices.length > 0) {
+                    appendEchoDialogue(choice.response, 'echo');
+                    renderPlayerChoiceButtons(choice.nextChoices);
+                } else {
+                    // Format A - Fin de dialogue
+                    appendEchoDialogue(choice.response, 'echo');
+                    renderEchoBackButton();
+                }
+            }, 800);
         };
         container.appendChild(btn);
     });
@@ -13564,21 +13624,22 @@ function renderEchoOrientationChoices(orientationData) {
 
 // --- 4. GESTION FACTUELLE (Le mensonge) ---
 function processEchoFactualAnswer(factualData) {
+    const container = document.getElementById('echo-action-choices');
+    container.innerHTML = '<p class="text-[10px] text-[var(--retro-orange)] animate-pulse text-center py-4">Analyse des données...</p>';
+
+    // Le joueur pose la question technique
     appendEchoDialogue(factualData.question, 'user');
 
     // 15% de chance de mentir
     const isLying = Math.random() < 0.15;
     const answer = isLying ? factualData.falseAnswer : factualData.trueAnswer;
 
-    const container = document.getElementById('echo-action-choices');
-    container.innerHTML = '<p class="text-[10px] text-[var(--retro-orange)] animate-pulse text-center py-4">Analyse des données...</p>';
-
     // Amélioration 1 - Set Cooldown
     state.cooldowns.echoQueryReady = getTotalMins() + 30;
     saveGame();
 
     setTimeout(() => {
-        // On passe le flag isLying à la fonction d'affichage
+        // L'IA répond
         appendEchoDialogue(answer, 'echo', isLying);
         renderEchoBackButton();
     }, 800);
