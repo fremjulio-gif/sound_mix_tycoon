@@ -2670,8 +2670,14 @@
             </div>
 
             <div class="p-4 bg-[#121214] border-t border-white/10 shrink-0">
-                <p class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-widest mb-2 flex justify-between">
+                <p class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-widest mb-2 flex justify-between items-center">
                     <span>Requête requise</span>
+                    <span class="flex items-center gap-2">
+                        <span id="echo-alignment-label" class="text-[9px]">MODE: NEUTRE ⚖️</span>
+                        <span class="inline-block w-20 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10">
+                            <span id="echo-alignment-bar" class="block h-full bg-gradient-to-r from-orange-500 to-purple-500" style="width: 50%"></span>
+                        </span>
+                    </span>
                     <span id="echo-sub-timer" class="text-[var(--retro-orange)]">EXP: 0J</span>
                 </p>
                 <div id="echo-action-choices" class="flex flex-col gap-2">
@@ -7933,34 +7939,31 @@ function triggerRankUp(oldRank, newRank) {
         // SPAWN DANS LA ROOM 3D
         // ==========================================
         function spawnRoomAvatar(styleIndex) {
-        if (currentRoomAvatar) {
-            scene.remove(currentRoomAvatar);
-            targetPosition = null;
+            if (currentRoomAvatar) {
+                scene.remove(currentRoomAvatar);
+                targetPosition = null;
+            }
+
+            const root = new THREE.Group();
+            root.name = "RoomAvatarRoot";
+            root.scale.set(1.6, 1.6, 1.6);
+            root.position.set(0, -1, 3);
+
+            const visual = createAvatarGroup(styleIndex);
+            visual.name = "AvatarVisual";
+            visual.position.set(0, 0, 0);
+            visual.rotation.set(0, 0, 0);
+
+            root.add(visual);
+
+            scene.add(root);
+            currentRoomAvatar = root;
         }
-
-        const root = new THREE.Group();
-        root.name = "RoomAvatarRoot";
-        root.scale.set(1.6, 1.6, 1.6);
-        root.position.set(0, -1, 3);
-
-        const visual = createAvatarGroup(styleIndex);
-        visual.name = "AvatarVisual";
-        visual.position.set(0, 0, 0);
-        visual.rotation.set(0, 0, 0);
-
-        root.add(visual);
-
-        scene.add(root);
-        currentRoomAvatar = root;
-    }
-
-
 
     const ECHO_DATA = {
     costPerWeek: 1500,
     trialDurationMins: 2 * 24 * 60, // 2 jours in-game
     subDurationMins: 7 * 24 * 60,   // 7 jours in-game
-
     // Les commentaires automatiques générés à l'ouverture de l'app
     intros: {
         obsolete: "Écoute, boss. T'es au top de la chaîne alimentaire. Je suis juste une IA de série B, continue de briller.",
@@ -8003,6 +8006,86 @@ function triggerRankUp(oldRank, newRank) {
                 { label: "Éclate le limiteur. Je veux que ça sonne plus fort que tout le monde.", shift: -15, response: "Compris. On va compresser ça jusqu'à en faire un rectangle parfait. Au diable la dynamique." },
                 { label: "Garde de la dynamique. La musique a besoin de respirer.", shift: 15, response: "Un choix de puriste. Ça sonnera peut-être moins fort sur smartphone, mais les vrais sauront." }
             ]
+        },
+        {
+            id: "sleep_strategy",
+            question: "T'as pas dormi depuis combien de temps ? Ça se voit dans tes exports.",
+            choices: [
+                { label: "Je dors quand j'aurai percé.", shift: -10, response: "Classique. Les légendes meurent jeunes. Et aussi épuisées." },
+                { label: "Je vais faire une pause, la fatigue nuit à la qualité.", shift: 10, response: "Sage. Un mix fatigué sonne fatigué. Le lit, c'est du travail." }
+            ]
+        },
+        {
+            id: "social_vs_studio",
+            question: "Tu passes plus de temps sur SoundNet à poster qu'en studio. C'est une stratégie ?",
+            choices: [
+                { label: "L'image c'est 80% du biz. Le son peut attendre.", shift: -20, response: "Tu deviens un influenceur. La distinction est de plus en plus floue de toute façon." },
+                { label: "Je dois rééquilibrer. La musique d'abord.", shift: 15, response: "Le seul moyen de poster du contenu qui dure, c'est de créer du contenu qui vaut quelque chose." }
+            ]
+        },
+        {
+            id: "crack_vs_legit",
+            question: "CrackZ ou AudioStore ? Honnêtement ?",
+            choices: [
+                { label: "CrackZ. Je paierai quand je serai riche.", shift: -15, response: "Statistiquement viable si tu évites les BSOD. Je note." },
+                { label: "AudioStore. J'achète mes outils, je respecte le travail des autres.", shift: 20, response: "Naïf mais respectable. Et ça fait de meilleurs sons, bizarrement." }
+            ]
+        },
+        {
+            id: "collab_loyalty",
+            question: "Un label te propose $5000 pour racheter tes masters. Tu fais quoi ?",
+            choices: [
+                { label: "Je vends. Cash is king.", shift: -25, response: "Court terme brilliant, long terme douloureux. Bon choix si tu es impatient." },
+                { label: "Je refuse. Mes masters, mon futur.", shift: 25, response: "Légendaire en devenir. Les vrais artistes gardent leurs masters." }
+            ]
+        },
+        {
+            id: "viral_ethics",
+            question: "T'as la possibilité de recycler le beat de quelqu'un d'autre sans crédit. Ça personne le saura.",
+            choices: [
+                { label: "Si ça perce, c'est que c'était bon.", shift: -30, response: "C'est techniquement du vol. Mais t'as raison, personne ne le saura probablement." },
+                { label: "Je crée le mien. Même si c'est plus dur.", shift: 30, response: "C'est la seule voie qui construit quelque chose de solide." }
+            ]
+        },
+        {
+            id: "genre_surf",
+            question: "Les trends changent vite. Amapiano était hot la semaine dernière, maintenant c'est la Phonk. Tu suis ?",
+            choices: [
+                { label: "Je surfe sur tout. Je suis caméléon.", shift: -10, response: "Tu vas te noyer dans les trends. Mais ça peut marcher à court terme." },
+                { label: "J'ai mon son. Les trends passent, le style reste.", shift: 15, response: "En théorie. En pratique, même les légendes s'adaptent parfois. Mais je te respecte." }
+            ]
+        },
+        {
+            id: "sponsor_integrity",
+            question: "Une marque de boisson énergisante veut te sponsoriser. Produit douteux mais cash solide.",
+            choices: [
+                { label: "Je signe. Ma famille mange.", shift: -15, response: "Priorité pragmatique. Ta fanbase de qualité va peut-être lever un sourcil." },
+                { label: "Je refuse. Mon image vaut plus que ça.", shift: 20, response: "Intégrité coûteuse. Respect à long terme. Factures courtes." }
+            ]
+        },
+        {
+            id: "feedback_humility",
+            question: "Un critique vient de te donner 3/10. Quelle est ta réaction ?",
+            choices: [
+                { label: "Il n'y connaît rien. Je continue exactement pareil.", shift: -10, response: "La confiance, c'est bien. L'imperméabilité au feedback, c'est une autre histoire." },
+                { label: "Je l'analyse. Peut-être qu'il a raison sur certains points.", shift: 15, response: "La capacité à digérer la critique sans s'effondrer, c'est ce qui distingue les pros." }
+            ]
+        },
+        {
+            id: "night_grind",
+            question: "Il est 4h du matin. Tu es sur un beat depuis 6h. Tu continues ?",
+            choices: [
+                { label: "Je pousse jusqu'au sunrise. La créativité est au max la nuit.", shift: -5, response: "Romantique. Ton oreille est épuisée mais ton égo est en mode banger. Bonne chance." },
+                { label: "Je sauvegarde et je dors. Demain, l'écoute sera objective.", shift: 10, response: "Professionnellement irréprochable. Le mix du lendemain matin est toujours meilleur." }
+            ]
+        },
+        {
+            id: "streaming_vs_live",
+            question: "Streaming ou scène ? Où tu mets l'essentiel de ton énergie ?",
+            choices: [
+                { label: "Streaming. La scale est illimitée. La scène c'est old school.", shift: -10, response: "Pragmatique. Les dollars streaming arrivent lentement mais universellement." },
+                { label: "La scène. Le live, c'est où les vrais fans se créent.", shift: 10, response: "Les fans live sont des fans à vie. Mais les cachets varient énormément." }
+            ]
         }
     ],
 
@@ -8018,7 +8101,67 @@ function triggerRankUp(oldRank, newRank) {
             id: "writer_block",
             question: "Je suis bloqué sur une prod, je n'ai plus d'inspiration. Que faire ?",
             trueAnswer: "Va dormir ou ferme le projet. L'oreille fatigue vite, et ton cerveau a besoin d'un reset.",
-            falseAnswer: "Ajoute juste un OTT à 100% sur le master et met un Soundgoodizer. Ça masque la misère temporelle."
+            falseAnswer: "Ajoute juste un OTT à 100% sur le master et met un Soundgoodizer. Ça marque la misère temporelle."
+        },
+        {
+          id: "bpm_drill",
+          question: "Quel BPM pour un UK Drill qui sonne actuel ?",
+          trueAnswer: "Entre 138 et 145 BPM. Le swing 808 à mi-tempo est ce qui définit le genre. Vise 140 comme référence.",
+          falseAnswer: "120 BPM est la valeur par défaut. Tous les genres s'adaptent autour de ça, même le Drill."
+        },
+        {
+          id: "bpm_afropop",
+          question: "C'est quoi le BPM d'un Afro-Pop qui plait à l'algorithme ?",
+          trueAnswer: "100 à 110 BPM. Le groove afro demande ce tempo pour laisser de l'espace entre les accents rythmiques.",
+          falseAnswer: "80 BPM et moins. La mélancolie afro fonctionne mieux sur des tempos lents et contemplatiFs."
+        },
+        {
+          id: "collab_price",
+          question: "Un artiste inconnu veut une prod. Tu factures combien ?",
+          trueAnswer: "Pour quelqu'un sans base audience : entre 100 et 300$. Si tu veux du long terme, négocie un pourcentage des royalties plutôt qu'un one-shot.",
+          falseAnswer: "Minimum 2000$. Si t'es bon, ça se voit dans le prix. Ne bradez jamais."
+        },
+        {
+          id: "mastering_chain",
+          question: "Dans quel ordre je dois placer mes plugins sur le master bus ?",
+          trueAnswer: "EQ → Compression → Saturation légère → Limiting. L'EQ avant la compression contrôle ce qu'elle va traiter. Le limiter toujours en dernier.",
+          falseAnswer: "Saturation → Reverb → EQ → Compression. La couleur sonore d'abord, la dynamique ensuite. C'est comme ça que les pros font."
+        },
+        {
+          id: "soundnet_algo",
+          question: "Comment percer sur SoundNet algorithmiquement ?",
+          trueAnswer: "Régularité > quantité. Poster 3 fois par semaine à des horaires fixes génère plus d'engagement que 10 posts en rafale. Les stories quotidiennes maintiennent la visibilité.",
+          falseAnswer: "Spam à fond pendant 48h lors du lancement. Les algos boostent les créateurs qui montrent une activité explosive sur une courte fenêtre."
+        },
+        {
+          id: "sample_vs_original",
+          question: "Vaut mieux sampler un vieux son ou créer de zéro ?",
+          trueAnswer: "De zéro si tu vises les placements sync et les deals labels — les samples créent des problèmes de droits. Pour le contenu SoundNet, les deux fonctionnent mais le sample original apporte une texture immédiate.",
+          falseAnswer: "Toujours sampler. Les meilleurs sons de hip-hop viennent tous de samples. Crée de zéro seulement si tu manques de références."
+        },
+        {
+          id: "voice_choice",
+          question: "Voix masculine ou féminine, quelle différence pour les streams ?",
+          trueAnswer: "Statistiquement, les voix féminines performent mieux sur l'Afro-Pop et l'Amapiano. Les voix masculines dominent sur le Drill et le UK Rap. L'Instru touche toutes les niches à la fois.",
+          falseAnswer: "Aucune différence. L'algorithme est gender-neutral en 2026. Choisis juste en fonction de la texture sonore que tu veux."
+        },
+        {
+          id: "reverb_use",
+          question: "Trop de réverb sur un mix, ça donne quoi ?",
+          trueAnswer: "Un son noyé et lointain qui perd en impact sur smartphone. La réverb sur le vocal doit être subtile : utilisée en parallèle à 20-30%, pas en insert à 100%.",
+          falseAnswer: "Un son cinématographique et professionnel. Plus la reverb est longue, plus le son paraît grand et ambitieux."
+        },
+        {
+          id: "creative_block_solution",
+          question: "Comment sortir d'un creative block qui dure depuis 3 jours ?",
+          trueAnswer: "Ferme le projet. Écoute de la musique d'un genre que tu ne produis jamais. Prends le canapé 15 minutes. L'oreille se recharge par le changement de contexte, pas par la pression.",
+          falseAnswer: "Force-toi à produire même si c'est mauvais. 500 mauvais sons créent les conditions pour le 501e bon. Quantité d'abord."
+        },
+        {
+          id: "loudness_war",
+          question: "Pourquoi mon son semble moins fort que ceux de la concurrence sur les plateformes ?",
+          trueAnswer: "Les plateformes normalisent à -14 LUFS. Un master à -8 LUFS sera automatiquement baissé au même niveau qu'un master à -14 LUFS avec plus de dynamique. Tu perds sans gagner.",
+          falseAnswer: "C'est ton monitoring. Calibre tes enceintes à 85 dB SPL et tout semblera plus équilibré. Le volume perçu est une question de perception, pas de chiffres."
         }
     ]
 };
@@ -9937,6 +10080,7 @@ function triggerRankUp(oldRank, newRank) {
             if (typeof state.echoAlignment === 'undefined') state.echoAlignment = 0;
             if (typeof state.echoTrialUsed === 'undefined') state.echoTrialUsed = false;
             if (!state.cooldowns.echoSubExpiry) state.cooldowns.echoSubExpiry = 0;
+            if (typeof state.cooldowns.echoQueryReady === 'undefined') state.cooldowns.echoQueryReady = 0;
 
             // Mise à jour de l'indicateur avant le blocage GPU
             const loginBtn = document.getElementById('btn-login');
@@ -12352,58 +12496,60 @@ function triggerRankUp(oldRank, newRank) {
         }
 
         function closeReview() {
-        const overlay = document.getElementById('review-overlay');
-        if (!overlay) return;
+            const overlay = document.getElementById('review-overlay');
+            if (!overlay) return;
 
-        overlay.style.opacity = '0';
-        overlay.style.pointerEvents = 'none';
+            overlay.classList.remove('pointer-events-auto', 'opacity-100');
+            overlay.classList.add('pointer-events-none', 'opacity-0');
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none';
 
-        state.isReviewActive = false; // Désactive l'état de revue
+            state.isReviewActive = false; // Désactive l'état de revue
 
-        // Application des récompenses différées
-        if (window.pendingReviewData) {
-            const d = window.pendingReviewData;
-            logMoney(d.money, 'Track Royalties');
-            state.rep = Math.max(0, state.rep + d.rep);
-            logFollower(d.fans);
-            checkAchievement('dans_la_sauce', () => state.followers >= 100000);
-            checkAchievement('first_blood', () => state.stats.tracks >= 1);
-            checkAchievement('productivite_toxique', () => state.stats.consecutiveFlops >= 5);
-            if (d.avgReviewScore) {
-                checkAchievement('certifie_classique', () => d.avgReviewScore === "10.0");
+            // Application des récompenses différées
+            if (window.pendingReviewData) {
+                const d = window.pendingReviewData;
+                logMoney(d.money, 'Track Royalties');
+                state.rep = Math.max(0, state.rep + d.rep);
+                logFollower(d.fans);
+                checkAchievement('dans_la_sauce', () => state.followers >= 100000);
+                checkAchievement('first_blood', () => state.stats.tracks >= 1);
+                checkAchievement('productivite_toxique', () => state.stats.consecutiveFlops >= 5);
+                if (d.avgReviewScore) {
+                    checkAchievement('certifie_classique', () => d.avgReviewScore === "10.0");
+                }
+                if (d.money > 0) playCashSound();
+                showToast(d.toast.msg, d.toast.type);
+                updateHUD();
+                saveGame();
+
+                // --- DÉCLENCHEMENT DU LIVE CHAT SYNCHRONISÉ ---
+                if (d.track) {
+                    // 1. Force l'ouverture de l'application SoundNet au premier plan
+                    openApp('app-social');
+                    
+                    // 2. Force l'affichage de l'onglet "Feed" (là où se trouve le chat)
+                    switchSocialTab('feed');
+                    
+                    // 3. Lance le chat avec un tout petit délai pour laisser l'animation de la fenêtre se faire
+                    setTimeout(() => {
+                        startLiveChat(d.track);
+                    }, 400);
+                }
+                // Trigger Mono Mix Mini Game: 30% chance if tracks exported > 5
+                if (state.stats.tracks > 5 && Math.random() < 0.30) {
+                    setTimeout(() => {
+                        triggerMonoMixMiniGame();
+                    }, 2000);
+                }
+                window.pendingReviewData = null; // Nettoyage après déclenchement
             }
-            if (d.money > 0) playCashSound();
-            showToast(d.toast.msg, d.toast.type);
-            updateHUD();
-            saveGame();
 
-            // --- DÉCLENCHEMENT DU LIVE CHAT SYNCHRONISÉ ---
-            if (d.track) {
-                // 1. Force l'ouverture de l'application SoundNet au premier plan
-                openApp('app-social');
-                
-                // 2. Force l'affichage de l'onglet "Feed" (là où se trouve le chat)
-                switchSocialTab('feed');
-                
-                // 3. Lance le chat avec un tout petit délai pour laisser l'animation de la fenêtre se faire
-                setTimeout(() => {
-                    startLiveChat(d.track);
-                }, 400);
-            }
-            // Trigger Mono Mix Mini Game: 30% chance if tracks exported > 5
-            if (state.stats.tracks > 5 && Math.random() < 0.30) {
-                setTimeout(() => {
-                    triggerMonoMixMiniGame();
-                }, 2000);
-            }
-            window.pendingReviewData = null; // Nettoyage après déclenchement
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.style.display = 'none';
+            }, 500);
         }
-
-        setTimeout(() => {
-            overlay.classList.add('hidden');
-            overlay.style.display = 'none';
-        }, 500);
-    }
 
 
 
@@ -12676,11 +12822,10 @@ function triggerRankUp(oldRank, newRank) {
             const suspenseText = document.getElementById('suspense-text');
             state.isReviewActive = true; // Active l'état de revue
             if (!overlay || !phaseSuspense || !phaseResults || !reviewList || !avgEl || !trackNameEl || !suspenseTitle || !suspenseGenre || !suspenseText) {
-            console.warn('Review overlay missing DOM nodes');
-            return;
-        }
+                console.warn('Review overlay missing DOM nodes');
+                return;
+            }
 
-            
             // Reset
             phaseSuspense.classList.remove('hidden');
             phaseSuspense.style.display = 'flex';
@@ -12718,16 +12863,11 @@ function triggerRankUp(oldRank, newRank) {
             ];
 
             // Affichage de l'overlay
-            overlay.classList.remove('hidden');
+            overlay.classList.remove('hidden', 'pointer-events-none', 'opacity-0');
+            overlay.classList.add('pointer-events-auto', 'opacity-100');
             overlay.style.display = 'flex';
-            overlay.style.opacity = '0';
-            overlay.style.pointerEvents = 'none';
-            
-            setTimeout(() => {
-        overlay.style.opacity = '1';
-        overlay.style.pointerEvents = 'all';
-    }, 50);
-
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'auto';
 
             playTone(300, 'sine', 0.4, 0.05);
 
@@ -13236,11 +13376,23 @@ function initEchoApp() {
         activeView.classList.remove('hidden');
         activeView.style.display = 'flex';
         
+        // Bug 4 - Vider et réinitialiser l'historique visuel
+        document.getElementById('echo-dialogue-history').innerHTML = `
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded bg-[var(--retro-orange)] flex items-center
+            justify-center text-black font-bold flex-shrink-0
+            shadow-[0_0_10px_rgba(251,191,36,0.5)]">E</div>
+            <div class="bg-black/50 border border-[var(--retro-orange)]/30 rounded-lg
+            rounded-tl-none p-3 text-sm text-gray-200" id="echo-intro-text">
+              Analyse en cours...
+            </div>
+          </div>`;
+        
         // Mise à jour visuelle du timer
         const timeLeft = subExpiry - totalMins;
         document.getElementById('echo-sub-timer').innerText = `EXP: ${formatTimeLeft(timeLeft)}`;
         
-        // On prépare le terrain pour la prochaine étape (stubs temporaires)
+        // On prépare le terrain pour la prochaine étape
         generateEchoContext();
         renderEchoMainChoices();
     }
@@ -13264,6 +13416,12 @@ function purchaseEchoSub() {
     
     showToast("Abonnement ECHO activé (7 jours in-game).", "success");
     playSuccess();
+    
+    // Bug 3 - Déclencher l'achievement echo_scammed
+    if (typeof checkAchievement === 'function') {
+        checkAchievement('echo_scammed', () => true);
+    }
+    
     saveGame();
     initEchoApp();
 }
@@ -13294,9 +13452,8 @@ function generateEchoContext() {
     // Sécurité pour récupérer le rang actuel selon la structure existante
     const currentRank = typeof getCurrentRank === 'function' ? getCurrentRank() : null;
     
-    // A. OBSOLESCENCE (À ajuster selon l'ID exact de ton palier final)
-    // Exemple : si le rang a une propriété 'index' élevée, ou un ID spécifique type 'stadium'
-    const isMaxRank = (currentRank && currentRank.index >= 3) || state.followers >= 500000;
+    // Bug 2 - Obsolescence : Remplacement de currentRank.index par currentRank.id >= 4
+    const isMaxRank = (currentRank && currentRank.id >= 4) || state.followers >= 500000;
 
     if (isMaxRank) {
         text = ECHO_DATA.intros.obsolete;
@@ -13322,13 +13479,32 @@ function generateEchoContext() {
         text = _getEchoRandom(ECHO_DATA.intros.neutral);
     }
 
-    introEl.innerText = text;
+    if (introEl) introEl.innerText = text;
 }
 
 // --- 2. MENU PRINCIPAL DES CHOIX ---
 function renderEchoMainChoices() {
     const container = document.getElementById('echo-action-choices');
     container.innerHTML = '';
+
+    // Amélioration 2 - Mise à jour de l'indicateur visuel d'alignement
+    const pct = (state.echoAlignment + 100) / 2; // 0 à 100
+    const barEl = document.getElementById('echo-alignment-bar');
+    if (barEl) barEl.style.width = pct + '%';
+    const label = state.echoAlignment <= -30 ? "MODE: CYNIQUE 🤑"
+                : state.echoAlignment >= 30  ? "MODE: PURISTE 🎛️"
+                :                              "MODE: NEUTRE ⚖️";
+    const labelEl = document.getElementById('echo-alignment-label');
+    if (labelEl) labelEl.innerText = label;
+
+    // Amélioration 1 - Cooldown de 30 min in-game
+    const totalMins = getTotalMins();
+    const queryReady = parseInt(state.cooldowns.echoQueryReady, 10) || 0;
+    if (totalMins < queryReady) {
+        const diff = queryReady - totalMins;
+        container.innerHTML = `<p class="text-[10px] text-[var(--text-muted)] font-retro text-center py-3 uppercase tracking-wider">Prochain conseil dans : ${diff} MIN</p>`;
+        return;
+    }
 
     // On tire au sort 1 dilemme et 1 question factuelle pour ne pas surcharger l'UI
     const orientation = _getEchoRandom(ECHO_DATA.orientations);
@@ -13363,7 +13539,6 @@ function renderEchoOrientationChoices(orientationData) {
 
     orientationData.choices.forEach(choice => {
         const btn = document.createElement('button');
-        // Rendu similaire aux event-choices
         btn.className = 'btn-action w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 border border-[var(--retro-orange)]/30 hover:border-[var(--retro-orange)] transition-colors';
         btn.innerText = choice.label;
         
@@ -13374,6 +13549,9 @@ function renderEchoOrientationChoices(orientationData) {
             // On cap l'alignement entre -100 et +100
             if (state.echoAlignment < -100) state.echoAlignment = -100;
             if (state.echoAlignment > 100) state.echoAlignment = 100;
+            
+            // Amélioration 1 - Set Cooldown
+            state.cooldowns.echoQueryReady = getTotalMins() + 30;
             
             saveGame();
             checkEchoAchievements();
@@ -13395,6 +13573,10 @@ function processEchoFactualAnswer(factualData) {
     const container = document.getElementById('echo-action-choices');
     container.innerHTML = '<p class="text-[10px] text-[var(--retro-orange)] animate-pulse text-center py-4">Analyse des données...</p>';
 
+    // Amélioration 1 - Set Cooldown
+    state.cooldowns.echoQueryReady = getTotalMins() + 30;
+    saveGame();
+
     setTimeout(() => {
         // On passe le flag isLying à la fonction d'affichage
         appendEchoDialogue(answer, 'echo', isLying);
@@ -13403,14 +13585,12 @@ function processEchoFactualAnswer(factualData) {
 }
 
 // --- 5. UTILITAIRES D'INTERFACE ---
-// On ajoute "isLying = false" par défaut
 function appendEchoDialogue(text, sender, isLying = false) {
     const history = document.getElementById('echo-dialogue-history');
     const msgDiv = document.createElement('div');
     msgDiv.className = 'flex items-start gap-3 mt-4 animate-fade-in';
     
     if (sender === 'echo') {
-        // Si ça ment, on ajoute la classe .echo-glitch sur le texte
         const textClass = isLying ? "text-gray-200 echo-glitch" : "text-gray-200";
         
         msgDiv.innerHTML = `
@@ -13421,9 +13601,9 @@ function appendEchoDialogue(text, sender, isLying = false) {
         `;
         if (typeof playBleep === 'function') playBleep();
         
-        // Optionnel : un son différent quand ça glitch (si tu as un playError ou playGlitch dans ton sound design existant)
-        if (isLying && typeof playError === 'function') {
-            setTimeout(playError, 100); 
+        // Bug 5 - Son du mensonge moins intrusif
+        if (isLying && typeof playTone === 'function') {
+            setTimeout(() => playTone(180, 'sine', 0.08, 0.02), 100);
         }
     } else {
         msgDiv.innerHTML = `
@@ -13434,8 +13614,10 @@ function appendEchoDialogue(text, sender, isLying = false) {
         `;
     }
     
-    history.appendChild(msgDiv);
-    setTimeout(() => { history.scrollTop = history.scrollHeight; }, 50);
+    if (history) {
+        history.appendChild(msgDiv);
+        setTimeout(() => { history.scrollTop = history.scrollHeight; }, 50);
+    }
 }
 
 function renderEchoBackButton() {
@@ -13455,11 +13637,9 @@ function checkEchoAchievements() {
     // S'assurer que checkAchievement existe dans l'architecture globale
     if (typeof checkAchievement !== 'function') return;
 
-    if (state.echoAlignment <= -100) {
-        checkAchievement("echo_sellout");
-    } else if (state.echoAlignment >= 100) {
-        checkAchievement("echo_purist");
-    }
+    // Bug 1 - Correction de la signature de checkAchievement
+    checkAchievement('echo_sellout', () => state.echoAlignment <= -100);
+    checkAchievement('echo_purist', () => state.echoAlignment >= 100);
 }
         
     // ====================================================
