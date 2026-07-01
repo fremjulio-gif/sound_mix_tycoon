@@ -1949,7 +1949,7 @@
                     <span id="s-tooltip-price" class="text-[var(--retro-green)] font-bold">$0</span>
                 </div>
             </div>
-            <button id="s-tooltip-buy-btn" class="btn-action w-full py-2 text-xs rounded-lg font-bold shadow-md uppercase tracking-wider">Install</button>
+            <button id="s-tooltip-buy-btn" class="btn-action w-full py-2 text-xs rounded-lg font-bold shadow-md uppercase tracking-wider" onclick="buyFurnitureDirect(event)">Install</button>
         </div>
 
                 <button id="door-action-btn" class="hidden fixed bottom-24 left-1/2 transform -translate-x-1/2 z-[90] btn-action py-3 px-6 rounded-full text-xs font-retro tracking-widest shadow-[0_0_20px_rgba(129,140,248,0.5)] flex items-center gap-2 pointer-events-auto transition-all duration-300" onclick="openMiniGameMenu()">
@@ -2776,24 +2776,24 @@ const DEFAULT_STATE = {
                 isCompleted: false
             },
             achievements: { // Nouveau : Système d'achievements
-                'first_blood': { unlocked: false, name: "First Blood", icon: "🩸", description: "Tu as exporté ta toute première prod. Le début de la gloire." },
-                'certifie_classique': { unlocked: false, name: "Certifié Classique", icon: "📀", description: "Obtenir un score parfait (10/10) par les critiques." },
-                'dans_la_sauce': { unlocked: false, name: "Dans la Sauce", icon: "🌶️", description: "Atteindre la barre des 15000 fans. Tu ne peux plus sortir dans la rue tranquille." },
-                'productivite_toxique': { unlocked: false, name: "Productivité Toxique", icon: "🗑️", description: "Enchaîner 5 flops d'affilée. Remets-toi en question." },
-                'alerte_rouge': { unlocked: false, name: "Alerte Rouge", icon: "💀", description: "Te manger ton premier écran bleu (BSOD) à cause d'un plugin cracké." },
-                'hacker_man': { unlocked: false, name: "Hacker Man", icon: "🥷", description: "Télécharger 10 plugins sur CrackZ. Le FBI te cherche." },
-                'cancel_culture': { unlocked: false, name: "Cancel Culture", icon: "📉", description: "Survivre à ton premier Bad Buzz sur les réseaux." },
-                'avocat_du_diable': { unlocked: false, name: "Avocat du Diable", icon: "⚖️", description: "Gagner un procès contre un rappeur qui a volé ta prod." },
-                'let_him_cook': { unlocked: false, name: "Let Him Cook", icon: "🍕", description: "T'asseoir 10 fois sur le canapé pour 'chercher l'inspi'." },
-                'sellout': { unlocked: false, name: "Sellout", icon: "🤝", description: "Accepter ton premier placement de produit (Sponsor). L'argent n'a pas d'odeur." },
-                'inge_son_certifie': { unlocked: false, name: "Ingé Son Certifié", icon: "🎛️", description: "Acheter ton premier plugin légal avec ton propre argent sur AudioStore." },
-                'prix_de_la_paix': { unlocked: false, name: "Le Prix de la Paix", icon: "🕊️", description: "Régler un vol de prod à l'amiable en acceptant de perdre de l'argent." },
-                'toujours_dans_le_rouge': { unlocked: false, name: "Toujours dans le rouge", icon: "🔋", description: "Lancer un export de mixdown avec moins de 5% d'énergie. Danger de mort." },
-                'lumiere_divine': { unlocked: false, name: "Lumière Divine", icon: "💡", description: "Allumer et éteindre la lampe Pixar 20 fois. (Tu t'ennuies ?)" },
-                'vrai_rat_de_studio': { unlocked: false, name: "Vrai Rat de Studio", icon: "🧛‍♂️", description: "Passer 3 jours entiers in-game sans jamais cliquer sur le lit pour dormir." },
-                'echo_sellout': { unlocked: false, name : "Yes-Man", icon: "🤑", description: "Façonner ECHO pour qu'il devienne une machine à cash cynique." },
-                'echo_purist': { unlocked: false, name: "Ingé Son Virtuel", icon: "🎛️", description: "Pousser ECHO à devenir un puriste de la dynamique." },
-                'echo_scammed': { unlocked: false, name: "Pigeon ?", icon: "💸", description: "Payer l'abonnement complet à ECHO OS." }
+                'first_blood': { unlocked: false, rewardClaimed: false, name: "First Blood", icon: "🩸", description: "Tu as exporté ta toute première prod. Le début de la gloire." },
+                'certifie_classique': { unlocked: false, rewardClaimed: false, name: "Certifié Classique", icon: "📀", description: "Obtenir un score parfait (10/10) par les critiques." },
+                'dans_la_sauce': { unlocked: false, rewardClaimed: false, name: "Dans la Sauce", icon: "🌶️", description: "Atteindre la barre des 15000 fans. Tu ne peux plus sortir dans la rue tranquille." },
+                'productivite_toxique': { unlocked: false, rewardClaimed: false, name: "Productivité Toxique", icon: "🗑️", description: "Enchaîner 5 flops d'affilée. Remets-toi en question." },
+                'alerte_rouge': { unlocked: false, rewardClaimed: false, name: "Alerte Rouge", icon: "💀", description: "Te manger ton premier écran bleu (BSOD) à cause d'un plugin cracké." },
+                'hacker_man': { unlocked: false, rewardClaimed: false, name: "Hacker Man", icon: "🥷", description: "Télécharger 10 plugins sur CrackZ. Le FBI te cherche." },
+                'cancel_culture': { unlocked: false, rewardClaimed: false, name: "Cancel Culture", icon: "📉", description: "Survivre à ton premier Bad Buzz sur les réseaux." },
+                'avocat_du_diable': { unlocked: false, rewardClaimed: false, name: "Avocat du Diable", icon: "⚖️", description: "Gagner un procès contre un rappeur qui a volé ta prod." },
+                'let_him_cook': { unlocked: false, rewardClaimed: false, name: "Let Him Cook", icon: "🍕", description: "T'asseoir 10 fois sur le canapé pour 'chercher l'inspi'." },
+                'sellout': { unlocked: false, rewardClaimed: false, name: "Sellout", icon: "🤝", description: "Accepter ton premier placement de produit (Sponsor). L'argent n'a pas d'odeur." },
+                'inge_son_certifie': { unlocked: false, rewardClaimed: false, name: "Ingé Son Certifié", icon: "🎛️", description: "Acheter ton premier plugin légal avec ton propre argent sur AudioStore." },
+                'prix_de_la_paix': { unlocked: false, rewardClaimed: false, name: "Le Prix de la Paix", icon: "🕊️", description: "Régler un vol de prod à l'amiable en acceptant de perdre de l'argent." },
+                'toujours_dans_le_rouge': { unlocked: false, rewardClaimed: false, name: "Toujours dans le rouge", icon: "🔋", description: "Lancer un export de mixdown avec moins de 5% d'énergie. Danger de mort." },
+                'lumiere_divine': { unlocked: false, rewardClaimed: false, name: "Lumière Divine", icon: "💡", description: "Allumer et éteindre la lampe Pixar 20 fois. (Tu t'ennuies ?)" },
+                'vrai_rat_de_studio': { unlocked: false, rewardClaimed: false, name: "Vrai Rat de Studio", icon: "🧛‍♂️", description: "Passer 3 jours entiers in-game sans jamais cliquer sur le lit pour dormir." },
+                'echo_sellout': { unlocked: false, rewardClaimed: false, name : "Yes-Man", icon: "🤑", description: "Façonner ECHO pour qu'il devienne une machine à cash cynique." },
+                'echo_purist': { unlocked: false, rewardClaimed: false, name: "Ingé Son Virtuel", icon: "🎛️", description: "Pousser ECHO à devenir un puriste de la dynamique." },
+                'echo_scammed': { unlocked: false, rewardClaimed: false, name: "Pigeon ?", icon: "💸", description: "Payer l'abonnement complet à ECHO OS." }
             }
         };
 
@@ -9804,6 +9804,16 @@ function triggerRankUp(oldRank, newRank) {
             merged.ownedFurniture = Array.isArray(merged.ownedFurniture) ? merged.ownedFurniture : [];
             merged.dailyQuests = Array.isArray(merged.dailyQuests) ? merged.dailyQuests : [];
             
+            // SÉCURITÉ ACHIEVEMENTS : S'assure que le statut rewardClaimed est correctement conservé
+            merged.achievements = merged.achievements || {};
+            if (parsed && parsed.achievements && typeof parsed.achievements === 'object') {
+                for (const id in parsed.achievements) {
+                    if (parsed.achievements[id] && parsed.achievements[id].rewardClaimed && merged.achievements[id]) {
+                        merged.achievements[id].rewardClaimed = true;
+                    }
+                }
+            }
+
             // DÉBLOCAGE SAUVEGARDES : Forcer la réinitialisation des deadlocks
             merged.isExporting = false;
             merged.isReviewActive = false;
@@ -11756,10 +11766,26 @@ function triggerRankUp(oldRank, newRank) {
                 reel2.classList.remove('tape-paused');
                 signalElements.forEach(el => el.classList.remove('tape-paused'));
 
+                if (status) {
+                    status.innerText = "REC";
+                    status.classList.add('animate-pulse', 'text-[var(--retro-red)]', 'drop-shadow-[0_0_5px_var(--retro-red)]');
+                    status.classList.remove('text-gray-500');
+                }
+
                 // --- NOUVEAU : RELANCE DU GRAPHE CPU ---
                 if (!cpuGraphStarted) {
                     cpuGraphStarted = true;
                     drawSysGraphUI(performance.now());
+                }
+            } else {
+                reel1.classList.add('tape-paused');
+                reel2.classList.add('tape-paused');
+                signalElements.forEach(el => el.classList.add('tape-paused'));
+
+                if (status) {
+                    status.innerText = "PAUSE";
+                    status.classList.remove('animate-pulse', 'text-[var(--retro-red)]', 'drop-shadow-[0_0_5px_var(--retro-red)]');
+                    status.classList.add('text-gray-500');
                 }
             }
         }
