@@ -13416,11 +13416,8 @@ function initEchoApp() {
         // Bug 4 - Vider et réinitialiser l'historique visuel
         document.getElementById('echo-dialogue-history').innerHTML = `
           <div class="flex items-start gap-3">
-            <div class="w-8 h-8 rounded bg-[var(--retro-orange)] flex items-center
-            justify-center text-black font-bold flex-shrink-0
-            shadow-[0_0_10px_rgba(251,191,36,0.5)]">E</div>
-            <div class="bg-black/50 border border-[var(--retro-orange)]/30 rounded-lg
-            rounded-tl-none p-3 text-sm text-gray-200" id="echo-intro-text">
+            <div class="w-2 h-2 rounded-full bg-[var(--retro-orange)] shadow-[0_0_8px_rgba(251,191,36,0.8)] mt-2 flex-shrink-0 animate-pulse"></div>
+            <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl rounded-tl-none p-3 text-sm text-gray-200 max-w-[80%]" id="echo-intro-text">
               Analyse en cours...
             </div>
           </div>`;
@@ -13552,7 +13549,22 @@ function renderEchoMainChoices() {
         const btnOr = document.createElement('button');
         btnOr.className = 'btn-action w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 flex gap-2 items-center';
         btnOr.innerHTML = `<span class="text-[var(--retro-orange)] font-bold">›</span> <span class="truncate">${orientation.question}</span>`;
-        btnOr.onclick = () => renderEchoOrientationChoices(orientation);
+        btnOr.onclick = () => {
+            // Le joueur pose la question
+            appendEchoDialogue(`J'ai besoin d'un conseil concernant : ${orientation.question}`, 'user');
+            
+            const actionContainer = document.getElementById('echo-action-choices');
+            actionContainer.innerHTML = '';
+            showEchoTypingIndicator();
+            
+            setTimeout(() => {
+                removeEchoTypingIndicator();
+                // ECHO pose la question/dilemme
+                appendEchoDialogue(orientation.question, 'echo', false, () => {
+                    renderPlayerChoiceButtons(orientation.choices);
+                });
+            }, 1200);
+        };
         container.appendChild(btnOr);
     }
 
@@ -13572,9 +13584,9 @@ function renderEchoOrientationChoices(orientationData) {
     container.innerHTML = '';
     
     // ECHO pose le dilemme (dialogue ping-pong)
-    appendEchoDialogue(orientationData.question, 'echo');
-
-    renderPlayerChoiceButtons(orientationData.choices);
+    appendEchoDialogue(orientationData.question, 'echo', false, () => {
+        renderPlayerChoiceButtons(orientationData.choices);
+    });
 }
 
 function renderPlayerChoiceButtons(choices) {
@@ -13604,19 +13616,23 @@ function renderPlayerChoiceButtons(choices) {
             checkEchoAchievements();
             
             const container = document.getElementById('echo-action-choices');
-            container.innerHTML = '<p class="text-[10px] text-[var(--retro-orange)] animate-pulse text-center py-4">Réflexion de l\'IA...</p>';
+            container.innerHTML = '';
+            showEchoTypingIndicator();
 
             setTimeout(() => {
+                removeEchoTypingIndicator();
                 // Si la branche a des sous-choix (Format B - À tiroirs)
                 if (choice.nextChoices && choice.nextChoices.length > 0) {
-                    appendEchoDialogue(choice.response, 'echo');
-                    renderPlayerChoiceButtons(choice.nextChoices);
+                    appendEchoDialogue(choice.response, 'echo', false, () => {
+                        renderPlayerChoiceButtons(choice.nextChoices);
+                    });
                 } else {
                     // Format A - Fin de dialogue
-                    appendEchoDialogue(choice.response, 'echo');
-                    renderEchoBackButton();
+                    appendEchoDialogue(choice.response, 'echo', false, () => {
+                        renderEchoBackButton();
+                    });
                 }
-            }, 800);
+            }, 1200);
         };
         container.appendChild(btn);
     });
@@ -13625,10 +13641,11 @@ function renderPlayerChoiceButtons(choices) {
 // --- 4. GESTION FACTUELLE (Le mensonge) ---
 function processEchoFactualAnswer(factualData) {
     const container = document.getElementById('echo-action-choices');
-    container.innerHTML = '<p class="text-[10px] text-[var(--retro-orange)] animate-pulse text-center py-4">Analyse des données...</p>';
+    container.innerHTML = '';
 
     // Le joueur pose la question technique
     appendEchoDialogue(factualData.question, 'user');
+    showEchoTypingIndicator();
 
     // 15% de chance de mentir
     const isLying = Math.random() < 0.15;
@@ -13639,15 +13656,42 @@ function processEchoFactualAnswer(factualData) {
     saveGame();
 
     setTimeout(() => {
+        removeEchoTypingIndicator();
         // L'IA répond
-        appendEchoDialogue(answer, 'echo', isLying);
-        renderEchoBackButton();
-    }, 800);
+        appendEchoDialogue(answer, 'echo', isLying, () => {
+            renderEchoBackButton();
+        });
+    }, 1200);
 }
 
-// --- 5. UTILITAIRES D'INTERFACE ---
-function appendEchoDialogue(text, sender, isLying = false) {
+// --- 5. UTILITAIRES D'INTERFACE & TYPING EFFECT ---
+function showEchoTypingIndicator() {
     const history = document.getElementById('echo-dialogue-history');
+    if (!history) return null;
+
+    const indicator = document.createElement('div');
+    indicator.id = 'echo-typing-indicator';
+    indicator.className = 'flex items-start gap-3 mt-4 animate-pulse';
+    indicator.innerHTML = `
+        <div class="w-2 h-2 rounded-full bg-[var(--retro-orange)] shadow-[0_0_8px_rgba(251,191,36,0.8)] mt-2 flex-shrink-0 animate-pulse"></div>
+        <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl rounded-tl-none p-3 text-sm text-[var(--text-muted)] italic max-w-[80%]">
+            ECHO réfléchit...
+        </div>
+    `;
+    history.appendChild(indicator);
+    history.scrollTop = history.scrollHeight;
+    return indicator;
+}
+
+function removeEchoTypingIndicator() {
+    const indicator = document.getElementById('echo-typing-indicator');
+    if (indicator) indicator.remove();
+}
+
+function appendEchoDialogue(text, sender, isLying = false, callback = null) {
+    const history = document.getElementById('echo-dialogue-history');
+    if (!history) return;
+
     const msgDiv = document.createElement('div');
     msgDiv.className = 'flex items-start gap-3 mt-4 animate-fade-in';
     
@@ -13655,29 +13699,44 @@ function appendEchoDialogue(text, sender, isLying = false) {
         const textClass = isLying ? "text-gray-200 echo-glitch" : "text-gray-200";
         
         msgDiv.innerHTML = `
-            <div class="w-8 h-8 rounded bg-[var(--retro-orange)] flex items-center justify-center text-black font-bold flex-shrink-0 shadow-[0_0_10px_rgba(251,191,36,0.5)]">E</div>
-            <div class="bg-black/50 border border-[var(--retro-orange)]/30 rounded-lg rounded-tl-none p-3 text-sm shadow-md ${textClass}">
-                ${text}
+            <div class="w-2 h-2 rounded-full bg-[var(--retro-orange)] shadow-[0_0_8px_rgba(251,191,36,0.8)] mt-2 flex-shrink-0 animate-pulse"></div>
+            <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl rounded-tl-none p-3 text-sm shadow-md max-w-[80%] ${textClass}">
+                <span class="typing-target"></span>
             </div>
         `;
+        history.appendChild(msgDiv);
+        history.scrollTop = history.scrollHeight;
+
+        const target = msgDiv.querySelector('.typing-target');
+        let index = 0;
+        
         if (typeof playBleep === 'function') playBleep();
         
-        // Bug 5 - Son du mensonge moins intrusif
         if (isLying && typeof playTone === 'function') {
             setTimeout(() => playTone(180, 'sine', 0.08, 0.02), 100);
         }
+
+        // Animation d'écriture progressive (Typing effect)
+        function typeChar() {
+            if (index < text.length) {
+                target.textContent += text.charAt(index);
+                index++;
+                history.scrollTop = history.scrollHeight;
+                setTimeout(typeChar, 10 + Math.random() * 15);
+            } else {
+                if (callback) callback();
+            }
+        }
+        typeChar();
     } else {
         msgDiv.innerHTML = `
-            <div class="bg-[var(--retro-orange)]/10 border border-[var(--retro-orange)]/50 rounded-lg rounded-tr-none p-3 text-sm text-white ml-auto shadow-md">
+            <div class="bg-indigo-600/20 backdrop-blur-md border border-indigo-500/30 rounded-2xl rounded-tr-none p-3 text-sm text-white ml-auto max-w-[80%] shadow-md">
                 ${text}
             </div>
-            <div class="w-8 h-8 rounded bg-gray-800 border border-gray-600 flex items-center justify-center text-white font-bold flex-shrink-0">U</div>
         `;
-    }
-    
-    if (history) {
         history.appendChild(msgDiv);
-        setTimeout(() => { history.scrollTop = history.scrollHeight; }, 50);
+        history.scrollTop = history.scrollHeight;
+        if (callback) callback();
     }
 }
 
