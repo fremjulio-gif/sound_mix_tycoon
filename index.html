@@ -1960,7 +1960,7 @@
             <span class="text-lg">🚪</span> SORTIR PRENDRE L'AIR
         </button>
 
-        <div id="minigames-menu-overlay" class="hidden fixed inset-0 bg-black/90 z-[999999] pointer-events-auto items-center justify-center p-4 backdrop-blur-md">
+        <div id="minigames-menu-overlay" class="hidden fixed inset-0 bg-black/90 z-[999999] pointer-events-auto items-center justify-center p-4 backdrop-blur-md" style="z-index: 9999999 !important; pointer-events: auto !important;">
             <div class="bg-[#18181b] rounded-2xl border border-[var(--accent)] w-full max-w-md p-6 shadow-[0_0_40px_rgba(129,140,248,0.2)] relative">
                 <button class="absolute top-4 right-4 text-gray-500 hover:text-[var(--retro-red)] transition-colors" onclick="closeMiniGameMenu()">✖</button>
                 <h2 class="text-2xl font-bold text-white mb-2 text-center font-retro tracking-widest">ACTIVITÉS EXTÉRIEURES</h2>
@@ -5283,13 +5283,13 @@ const DEFAULT_STATE = {
                 }
             }
 
-            const acceleration = 0.35; 
+            const acceleration = 0.15; 
             window.velX += (targetDirX - window.velX) * acceleration;
             window.velZ += (targetDirZ - window.velZ) * acceleration;
 
             // Utilisation de safeEnergy pour empêcher l'infection NaN
             const energySpeedMult = 0.7 + (Math.max(0, safeEnergy) / 100) * 0.3;
-            const maxSpeed = 0.09 * energySpeedMult;
+            const maxSpeed = 0.04 * energySpeedMult;
             
             if (Math.abs(window.velX) > 0.005 || Math.abs(window.velZ) > 0.005) {
                 if (typeof targetPosition !== 'undefined' && targetPosition) targetPosition = null; // Clear mouse target if moving by keyboard/joystick
@@ -8075,16 +8075,16 @@ function triggerRankUp(oldRank, newRank) {
             question: "L'algorithme de SoundNet a changé ce matin. Comment on s'adapte ?",
             choices: [
                 {
-                    label: "On spamme des prods courtes pour gratter du stream.",
+                    label: "Je vais spammer des prods courtes pour gratter du stream.",
                     shift: -10,
                     response: "Excellente idée. Du contenu fast-food de 1min30. Mais es-tu prêt à sacrifier ta crédibilité ?",
                     nextChoices: [
-                        { label: "Oui, le cash avant tout.", shift: -10, response: "Compris. On va compresser ça pour TikTok. $$$" },
+                        { label: "Oui, je veux le cash avant tout.", shift: -10, response: "Compris. On va compresser ça pour TikTok. $$$" },
                         { label: "Non, je veux garder du respect.", shift: 5, response: "Sage décision. L'intégrité finit par payer." }
                     ]
                 },
                 {
-                    label: "On ignore l'algo et on travaille un vrai son texturé.",
+                    label: "Je préfère ignorer l'algo et travailler un vrai son texturé.",
                     shift: 20,
                     response: "Risqué à court terme, mais c'est comme ça qu'on bâtit une vraie fan-base. Je valide."
                 }
@@ -8100,12 +8100,12 @@ function triggerRankUp(oldRank, newRank) {
                     response: "Compris. On va compresser ça jusqu'à en faire un rectangle parfait. Au diable la dynamique."
                 },
                 {
-                    label: "Garde de la dynamique. La musique a besoin de respirer.",
+                    label: "Je veux garder de la dynamique. Ma musique a besoin de respirer.",
                     shift: 10,
                     response: "Un choix de puriste. Mais ça manquera de patate en club. Tu confirmes ?",
                     nextChoices: [
-                        { label: "Oui, la dynamique avant tout.", shift: 10, response: "Très bien. Les audiophiles apprécieront." },
-                        { label: "Bon... booste un peu les basses quand même.", shift: -5, response: "Compromis accepté. Un peu de chaleur dans ce monde de brique." }
+                        { label: "Oui, je privilégie la dynamique avant tout.", shift: 10, response: "Très bien. Les audiophiles apprécieront." },
+                        { label: "Bon... booste-moi un peu les basses quand même.", shift: -5, response: "Compromis accepté. Un peu de chaleur dans ce monde de brique." }
                     ]
                 }
             ]
@@ -8122,7 +8122,7 @@ function triggerRankUp(oldRank, newRank) {
             id: "social_vs_studio",
             question: "Tu passes plus de temps sur SoundNet à poster qu'en studio. C'est une stratégie ?",
             choices: [
-                { label: "L'image c'est 80% du biz. Le son peut attendre.", shift: -20, response: "Tu deviens un influenceur. La distinction est de plus en plus floue de toute façon." },
+                { label: "Mon image c'est 80% du biz. Mes morceaux peuvent attendre.", shift: -20, response: "Tu deviens un influenceur. La distinction est de plus en plus floue de toute façon." },
                 { label: "Je dois rééquilibrer. La musique d'abord.", shift: 15, response: "Le seul moyen de poster du contenu qui dure, c'est de créer du contenu qui vaut quelque chose." }
             ]
         },
@@ -8146,7 +8146,7 @@ function triggerRankUp(oldRank, newRank) {
             id: "viral_ethics",
             question: "T'as la possibilité de recycler le beat de quelqu'un d'autre sans crédit. Ça personne le saura.",
             choices: [
-                { label: "Si ça perce, c'est que c'était bon.", shift: -30, response: "C'est techniquement du vol. Mais t'as raison, personne ne le saura probablement." },
+                { label: "Si je perce avec, c'est que c'était bon.", shift: -30, response: "C'est techniquement du vol. Mais t'as raison, personne ne le saura probablement." },
                 { label: "Je crée le mien. Même si c'est plus dur.", shift: 30, response: "C'est la seule voie qui construit quelque chose de solide." }
             ]
         },
@@ -8170,7 +8170,7 @@ function triggerRankUp(oldRank, newRank) {
             id: "feedback_humility",
             question: "Un critique vient de te donner 3/10. Quelle est ta réaction ?",
             choices: [
-                { label: "Il n'y connaît rien. Je continue exactement pareil.", shift: -10, response: "La confiance, c'est bien. L'imperméabilité au feedback, c'est une autre histoire." },
+                { label: "Il n'y connaît rien. Je vais continuer exactement pareil.", shift: -10, response: "La confiance, c'est bien. L'imperméabilité au feedback, c'est une autre histoire." },
                 { label: "Je l'analyse. Peut-être qu'il a raison sur certains points.", shift: 15, response: "La capacité à digérer la critique sans s'effondrer, c'est ce qui distingue les pros." }
             ]
         },
@@ -8186,8 +8186,8 @@ function triggerRankUp(oldRank, newRank) {
             id: "streaming_vs_live",
             question: "Streaming ou scène ? Où tu mets l'essentiel de ton énergie ?",
             choices: [
-                { label: "Streaming. La scale est illimitée. La scène c'est old school.", shift: -10, response: "Pragmatique. Les dollars streaming arrivent lentement mais universellement." },
-                { label: "La scène. Le live, c'est où les vrais fans se créent.", shift: 10, response: "Les fans live sont des fans à vie. Mais les cachets varient énormément." }
+                { label: "Je mise sur le streaming, la scène c'est trop old school pour moi.", shift: -10, response: "Pragmatique. Les dollars streaming arrivent lentement mais universellement." },
+                { label: "Je préfère la scène. Le live, c'est là que je crée de vrais liens.", shift: 10, response: "Les fans live sont des fans à vie. Mais les cachets varient énormément." }
             ]
         }
     ],
@@ -8196,73 +8196,73 @@ function triggerRankUp(oldRank, newRank) {
     factual: [
         {
             id: "lufs_target",
-            question: "C'est quoi la cible idéale de LUFS pour un gros banger actuel ?",
+            question: "À combien je dois taper mon LUFS pour un banger ?",
             trueAnswer: "Vise aux alentours de -8 à -10 LUFS avec un true peak à -1dB. Inutile de taper à -4 LUFS, les plateformes vont te baisser.",
             falseAnswer: "Tape dans le -4 LUFS, limite ça fort. Si ça ne saigne pas des oreilles, c'est que ça manque de présence."
         },
         {
             id: "writer_block",
-            question: "Je suis bloqué sur une prod, je n'ai plus d'inspiration. Que faire ?",
+            question: "Je suis bloqué sur une prod, je n'ai plus d'inspiration. Qu'est-ce que je peux faire ?",
             trueAnswer: "Va dormir ou ferme le projet. L'oreille fatigue vite, et ton cerveau a besoin d'un reset.",
             falseAnswer: "Ajoute juste un OTT à 100% sur le master et met un Soundgoodizer. Ça marque la misère temporelle."
         },
         {
-          id: "bpm_drill",
-          question: "Quel BPM pour un UK Drill qui sonne actuel ?",
-          trueAnswer: "Entre 138 et 145 BPM. Le swing 808 à mi-tempo est ce qui définit le genre. Vise 140 comme référence.",
-          falseAnswer: "120 BPM est la valeur par défaut. Tous les genres s'adaptent autour de ça, même le Drill."
+            id: "bpm_drill",
+            question: "Sur quel BPM je devrais régler mon UK Drill pour être dans la tendance ?",
+            trueAnswer: "Entre 138 et 145 BPM. Le swing 808 à mi-tempo est ce qui définit le genre. Vise 140 comme référence.",
+            falseAnswer: "120 BPM est la valeur par défaut. Tous les genres s'adaptent autour de ça, même le Drill."
         },
         {
-          id: "bpm_afropop",
-          question: "C'est quoi le BPM d'un Afro-Pop qui plait à l'algorithme ?",
-          trueAnswer: "100 à 110 BPM. Le groove afro demande ce tempo pour laisser de l'espace entre les accents rythmiques.",
-          falseAnswer: "80 BPM et moins. La mélancolie afro fonctionne mieux sur des tempos lents et contemplatiFs."
+            id: "bpm_afropop",
+            question: "Quel BPM je dois choisir pour que mon Afro-Pop plaise à l'algorithme ?",
+            trueAnswer: "100 à 110 BPM. Le groove afro demande ce tempo pour laisser de l'espace entre les accents rythmiques.",
+            falseAnswer: "80 BPM et moins. La mélancolie afro fonctionne mieux sur des tempos lents et contemplatiFs."
         },
         {
           id: "collab_price",
-          question: "Un artiste inconnu veut une prod. Tu factures combien ?",
+          question: "Un artiste inconnu veut que je lui fasse une prod. Je lui facture combien ?",
           trueAnswer: "Pour quelqu'un sans base audience : entre 100 et 300$. Si tu veux du long terme, négocie un pourcentage des royalties plutôt qu'un one-shot.",
           falseAnswer: "Minimum 2000$. Si t'es bon, ça se voit dans le prix. Ne bradez jamais."
         },
         {
           id: "mastering_chain",
-          question: "Dans quel ordre je dois placer mes plugins sur le master bus ?",
+          question: "Dans quel ordre je dois chaîner mes effets sur mon master bus ?",
           trueAnswer: "EQ → Compression → Saturation légère → Limiting. L'EQ avant la compression contrôle ce qu'elle va traiter. Le limiter toujours en dernier.",
           falseAnswer: "Saturation → Reverb → EQ → Compression. La couleur sonore d'abord, la dynamique ensuite. C'est comme ça que les pros font."
         },
         {
           id: "soundnet_algo",
-          question: "Comment percer sur SoundNet algorithmiquement ?",
+          question: "Comment je peux percer sur SoundNet pour hacker l'algorithme ?",
           trueAnswer: "Régularité > quantité. Poster 3 fois par semaine à des horaires fixes génère plus d'engagement que 10 posts en rafale. Les stories quotidiennes maintiennent la visibilité.",
           falseAnswer: "Spam à fond pendant 48h lors du lancement. Les algos boostent les créateurs qui montrent une activité explosive sur une courte fenêtre."
         },
         {
           id: "sample_vs_original",
-          question: "Vaut mieux sampler un vieux son ou créer de zéro ?",
+          question: "Est-ce que je devrais sampler un vieux son ou tout composer de zéro ?",
           trueAnswer: "De zéro si tu vises les placements sync et les deals labels — les samples créent des problèmes de droits. Pour le contenu SoundNet, les deux fonctionnent mais le sample original apporte une texture immédiate.",
           falseAnswer: "Toujours sampler. Les meilleurs sons de hip-hop viennent tous de samples. Crée de zéro seulement si tu manques de références."
         },
         {
           id: "voice_choice",
-          question: "Voix masculine ou féminine, quelle différence pour les streams ?",
+          question: "Est-ce que je devrais poser une voix masculine ou féminine pour maximiser mes streams ?",
           trueAnswer: "Statistiquement, les voix féminines performent mieux sur l'Afro-Pop et l'Amapiano. Les voix masculines dominent sur le Drill et le UK Rap. L'Instru touche toutes les niches à la fois.",
           falseAnswer: "Aucune différence. L'algorithme est gender-neutral en 2026. Choisis juste en fonction de la texture sonore que tu veux."
         },
         {
           id: "reverb_use",
-          question: "Trop de réverb sur un mix, ça donne quoi ?",
+          question: "Qu'est-ce qui se passe si je mets trop de réverb sur mon mix ?",
           trueAnswer: "Un son noyé et lointain qui perd en impact sur smartphone. La réverb sur le vocal doit être subtile : utilisée en parallèle à 20-30%, pas en insert à 100%.",
           falseAnswer: "Un son cinématographique et professionnel. Plus la reverb est longue, plus le son paraît grand et ambitieux."
         },
         {
           id: "creative_block_solution",
-          question: "Comment sortir d'un creative block qui dure depuis 3 jours ?",
+          question: "Comment je peux sortir d'un blocage créatif qui dure depuis 3 jours ?",
           trueAnswer: "Ferme le projet. Écoute de la musique d'un genre que tu ne produis jamais. Prends le canapé 15 minutes. L'oreille se recharge par le changement de contexte, pas par la pression.",
           falseAnswer: "Force-toi à produire même si c'est mauvais. 500 mauvais sons créent les conditions pour le 501e bon. Quantité d'abord."
         },
         {
           id: "loudness_war",
-          question: "Pourquoi mon son semble moins fort que ceux de la concurrence sur les plateformes ?",
+          question: "Pourquoi mon morceau me semble moins fort que la concurrence sur les plateformes ?",
           trueAnswer: "Les plateformes normalisent à -14 LUFS. Un master à -8 LUFS sera automatiquement baissé au même niveau qu'un master à -14 LUFS avec plus de dynamique. Tu perds sans gagner.",
           falseAnswer: "C'est ton monitoring. Calibre tes enceintes à 85 dB SPL et tout semblera plus équilibré. Le volume perçu est une question de perception, pas de chiffres."
         }
@@ -11858,6 +11858,9 @@ function triggerRankUp(oldRank, newRank) {
     }
 
         window.exportTrack = exportTrack;
+        window.openMiniGameMenu = openMiniGameMenu;
+        window.closeMiniGameMenu = closeMiniGameMenu;
+        window.launchDoorMiniGame = launchDoorMiniGame;
         function exportTrack() {
             if (getTotalMins() < (parseInt(state.cooldowns.dawTimeReady, 10) || 0) || state.isExporting) return;
 
@@ -13180,6 +13183,14 @@ function triggerRankUp(oldRank, newRank) {
                     return;
                 }
 
+                overlay.style.display = 'flex';
+                overlay.style.opacity = '1';
+                overlay.style.pointerEvents = 'auto';
+                overlay.style.zIndex = '9999999';
+
+                phaseSuspense.style.display = 'flex';
+                phaseSuspense.classList.remove('hidden');
+
                 // Reset
                 phaseSuspense.classList.remove('hidden');
                 phaseSuspense.style.display = 'flex';
@@ -13873,10 +13884,10 @@ function renderEchoMainChoices() {
     if (orientation) {
         const btnOr = document.createElement('button');
         btnOr.className = 'btn-action w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 flex gap-2 items-center';
-        btnOr.innerHTML = `<span class="text-[var(--retro-orange)] font-bold">›</span> <span class="truncate">${orientation.question}</span>`;
+        btnOr.innerHTML = `<span class="text-[var(--retro-orange)] font-bold">›</span> <span class="truncate">J'ai besoin d'un conseil stratégique.</span>`;
         btnOr.onclick = () => {
             // Le joueur pose la question
-            appendEchoDialogue(`J'ai besoin d'un conseil concernant : ${orientation.question}`, 'user');
+            appendEchoDialogue("J'ai besoin d'un conseil stratégique.", 'user');
             
             const actionContainer = document.getElementById('echo-action-choices');
             actionContainer.innerHTML = '';
