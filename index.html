@@ -1963,21 +1963,25 @@
                 <p class="text-gray-400 text-[11px] mb-6 text-center uppercase tracking-widest">Fais une pause pour t'inspirer.<br><span class="text-[var(--retro-red)]">Cooldown : 4H in-game</span></p>
                 
                 <div class="space-y-3 font-retro tracking-widest">
-                    <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-[var(--accent)]" onclick="launchDoorMiniGame('page')">
-                        <span class="font-bold text-white text-[11px]">🎵 Syndrome Page Blanche</span>
-                        <span class="text-[10px] text-[var(--accent)]">+20% Inspi</span>
+                    <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-[var(--accent)]" onclick="launchDoorMiniGame('concert')">
+                        <span class="font-bold text-white text-[11px]">🎸 Concert en salle</span>
+                        <span class="text-[10px] text-[var(--accent)]">-30% NRJ | -50$</span>
                     </button>
-                    <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-[var(--retro-green)]" onclick="launchDoorMiniGame('lufs')">
-                        <span class="font-bold text-white text-[11px]">🔊 Guerre du LUFS</span>
-                        <span class="text-[10px] text-[var(--retro-green)]">+10% Mult.</span>
+                    <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-[var(--retro-green)]" onclick="launchDoorMiniGame('openmic')">
+                        <span class="font-bold text-white text-[11px]">🎤 Open Mic local</span>
+                        <span class="text-[10px] text-[var(--retro-green)]">-20% NRJ | Gratuit</span>
                     </button>
-                    <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-[var(--retro-orange)]" onclick="launchDoorMiniGame('mono')">
-                        <span class="font-bold text-white text-[11px]">⚡ Mono Mix</span>
-                        <span class="text-[10px] text-[var(--retro-orange)]">+5% Mult.</span>
+                    <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-[var(--retro-orange)]" onclick="launchDoorMiniGame('vinyl')">
+                        <span class="font-bold text-white text-[11px]">💿 Marché aux vinyles</span>
+                        <span class="text-[10px] text-[var(--retro-orange)]">-10% NRJ | 30$ à 150$</span>
                     </button>
-                    <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-pink-500" onclick="launchDoorMiniGame('quiz')">
-                        <span class="font-bold text-white text-[11px]">🎛️ Quiz Plugin</span>
-                        <span class="text-[10px] text-pink-500">+1 Plugin</span>
+                    <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-pink-500" onclick="launchDoorMiniGame('prostudio')">
+                        <span class="font-bold text-white text-[11px]">🎛️ Studio d'enregistrement pro</span>
+                        <span class="text-[10px] text-pink-500">-40% NRJ | -200$</span>
+                    </button>
+                    <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-blue-400" onclick="launchDoorMiniGame('street')">
+                        <span class="font-bold text-white text-[11px]">🚶 Aller traîner en ville</span>
+                        <span class="text-[10px] text-blue-400">-5% NRJ | Gratuit</span>
                     </button>
                 </div>
             </div>
@@ -2769,6 +2773,7 @@ const DEFAULT_STATE = {
             trackList: [],
             echoAlignment: 0, // De -100 (Cynique/Sellout) à +100 (Qualité/Puriste)
             echoTrialUsed: false, // True si le joueur a déjà consommé ses 2 jours d'essai
+            activeDoorBoosts: { vinylCharges: 0, proStudioCharges: 0 },
             // Weekly challenge system
             activeChallenge: {
                 id: null,
@@ -6017,11 +6022,28 @@ const DEFAULT_STATE = {
             let lastHoverMesh = null;
             let lastHoveredSilhouetteGroup = null;
             let isMouseOverTooltip = false;
+            let tooltipHideTimer = null;
 
             const tooltipEl = document.getElementById('studio-buy-tooltip');
             if (tooltipEl) {
-                tooltipEl.addEventListener('mouseenter', () => { isMouseOverTooltip = true; });
-                tooltipEl.addEventListener('mouseleave', () => { isMouseOverTooltip = false; });
+                tooltipEl.addEventListener('mouseenter', () => {
+                    isMouseOverTooltip = true;
+                    if (tooltipHideTimer) {
+                        clearTimeout(tooltipHideTimer);
+                        tooltipHideTimer = null;
+                    }
+                });
+                tooltipEl.addEventListener('mouseleave', () => {
+                    isMouseOverTooltip = false;
+                    if (tooltipHideTimer) {
+                        clearTimeout(tooltipHideTimer);
+                        tooltipHideTimer = null;
+                    }
+                    tooltipHideTimer = setTimeout(() => {
+                        hideBuyTooltip();
+                        tooltipHideTimer = null;
+                    }, 300);
+                });
             }
 
             function findCatalogItemByObject(object) {
@@ -6044,6 +6066,10 @@ const DEFAULT_STATE = {
             }
 
             function hideBuyTooltip() {
+                if (tooltipHideTimer) {
+                    clearTimeout(tooltipHideTimer);
+                    tooltipHideTimer = null;
+                }
                 if (tooltipEl) tooltipEl.style.display = 'none';
                 if (lastHoveredSilhouetteGroup) {
                     lastHoveredSilhouetteGroup.traverse(child => {
@@ -6089,6 +6115,12 @@ const DEFAULT_STATE = {
                     }
 
                     if (foundSilhouette) {
+                        // On annule tout timer de fermeture car on survole à nouveau l'objet
+                        if (tooltipHideTimer) {
+                            clearTimeout(tooltipHideTimer);
+                            tooltipHideTimer = null;
+                        }
+
                         const { hit, info } = foundSilhouette;
                         const item = info.item;
                         const group = info.group;
@@ -6125,29 +6157,27 @@ const DEFAULT_STATE = {
 
                         const widthHalf = rect.width / 2;
                         const heightHalf = rect.height / 2;
-                        const screenX = (pos3D.x * widthHalf) + widthHalf + rect.left;
-                        const screenY = -(pos3D.y * heightHalf) + heightHalf + rect.top;
-
-                    if (tooltipEl) {
+                        
+                        if (tooltipEl) {
                             // Utilise "let" au lieu de "const" pour pouvoir les réajuster
-                    let screenX = (pos3D.x * widthHalf) + widthHalf + rect.left;
-                    let screenY = -(pos3D.y * heightHalf) + heightHalf + rect.top;
-    // --- NOUVEAU : ANTI-DÉBORDEMENT POUR LES OBJETS AUX EXTRÉMITÉS (Ex: Guitare) ---
-    const tw = tooltipEl.offsetWidth || 280;
-    const th = tooltipEl.offsetHeight || 120;
-    const margin = 15;
+                            let screenX = (pos3D.x * widthHalf) + widthHalf + rect.left;
+                            let screenY = -(pos3D.y * heightHalf) + heightHalf + rect.top;
+                            // --- NOUVEAU : ANTI-DÉBORDEMENT POUR LES OBJETS AUX EXTRÉMITÉS (Ex: Guitare) ---
+                            const tw = tooltipEl.offsetWidth || 280;
+                            const th = tooltipEl.offsetHeight || 120;
+                            const margin = 15;
 
-    // Contrainte X : le CSS décale de -50%, on bloque donc par rapport à la moitié du tooltip
-    if (screenX - (tw / 2) < margin) {
-        screenX = (tw / 2) + margin;
-    } else if (screenX + (tw / 2) > window.innerWidth - margin) {
-        screenX = window.innerWidth - (tw / 2) - margin;
-    }
+                            // Contrainte X : le CSS décale de -50%, on bloque donc par rapport à la moitié du tooltip
+                            if (screenX - (tw / 2) < margin) {
+                                screenX = (tw / 2) + margin;
+                            } else if (screenX + (tw / 2) > window.innerWidth - margin) {
+                                screenX = window.innerWidth - (tw / 2) - margin;
+                            }
 
-    // Contrainte Y : le CSS décale de -100% avec un margin-top de -30px
-    if (screenY - th - 30 < margin) {
-        screenY = th + 30 + margin; 
-    }
+                            // Contrainte Y : le CSS décale de -100% avec un margin-top de -30px
+                            if (screenY - th - 30 < margin) {
+                                screenY = th + 30 + margin; 
+                            }
 
                             document.getElementById('s-tooltip-name').innerText = item.name;
                             document.getElementById('s-tooltip-category').innerText = item.category.toUpperCase();
@@ -6205,7 +6235,12 @@ const DEFAULT_STATE = {
                     // 2. Normal interactable highlight fallback
                     const interactableHit = intersects.find(hit => interactableNames.includes(hit.object.name));
                     if (interactableHit) {
-                        if (!isMouseOverTooltip) hideBuyTooltip();
+                        if (!isMouseOverTooltip && !tooltipHideTimer) {
+                            tooltipHideTimer = setTimeout(() => {
+                                hideBuyTooltip();
+                                tooltipHideTimer = null;
+                            }, 350);
+                        }
 
                         const hitMesh = interactableHit.object;
                         if (lastHoverMesh !== hitMesh) {
@@ -6225,8 +6260,11 @@ const DEFAULT_STATE = {
                         if (prev && prev.edges) prev.edges.userData.hovered = false;
                         lastHoverMesh = null;
                     }
-                    if (!isMouseOverTooltip) {
-                        hideBuyTooltip();
+                    if (!isMouseOverTooltip && !tooltipHideTimer) {
+                        tooltipHideTimer = setTimeout(() => {
+                            hideBuyTooltip();
+                            tooltipHideTimer = null;
+                        }, 350);
                     }
                 } catch(e) { /* ignore */ }
             });
@@ -6238,9 +6276,12 @@ const DEFAULT_STATE = {
                         if (prev && prev.edges) prev.edges.userData.hovered = false;
                         lastHoverMesh = null;
                     }
-                    setTimeout(() => {
-                        if (!isMouseOverTooltip) hideBuyTooltip();
-                    }, 100);
+                    if (!isMouseOverTooltip && !tooltipHideTimer) {
+                        tooltipHideTimer = setTimeout(() => {
+                            hideBuyTooltip();
+                            tooltipHideTimer = null;
+                        }, 350);
+                    }
                 } catch(e){}
             });
         })();
@@ -9848,26 +9889,212 @@ function triggerRankUp(oldRank, newRank) {
         }
 
         function launchDoorMiniGame(gameId) {
+            let reqEnergy = 0;
+            let reqMoney = 0;
+
+            if (gameId === 'concert') { reqEnergy = 30; reqMoney = 50; }
+            else if (gameId === 'openmic') { reqEnergy = 20; reqMoney = 0; }
+            else if (gameId === 'vinyl') { reqEnergy = 10; reqMoney = 0; }
+            else if (gameId === 'prostudio') { reqEnergy = 40; reqMoney = 200; }
+            else if (gameId === 'street') { reqEnergy = 5; reqMoney = 0; }
+
+            if (state.energy < reqEnergy) {
+                showToast("Énergie insuffisante pour cette activité !", "error");
+                if (typeof playError === 'function') playError();
+                return;
+            }
+            if (state.money < reqMoney) {
+                showToast("Fonds insuffisants pour cette activité !", "error");
+                if (typeof playError === 'function') playError();
+                return;
+            }
+
             closeMiniGameMenu();
             
+            // Deduct costs (for vinyl, money is deducted inside the custom overlay)
+            state.energy = Math.max(0, state.energy - reqEnergy);
+            if (reqMoney > 0) {
+                logMoney(-reqMoney, `Activité ${gameId.toUpperCase()}`);
+            }
+
             // 1. Applique le cooldown (240 minutes = 4 heures in-game)
             if (!state.cooldowns) state.cooldowns = {};
             state.cooldowns.doorTimeReady = getTotalMins() + 240; 
             
             // 2. Cache le bouton d'action immédiatement
-            document.getElementById('door-action-btn').classList.add('hidden');
+            const doorBtn = document.getElementById('door-action-btn');
+            if (doorBtn) doorBtn.classList.add('hidden');
             
-            // 3. Lance le mini-jeu correspondant
-            if (gameId === 'page') {
-                if (typeof startBlankPageMiniGame === 'function') startBlankPageMiniGame();
-            } else if (gameId === 'lufs') {
-                if (typeof startLufsWarMiniGame === 'function') startLufsWarMiniGame();
-            } else if (gameId === 'mono') {
-                if (typeof triggerMonoMixMiniGame === 'function') triggerMonoMixMiniGame();
-            } else if (gameId === 'quiz') {
-                if (typeof startPluginQuiz === 'function') startPluginQuiz();
+            // 3. Lance le mini-jeu/activité correspondant
+            if (gameId === 'concert') {
+                startConcertEvent();
+            } else if (gameId === 'openmic') {
+                startOpenMicMiniGame();
+            } else if (gameId === 'vinyl') {
+                startVinylMarketEvent();
+            } else if (gameId === 'prostudio') {
+                startProStudioEvent();
+            } else if (gameId === 'street') {
+                startStreetEvent();
             }
             
+            updateHUD();
+            saveGame();
+        }
+
+        function startConcertEvent() {
+            state.inspi = Math.min(100, state.inspi + 30);
+            state.rep = Math.max(0, state.rep + 15);
+            let extraMsg = "";
+            if (Math.random() < 0.25) {
+                extraMsg = " Un rappeur connu t'a remarqué dans l'espace VIP !";
+                setTimeout(() => {
+                    triggerRandomEvent('collab_known');
+                }, 1500);
+            }
+            showToast("🎸 Concert génial ! +30 Inspiration, +15 Réputation." + extraMsg, "success");
+            if (typeof playSuccess === 'function') playSuccess();
+            updateHUD();
+        }
+
+        function startOpenMicMiniGame() {
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-black/90 z-[99999] flex flex-col items-center justify-center p-4 backdrop-blur-md font-retro';
+            overlay.innerHTML = `
+                <div class="bg-[#18181b] border border-[var(--accent)] rounded-2xl w-full max-w-md p-6 text-center shadow-2xl relative">
+                    <h3 class="text-xl font-bold text-white mb-4 tracking-widest uppercase">🎤 OPEN MIC LOCAL</h3>
+                    <p class="text-gray-400 text-xs mb-6">Attends que le curseur soit dans la zone verte centrale et clique sur "DROP THE BEAT" !</p>
+                    
+                    <!-- Jauge -->
+                    <div class="relative w-full h-8 bg-zinc-800 rounded-full border border-zinc-700 overflow-hidden mb-8">
+                        <!-- Zone verte (40% à 60%) -->
+                        <div class="absolute left-[40%] right-[40%] top-0 bottom-0 bg-emerald-500/40 border-l border-r border-emerald-400"></div>
+                        <!-- Curseur -->
+                        <div id="openmic-cursor" class="absolute left-0 top-0 bottom-0 w-2 bg-white shadow-[0_0_10px_#fff] transition-all duration-75"></div>
+                    </div>
+                    
+                    <button id="openmic-btn" class="btn-action w-full py-4 rounded-xl text-sm font-bold tracking-widest shadow-lg">DROP THE BEAT</button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            let cursorPosition = 0;
+            let direction = 1;
+            let active = true;
+
+            function animateCursor() {
+                if (!active) return;
+                cursorPosition += direction * 2.5;
+                if (cursorPosition >= 100) {
+                    cursorPosition = 100;
+                    direction = -1;
+                } else if (cursorPosition <= 0) {
+                    cursorPosition = 0;
+                    direction = 1;
+                }
+                const cursor = document.getElementById('openmic-cursor');
+                if (cursor) cursor.style.left = cursorPosition + '%';
+                requestAnimationFrame(animateCursor);
+            }
+            requestAnimationFrame(animateCursor);
+
+            const btn = overlay.querySelector('#openmic-btn');
+            btn.onclick = () => {
+                if (!active) return;
+                active = false;
+
+                // Succès entre 40% et 60%
+                if (cursorPosition >= 40 && cursorPosition <= 60) {
+                    logFollower(500);
+                    state.rep = Math.max(0, state.rep + 10);
+                    showToast("🎤 Carton plein à l'Open Mic ! La foule t'adore (+500 FANS, +10 REP) !", "success");
+                    if (typeof playSuccess === 'function') playSuccess();
+                } else {
+                    state.rep = Math.max(0, state.rep - 5);
+                    state.inspi = Math.min(100, state.inspi + 10);
+                    showToast("🎤 Tu as bégayé sur scène... Mais l'erreur instruit (-5 REP, +10 INSPI).", "error");
+                    if (typeof playError === 'function') playError();
+                }
+
+                overlay.remove();
+                updateHUD();
+                saveGame();
+            };
+        }
+
+        function startVinylMarketEvent() {
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-black/90 z-[99999] flex flex-col items-center justify-center p-4 backdrop-blur-md font-retro';
+            overlay.innerHTML = `
+                <div class="bg-[#18181b] border border-[var(--accent)] rounded-2xl w-full max-w-lg p-6 text-center shadow-2xl relative">
+                    <button id="close-vinyl-market" class="absolute top-4 right-4 text-gray-500 hover:text-[var(--retro-red)] transition-colors">✖</button>
+                    <h3 class="text-xl font-bold text-white mb-4 tracking-widest uppercase">💿 MARCHÉ AUX VINYLES</h3>
+                    <p class="text-gray-400 text-xs mb-6">Choisis un bac ou une pochette mystère. Son prix sera révélé à l'achat (entre 30$ et 150$).</p>
+                    
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="vinyl-crate cursor-pointer border border-zinc-700 bg-zinc-800/40 p-4 rounded-xl hover:border-[var(--accent)] transition-all flex flex-col items-center" data-idx="1">
+                            <span class="text-4xl mb-2">📦</span>
+                            <span class="text-[10px] text-gray-300">Bac Vintage</span>
+                        </div>
+                        <div class="vinyl-crate cursor-pointer border border-zinc-700 bg-zinc-800/40 p-4 rounded-xl hover:border-[var(--accent)] transition-all flex flex-col items-center" data-idx="2">
+                            <span class="text-4xl mb-2">📁</span>
+                            <span class="text-[10px] text-gray-300">Pochette Mystère</span>
+                        </div>
+                        <div class="vinyl-crate cursor-pointer border border-zinc-700 bg-zinc-800/40 p-4 rounded-xl hover:border-[var(--accent)] transition-all flex flex-col items-center" data-idx="3">
+                            <span class="text-4xl mb-2">💿</span>
+                            <span class="text-[10px] text-gray-300">Édition Limitée</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            overlay.querySelector('#close-vinyl-market').onclick = () => {
+                overlay.remove();
+            };
+
+            overlay.querySelectorAll('.vinyl-crate').forEach(el => {
+                el.onclick = () => {
+                    const price = Math.floor(30 + Math.random() * 121);
+                    if (state.money < price) {
+                        showToast(`Fonds insuffisants ! Cet album coûte ${price}$`, "error");
+                        if (typeof playError === 'function') playError();
+                        return;
+                    }
+
+                    logMoney(-price, "Achat Vinyle Marché");
+                    state.activeDoorBoosts.vinylCharges = (state.activeDoorBoosts.vinylCharges || 0) + 3;
+                    showToast(`💿 Achat réussi pour ${price}$ ! Boost Vinyle activé : +1.5 au score des 3 prochains exports.`, "success");
+                    if (typeof playSuccess === 'function') playSuccess();
+
+                    overlay.remove();
+                    updateHUD();
+                    saveGame();
+                };
+            });
+        }
+
+        function startProStudioEvent() {
+            state.activeDoorBoosts.proStudioCharges = (state.activeDoorBoosts.proStudioCharges || 0) + 1;
+            showToast("🎛️ Session Studio réservée ! Ton prochain export sera propulsé avec un bonus de +1.5 au score sans cooldown.", "success");
+            if (typeof playSuccess === 'function') playSuccess();
+            updateHUD();
+            saveGame();
+        }
+
+        function startStreetEvent() {
+            state.inspi = Math.min(100, state.inspi + 15);
+            const ambientPhrases = [
+                "Tu as entendu une conversation animée dans le métro, ça te donne une idée géniale de titre.",
+                "Une affiche de concert vintage à moitié déchirée t'inspire une nouvelle structure de BPM.",
+                "Le rythme saccadé d'un marteau-piqueur au loin te donne une idée de pattern de batterie drill.",
+                "Tu observes le coucher de soleil sur les toits de la ville, parfait pour une mélo mélancolique.",
+                "Une rencontre rapide avec un fan de rue te regonfle le moral et booste ton inspiration."
+            ];
+            const phrase = ambientPhrases[Math.floor(Math.random() * ambientPhrases.length)];
+            showToast(`🚶 ${phrase} (+15 INSPI)`, "success");
+            if (typeof playSuccess === 'function') playSuccess();
+            updateHUD();
             saveGame();
         }
 
@@ -9970,6 +10197,7 @@ function triggerRankUp(oldRank, newRank) {
             merged.downloadedCracks = merged.downloadedCracks && typeof merged.downloadedCracks === 'object' ? merged.downloadedCracks : {};
             merged.ownedFurniture = Array.isArray(merged.ownedFurniture) ? merged.ownedFurniture : [];
             merged.dailyQuests = Array.isArray(merged.dailyQuests) ? merged.dailyQuests : [];
+            merged.activeDoorBoosts = merged.activeDoorBoosts && typeof merged.activeDoorBoosts === 'object' ? merged.activeDoorBoosts : { vinylCharges: 0, proStudioCharges: 0 };
             
             // SÉCURITÉ ACHIEVEMENTS : S'assure que le statut rewardClaimed est correctement conservé
             merged.achievements = merged.achievements || {};
@@ -11842,6 +12070,27 @@ function triggerRankUp(oldRank, newRank) {
                                                 Math.floor(1 + Math.random() * 3);
 
                 let finalTrackScore = trackScore;
+                
+                // Boosts Vinyles et Studio Pro
+                let consumedProStudio = false;
+                if (state.activeDoorBoosts && state.activeDoorBoosts.vinylCharges > 0) {
+                    state.activeDoorBoosts.vinylCharges--;
+                    finalTrackScore += 1.5;
+                    critique += "\n[Boost Vinyle] Échantillonnage vinyle haut de gamme (+1.5 score) !";
+                }
+                if (state.activeDoorBoosts && state.activeDoorBoosts.proStudioCharges > 0) {
+                    state.activeDoorBoosts.proStudioCharges--;
+                    finalTrackScore += 1.5;
+                    consumedProStudio = true;
+                    critique += "\n[Boost Pro Studio] Rendu analogique haute résolution (+1.5 score) !";
+                }
+                
+                // On met à jour toastMsg et finalTrackScore avec un max de 10
+                finalTrackScore = Math.min(10, finalTrackScore);
+                toastMsg = `${resultTxt}${critique}\n+$${moneyGain}`;
+                if (follGain > 0) toastMsg += ` | +${follGain} Fans`;
+                if (repGain !== 0) toastMsg += ` | ${repGain > 0 ? '+' : ''}${repGain} Rep`;
+
                 try {
                     if ((Number(state.inspi) || 0) <= 0) {
                         const pen = Math.floor(Math.random() * 3) + 1; // 1..3
@@ -11910,6 +12159,10 @@ function triggerRankUp(oldRank, newRank) {
                     if (typeof startLufsWarMiniGame === 'function') {
                         setTimeout(startLufsWarMiniGame, 1500); 
                     }
+                }
+
+                if (consumedProStudio) {
+                    state.cooldowns.dawTimeReady = getTotalMins();
                 }
 
                 updateHUD();
@@ -12617,8 +12870,8 @@ function triggerRankUp(oldRank, newRank) {
             const rand = Math.random();
             const eventType = forcedType || (rand < 0.45 ? 'collab' : rand < 0.80 ? 'vol' : 'badbuzz');
                 
-            if (eventType === 'collab') {
-                const isKnown = Math.random() < 0.2; 
+            if (eventType === 'collab' || eventType === 'collab_known') {
+                const isKnown = (eventType === 'collab_known') ? true : (Math.random() < 0.2); 
                 const rapper = pickRapper(isKnown);
 
                 title.innerText = "🤝 COLLABORATION";
