@@ -33,6 +33,11 @@
                 --bg-color-4: #312e81;
             }
 
+            @keyframes moveStripes {
+                0% { background-position: 0 0; }
+                100% { background-position: 28px 0; }
+            }
+
             @keyframes blank-page-note-float {
                 0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
                 100% { transform: translateY(-100px) scale(0.5) rotate(45deg); opacity: 0; }
@@ -2393,8 +2398,22 @@
                 </div>
             </div>
 
-            <div class="window-content daw-grid-container bg-[#121214] p-2 md:p-4 gap-3 md:gap-4 flex flex-col md:flex-row">
+            <div class="window-content daw-grid-container bg-[#121214] p-2 md:p-4 gap-3 md:gap-4 flex flex-col md:flex-row relative">
                 
+                <!-- DAW rendering overlay -->
+                <div id="daw-render-overlay" class="absolute inset-0 z-[100] bg-black/85 backdrop-blur-md hidden flex-col items-center justify-center">
+                    <div class="text-[var(--accent)] font-mono text-sm md:text-lg mb-4 tracking-widest font-bold animate-pulse">AUDIO RENDERING IN PROGRESS...</div>
+                    <div class="w-3/4 max-w-md h-8 bg-[#09090b] border-2 border-[#3f3f46] p-1 rounded-sm shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+                        <div id="daw-render-bar" class="h-full bg-gradient-to-r from-[var(--retro-blue)] to-[var(--accent)] w-0 relative overflow-hidden transition-all duration-75">
+                            <div class="absolute inset-0 opacity-20" style="background-image: repeating-linear-gradient(-45deg, transparent, transparent 10px, #000 10px, #000 20px); animation: moveStripes 1s linear infinite;"></div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between w-3/4 max-w-md mt-2 font-mono text-[10px] text-gray-400 uppercase tracking-widest">
+                        <span id="daw-render-pct">0%</span>
+                        <span id="daw-render-time">Calculating ETA...</span>
+                    </div>
+                </div>
+
                 <div class="flex-1 flex flex-col relative md:min-w-0">
                     
                     <div class="mb-3 relative group">
@@ -4582,6 +4601,10 @@ const DEFAULT_STATE = {
         doorPanel.position.set(0, 1.62, 0);
         doorGroup.add(doorPanel);
 
+        [doorPanel, frameCasingLeft, frameCasingRight, frameCasingTop].forEach(mesh => {
+            mesh.name = 'door_mesh';
+        });
+
         // 3. --- DÉTAILS DE RELIEF (Panneautage classique) ---
         // Ces éléments sont ajoutés SUR la porte pour simuler les moulures
         const reliefColor = '#323238'; // Légèrement plus sombre que la porte pour ombrer
@@ -4809,7 +4832,7 @@ const DEFAULT_STATE = {
         const INTERACTION_DIST = 2; 
         const HIGHLIGHT_LINE_COLOR = new THREE.Color('#ffffff');
         const DEFAULT_LINE_COLOR = new THREE.Color(0x000000); 
-        const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp', 'speaker_mesh', 'achievements_board_mesh']; // Ajout de 'speaker_mesh'
+        const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp', 'speaker_mesh', 'achievements_board_mesh', 'door_mesh']; // Ajout de 'speaker_mesh' et 'door_mesh'
         const highlightItems = [];
 
         function initProximityHighlight() {
@@ -5945,7 +5968,8 @@ const DEFAULT_STATE = {
                     let interactDist = INTERACTION_DIST;
                     if (objName === 'bed_mesh') interactDist = 2.8;
                     if (objName === 'pc_mesh') interactDist = 2.4;
-                if (objName === 'achievements_board_mesh') interactDist = 2.5;
+                    if (objName === 'door_mesh') interactDist = 3.0;
+                    if (objName === 'achievements_board_mesh') interactDist = 2.5;
                     if (objName === 'sofa_mesh') interactDist = 3.0;
 
                     if (dist <= interactDist) {
@@ -5953,6 +5977,15 @@ const DEFAULT_STATE = {
 
                         if (objName === 'pc_mesh') enterPC();
                         else if (objName === 'achievements_board_mesh') openAchievementsBoard();
+                        else if (objName === 'door_mesh') {
+                            const doorReady = parseInt(state.cooldowns?.doorTimeReady, 10) || 0;
+                            const canPlayDoor = getTotalMins() >= doorReady;
+                            if (canPlayDoor && !state.isEventActive && !state.isSleeping && !state.isSitting) {
+                                openMiniGameMenu();
+                            } else if (!canPlayDoor) {
+                                showToast("T'es déjà sorti récemment. Va taffer.", "warning");
+                            }
+                        }
                         else if (objName === 'synth_mesh') {
                             if (isOwned('synth')) openPianoRoll();
                             else showToast("Tu dois d'abord acheter le Synthétiseur dans Studio+ !", "warning");
@@ -9565,8 +9598,8 @@ function triggerRankUp(oldRank, newRank) {
                 }
             ];
 
-            // Génère entre 5 et 8 clusters de nuages
-            const count = 5 + Math.floor(Math.random() * 4); 
+            // Génère entre 15 et 26 clusters de nuages
+            const count = 15 + Math.floor(Math.random() * 12); 
             for (let i = 0; i < count; i++) {
                 const cloud = document.createElement('div');
                 cloud.className = 'cloud-2d';
@@ -9574,9 +9607,9 @@ function triggerRankUp(oldRank, newRank) {
                 // Sélection aléatoire d'un modèle de nuage
                 const pattern = patterns[Math.floor(Math.random() * patterns.length)];
                 const scale = 0.8 + Math.random() * 1.5; 
-                const top = 5 + Math.random() * 65; 
+                const top = -10 + Math.random() * 85; 
                 const baseOpacity = 0.22 + Math.random() * 0.22; 
-                const duration = 100 + Math.random() * 140; 
+                const duration = 80 + Math.random() * 200; 
                 const delay = -(Math.random() * duration); 
                 
                 cloud.style.setProperty('--w', `${pattern.width}px`);
@@ -11117,7 +11150,7 @@ function triggerRankUp(oldRank, newRank) {
             if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar) {
                 // Règle ici les coordonnées X et Z (et Y) approximatives de ta porte 3D !
                 // (Modifie x: 4.5, z: 4.5 selon l'endroit où se trouve la porte dans ta scène)
-                const doorPos = new THREE.Vector3(4.5, -1, 4.5); 
+                const doorPos = new THREE.Vector3(-4.95, -1, 4.0); 
                 const dist = currentRoomAvatar.position.distanceTo(doorPos);
                 
                 const doorBtn = document.getElementById('door-action-btn');
@@ -11870,6 +11903,20 @@ function triggerRankUp(oldRank, newRank) {
             const playhead = document.getElementById('playhead');
             const dawWindow = document.getElementById('app-daw');
 
+            // Afficher l'overlay d'export
+            const renderOverlay = document.getElementById('daw-render-overlay');
+            if (renderOverlay) {
+                renderOverlay.classList.remove('hidden');
+                renderOverlay.classList.add('flex');
+                
+                const renderBar = document.getElementById('daw-render-bar');
+                const renderPct = document.getElementById('daw-render-pct');
+                const renderTime = document.getElementById('daw-render-time');
+                if (renderBar) renderBar.style.width = '0%';
+                if (renderPct) renderPct.innerText = '0%';
+                if (renderTime) renderTime.innerText = 'Calculating ETA...';
+            }
+
             btn.innerText = "RENDERING..."; btn.disabled = true;
             document.getElementById('playhead').classList.remove('playhead-animated');
             progCont.classList.remove('hidden'); prog.style.width = '0%';
@@ -11880,6 +11927,9 @@ function triggerRankUp(oldRank, newRank) {
 
             const vuInterval = setInterval(() => {
                 simulateVuMeter(14);
+                // Bruit de calcul machine/processeur
+                playTone(800 + Math.random() * 1000, 'square', 0.02, 0.01);
+                
                 for (let i = 1; i <= 3; i++) {
                     const k = document.getElementById(`knob-${i}`);
                     if (k) { 
@@ -11898,9 +11948,24 @@ function triggerRankUp(oldRank, newRank) {
                 prog.style.width = Math.min(100, p) + '%';
                 playhead.style.left = `${110 + (Math.min(100, p) * 6)}px`;
                 
+                const renderBar = document.getElementById('daw-render-bar');
+                const renderPct = document.getElementById('daw-render-pct');
+                const renderTime = document.getElementById('daw-render-time');
+                if (renderBar) renderBar.style.width = Math.min(100, p) + '%';
+                if (renderPct) renderPct.innerText = Math.floor(Math.min(100, p)) + '%';
+                if (renderTime) {
+                    const remainingPercent = 100 - p;
+                    const etaSeconds = Math.max(1, Math.ceil((remainingPercent / (4 * speedMult)) * 0.03));
+                    renderTime.innerText = `ETA: ${etaSeconds}s`;
+                }
+                
             if (p >= 100) {
                 clearInterval(interval);
                 clearInterval(vuInterval);
+                if (renderOverlay) {
+                    renderOverlay.classList.add('hidden');
+                    renderOverlay.classList.remove('flex');
+                }
                 if (dawWindow) {
                     dawWindow.style.transform = 'none'; 
                     dawWindow.classList.remove('daw-rendering');
