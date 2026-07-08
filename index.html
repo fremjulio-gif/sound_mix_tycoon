@@ -2977,7 +2977,8 @@ const DEFAULT_STATE = {
                 'bac_a_sable': { unlocked: false, rewardClaimed: false, name: "Bac à sable", icon: "⏳", description: "Posséder un total de 10 samples dans sa collection." },
                 'crate_digger': { unlocked: false, rewardClaimed: false, name: "Crate Digger", icon: "📦", description: "Trouver et posséder un sample légendaire de Tier 4." },
                 'cleared': { unlocked: false, rewardClaimed: false, name: "Cleared", icon: "✅", description: "Avoir négocié ou libéré les droits d'auteur sur 3 samples différents." },
-                'ne_me_quitte_pas': { unlocked: false, rewardClaimed: false, name: "Ne me quitte pas", icon: "🌹", description: "Faire l'acquisition de la voix poignante de Jacques Brel." }
+                'ne_me_quitte_pas': { unlocked: false, rewardClaimed: false, name: "Ne me quitte pas", icon: "🌹", description: "Faire l'acquisition de la voix poignante de Jacques Brel." },
+                'digging_initiation': { unlocked: false, rewardClaimed: false, name: "Digging Initiation", icon: "⛏️", description: "Faire l'acquisition de ton tout premier sample." }
             }
         };
 
@@ -7249,11 +7250,13 @@ function triggerRankUp(oldRank, newRank) {
                 const technical = ACHIEVEMENT_DETAILS?.[id] || {};
                 const saved = existing[id] || {};
 
+                const wasRewardClaimed = typeof saved === 'object' ? Boolean(saved.rewardClaimed) : false;
                 normalized[id] = { 
                     ...template, 
                     ...technical, 
                     ...(typeof saved === 'object' ? saved : {}), 
-                    unlocked: Boolean(saved?.unlocked || saved === true) 
+                    unlocked: Boolean(saved?.unlocked || saved === true),
+                    rewardClaimed: wasRewardClaimed
                 };
             });
             state.achievements = normalized;
@@ -7489,7 +7492,7 @@ function triggerRankUp(oldRank, newRank) {
                     if (!achievement.rewardClaimed) {
                         // Bouton pour récupérer le loot
                         rewardUI = `
-                                                <button class="mt-3 w-full bg-[var(--accent)] text-white hover:bg-[var(--retro-green)] hover:text-black transition-colors py-3 rounded-lg font-retro text-[11px] font-bold tracking-widest shadow-lg" 
+                                                <button class="mt-3 w-full mt-auto bg-[var(--accent)] text-white hover:bg-[var(--retro-green)] hover:text-black transition-colors py-3 rounded-lg font-retro text-[11px] font-bold tracking-widest shadow-lg" 
                                 onclick="claimAchievementReward('${achievement.id}', event)">
                             CLAIM: ${rewardString}
                         </button>`;
@@ -8986,7 +8989,15 @@ function triggerRankUp(oldRank, newRank) {
         toujours_dans_le_rouge: { category: 'studio', target: 1, unit: 'export', secret: true, reward: { money: 300, rep: 5 } },
         lumiere_divine: { category: 'studio', progressPath: 'stats.lampToggles', target: 20, unit: 'switches', secret: true, reward: { money: 50 } },
         vrai_rat_de_studio: { category: 'studio', progressPath: 'stats.awakeDays', target: 3, unit: 'days', secret: true, reward: { money: 1000, rep: 20 } },
-        zero_energie_zero_probleme: { category: 'studio', target: 1, unit: 'export', secret: true, reward: { money: 100, rep: 10 } }
+        zero_energie_zero_probleme: { category: 'studio', target: 1, unit: 'export', secret: true, reward: { money: 100, rep: 10 } },
+        echo_sellout: { category: 'business', target: 1, unit: 'choice', secret: true, reward: { money: 1500 } },
+        echo_purist: { category: 'music', target: 1, unit: 'choice', secret: true, reward: { rep: 25 } },
+        echo_scammed: { category: 'business', target: 1, unit: 'sub', secret: true, reward: { followers: 500 } },
+        bac_a_sable: { category: 'studio', progressPath: 'ownedSamples.length', target: 10, unit: 'samples', reward: { rep: 50, money: 1000 } },
+        crate_digger: { category: 'music', target: 1, unit: 'sample', secret: true, reward: { rep: 100, followers: 2000 } },
+        cleared: { category: 'business', progressPath: 'clearedSamples.length', target: 3, unit: 'samples', reward: { money: 3000 } },
+        ne_me_quitte_pas: { category: 'music', target: 1, unit: 'sample', secret: true, reward: { followers: 5000, rep: 150 } },
+        digging_initiation: { category: 'studio', progressPath: 'ownedSamples.length', target: 1, unit: 'sample', reward: { money: 200, rep: 5 } }
     };
         let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
         normalizeAchievementState();
@@ -10126,6 +10137,7 @@ function triggerRankUp(oldRank, newRank) {
                     state.ownedSamples.push(sampleId);
                     
                     // Check achievements on buy
+                    checkAchievement('digging_initiation', () => true);
                     if (state.ownedSamples.length >= 10) checkAchievement('bac_a_sable', () => true);
                     if (sample.tier === 4) checkAchievement('crate_digger', () => true);
                     if (sampleId === 's_brel') checkAchievement('ne_me_quitte_pas', () => true);
