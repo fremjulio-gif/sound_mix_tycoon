@@ -833,7 +833,7 @@
                 #mobile-nav { 
                     display: flex !important; 
                     flex-direction: row !important; 
-                    justify-content: space-around !important; 
+                    justify-content: space-between !important; 
                     align-items: center !important;
                     width: 100% !important;
                     left: 0 !important;
@@ -841,6 +841,8 @@
                     height: calc(60px + env(safe-area-inset-bottom)) !important;
                     padding-bottom: env(safe-area-inset-bottom) !important;
                     padding-top: 0 !important;
+                    padding-left: 12px !important;
+                    padding-right: 12px !important;
                     background: rgba(10, 10, 15, 0.95) !important;
                     backdrop-filter: blur(20px) !important;
                     z-index: 6000 !important; /* Priorité maximale sur mobile */
@@ -2363,7 +2365,7 @@
                 </div>
             </div>
 
-            <div id="mobile-nav" class="fixed bottom-0 left-0 w-full liquid-glass-heavy justify-around items-center z-[60] border-t border-white/10 hidden">
+            <div id="mobile-nav" class="fixed bottom-0 left-0 w-full liquid-glass-heavy justify-between items-center z-[60] border-t border-white/10 hidden px-2">
                 <div class="flex flex-col items-center justify-center cursor-pointer h-full w-full group" onclick="openApp('app-daw')">
                     <svg class="w-5 h-5 text-orange-400 group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
                     <span class="text-[8px] mt-1 font-retro text-gray-300">STUDIO</span>
@@ -2383,10 +2385,6 @@
                 <div class="flex flex-col items-center justify-center cursor-pointer h-full w-full group" onclick="openApp('app-echo')">
                     <svg class="w-5 h-5 text-[var(--retro-orange)] group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
                     <span class="text-[8px] mt-1 font-retro text-gray-300">ECHO</span>
-                </div>
-                <div class="flex flex-col items-center justify-center cursor-pointer h-full w-full group" onclick="cycleTheme()">
-                    <svg class="w-5 h-5 text-[var(--accent)] group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                    <span class="text-[8px] mt-1 font-retro text-[var(--accent)]">THEME</span>
                 </div>
             </div>
 
@@ -2570,14 +2568,26 @@
                                 <button class="btn-voice btn-daw-pad flex-1 py-2 text-[9px] rounded" data-val="instru" onclick="selectDawVoice('instru')">Instru</button>
                             </div>
                             
-                            <div class="w-full md:w-[160px] flex-shrink-0 h-[48px] relative group">
-                                <div class="absolute inset-y-0 left-0 bg-[#27272a] w-8 flex items-center justify-center rounded-l border border-[#3f3f46] pointer-events-none group-hover:border-[#10b981] transition-colors z-10">
-                                    <span class="text-[#a1a1aa] text-[10px] font-bold font-mono">FX</span>
+                            <div class="flex flex-col gap-1.5 min-w-[160px]">
+                                <div class="w-full h-[32px] relative group">
+                                    <div class="absolute inset-y-0 left-0 bg-[#27272a] w-8 flex items-center justify-center rounded-l border border-[#3f3f46] pointer-events-none group-hover:border-[#10b981] transition-colors z-10">
+                                        <span class="text-[#a1a1aa] text-[9px] font-bold font-mono">FX</span>
+                                    </div>
+                                    <select id="daw-plugin" class="w-full h-full bg-[#09090b] border border-[#3f3f46] rounded pl-10 pr-6 outline-none text-[#d1d5db] text-[9px] font-mono cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] appearance-none group-hover:border-[#10b981] group-hover:shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all">
+                                        <option value="">- Clean Mix -</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none text-[#10b981] text-[9px] opacity-70 group-hover:opacity-100">▼</div>
                                 </div>
-                                <select id="daw-plugin" class="w-full h-full bg-[#09090b] border border-[#3f3f46] rounded pl-10 pr-6 outline-none text-[#d1d5db] text-[9px] font-mono cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] appearance-none group-hover:border-[#10b981] group-hover:shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all">
-                                    <option value="">- Clean Mix -</option>
-                                </select>
-                                <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none text-[#10b981] text-[10px] opacity-70 group-hover:opacity-100">▼</div>
+                                <div class="w-full h-[32px] relative group">
+                                    <div class="absolute inset-y-0 left-0 bg-[#27272a] w-8 flex items-center justify-center rounded-l border border-[#3f3f46] pointer-events-none group-hover:border-[#10b981] transition-colors z-10">
+                                        <span class="text-[#a1a1aa] text-[9px] font-bold font-mono">SMP</span>
+                                    </div>
+                                    <select id="daw-sample" class="w-full h-full bg-[#09090b] border border-[#3f3f46] rounded pl-10 pr-6 outline-none text-[#d1d5db] text-[9px] font-mono cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] appearance-none group-hover:border-[#10b981] group-hover:shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all" onchange="onSampleSelected(this.value)">
+                                        <option value="">- Aucun Sample -</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none text-[#10b981] text-[9px] opacity-70 group-hover:opacity-100">▼</div>
+                                </div>
+                                <div id="sample-status-tag" class="text-[8px] font-mono text-center tracking-wider rounded px-1.5 py-0.5 hidden"></div>
                             </div>
 
                             <div class="w-full md:w-[220px] bg-[#09090b] border border-[#27272a] rounded-lg flex items-center px-4 py-2 gap-4 flex-shrink-0 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]">
@@ -2795,6 +2805,7 @@ const DEFAULT_STATE = {
             stats: { tracks: 0, bangers: 0, flops: 0, viruses: 0, crackDownloads: 0, consecutiveFlops: 0, sofaChills: 0, lampToggles: 0, awakeDays: 0 },
             cooldowns: { dawTimeReady: 0, crackzTimeReady: 0, echoSubExpiry: 0, storyTimeReady: 0, sponsors: {} },
             inventory: [], ownedCracks: [], downloadedCracks: {}, ownedFurniture: [],
+            ownedSamples: [], clearedSamples: [], activeSample: null,
             history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
             isExporting: false, isSleeping: false, isEventActive: false,
             isSitting: false,
@@ -2834,9 +2845,26 @@ const DEFAULT_STATE = {
                 'vrai_rat_de_studio': { unlocked: false, rewardClaimed: false, name: "Vrai Rat de Studio", icon: "🧛‍♂️", description: "Passer 3 jours entiers in-game sans jamais cliquer sur le lit pour dormir." },
                 'echo_sellout': { unlocked: false, rewardClaimed: false, name : "Yes-Man", icon: "🤑", description: "Façonner ECHO pour qu'il devienne une machine à cash cynique." },
                 'echo_purist': { unlocked: false, rewardClaimed: false, name: "Ingé Son Virtuel", icon: "🎛️", description: "Pousser ECHO à devenir un puriste de la dynamique." },
-                'echo_scammed': { unlocked: false, rewardClaimed: false, name: "Pigeon ?", icon: "💸", description: "Payer l'abonnement complet à ECHO OS." }
+                'echo_scammed': { unlocked: false, rewardClaimed: false, name: "Pigeon ?", icon: "💸", description: "Payer l'abonnement complet à ECHO OS." },
+                'bac_a_sable': { unlocked: false, rewardClaimed: false, name: "Bac à sable", icon: "⏳", description: "Posséder un total de 10 samples dans sa collection." },
+                'crate_digger': { unlocked: false, rewardClaimed: false, name: "Crate Digger", icon: "📦", description: "Trouver et posséder un sample légendaire de Tier 4." },
+                'cleared': { unlocked: false, rewardClaimed: false, name: "Cleared", icon: "✅", description: "Avoir négocié ou libéré les droits d'auteur sur 3 samples différents." },
+                'ne_me_quitte_pas': { unlocked: false, rewardClaimed: false, name: "Ne me quitte pas", icon: "🌹", description: "Faire l'acquisition de la voix poignante de Jacques Brel." }
             }
         };
+
+        const SAMPLE_CATALOG = [
+            { id: 's_amen', name: 'Amen Break', tier: 1, genre: 'Drum & Bass', bonus: 1, risque: 0.15, price: 100, reqRep: 5, ref: 'The Winstons - Amen, Brother', desc: 'Le break de batterie légendaire. Très stable.' },
+            { id: 's_funky', name: 'Funky Drummer', tier: 1, genre: 'Hip-Hop', bonus: 1, risque: 0.20, price: 150, reqRep: 5, ref: 'James Brown - Funky Drummer', desc: 'Rythme funk mythique incontournable.' },
+            { id: 's_brel', name: 'Ne Me Quitte Pas', tier: 2, genre: 'Pop', bonus: 2, risque: 0.30, price: 300, reqRep: 15, ref: 'Jacques Brel - Ne Me Quitte Pas', desc: 'Une voix pleine d\'émotion dramatique.' },
+            { id: 's_stairway', name: 'Stairway Flute', tier: 3, genre: 'Synthwave', bonus: 2, risque: 0.40, price: 500, reqRep: 30, ref: 'Led Zeppelin - Stairway to Heaven', desc: 'Une intro mélodique mystique.' },
+            { id: 's_thriller', name: 'Thriller Laugh', tier: 4, genre: 'French House', bonus: 3, risque: 0.55, price: 900, reqRep: 50, ref: 'Michael Jackson - Thriller', desc: 'Le rire terrifiant le plus célèbre de la pop.' },
+            { id: 's_love', name: 'L-O-V-E Sax', tier: 2, genre: 'Pop', bonus: 2, risque: 0.30, price: 350, reqRep: 15, ref: 'Nat King Cole - L-O-V-E', desc: 'Une ligne de saxophone chaleureuse et romantique.' },
+            { id: 's_stax', name: 'Stax Horns', tier: 2, genre: 'French House', bonus: 2, risque: 0.25, price: 250, reqRep: 12, ref: 'Stax Records Brass Section', desc: 'Cuivres rutilants de soul américaine.' },
+            { id: 's_voodoo', name: 'Voodoo Chant', tier: 3, genre: 'Drum & Bass', bonus: 2, risque: 0.45, price: 600, reqRep: 35, ref: 'Jimi Hendrix - Voodoo Child', desc: 'Un riff de guitare électrique distordue psychédélique.' },
+            { id: 's_future', name: 'Retro Future', tier: 3, genre: 'Synthwave', bonus: 3, risque: 0.50, price: 750, reqRep: 40, ref: 'Kraftwerk - The Robots', desc: 'Synthétiseur analogique rétro-futuriste.' },
+            { id: 's_classic', name: 'Chopin Nocturne', tier: 4, genre: 'Hip-Hop', bonus: 3, risque: 0.65, price: 1000, reqRep: 55, ref: 'Frédéric Chopin - Nocturne in E-flat major', desc: 'Mélodie de piano classique chargée de nostalgie.' }
+        ];
 
     // ==========================================
     // GESTION DE L'ÉCRAN DE CHARGEMENT
@@ -9756,6 +9784,7 @@ function triggerRankUp(oldRank, newRank) {
         function selectDawGenre(val = null) {
         if (val) currentDawGenre = val;
         updateDawGenres();
+        if (typeof populateDawSamples === 'function') populateDawSamples();
         playBleep();
     }
         function selectDawVoice(val = 'm') {
@@ -9787,6 +9816,191 @@ function triggerRankUp(oldRank, newRank) {
 
             if (select) select.innerHTML = html;
         }
+
+        window.populateDawSamples = function() {
+            const select = document.getElementById('daw-sample');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">- Aucun Sample -</option>';
+            
+            SAMPLE_CATALOG.forEach(sample => {
+                const isOwned = state.ownedSamples && state.ownedSamples.includes(sample.id);
+                const isCleared = state.clearedSamples && state.clearedSamples.includes(sample.id);
+                const activeGenre = currentDawGenre || "";
+                const isCompatible = activeGenre.toLowerCase() === sample.genre.toLowerCase();
+                const compTxt = isCompatible ? "🎯" : "❌";
+                
+                let label = "";
+                if (isOwned) {
+                    label = `${sample.name} (${sample.genre}) [${isCleared ? 'CLEARED' : 'UNCLEARED'}]`;
+                } else {
+                    label = `🔓 [Acheter - $${sample.price}] ${sample.name} (${sample.genre})`;
+                }
+                
+                const opt = document.createElement('option');
+                opt.value = sample.id;
+                opt.innerText = label;
+                if (state.activeSample && state.activeSample.id === sample.id) {
+                    opt.selected = true;
+                }
+                select.appendChild(opt);
+            });
+            
+            updateSampleStatusTag();
+        };
+
+        window.onSampleSelected = function(sampleId) {
+            if (!sampleId) {
+                state.activeSample = null;
+                updateSampleStatusTag();
+                saveGame();
+                return;
+            }
+            
+            const sample = SAMPLE_CATALOG.find(s => s.id === sampleId);
+            if (!sample) return;
+            
+            const isOwned = state.ownedSamples && state.ownedSamples.includes(sampleId);
+            if (!isOwned) {
+                // Check reputation requirements
+                if (state.rep < sample.reqRep) {
+                    showToast(`Notoriété insuffisante ! Rep. requise : ${sample.reqRep} (Actuel : ${state.rep})`, "error");
+                    document.getElementById('daw-sample').value = state.activeSample ? state.activeSample.id : "";
+                    playError();
+                    return;
+                }
+
+                // Prompt user to purchase
+                if (confirm(`Acheter le sample "${sample.name}" pour $${sample.price} ?\n(${sample.desc})`)) {
+                    if (state.money >= sample.price) {
+                        logMoney(-sample.price, `Achat sample : ${sample.name}`);
+                        state.ownedSamples.push(sampleId);
+                        state.activeSample = sample;
+                        
+                        // Check achievements on buy
+                        if (state.ownedSamples.length >= 10) {
+                            checkAchievement('bac_a_sable', () => true);
+                        }
+                        if (sample.tier === 4) {
+                            checkAchievement('crate_digger', () => true);
+                        }
+                        if (sampleId === 's_brel') {
+                            checkAchievement('ne_me_quitte_pas', () => true);
+                        }
+                        
+                        showToast(`Sample "${sample.name}" acheté avec succès !`, "success");
+                        playTone(520, 'sine', 0.1, 0.1);
+                        populateDawSamples();
+                        saveGame();
+                    } else {
+                        showToast("Fonds insuffisants pour acheter ce sample !", "error");
+                        document.getElementById('daw-sample').value = state.activeSample ? state.activeSample.id : "";
+                        playError();
+                    }
+                } else {
+                    document.getElementById('daw-sample').value = state.activeSample ? state.activeSample.id : "";
+                }
+            } else {
+                state.activeSample = sample;
+                updateSampleStatusTag();
+                saveGame();
+            }
+        };
+
+        window.updateSampleStatusTag = function() {
+            const tag = document.getElementById('sample-status-tag');
+            if (!tag) return;
+            
+            if (!state.activeSample) {
+                tag.classList.add('hidden');
+                return;
+            }
+            
+            const isCompatible = (currentDawGenre || "").toLowerCase() === state.activeSample.genre.toLowerCase();
+            tag.classList.remove('hidden');
+            if (isCompatible) {
+                tag.className = "text-[8px] font-mono text-center tracking-wider rounded px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                tag.innerText = `COMPATIBLE (+${state.activeSample.bonus} SCORE)`;
+            } else {
+                tag.className = "text-[8px] font-mono text-center tracking-wider rounded px-1.5 py-0.5 bg-red-500/20 text-red-400 border border-red-500/30";
+                tag.innerText = "INCOMPATIBLE (-2 SCORE)";
+            }
+        };
+
+        window.triggerLegalClaim = function(sample, moneyGain, onResolved) {
+            state.isEventActive = true;
+            const container = document.createElement('div');
+            container.id = 'legal-claim-modal';
+            container.className = 'fixed inset-0 z-[99999] flex items-center justify-center bg-black/85 backdrop-blur-md px-4';
+            
+            const p30 = Math.floor(moneyGain * 0.3);
+            const p60 = Math.floor(moneyGain * 0.6);
+            const canAffordClearance = state.money >= 800;
+
+            container.innerHTML = `
+                <div class="liquid-glass-heavy border border-white/10 w-full max-w-md p-6 rounded-2xl flex flex-col items-center gap-6 text-white text-center shadow-2xl relative bg-[#18181b]/95">
+                    <div class="space-y-2 mt-2">
+                        <div class="w-12 h-12 bg-red-500/20 border border-red-500 rounded-full flex items-center justify-center text-red-500 text-xl font-bold mx-auto mb-2 animate-pulse">🚨</div>
+                        <h2 class="text-lg font-bold font-retro tracking-widest text-red-500 uppercase">LEGAL CLAIM DETECTED</h2>
+                        <p class="text-[11px] text-[var(--text-muted)] max-w-sm">
+                            La maison de disque du sample original (${sample.ref}) a repéré ton morceau et réclame ses droits d'auteur !
+                        </p>
+                    </div>
+
+                    <div class="w-full space-y-3 font-retro text-left text-[10px] tracking-wider">
+                        <button id="claim-btn-pay" class="w-full text-left p-3 rounded-lg border border-white/10 hover:border-yellow-500/50 hover:bg-yellow-500/10 transition-all flex justify-between items-center bg-black/40">
+                            <span>🤝 Régler à l'amiable (Perte de 30% des royalties)</span>
+                            <span class="text-yellow-400 font-bold">-$${p30}</span>
+                        </button>
+                        <button id="claim-btn-contest" class="w-full text-left p-3 rounded-lg border border-white/10 hover:border-orange-500/50 hover:bg-orange-500/10 transition-all flex justify-between items-center bg-black/40">
+                            <span>⚖️ Contester au tribunal (30% de chance de win)</span>
+                            <span class="text-orange-400 font-bold">0 ou -$${p60}</span>
+                        </button>
+                        <button id="claim-btn-clear" ${!canAffordClearance ? 'disabled' : ''} class="w-full text-left p-3 rounded-lg border border-white/10 hover:border-emerald-500/50 hover:bg-emerald-500/10 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex justify-between items-center bg-black/40">
+                            <span>💎 Acheter la clearance (Coût fixe, libère le sample définitivement)</span>
+                            <span class="text-emerald-400 font-bold">-$800</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(container);
+
+            container.querySelector('#claim-btn-pay').addEventListener('click', () => {
+                logMoney(-p30, `Amiable Claim: ${sample.name}`);
+                showToast(`Procès évité. Tu as cédé 30% de royalties (-$${p30}).`, "info");
+                cleanup();
+            });
+
+            container.querySelector('#claim-btn-contest').addEventListener('click', () => {
+                if (Math.random() < 0.3) {
+                    showToast("Avocat incroyable ! Procès gagné ! Tu conserves tous tes gains.", "success");
+                    checkAchievement('avocat_du_diable', () => true);
+                } else {
+                    logMoney(-p60, `Procès perdu Claim: ${sample.name}`);
+                    showToast(`Défaite cuisante ! Double pénalité appliquée (-$${p60}).`, "error");
+                }
+                cleanup();
+            });
+
+            container.querySelector('#claim-btn-clear').addEventListener('click', () => {
+                logMoney(-800, `Clearance: ${sample.name}`);
+                if (!state.clearedSamples.includes(sample.id)) {
+                    state.clearedSamples.push(sample.id);
+                }
+                showToast(`Droits libérés pour ${sample.name} ! Plus aucun risque de claim.`, "success");
+                
+                if (state.clearedSamples.length >= 3) {
+                    checkAchievement('cleared', () => true);
+                }
+                cleanup();
+            });
+
+            function cleanup() {
+                document.body.removeChild(container);
+                state.isEventActive = false;
+                if (typeof onResolved === 'function') onResolved();
+            }
+        };
 
         // ==========================================
         // ACTION DORMIR (LA STRUGGLE)
@@ -10265,6 +10479,11 @@ function triggerRankUp(oldRank, newRank) {
             merged.dailyQuests = Array.isArray(merged.dailyQuests) ? merged.dailyQuests : [];
             merged.activeDoorBoosts = merged.activeDoorBoosts && typeof merged.activeDoorBoosts === 'object' ? merged.activeDoorBoosts : { vinylCharges: 0, proStudioCharges: 0 };
             
+            merged.ownedSamples = Array.isArray(merged.ownedSamples) ? merged.ownedSamples : [];
+            merged.clearedSamples = Array.isArray(merged.clearedSamples) ? merged.clearedSamples : [];
+            if (!merged.ownedSamples.includes('s_amen')) merged.ownedSamples.push('s_amen');
+            if (!merged.ownedSamples.includes('s_funky')) merged.ownedSamples.push('s_funky');
+            
             // SÉCURITÉ ACHIEVEMENTS : S'assure que le statut rewardClaimed est correctement conservé
             merged.achievements = merged.achievements || {};
             if (parsed && parsed.achievements && typeof parsed.achievements === 'object') {
@@ -10540,107 +10759,178 @@ function triggerRankUp(oldRank, newRank) {
         };
 
         window.triggerMonoMixMiniGame = function(onDoneCallback) {
-    state.isEventActive = true;
-    const container = document.createElement('div');
-    container.id = 'mono-mix-modal';
-    container.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md px-4';
-    
-    let bass = Math.floor(Math.random() * 80) + 10;
-    let mid = Math.floor(Math.random() * 80) + 10;
-    let treble = Math.floor(Math.random() * 80) + 10;
-    
-    while (Math.abs(bass - mid) <= 10 && Math.abs(mid - treble) <= 10 && Math.abs(bass - treble) <= 10) {
-        mid = Math.floor(Math.random() * 80) + 10;
-        treble = Math.floor(Math.random() * 80) + 10;
-    }
-
-    container.innerHTML = `
-        <div class="liquid-glass-heavy border border-white/10 w-full max-w-md p-6 rounded-2xl flex flex-col items-center gap-6 text-white text-center shadow-2xl relative">
-            <div class="space-y-2 mt-2">
-                <h2 class="text-xl font-bold font-retro tracking-widest text-white uppercase">⚡ Équilibre Spectral</h2>
-                <p class="text-[11px] text-[var(--text-muted)] max-w-sm">
-                    Aligne la puissance des 3 bandes de fréquences pour obtenir un signal plat (différence maximum de ±10 entre chaque bande).
-                </p>
-            </div>
+            state.isEventActive = true;
+            const container = document.createElement('div');
+            container.id = 'mono-mix-modal';
+            container.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md px-4';
             
-            <div class="flex items-end justify-center gap-6 h-16 w-full border-b border-white/20 pb-2">
-                <div id="bar-bass" class="w-8 bg-red-400 rounded-t-md transition-all duration-300" style="height: ${bass}%"></div>
-                <div id="bar-mid" class="w-8 bg-yellow-400 rounded-t-md transition-all duration-300" style="height: ${mid}%"></div>
-                <div id="bar-treble" class="w-8 bg-blue-400 rounded-t-md transition-all duration-300" style="height: ${treble}%"></div>
-            </div>
-
-            <div class="w-full space-y-5 font-retro text-left text-xs tracking-wider">
-                <div class="space-y-2">
-                    <div class="flex justify-between font-bold text-[10px]">
-                        <span class="text-red-400">LOWS (Sub/Bass)</span> <span id="val-bass">${bass}%</span>
+            let bass = Math.floor(Math.random() * 40) + 15;
+            let mid = Math.floor(Math.random() * 40) + 45;
+            let treble = Math.floor(Math.random() * 40) + 25;
+            
+            container.innerHTML = `
+                <div class="liquid-glass-heavy border border-white/10 w-full max-w-md p-6 rounded-2xl flex flex-col items-center gap-6 text-white text-center shadow-2xl relative">
+                    <div class="space-y-2 mt-2">
+                        <h2 class="text-xl font-bold font-retro tracking-widest text-white uppercase">⚡ Équilibre Spectral</h2>
+                        <p class="text-[11px] text-[var(--text-muted)] max-w-sm">
+                            Maintiens les 3 bandes dans la zone de confort (45-55%) à la fin du compte à rebours pour réussir ton mixage.
+                        </p>
+                        <div id="mono-mix-timer" class="text-sm font-bold font-retro text-[var(--retro-orange)] tracking-widest mt-1">TEMPS RESTANT : 10.0s</div>
                     </div>
-                    <input type="range" id="slider-bass" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-red-400" min="0" max="100" value="${bass}">
-                </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between font-bold text-[10px]">
-                        <span class="text-yellow-400">MIDS (Vocals/Snare)</span> <span id="val-mid">${mid}%</span>
+                    
+                    <div class="relative flex items-end justify-center gap-8 h-32 w-full border-b border-white/20 pb-2 bg-black/30 rounded-lg overflow-hidden">
+                        <!-- Zone de confort overlay -->
+                        <div class="absolute left-0 right-0 bottom-[45%] h-[10%] bg-emerald-500/10 border-y border-emerald-500/30 pointer-events-none flex items-center justify-center">
+                            <span class="text-[7px] text-emerald-400 font-bold uppercase tracking-widest">ZONE TARGET (45-55%)</span>
+                        </div>
+                        <!-- Bars -->
+                        <div id="bar-bass" class="w-8 bg-red-500 rounded-t-md transition-all duration-75 z-10" style="height: ${bass}%"></div>
+                        <div id="bar-mid" class="w-8 bg-yellow-500 rounded-t-md transition-all duration-75 z-10" style="height: ${mid}%"></div>
+                        <div id="bar-treble" class="w-8 bg-blue-500 rounded-t-md transition-all duration-75 z-10" style="height: ${treble}%"></div>
                     </div>
-                    <input type="range" id="slider-mid" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-yellow-400" min="0" max="100" value="${mid}">
-                </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between font-bold text-[10px]">
-                        <span class="text-blue-400">HIGHS (Air/Hats)</span> <span id="val-treble">${treble}%</span>
+        
+                    <div class="w-full space-y-5 font-retro text-left text-xs tracking-wider">
+                        <div class="space-y-2">
+                            <div class="flex justify-between font-bold text-[10px]">
+                                <span class="text-red-400">LOWS (Sub/Bass)</span> <span id="val-bass">${bass}%</span>
+                            </div>
+                            <input type="range" id="slider-bass" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-red-400" min="0" max="100" value="${bass}">
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between font-bold text-[10px]">
+                                <span class="text-yellow-400">MIDS (Vocals/Snare)</span> <span id="val-mid">${mid}%</span>
+                            </div>
+                            <input type="range" id="slider-mid" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-yellow-400" min="0" max="100" value="${mid}">
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between font-bold text-[10px]">
+                                <span class="text-blue-400">HIGHS (Air/Hats)</span> <span id="val-treble">${treble}%</span>
+                            </div>
+                            <input type="range" id="slider-treble" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-blue-400" min="0" max="100" value="${treble}">
+                        </div>
                     </div>
-                    <input type="range" id="slider-treble" class="w-full h-1.5 bg-black rounded-lg appearance-none cursor-pointer accent-blue-400" min="0" max="100" value="${treble}">
+                    <div class="flex gap-4 w-full justify-center">
+                        <button id="btn-mono-mix-validate" disabled class="w-full py-3 rounded-lg text-xs font-retro tracking-wider bg-white/10 text-white/40 cursor-not-allowed font-bold">STABILISATION EN COURS...</button>
+                    </div>
                 </div>
-            </div>
-            <div class="flex gap-4 w-full justify-center">
-                <button id="btn-mono-mix-validate" class="btn-action w-full py-3 rounded-lg text-xs font-retro tracking-wider">APPLIQUER L'EQ</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(container);
-
-    const sB = container.querySelector('#slider-bass');
-    const sM = container.querySelector('#slider-mid');
-    const sT = container.querySelector('#slider-treble');
-    const barB = container.querySelector('#bar-bass');
-    const barM = container.querySelector('#bar-mid');
-    const barT = container.querySelector('#bar-treble');
-
-    sB.addEventListener('input', (e) => {
-        bass = parseInt(e.target.value);
-        container.querySelector('#val-bass').innerText = bass + '%';
-        barB.style.height = bass + '%';
-        if (typeof playTone === 'function') playTone(80 + (bass * 0.5), 'sine', 0.08, 0.05);
-    });
-    sM.addEventListener('input', (e) => {
-        mid = parseInt(e.target.value);
-        container.querySelector('#val-mid').innerText = mid + '%';
-        barM.style.height = mid + '%';
-        if (typeof playTone === 'function') playTone(300 + (mid * 2), 'triangle', 0.05, 0.05);
-    });
-    sT.addEventListener('input', (e) => {
-        treble = parseInt(e.target.value);
-        container.querySelector('#val-treble').innerText = treble + '%';
-        barT.style.height = treble + '%';
-        if (typeof playTone === 'function') playTone(2000 + (treble * 10), 'square', 0.02, 0.05);
-    });
-
-    container.querySelector('#btn-mono-mix-validate').addEventListener('click', () => {
-        if (Math.abs(bass - mid) <= 10 && Math.abs(mid - treble) <= 10 && Math.abs(bass - treble) <= 10) {
-            state.permanentMixBonus = Math.min(25, (state.permanentMixBonus || 0) + 5);
-            state.multiplier = Math.min(3.0, 1.0 + (state.permanentMixBonus / 100));
-            showToast(`🔥 Mix Plat ! Master hyper propre. Multiplicateur de base +5%.`, 'success');
-            playTone(440, 'sine', 0.1, 0.1);
-            setTimeout(() => playTone(660, 'sine', 0.1, 0.2), 100);
-            if (typeof fireConfetti === 'function') fireConfetti('store');
-        } else {
-            state.inspi = Math.max(0, state.inspi - 10);
-            showToast("❌ Déséquilibre tonal massif. Le mix sonne boueux. -10 Inspiration.", 'error');
-            playError();
-        }
-        document.body.removeChild(container);
-        state.isEventActive = false;
-        updateHUD();
-        if (typeof onDoneCallback === 'function') onDoneCallback();
-    });
-};
+            `;
+            document.body.appendChild(container);
+        
+            const sB = container.querySelector('#slider-bass');
+            const sM = container.querySelector('#slider-mid');
+            const sT = container.querySelector('#slider-treble');
+            const barB = container.querySelector('#bar-bass');
+            const barM = container.querySelector('#bar-mid');
+            const barT = container.querySelector('#bar-treble');
+            const timerEl = container.querySelector('#mono-mix-timer');
+        
+            sB.addEventListener('input', (e) => {
+                bass = parseFloat(e.target.value);
+                if (typeof playTone === 'function') playTone(80 + (bass * 0.5), 'sine', 0.04, 0.05);
+            });
+            sM.addEventListener('input', (e) => {
+                mid = parseFloat(e.target.value);
+                if (typeof playTone === 'function') playTone(300 + (mid * 2), 'triangle', 0.03, 0.05);
+            });
+            sT.addEventListener('input', (e) => {
+                treble = parseFloat(e.target.value);
+                if (typeof playTone === 'function') playTone(2000 + (treble * 10), 'square', 0.015, 0.05);
+            });
+        
+            let active = true;
+            let startTime = performance.now();
+        
+            function updateDrift() {
+                if (!active) return;
+                let elapsed = (performance.now() - startTime) / 1000;
+                let timeLeft = Math.max(0, 10 - elapsed);
+                timerEl.innerText = `TEMPS RESTANT : ${timeLeft.toFixed(1)}s`;
+        
+                // Drift automatique +/- 1.2% par frame
+                bass += (Math.random() - 0.5) * 2.4;
+                mid += (Math.random() - 0.5) * 2.4;
+                treble += (Math.random() - 0.5) * 2.4;
+        
+                // Clamping
+                bass = Math.max(0, Math.min(100, bass));
+                mid = Math.max(0, Math.min(100, mid));
+                treble = Math.max(0, Math.min(100, treble));
+        
+                // Update slider values and views
+                sB.value = bass;
+                sM.value = mid;
+                sT.value = treble;
+        
+                container.querySelector('#val-bass').innerText = Math.round(bass) + '%';
+                container.querySelector('#val-mid').innerText = Math.round(mid) + '%';
+                container.querySelector('#val-treble').innerText = Math.round(treble) + '%';
+        
+                barB.style.height = bass + '%';
+                barM.style.height = mid + '%';
+                barT.style.height = treble + '%';
+        
+                // Feedback de couleur en fonction de la zone de confort (45-55%)
+                if (bass >= 45 && bass <= 55) {
+                    barB.style.backgroundColor = '#10b981';
+                } else {
+                    barB.style.backgroundColor = '#ef4444';
+                }
+        
+                if (mid >= 45 && mid <= 55) {
+                    barM.style.backgroundColor = '#10b981';
+                } else {
+                    barM.style.backgroundColor = '#ef4444';
+                }
+        
+                if (treble >= 45 && treble <= 55) {
+                    barT.style.backgroundColor = '#10b981';
+                } else {
+                    barT.style.backgroundColor = '#ef4444';
+                }
+        
+                if (timeLeft > 0) {
+                    requestAnimationFrame(updateDrift);
+                } else {
+                    active = false;
+                    const win = (bass >= 45 && bass <= 55) && (mid >= 45 && mid <= 55) && (treble >= 45 && treble <= 55);
+                    const btn = container.querySelector('#btn-mono-mix-validate');
+                    btn.disabled = false;
+                    
+                    if (win) {
+                        btn.innerText = "VALIDER LE MIX (SUCCÈS)";
+                        btn.className = "w-full py-3 rounded-lg text-xs font-retro tracking-wider bg-emerald-500 text-white font-bold cursor-pointer hover:bg-emerald-600 transition-colors";
+                        btn.addEventListener('click', () => {
+                            state.permanentMixBonus = Math.min(25, (state.permanentMixBonus || 0) + 5);
+                            state.multiplier = Math.min(3.0, 1.0 + (state.permanentMixBonus / 100));
+                            showToast(`🔥 Mix Plat ! Master hyper propre. Multiplicateur de base +5%.`, 'success');
+                            playTone(440, 'sine', 0.1, 0.1);
+                            setTimeout(() => playTone(660, 'sine', 0.1, 0.2), 100);
+                            if (typeof fireConfetti === 'function') fireConfetti('store');
+                            
+                            document.body.removeChild(container);
+                            state.isEventActive = false;
+                            updateHUD();
+                            if (typeof onDoneCallback === 'function') onDoneCallback();
+                        });
+                    } else {
+                        btn.innerText = "ÉCHEC (RETOUR)";
+                        btn.className = "w-full py-3 rounded-lg text-xs font-retro tracking-wider bg-red-600 text-white font-bold cursor-pointer hover:bg-red-700 transition-colors";
+                        btn.addEventListener('click', () => {
+                            state.inspi = Math.max(0, state.inspi - 10);
+                            showToast("❌ Le mix est resté instable ! -10 Inspiration.", 'error');
+                            playError();
+        
+                            document.body.removeChild(container);
+                            state.isEventActive = false;
+                            updateHUD();
+                            if (typeof onDoneCallback === 'function') onDoneCallback();
+                        });
+                    }
+                }
+            }
+        
+            requestAnimationFrame(updateDrift);
+        };
 
             } catch (bootErr) {
                 console.error("Erreur critique pendant le boot (post-login):", bootErr);
@@ -11764,6 +12054,7 @@ function triggerRankUp(oldRank, newRank) {
             if (id === 'app-daw') {
                 updateDawPlugins();
                 updateDawGenres(); // Injection forcée des boutons
+                populateDawSamples();
                 MusicSystem.muteForGameplay(0.5);
                 const playhead = document.getElementById('playhead');
                 if (playhead) playhead.classList.add('playhead-animated');
@@ -11951,6 +12242,25 @@ function triggerRankUp(oldRank, newRank) {
             }
 
 
+            // Comment from ECHO at beginning of export
+            const isEchoActive = (parseInt(state.cooldowns.echoSubExpiry, 10) || 0) > getTotalMins();
+            if (isEchoActive) {
+                let echoComment = "ECHO : 'Pas de sample sélectionné. Ta track risque de manquer de texture.'";
+                if (state.activeSample) {
+                    const sampleObj = SAMPLE_CATALOG.find(s => s.id === state.activeSample.id);
+                    if (sampleObj) {
+                        if (sampleObj.genre.toLowerCase() === genre.toLowerCase()) {
+                            echoComment = `ECHO : 'Excellente idée d'utiliser ${sampleObj.name} pour faire de la ${genre}. La compatibilité va être maximale.'`;
+                        } else {
+                            echoComment = `ECHO : 'Utiliser ${sampleObj.name} sur une prod ${genre} ? Drôle de mélange, j'espère que tu sais ce que tu fais.'`;
+                        }
+                    }
+                }
+                setTimeout(() => {
+                    showToast(echoComment, "info");
+                }, 800);
+            }
+
             state.isExporting = true;
             const btn = document.getElementById('btn-export');
             const progCont = document.getElementById('export-progress-container');
@@ -12049,6 +12359,21 @@ function triggerRankUp(oldRank, newRank) {
                 const result = calculateSuccess(genre, bpm, voice);
                 let moneyGain = 0, repGain = 0, follGain = 0, resultTxt = "", critique = "";
 
+                let sampleClaimTriggered = false;
+                if (state.activeSample) {
+                    const isCleared = state.clearedSamples && state.clearedSamples.includes(state.activeSample.id);
+                    if (!isCleared) {
+                        let risk = state.activeSample.risque;
+                        const hasSampleClearCrack = (state.inventory && state.inventory.includes('SampleClear_Pro.exe')) || (state.ownedCracks && state.ownedCracks.includes('sampleclear_pro'));
+                        if (hasSampleClearCrack) {
+                            risk *= 0.60; // 40% reduction
+                        }
+                        if (Math.random() < risk) {
+                            sampleClaimTriggered = true;
+                        }
+                    }
+                }
+
                 if (pluginId === 'crk3' && result.score === 0 && result.wrongVoice) { result.score = 1; critique = "\nVocalTune activé : Voix robotique, mais ça passe pour TikTok."; }
                 if (pluginId === 'crk15') {
                     result.score = 3;
@@ -12146,10 +12471,10 @@ function triggerRankUp(oldRank, newRank) {
                 }
 
                 if (state.earlyGameBoost) {
-                    if (state.stats.tracks < 10) {
+                    if (state.stats.tracks < 3) {
                         moneyGain = Math.floor(moneyGain * 1.5);
                         follGain = Math.floor(follGain * 1.5);
-                        critique += "\n[Boost Débutant] Gains x1.5 (Actif jusqu'à 10 prods) !";
+                        critique += "\n[Boost Débutant] Gains x1.5 (Actif jusqu'à 3 prods) !";
                     } else {
                         state.earlyGameBoost = false;
                         setTimeout(() => {
@@ -12190,6 +12515,17 @@ function triggerRankUp(oldRank, newRank) {
                                                 Math.floor(1 + Math.random() * 3);
 
                 let finalTrackScore = trackScore;
+
+                if (state.activeSample) {
+                    const isCompatible = state.activeSample.genre.toLowerCase() === genre.toLowerCase();
+                    if (isCompatible) {
+                        finalTrackScore += state.activeSample.bonus;
+                        critique += `\n[Sample Compatible] ${state.activeSample.name} (+${state.activeSample.bonus} score) !`;
+                    } else {
+                        finalTrackScore = Math.max(1, finalTrackScore - 2);
+                        critique += `\n[Sample Incompatible] ${state.activeSample.name} (-2 score) !`;
+                    }
+                }
                 
                 // Boosts Vinyles et Studio Pro
                 let consumedProStudio = false;
@@ -12286,8 +12622,18 @@ function triggerRankUp(oldRank, newRank) {
                 }
 
                 updateHUD();
-                showTrackReview(trackScore, trackTitle, null);
-                saveGame(); updateHUD(); updateCooldownUIs();
+                
+                const onReviewOpen = () => {
+                    showTrackReview(finalTrackScore, trackTitle, null);
+                    saveGame(); updateHUD(); updateCooldownUIs();
+                };
+
+                if (sampleClaimTriggered && state.activeSample) {
+                    const sampleToClaim = state.activeSample;
+                    triggerLegalClaim(sampleToClaim, moneyGain, onReviewOpen);
+                } else {
+                    onReviewOpen();
+                }
             } catch (err) {
                 console.error("Error in finishExport:", err);
                 showToast("Erreur fatale dans finishExport : " + err.message, "error");
@@ -13263,7 +13609,18 @@ function triggerRankUp(oldRank, newRank) {
                     const individualScore = Math.min(10, Math.max(1, trackScore + Math.floor(Math.random() * 5) - 2));
                     const name = pool.names[Math.floor(Math.random() * pool.names.length)];
                     const comments = getReviewerComment(pool.type, individualScore);
-                    const comment = comments[Math.floor(Math.random() * comments.length)];
+                    let comment = comments[Math.floor(Math.random() * comments.length)];
+                    if (state.activeSample && reviews.length === 0) {
+                        const sampleObj = SAMPLE_CATALOG.find(s => s.id === state.activeSample.id);
+                        if (sampleObj) {
+                            const isCompatible = sampleObj.genre === currentDawGenre;
+                            if (isCompatible) {
+                                comment += ` L'utilisation de "${sampleObj.name}" est d'une pertinence rare pour ce style !`;
+                            } else {
+                                comment += ` Hélas, placer "${sampleObj.name}" ici fait complètement tache et gâche le morceau.`;
+                            }
+                        }
+                    }
                     reviews.push({ type: pool.type, name, score: individualScore, comment });
                 }
                 const avg = (reviews.reduce((s, r) => s + r.score, 0) / reviews.length).toFixed(1);
