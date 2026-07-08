@@ -3319,6 +3319,7 @@ const DEFAULT_STATE = {
                 camera.top = frustumSize / 2;
                 camera.bottom = frustumSize / -2;
                 camera.updateProjectionMatrix(); 
+                camera.lookAt(0, 0, 0); // Correctif Mobile : Empêche la caméra de fixer le ciel après un resize (barre d'adresse)
                 
                 renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -5293,10 +5294,15 @@ const DEFAULT_STATE = {
         if (!isSceneReady) return;
 
         // SMART RENDERING : Pause 3D si une interface fullscreen est active
+        const loginLayer = document.getElementById('login-screen');
         const pcLayer = document.getElementById('pc-ui-layer');
         const prLayer = document.getElementById('standalone-pianoroll');
-        if ((pcLayer && pcLayer.style.display !== 'none') || 
-            (prLayer && prLayer.style.display !== 'none')) {
+        
+        const isLoginActive = loginLayer && loginLayer.style.display !== 'none';
+        const isPcActive = pcLayer && pcLayer.style.display === 'flex';
+        const isPrActive = prLayer && !prLayer.classList.contains('hidden');
+
+        if (isLoginActive || isPcActive || isPrActive) {
             return;
         }
 
