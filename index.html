@@ -1900,6 +1900,19 @@
             50% { transform: scaleY(1.2); }
         }
 
+
+            /* --- EXTREME MOBILE OPTIMIZATIONS --- */
+            @media (max-width: 767px) {
+                .liquid-glass, .liquid-glass-heavy, .glass-panel, .os-window, #pc-ui-layer {
+                    backdrop-filter: none !important;
+                    -webkit-backdrop-filter: none !important;
+                    background: rgba(10, 10, 15, 0.95) !important;
+                    box-shadow: none !important;
+                }
+                .joystick-container, #joystick-ui, .joystick-base, .joystick-knob, .btn-daw-pad, .seq-pad, .os-window {
+                    touch-action: none !important;
+                }
+            }
         </style>
     </head>
 
@@ -2167,7 +2180,7 @@
 <div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
             <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
                 <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it</h1>
-                <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">v17</p>
+                <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">v18</p>
                 <div class="mb-6 flex justify-center">
                     <img src="logo.jpeg" alt="Logo bounce_it" 
                         class="w-32 h-32 md:w-40 md:h-40 object-cover rounded-2xl border border-white/10 shadow-[0_0_25px_rgba(129,140,248,0.2)] pixelated" />
@@ -2914,7 +2927,7 @@
 
         <div id="studio-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500" style="background: radial-gradient(circle at center, #1e1b4b 0%, #050508 100%);">
             <div class="splash-card">
-                <h1 class="font-retro text-2xl md:text-3xl text-white tracking-[0.3em] uppercase mb-10 drop-shadow-2xl">bounce_it <span class="text-[var(--accent)] opacity-60">v17</span></h1>
+                <h1 class="font-retro text-2xl md:text-3xl text-white tracking-[0.3em] uppercase mb-10 drop-shadow-2xl">bounce_it <span class="text-[var(--accent)] opacity-60">v18</span></h1>
                 
                 <div class="flex items-end gap-2 h-10 mb-8">
                     <div class="w-2 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.0s"></div>
@@ -3253,12 +3266,12 @@ const DEFAULT_STATE = {
         camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // Correctif 1 : Activer le support de la transparence
-        // Plafonne à 1.2 sur mobile (suffisant pour le rétina) et 2 sur desktop
-        const dpr = isMobile ? Math.min(window.devicePixelRatio, 1.2) : Math.min(window.devicePixelRatio, 2);
+        // Optimisation Mobile : Pixel ratio à 1 et BasicShadowMap
+        const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio, 2);
         renderer.setPixelRatio(dpr);
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowMap.type = isMobile ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
 
         const listener = new THREE.AudioListener();
@@ -3323,7 +3336,7 @@ const DEFAULT_STATE = {
         dirLight.name = "mainRoomLight";
         dirLight.position.set(10, 20, 10);
         dirLight.castShadow = true;
-        const shadowSize = isMobile ? 1024 : 2048;
+        const shadowSize = isMobile ? 512 : 2048;
         dirLight.shadow.mapSize.width = shadowSize;
         dirLight.shadow.mapSize.height = shadowSize;
         dirLight.shadow.bias = -0.0005;
@@ -5241,13 +5254,9 @@ const DEFAULT_STATE = {
                             }
                             if (isOwned) {
                                 child.material = child.userData.originalMaterial;
+                                if (child.material) child.material.needsUpdate = true;
                             } else {
-                                if (!child.userData.mysticMaterial) {
-                                    child.userData.mysticMaterial = baseMysticMaterial.clone();
-                                    child.userData.mysticMaterial.userData = { targetOpacity: 0.9 };
-                                }
-                                child.material = child.userData.mysticMaterial;
-                                window.activeMysticMaterials.push(child.material);
+                                child.material = new THREE.MeshBasicMaterial({ color: 0x000000 });
                             }
                         } else if (child.isLine || child.isLineSegments) {
                             if (child.userData.originalVisible === undefined) {
@@ -5282,6 +5291,14 @@ const DEFAULT_STATE = {
 
         // Correctif 2 : On ne rend rien tant que les shaders ne sont pas compilés
         if (!isSceneReady) return;
+
+        // SMART RENDERING : Pause 3D si une interface fullscreen est active
+        const pcLayer = document.getElementById('pc-ui-layer');
+        const prLayer = document.getElementById('standalone-pianoroll');
+        if ((pcLayer && pcLayer.style.display !== 'none') || 
+            (prLayer && prLayer.style.display !== 'none')) {
+            return;
+        }
 
         if (typeof isMobile !== 'undefined' && isMobile) {
             frameCounter++;
@@ -6280,6 +6297,13 @@ const DEFAULT_STATE = {
             // This is already handled by the `if (!isJoystickActive)` check in the IIFE below.
         });
 
+        // NOUVEAU : Blocage natif des scrolls fantômes sur mobile via touchmove
+        canvasCont.addEventListener('touchmove', (e) => {
+            if (typeof isJoystickActive !== 'undefined' && isJoystickActive) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
         // Hover detection for interactables -> outline on hover & Studio+ Silhouette Tooltips (Diegetic UI)
         (function(){
             let lastHoverMesh = null;
@@ -6318,7 +6342,6 @@ const DEFAULT_STATE = {
                     if (curr === (typeof sofaGroup !== 'undefined' ? sofaGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'sofa'), group: sofaGroup };
                     if (curr === (typeof sideTableGroup !== 'undefined' ? sideTableGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'table'), group: sideTableGroup };
                     if (curr === (typeof rugGroup !== 'undefined' ? rugGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'rug'), group: rugGroup };
-                    if (curr === (typeof crateGroup !== 'undefined' ? crateGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'vinyls'), group: crateGroup };
                     if (curr === (typeof tvGroup !== 'undefined' ? tvGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'tv'), group: tvGroup };
                     if (curr === (typeof rackGroup !== 'undefined' ? rackGroup : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'rack_lamp'), group: rackGroup };
                     if (curr === (typeof acousticGroupL !== 'undefined' ? acousticGroupL : null)) return { item: FURNITURE_CATALOG.find(i => i.id === 'led_panel_l'), group: acousticGroupL };
@@ -7384,7 +7407,7 @@ function triggerRankUp(oldRank, newRank) {
 
         function getAchievementUnlockLabel(achievement) {
             if (!achievement.unlocked) return 'LOCKED';
-            if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant v17';
+            if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant v18';
             if (achievement.unlockedDay) return `JOUR ${achievement.unlockedDay}${achievement.unlockedTime ? ' · ' + achievement.unlockedTime : ''}`;
             return 'Débloqué avant v16';
         }
