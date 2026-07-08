@@ -2806,9 +2806,52 @@
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 bg-black/40 custom-scrollbar">
+            <div class="flex-1 overflow-y-auto p-4 bg-black/40 custom-scrollbar relative">
                 <div id="sample-digger-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Sample items injected via JS -->
+                </div>
+                
+                <!-- LICENSE MODAL OVERLAY -->
+                <div id="sample-license-modal" class="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 flex-col items-center justify-center p-6" style="display: none;">
+                    <div class="w-full max-w-md bg-gray-900 border border-white/20 rounded-xl shadow-2xl overflow-hidden flex flex-col">
+                        <div class="bg-gray-800 p-4 border-b border-white/10 flex justify-between items-center">
+                            <h3 class="text-white font-bold font-retro tracking-widest text-sm">SELECT LICENSE</h3>
+                            <button onclick="closeLicenseModal()" class="text-white/50 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                        </div>
+                        <div class="p-4 flex flex-col gap-3">
+                            <div class="text-center mb-2">
+                                <h4 id="license-sample-name" class="text-white font-bold text-lg">Sample Name</h4>
+                                <p class="text-xs text-[#a1a1aa] font-mono">Choose your rights</p>
+                            </div>
+                            
+                            <!-- Basic Lease -->
+                            <button onclick="purchaseLicense('basic')" class="flex items-center justify-between p-3 rounded-lg border border-white/10 hover:border-[#10b981] bg-black/40 hover:bg-[#10b981]/10 transition-colors group text-left">
+                                <div>
+                                    <div class="text-white font-bold text-sm group-hover:text-[#10b981]">Basic Lease</div>
+                                    <div class="text-[10px] text-white/50">Standard bonus. Standard rights.</div>
+                                </div>
+                                <div id="license-price-basic" class="text-[#10b981] font-mono font-bold">$100</div>
+                            </button>
+                            
+                            <!-- Premium License -->
+                            <button onclick="purchaseLicense('premium')" class="flex items-center justify-between p-3 rounded-lg border border-white/10 hover:border-[#3b82f6] bg-black/40 hover:bg-[#3b82f6]/10 transition-colors group text-left">
+                                <div>
+                                    <div class="text-white font-bold text-sm group-hover:text-[#3b82f6]">Premium License</div>
+                                    <div class="text-[10px] text-white/50">+1 Score Bonus. Extended distribution.</div>
+                                </div>
+                                <div id="license-price-premium" class="text-[#3b82f6] font-mono font-bold">$250</div>
+                            </button>
+                            
+                            <!-- Exclusive Rights -->
+                            <button onclick="purchaseLicense('exclusive')" class="flex items-center justify-between p-3 rounded-lg border border-white/10 hover:border-[#f59e0b] bg-black/40 hover:bg-[#f59e0b]/10 transition-colors group text-left">
+                                <div>
+                                    <div class="text-white font-bold text-sm group-hover:text-[#f59e0b]">Exclusive Rights</div>
+                                    <div class="text-[10px] text-white/50">+2 Score Bonus. Full copyright clearance!</div>
+                                </div>
+                                <div id="license-price-exclusive" class="text-[#f59e0b] font-mono font-bold">$500</div>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -10092,11 +10135,15 @@ function triggerRankUp(oldRank, newRank) {
                     `;
                 }
 
+                const reqLevel = sample.tier === 1 ? 1 : (sample.tier === 2 ? 10 : (sample.tier === 3 ? 25 : 50));
+                const playerLevel = state.lastLevel || 1;
+                const isLocked = playerLevel < reqLevel;
+
                 const item = document.createElement('div');
-                item.className = `digger-item relative flex flex-col bg-black/60 border ${isActive ? 'border-[#10b981]' : 'border-white/10'} rounded-lg p-3 cursor-pointer overflow-hidden`;
+                item.className = `digger-item relative flex flex-col bg-black/60 border ${isActive ? 'border-[#10b981]' : 'border-white/10'} rounded-lg p-3 overflow-hidden ${isLocked ? 'opacity-50 grayscale' : ''}`;
                 
                 item.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
+                    <div class="flex justify-between items-start mb-2 pointer-events-none">
                         <div class="flex items-center gap-3">
                             ${coverHtml}
                             <div>
@@ -10110,45 +10157,103 @@ function triggerRankUp(oldRank, newRank) {
                         </div>
                     </div>
                     
-                    <p class="text-xs text-[#d1d5db] mb-3 line-clamp-2">${sample.desc}</p>
+                    <p class="text-xs text-[#d1d5db] mb-3 line-clamp-2 pointer-events-none">${sample.desc}</p>
                     
                     <div class="flex justify-between items-center mt-auto">
-                        <div class="digger-waveform">
+                        <div class="digger-waveform pointer-events-none">
                             <div class="bar"></div><div class="bar"></div><div class="bar"></div>
                             <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
                         </div>
-                        <button class="action-btn px-4 py-1.5 rounded bg-white/5 hover:bg-[#10b981]/20 border border-white/10 hover:border-[#10b981] text-[#10b981] text-xs font-bold font-mono transition-all">
+                        ${isLocked ? 
+                        `<button class="px-4 py-1.5 rounded bg-black/40 border border-white/5 text-white/40 text-xs font-bold font-mono cursor-not-allowed">
+                            🔒 LVL ${reqLevel}
+                        </button>` : 
+                        `<button class="action-btn px-4 py-1.5 rounded bg-white/5 hover:bg-[#10b981]/20 border border-white/10 hover:border-[#10b981] text-[#10b981] text-xs font-bold font-mono transition-all pointer-events-auto cursor-pointer relative z-10">
                             ${isActive ? 'INJECTED' : (isOwned ? 'INJECT' : 'BUY & INJECT')}
-                        </button>
+                        </button>`}
                     </div>
                 `;
                 
-                item.onclick = (e) => {
-                    // Flash effect on the item
-                    item.classList.add('flash-anim');
-                    setTimeout(() => item.classList.remove('flash-anim'), 500);
-                    
-                    loadSampleFromDigger(sample.id);
-                };
+                if (!isLocked) {
+                    const btn = item.querySelector('.action-btn');
+                    if (btn) {
+                        btn.onclick = (e) => {
+                            e.stopPropagation(); // Prevenir tout bubbling
+                            // Flash effect on the item
+                            item.classList.add('flash-anim');
+                            setTimeout(() => item.classList.remove('flash-anim'), 500);
+                            
+                            if (isOwned) {
+                                loadSampleFromDigger(sample.id, 'basic');
+                            } else {
+                                openLicenseModal(sample.id);
+                            }
+                        };
+                    }
+                }
                 
                 grid.appendChild(item);
             });
         };
 
-        window.loadSampleFromDigger = function(sampleId) {
+        window.pendingLicenseSampleId = null;
+
+        window.openLicenseModal = function(sampleId) {
             const sample = SAMPLE_CATALOG.find(s => s.id === sampleId);
             if (!sample) return;
             
+            if (state.rep < sample.reqRep) {
+                showToast(`Notoriété insuffisante ! Rep. requise : ${sample.reqRep}`, "error");
+                playError();
+                return;
+            }
+
+            window.pendingLicenseSampleId = sampleId;
+            document.getElementById('license-sample-name').innerText = sample.name;
+            document.getElementById('license-price-basic').innerText = '$' + formatNum(sample.price);
+            document.getElementById('license-price-premium').innerText = '$' + formatNum(Math.floor(sample.price * 2.5));
+            document.getElementById('license-price-exclusive').innerText = '$' + formatNum(sample.price * 5);
+            
+            document.getElementById('sample-license-modal').style.display = 'flex';
+            playClick();
+        };
+
+        window.closeLicenseModal = function() {
+            document.getElementById('sample-license-modal').style.display = 'none';
+            window.pendingLicenseSampleId = null;
+            playClick();
+        };
+
+        window.purchaseLicense = function(licenseType) {
+            if (!window.pendingLicenseSampleId) return;
+            loadSampleFromDigger(window.pendingLicenseSampleId, licenseType);
+            closeLicenseModal();
+        };
+
+        window.loadSampleFromDigger = function(sampleId, licenseType = 'basic') {
+            // Créer une copie profonde pour éviter de modifier le catalogue original
+            const baseSample = SAMPLE_CATALOG.find(s => s.id === sampleId);
+            if (!baseSample) return;
+            const sample = JSON.parse(JSON.stringify(baseSample));
+            
             const isOwned = state.ownedSamples && state.ownedSamples.includes(sampleId);
+            
             if (!isOwned) {
-                if (state.rep < sample.reqRep) {
-                    showToast(`Notoriété insuffisante ! Rep. requise : ${sample.reqRep}`, "error");
-                    playError();
-                    return;
-                }
-                if (state.money >= sample.price) {
-                    logMoney(-sample.price, `Achat sample : ${sample.name}`);
+                let finalPrice = sample.price;
+                if (licenseType === 'premium') finalPrice = Math.floor(sample.price * 2.5);
+                if (licenseType === 'exclusive') finalPrice = sample.price * 5;
+
+                if (state.money >= finalPrice) {
+                    logMoney(-finalPrice, `Achat Licence (${licenseType}) : ${sample.name}`);
                     state.ownedSamples.push(sampleId);
+                    
+                    if (licenseType === 'premium') sample.bonus += 1;
+                    if (licenseType === 'exclusive') {
+                        sample.bonus += 2;
+                        if (!state.clearedSamples) state.clearedSamples = [];
+                        if (!state.clearedSamples.includes(sampleId)) state.clearedSamples.push(sampleId);
+                        checkAchievement('cleared', () => true);
+                    }
                     
                     // Check achievements on buy
                     checkAchievement('digging_initiation', () => true);
@@ -10156,12 +10261,14 @@ function triggerRankUp(oldRank, newRank) {
                     if (sample.tier === 4) checkAchievement('crate_digger', () => true);
                     if (sampleId === 's_brel') checkAchievement('ne_me_quitte_pas', () => true);
                     
-                    showToast(`Sample "${sample.name}" acheté avec succès !`, "success");
+                    showToast(`Licence ${licenseType.toUpperCase()} pour "${sample.name}" acquise !`, "success");
                 } else {
                     showToast("Pas assez d'argent !", "error");
                     playError();
                     return;
                 }
+            } else {
+                // S'il est déjà possédé, on garde le bonus de base.
             }
             
             // Inject
@@ -10176,7 +10283,7 @@ function triggerRankUp(oldRank, newRank) {
             // Re-render to show updated state
             renderSampleDigger();
             
-            // Ferme la fenêtre après une petite pause pour laisser voir le feedback visuel (flash)
+            // Ferme la fenêtre après une petite pause
             setTimeout(() => {
                 closeSampleDigger();
             }, 400);
