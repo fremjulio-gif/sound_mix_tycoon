@@ -1480,6 +1480,7 @@
             pointer-events: none;
             mix-blend-mode: multiply;
             transition: opacity 0.5s ease;
+            will-change: opacity, transform;
         }
         #game-container {
             transition: filter 0.5s ease-in-out; /* Lissage de la désaturation */
@@ -2992,16 +2993,16 @@ const DEFAULT_STATE = {
 
             // 1. Mise à jour de TOUTES les LEDs du Rack Analogique
             rackLeds.forEach(item => {
-                item.material.color.set(cTheme);
-                item.material.emissive.set(cTheme);
+                if (item?.material?.color) item.material.color.set(cTheme);
+                if (item?.material?.emissive) item.material.emissive.set(cTheme);
             });
 
             // 2. Mise à jour des Néons Muraux (Acoustique)
             if (window.acousticNeons) {
                 window.acousticNeons.forEach(neon => {
-                    neon.material.color.set(cTheme);
-                    neon.material.emissive.set(cTheme);
-                    neon.light.color.set(cTheme);
+                    if (neon?.material?.color) neon.material.color.set(cTheme);
+                    if (neon?.material?.emissive) neon.material.emissive.set(cTheme);
+                    if (neon?.light?.color) neon.light.color.set(cTheme);
                 });
             }
         }
@@ -3052,7 +3053,9 @@ const DEFAULT_STATE = {
         camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // Correctif 1 : Activer le support de la transparence
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        // Plafonne à 1.2 sur mobile (suffisant pour le rétina) et 2 sur desktop
+        const dpr = isMobile ? Math.min(window.devicePixelRatio, 1.2) : Math.min(window.devicePixelRatio, 2);
+        renderer.setPixelRatio(dpr);
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -3120,8 +3123,9 @@ const DEFAULT_STATE = {
         dirLight.name = "mainRoomLight";
         dirLight.position.set(10, 20, 10);
         dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 2048;
-        dirLight.shadow.mapSize.height = 2048;
+        const shadowSize = isMobile ? 1024 : 2048;
+        dirLight.shadow.mapSize.width = shadowSize;
+        dirLight.shadow.mapSize.height = shadowSize;
         dirLight.shadow.bias = -0.0005;
         // On concentre les pixels de l'ombre uniquement sur la taille de la pièce
         dirLight.shadow.camera.left = -8; 
@@ -3811,8 +3815,9 @@ const DEFAULT_STATE = {
         lSpot.shadow.radius = 4;
         lSpot.shadow.normalBias = 0.02;
         // Définit la netteté de l'ombre (1024 ou 2048 pour effacer l'effet escalier)
-        lSpot.shadow.mapSize.width = 2048;
-        lSpot.shadow.mapSize.height = 2048;
+        const lSpotShadowSize = isMobile ? 1024 : 2048;
+        lSpot.shadow.mapSize.width = lSpotShadowSize;
+        lSpot.shadow.mapSize.height = lSpotShadowSize;
 
         
         lSpot.castShadow = true;
@@ -5920,7 +5925,10 @@ const DEFAULT_STATE = {
         })();
 
         // --- LE RENDU FINAL (INDISPENSABLE POUR VOIR LA ROOM) ---
-        renderer.render(scene, camera);
+        // On ne rend la scène 3D que si le PC n'est pas actif (gain massif de GPU)
+        if (!document.body.classList.contains('os-active')) {
+            renderer.render(scene, camera);
+        }
     }
 
         
@@ -6130,147 +6138,182 @@ const DEFAULT_STATE = {
                 }
             }
 
+            let isRaycasterPending = false;
             canvasCont.addEventListener('pointermove', (ev) => {
-                try {
-                    if (isJoystickActive) return; // don't interfere with joystick
-                    const rect = canvasCont.getBoundingClientRect();
-                    const clientX = ev.clientX - rect.left;
-                    const clientY = ev.clientY - rect.top;
-                    mousePos.x = (clientX / rect.width) * 2 - 1;
-                    mousePos.y = -(clientY / rect.height) * 2 + 1;
-                    raycaster.setFromCamera(mousePos, camera);
-                    const intersects = raycaster.intersectObjects(scene.children, true).filter(hit => {
-                        let isVisibleMesh = hit.object.isMesh && hit.object.visible;
-                        if (!isVisibleMesh) return false;
-                        let curr = hit.object.parent;
-                        while (curr) {
-                            if (!curr.visible) return false;
-                            curr = curr.parent;
-                        }
-                        return true;
-                    });
+                if (isJoystickActive || isRaycasterPending) return;
 
-                    // 1. Check if we hover over a silhouette (FURNITURE_CATALOG item, but not owned)
-                    let foundSilhouette = null;
-                    for (let hit of intersects) {
-                        const hitInfo = findCatalogItemByObject(hit.object);
-                        if (hitInfo && hitInfo.item) {
-                            const isOwned = state && state.ownedFurniture && state.ownedFurniture.includes(hitInfo.item.id);
-                            if (!isOwned) {
-                                foundSilhouette = { hit, info: hitInfo };
-                                break;
+                isRaycasterPending = true;
+                requestAnimationFrame(() => {
+                    try {
+                        const rect = canvasCont.getBoundingClientRect();
+                        const clientX = ev.clientX - rect.left;
+                        const clientY = ev.clientY - rect.top;
+                        mousePos.x = (clientX / rect.width) * 2 - 1;
+                        mousePos.y = -(clientY / rect.height) * 2 + 1;
+                        raycaster.setFromCamera(mousePos, camera);
+                        const intersects = raycaster.intersectObjects(scene.children, true).filter(hit => {
+                            let isVisibleMesh = hit.object.isMesh && hit.object.visible;
+                            if (!isVisibleMesh) return false;
+                            let curr = hit.object.parent;
+                            while (curr) {
+                                if (!curr.visible) return false;
+                                curr = curr.parent;
+                            }
+                            return true;
+                        });
+
+                        // 1. Check if we hover over a silhouette (FURNITURE_CATALOG item, but not owned)
+                        let foundSilhouette = null;
+                        for (let hit of intersects) {
+                            const hitInfo = findCatalogItemByObject(hit.object);
+                            if (hitInfo && hitInfo.item) {
+                                const isOwned = state && state.ownedFurniture && state.ownedFurniture.includes(hitInfo.item.id);
+                                if (!isOwned) {
+                                    foundSilhouette = { hit, info: hitInfo };
+                                    break;
+                                }
                             }
                         }
-                    }
 
-                    if (foundSilhouette) {
-                        // On annule tout timer de fermeture car on survole à nouveau l'objet
-                        if (tooltipHideTimer) {
-                            clearTimeout(tooltipHideTimer);
-                            tooltipHideTimer = null;
-                        }
+                        if (foundSilhouette) {
+                            // On annule tout timer de fermeture car on survole à nouveau l'objet
+                            if (tooltipHideTimer) {
+                                clearTimeout(tooltipHideTimer);
+                                tooltipHideTimer = null;
+                            }
 
-                        const { hit, info } = foundSilhouette;
-                        const item = info.item;
-                        const group = info.group;
+                            const { hit, info } = foundSilhouette;
+                            const item = info.item;
+                            const group = info.group;
 
-                        // Hover transition to 0.7 opacity
-                        if (lastHoveredSilhouetteGroup !== group) {
-                            if (lastHoveredSilhouetteGroup) {
-                                lastHoveredSilhouetteGroup.traverse(child => {
+                            // Hover transition to 0.7 opacity
+                            if (lastHoveredSilhouetteGroup !== group) {
+                                if (lastHoveredSilhouetteGroup) {
+                                    lastHoveredSilhouetteGroup.traverse(child => {
+                                        if (child.isMesh && child.userData.mysticMaterial) {
+                                            child.userData.mysticMaterial.userData.targetOpacity = 0.9;
+                                        }
+                                    });
+                                }
+                                group.traverse(child => {
                                     if (child.isMesh && child.userData.mysticMaterial) {
-                                        child.userData.mysticMaterial.userData.targetOpacity = 0.9;
+                                        child.userData.mysticMaterial.userData.targetOpacity = 0.7;
                                     }
                                 });
+                                lastHoveredSilhouetteGroup = group;
                             }
-                            group.traverse(child => {
-                                if (child.isMesh && child.userData.mysticMaterial) {
-                                    child.userData.mysticMaterial.userData.targetOpacity = 0.7;
+
+                            // Project 3D position to 2D screen coordinates
+                            const pos3D = new THREE.Vector3();
+                            const box = new THREE.Box3().setFromObject(group);
+                            box.getCenter(pos3D);
+                            
+                            // Calcul de la distance et de l'échelle dynamique
+                            const distToCam = camera.position.distanceTo(pos3D);
+                            let scaleValue = 35 / distToCam;
+                            scaleValue = Math.max(0.4, Math.min(1.5, scaleValue));
+
+                            pos3D.y += (box.max.y - box.min.y) * 0.4 + 0.3;
+                            pos3D.project(camera);
+
+                            const widthHalf = rect.width / 2;
+                            const heightHalf = rect.height / 2;
+                            
+                            if (tooltipEl) {
+                                // Utilise "let" au lieu de "const" pour pouvoir les réajuster
+                                let screenX = (pos3D.x * widthHalf) + widthHalf + rect.left;
+                                let screenY = -(pos3D.y * heightHalf) + heightHalf + rect.top;
+                                // --- NOUVEAU : ANTI-DÉBORDEMENT POUR LES OBJETS AUX EXTRÉMITÉS (Ex: Guitare) ---
+                                const tw = tooltipEl.offsetWidth || 280;
+                                const th = tooltipEl.offsetHeight || 120;
+                                const margin = 15;
+
+                                // Contrainte X : le CSS décale de -50%, on bloque donc par rapport à la moitié du tooltip
+                                if (screenX - (tw / 2) < margin) {
+                                    screenX = (tw / 2) + margin;
+                                } else if (screenX + (tw / 2) > window.innerWidth - margin) {
+                                    screenX = window.innerWidth - (tw / 2) - margin;
                                 }
-                            });
-                            lastHoveredSilhouetteGroup = group;
+
+                                // Contrainte Y : le CSS décale de -100% avec un margin-top de -30px
+                                if (screenY - th - 30 < margin) {
+                                    screenY = th + 30 + margin; 
+                                }
+
+                                document.getElementById('s-tooltip-name').innerText = item.name;
+                                document.getElementById('s-tooltip-category').innerText = item.category.toUpperCase();
+                                document.getElementById('s-tooltip-perk').innerText = item.perk;
+                                
+                                let prereqTexts = [];
+                                if (item.reqRep > 0) prereqTexts.push(`${item.reqRep} REP`);
+                                if (item.reqFollowers > 0) prereqTexts.push(`${formatNum(item.reqFollowers)} Fans`);
+                                const prereqStr = prereqTexts.length > 0 ? prereqTexts.join(" & ") : "Aucun";
+                                
+                                const missingRep = state.rep < (item.reqRep || 0);
+                                const missingFollowers = state.followers < (item.reqFollowers || 0);
+                                const isLocked = missingRep || missingFollowers;
+                                const scaledPrice = typeof getScaledPrice === 'function' ? getScaledPrice(item.price) : item.price;
+                                const canAfford = state.money >= scaledPrice;
+
+                                const prereqEl = document.getElementById('s-tooltip-prereq');
+                                prereqEl.innerText = prereqStr;
+                                prereqEl.className = isLocked ? 'text-[var(--retro-red)] font-bold' : 'text-gray-200';
+
+                                const priceEl = document.getElementById('s-tooltip-price');
+                                priceEl.innerText = `$${scaledPrice}`;
+                                priceEl.className = !canAfford ? 'text-[var(--retro-red)] font-bold' : 'text-[var(--retro-green)] font-bold';
+
+                                const buyBtn = document.getElementById('s-tooltip-buy-btn');
+                                buyBtn.setAttribute('data-id', item.id);
+                                if (isLocked) {
+                                    buyBtn.innerText = "Verrouillé";
+                                    buyBtn.className = "w-full btn-minimal py-2 text-xs rounded-lg opacity-50 cursor-not-allowed uppercase font-bold";
+                                    buyBtn.disabled = true;
+                                } else if (!canAfford) {
+                                    buyBtn.innerText = "Fonds Insuffisants";
+                                    buyBtn.className = "w-full btn-minimal py-2 text-xs rounded-lg border-[var(--retro-red)] text-[var(--retro-red)] opacity-60 cursor-not-allowed uppercase font-bold";
+                                    buyBtn.disabled = true;
+                                } else {
+                                    buyBtn.innerText = `Installer ($${scaledPrice})`;
+                                    buyBtn.className = "btn-action w-full py-2 text-xs rounded-lg font-bold shadow-md uppercase tracking-wider";
+                                    buyBtn.disabled = false;
+                                }
+
+                                tooltipEl.style.left = `${screenX}px`;
+                                tooltipEl.style.top = `${screenY}px`;
+                                tooltipEl.style.transform = `translate(-50%, -100%) scale(${scaleValue})`;
+                                tooltipEl.style.display = 'flex';
+                            }
+
+                            if (lastHoverMesh) {
+                                const prev = (window.highlightItems||[]).find(it => it.mesh === lastHoverMesh || it.mesh.name === lastHoverMesh.name);
+                                if (prev && prev.edges) prev.edges.userData.hovered = false;
+                                lastHoverMesh = null;
+                            }
+                            return;
                         }
 
-                        // Project 3D position to 2D screen coordinates
-                        const pos3D = new THREE.Vector3();
-                        const box = new THREE.Box3().setFromObject(group);
-                        box.getCenter(pos3D);
-                        
-                        // Calcul de la distance et de l'échelle dynamique
-                        const distToCam = camera.position.distanceTo(pos3D);
-                        let scaleValue = 35 / distToCam;
-                        scaleValue = Math.max(0.4, Math.min(1.5, scaleValue));
-
-                        pos3D.y += (box.max.y - box.min.y) * 0.4 + 0.3;
-                        pos3D.project(camera);
-
-                        const widthHalf = rect.width / 2;
-                        const heightHalf = rect.height / 2;
-                        
-                        if (tooltipEl) {
-                            // Utilise "let" au lieu de "const" pour pouvoir les réajuster
-                            let screenX = (pos3D.x * widthHalf) + widthHalf + rect.left;
-                            let screenY = -(pos3D.y * heightHalf) + heightHalf + rect.top;
-                            // --- NOUVEAU : ANTI-DÉBORDEMENT POUR LES OBJETS AUX EXTRÉMITÉS (Ex: Guitare) ---
-                            const tw = tooltipEl.offsetWidth || 280;
-                            const th = tooltipEl.offsetHeight || 120;
-                            const margin = 15;
-
-                            // Contrainte X : le CSS décale de -50%, on bloque donc par rapport à la moitié du tooltip
-                            if (screenX - (tw / 2) < margin) {
-                                screenX = (tw / 2) + margin;
-                            } else if (screenX + (tw / 2) > window.innerWidth - margin) {
-                                screenX = window.innerWidth - (tw / 2) - margin;
+                        // 2. Normal interactable highlight fallback
+                        const interactableHit = intersects.find(hit => interactableNames.includes(hit.object.name));
+                        if (interactableHit) {
+                            if (!isMouseOverTooltip && !tooltipHideTimer) {
+                                tooltipHideTimer = setTimeout(() => {
+                                    hideBuyTooltip();
+                                    tooltipHideTimer = null;
+                                }, 350);
                             }
 
-                            // Contrainte Y : le CSS décale de -100% avec un margin-top de -30px
-                            if (screenY - th - 30 < margin) {
-                                screenY = th + 30 + margin; 
+                            const hitMesh = interactableHit.object;
+                            if (lastHoverMesh !== hitMesh) {
+                                if (lastHoverMesh) {
+                                    const prev = (window.highlightItems||[]).find(it => it.mesh === lastHoverMesh || it.mesh.name === lastHoverMesh.name);
+                                    if (prev && prev.edges) prev.edges.userData.hovered = false;
+                                }
+                                const item = (window.highlightItems||[]).find(it => it.mesh === hitMesh || it.mesh.name === hitMesh.name);
+                                if (item && item.edges) item.edges.userData.hovered = true;
+                                lastHoverMesh = hitMesh;
                             }
-
-                            document.getElementById('s-tooltip-name').innerText = item.name;
-                            document.getElementById('s-tooltip-category').innerText = item.category.toUpperCase();
-                            document.getElementById('s-tooltip-perk').innerText = item.perk;
-                            
-                            let prereqTexts = [];
-                            if (item.reqRep > 0) prereqTexts.push(`${item.reqRep} REP`);
-                            if (item.reqFollowers > 0) prereqTexts.push(`${formatNum(item.reqFollowers)} Fans`);
-                            const prereqStr = prereqTexts.length > 0 ? prereqTexts.join(" & ") : "Aucun";
-                            
-                            const missingRep = state.rep < (item.reqRep || 0);
-                            const missingFollowers = state.followers < (item.reqFollowers || 0);
-                            const isLocked = missingRep || missingFollowers;
-                            const scaledPrice = typeof getScaledPrice === 'function' ? getScaledPrice(item.price) : item.price;
-                            const canAfford = state.money >= scaledPrice;
-
-                            const prereqEl = document.getElementById('s-tooltip-prereq');
-                            prereqEl.innerText = prereqStr;
-                            prereqEl.className = isLocked ? 'text-[var(--retro-red)] font-bold' : 'text-gray-200';
-
-                            const priceEl = document.getElementById('s-tooltip-price');
-                            priceEl.innerText = `$${scaledPrice}`;
-                            priceEl.className = !canAfford ? 'text-[var(--retro-red)] font-bold' : 'text-[var(--retro-green)] font-bold';
-
-                            const buyBtn = document.getElementById('s-tooltip-buy-btn');
-                            buyBtn.setAttribute('data-id', item.id);
-                            if (isLocked) {
-                                buyBtn.innerText = "Verrouillé";
-                                buyBtn.className = "w-full btn-minimal py-2 text-xs rounded-lg opacity-50 cursor-not-allowed uppercase font-bold";
-                                buyBtn.disabled = true;
-                            } else if (!canAfford) {
-                                buyBtn.innerText = "Fonds Insuffisants";
-                                buyBtn.className = "w-full btn-minimal py-2 text-xs rounded-lg border-[var(--retro-red)] text-[var(--retro-red)] opacity-60 cursor-not-allowed uppercase font-bold";
-                                buyBtn.disabled = true;
-                            } else {
-                                buyBtn.innerText = `Installer ($${scaledPrice})`;
-                                buyBtn.className = "btn-action w-full py-2 text-xs rounded-lg font-bold shadow-md uppercase tracking-wider";
-                                buyBtn.disabled = false;
-                            }
-
-                            tooltipEl.style.left = `${screenX}px`;
-                            tooltipEl.style.top = `${screenY}px`;
-                            tooltipEl.style.transform = `translate(-50%, -100%) scale(${scaleValue})`;
-                            tooltipEl.style.display = 'flex';
+                            return;
                         }
 
                         if (lastHoverMesh) {
@@ -6278,44 +6321,18 @@ const DEFAULT_STATE = {
                             if (prev && prev.edges) prev.edges.userData.hovered = false;
                             lastHoverMesh = null;
                         }
-                        return;
-                    }
-
-                    // 2. Normal interactable highlight fallback
-                    const interactableHit = intersects.find(hit => interactableNames.includes(hit.object.name));
-                    if (interactableHit) {
                         if (!isMouseOverTooltip && !tooltipHideTimer) {
                             tooltipHideTimer = setTimeout(() => {
                                 hideBuyTooltip();
                                 tooltipHideTimer = null;
                             }, 350);
                         }
-
-                        const hitMesh = interactableHit.object;
-                        if (lastHoverMesh !== hitMesh) {
-                            if (lastHoverMesh) {
-                                const prev = (window.highlightItems||[]).find(it => it.mesh === lastHoverMesh || it.mesh.name === lastHoverMesh.name);
-                                if (prev && prev.edges) prev.edges.userData.hovered = false;
-                            }
-                            const item = (window.highlightItems||[]).find(it => it.mesh === hitMesh || it.mesh.name === hitMesh.name);
-                            if (item && item.edges) item.edges.userData.hovered = true;
-                            lastHoverMesh = hitMesh;
-                        }
-                        return;
+                    } catch(e) {
+                        console.warn(e);
+                    } finally {
+                        isRaycasterPending = false;
                     }
-
-                    if (lastHoverMesh) {
-                        const prev = (window.highlightItems||[]).find(it => it.mesh === lastHoverMesh || it.mesh.name === lastHoverMesh.name);
-                        if (prev && prev.edges) prev.edges.userData.hovered = false;
-                        lastHoverMesh = null;
-                    }
-                    if (!isMouseOverTooltip && !tooltipHideTimer) {
-                        tooltipHideTimer = setTimeout(() => {
-                            hideBuyTooltip();
-                            tooltipHideTimer = null;
-                        }, 350);
-                    }
-                } catch(e) { /* ignore */ }
+                });
             });
 
             canvasCont.addEventListener('pointerleave', () => {
@@ -10642,7 +10659,7 @@ function triggerRankUp(oldRank, newRank) {
     setTimeout(() => {
         window.isBooting = false;
         if (!state.dailyQuests || state.dailyQuests.length === 0) {
-            generateDailyQuests();
+            if (typeof window.generateDailyQuests === 'function') window.generateDailyQuests();
         }
     }, 1000);
 }
@@ -11242,7 +11259,7 @@ function triggerRankUp(oldRank, newRank) {
             animateHUDNumber('os-stat-rep', state.rep, 'rep');
             animateHUDNumber('os-stat-fol', state.followers, 'foll');
 
-                        // --- MAJ DU WIDGET MOBILE (HYPE & STREAK) ---
+            // --- MAJ DU WIDGET MOBILE (HYPE & STREAK) ---
             try {
                 const osHypeFill = document.getElementById('os-mobile-hype-fill');
                 const osHypeVal = document.getElementById('os-mobile-hype-val');
@@ -11250,21 +11267,40 @@ function triggerRankUp(oldRank, newRank) {
 
                 if (osHypeFill && osHypeVal) {
                     const hv = Math.max(0, Math.min(100, Math.floor(Number(state.hype) || 50)));
-                    osHypeFill.style.width = hv + '%';
-                    osHypeVal.innerText = hv + '%';
+                    const nextWidth = hv + '%';
+                    if (osHypeFill.style.width !== nextWidth) {
+                        osHypeFill.style.width = nextWidth;
+                    }
+                    const nextText = hv + '%';
+                    if (osHypeVal.innerText !== nextText) {
+                        osHypeVal.innerText = nextText;
+                    }
                 }
                 if (osStreakVal) {
-                    osStreakVal.innerText = (state.streakDays || 0) + ' 🔥';
+                    const nextStreak = (state.streakDays || 0) + ' 🔥';
+                    if (osStreakVal.innerText !== nextStreak) {
+                        osStreakVal.innerText = nextStreak;
+                    }
                 }
             } catch(e) {}
 
-            document.getElementById('hud-day').innerText   = `JOUR ${state.day}`;
+            const nextDay = `JOUR ${state.day}`;
+            const dayEl = document.getElementById('hud-day');
+            if (dayEl && dayEl.innerText !== nextDay) {
+                dayEl.innerText = nextDay;
+            }
 
             const energyVal = Math.floor(state.energy);
             const energyFill = document.getElementById('meter-energy-fill');
-            if (energyFill) energyFill.style.height = `${energyVal}%`;
+            const nextHeight = `${energyVal}%`;
+            if (energyFill && energyFill.style.height !== nextHeight) {
+                energyFill.style.height = nextHeight;
+            }
             const energyValEl = document.getElementById('meter-energy-val');
-            if (energyValEl) energyValEl.innerText = `${energyVal}%`;
+            const nextValText = `${energyVal}%`;
+            if (energyValEl && energyValEl.innerText !== nextValText) {
+                energyValEl.innerText = nextValText;
+            }
             
 
                         // --- SYSTÈME DE FATIGUE VISUELLE (S'active sous les 40% d'énergie) ---
@@ -11615,10 +11651,10 @@ function triggerRankUp(oldRank, newRank) {
     // Weekly Challenge System (Fix: Relocated from Dead Code area)
     // ==========================================
     const CHALLENGE_POOL = [
-        { type: 'specific_track', title: 'Produce a specific track', desc: 'Produce a {genre} track at {bpm} BPM today.', rewardType: 'rep_boost', rewardAmount: 25 },
-        { type: 'specific_track', title: 'Produce a specific track', desc: 'Produce a {genre} track at {bpm} BPM today.', rewardType: 'followers', rewardAmount: 1500 },
-        { type: 'social_streak', title: 'Social Streak', desc: 'Post {target} stories in total.', rewardType: 'followers', rewardAmount: 800 },
-        { type: 'pure_skill', title: 'Pure Skill Banger', desc: 'Make {target} Banger(s) without plugins.', rewardType: 'rep_boost', rewardAmount: 40 }
+        { type: 'specific_track', title: 'Commande sur mesure', desc: 'Produis un son {genre} à {bpm} BPM aujourd\'hui.', rewardType: 'rep_boost', rewardAmount: 25 },
+        { type: 'specific_track', title: 'Cibler l\'algorithme', desc: 'Sors une prod {genre} à {bpm} BPM aujourd\'hui.', rewardType: 'followers', rewardAmount: 1500 },
+        { type: 'social_streak', title: 'Présence Réseaux', desc: 'Publie un total de {target} stories sur SoundNet.', rewardType: 'followers', rewardAmount: 800 },
+        { type: 'pure_skill', title: 'Talent Brut', desc: 'Fais {target} Banger(s) sans utiliser de plugin.', rewardType: 'rep_boost', rewardAmount: 40 }
     ];
 
     function pickRandomGenreForChallenge() {
