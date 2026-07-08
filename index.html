@@ -5147,12 +5147,18 @@ const DEFAULT_STATE = {
                 }
             }
         }
-        
+        let frameCounter = 0;
+
         function animate3D() {
         requestAnimationFrame(animate3D);
 
         // Correctif 2 : On ne rend rien tant que les shaders ne sont pas compilés
         if (!isSceneReady) return;
+
+        if (typeof isMobile !== 'undefined' && isMobile) {
+            frameCounter++;
+            if (frameCounter % 2 !== 0) return;
+        }
 
         // Reprise de ta variable time locale
         time += 0.02;
@@ -6168,14 +6174,16 @@ const DEFAULT_STATE = {
                         clearTimeout(tooltipHideTimer);
                         tooltipHideTimer = null;
                     }
-                    tooltipHideTimer = setTimeout(() => {
-                        hideBuyTooltip();
-                        tooltipHideTimer = null;
-                    }, 300);
+                    if (!isMobile) {
+                        tooltipHideTimer = setTimeout(() => {
+                            hideBuyTooltip();
+                            tooltipHideTimer = null;
+                        }, 300);
+                    }
                 });
             }
 
-            function findCatalogItemByObject(object) {
+            window.findCatalogItemByObject = function(object) {
                 if (!object) return null;
                 let curr = object;
                 while (curr) {
