@@ -10056,7 +10056,7 @@ function triggerRankUp(oldRank, newRank) {
 
         window.openSampleDigger = function() {
             document.getElementById('sample-digger-window').style.display = 'flex';
-            bringToFront(document.getElementById('sample-digger-window'));
+            bringToFront('sample-digger-window');
             renderSampleDigger();
             playClick();
         };
@@ -10074,17 +10074,31 @@ function triggerRankUp(oldRank, newRank) {
                 const isOwned = state.ownedSamples && state.ownedSamples.includes(sample.id);
                 const isActive = state.activeSample && state.activeSample.id === sample.id;
                 
+                let coverHtml = '';
+                if (typeof window.createVinylCoverTexture === 'function') {
+                    const tex = window.createVinylCoverTexture(sample.id, 256);
+                    if (tex && tex.image) {
+                        const dataUrl = tex.image.toDataURL();
+                        coverHtml = `<div class="vinyl-icon w-10 h-10 rounded-sm border border-white/20 shadow-md bg-cover bg-center shrink-0" style="background-image: url('${dataUrl}')"></div>`;
+                    }
+                }
+                if (!coverHtml) {
+                    coverHtml = `
+                        <svg class="vinyl-icon w-10 h-10 text-[#10b981] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <circle cx="12" cy="12" r="1"></circle>
+                        </svg>
+                    `;
+                }
+
                 const item = document.createElement('div');
                 item.className = `digger-item relative flex flex-col bg-black/60 border ${isActive ? 'border-[#10b981]' : 'border-white/10'} rounded-lg p-3 cursor-pointer overflow-hidden`;
                 
                 item.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
-                        <div class="flex items-center gap-2">
-                            <svg class="vinyl-icon w-8 h-8 text-[#10b981]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <circle cx="12" cy="12" r="3"></circle>
-                                <circle cx="12" cy="12" r="1"></circle>
-                            </svg>
+                        <div class="flex items-center gap-3">
+                            ${coverHtml}
                             <div>
                                 <h4 class="text-white font-bold text-sm leading-tight">${sample.name}</h4>
                                 <span class="text-xs text-[#a1a1aa] font-mono">${sample.genre}</span>
@@ -12834,6 +12848,29 @@ function triggerRankUp(oldRank, newRank) {
                                                 Math.floor(1 + Math.random() * 3);
 
                 let finalTrackScore = trackScore;
+
+                // --- HYPE SYSTEM: Modulate Hype based on raw performance ---
+                state.hype = state.hype || 50;
+                if (finalTrackScore >= 7) {
+                    const hypeBoost = Math.floor(10 + Math.random() * 10);
+                    state.hype = Math.min(100, state.hype + hypeBoost);
+                    critique += `\n[BANGER] La street valide fort ! Hype +${hypeBoost}`;
+                } else if (finalTrackScore <= 4) {
+                    const hypeDrop = Math.floor(10 + Math.random() * 5);
+                    state.hype = Math.max(0, state.hype - hypeDrop);
+                    critique += `\n[FLOP] Les fans sont déçus... Hype -${hypeDrop}`;
+                } else {
+                    // Mid score, hype normalizes towards 50
+                    if (state.hype > 50) state.hype = Math.max(50, state.hype - 2);
+                    else if (state.hype < 50) state.hype = Math.min(50, state.hype + 2);
+                }
+                
+                // --- MULTIPLIER APPLICATION ---
+                // Hype multiplier applies to both followers and money (0.5x to 1.5x)
+                const hypeMultiplier = 0.5 + (state.hype / 100);
+                moneyGain = Math.floor(moneyGain * hypeMultiplier);
+                follGain = Math.floor(follGain * hypeMultiplier);
+                critique += `\n[HYPE METER] Modificateur de gains : x${hypeMultiplier.toFixed(2)}`;
 
                 if (state.activeSample) {
                     const isCompatible = state.activeSample.genre.toLowerCase() === genre.toLowerCase();
