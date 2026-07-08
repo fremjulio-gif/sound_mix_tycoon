@@ -1795,6 +1795,50 @@
             animation: text-glitch 0.15s ease-in-out 3;
         }
 
+        /* --- ECHO NEXT-GEN CSS --- */
+        #app-echo {
+            backdrop-filter: blur(20px) saturate(180%) !important;
+            background: rgba(10, 10, 15, 0.65) !important;
+            border: 1px solid rgba(251, 191, 36, 0.2) !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 0 0 20px rgba(251, 191, 36, 0.1) !important;
+        }
+        
+        .echo-msg-bubble {
+            animation: echoSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        
+        @keyframes echoSlideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .btn-action, .btn-minimal {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s, background-color 0.2s !important;
+        }
+        .btn-action:hover, .btn-minimal:hover {
+            transform: scale(1.025);
+        }
+        .btn-action:active, .btn-minimal:active {
+            transform: scale(0.975);
+        }
+        
+        .echo-btn-pop {
+            animation: echoBtnPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        
+        @keyframes echoBtnPop {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
         </style>
     </head>
 
@@ -8245,6 +8289,46 @@ function triggerRankUp(oldRank, newRank) {
                 { label: "Je mise sur le streaming, la scène c'est trop old school pour moi.", shift: -10, response: "Pragmatique. Les dollars streaming arrivent lentement mais universellement." },
                 { label: "Je préfère la scène. Le live, c'est là que je crée de vrais liens.", shift: 10, response: "Les fans live sont des fans à vie. Mais les cachets varient énormément." }
             ]
+        },
+        {
+            id: "eq_ethics",
+            question: "Un ingé son renommé critique publiquement tes égalisations dans une vidéo. Tu réponds quoi ?",
+            choices: [
+                { label: "Je lance un clash pour gratter du buzz.", shift: -20, response: "Le clash a fonctionné ! Des milliers de curieux écoutent tes morceaux, mais ta crédibilité pro en prend un coup." },
+                { label: "Je lui propose d'en discuter en privé pour apprendre.", shift: 15, response: "Classe. Il apprécie la démarche et te donne même un tips sur le bas-médium." }
+            ]
+        },
+        {
+            id: "ai_generation",
+            question: "Une IA me propose de générer 90% de mes mélodies à ma place. Ça accélère la cadence, non ?",
+            choices: [
+                { label: "Grave, je prends. Faut optimiser la chaîne.", shift: -25, response: "Ta productivité explose, mais tes morceaux commencent tous à se ressembler et perdent leur âme." },
+                { label: "Non, je compose mes propres notes.", shift: 20, response: "Le chemin est plus long, mais chaque mélodie a ton ADN. C'est ça qui te rend irremplaçable." }
+            ]
+        },
+        {
+            id: "ghost_producing",
+            question: "Un rappeur ultra connu te demande de lui ghost-produire un son. Pas de crédit pour toi, mais $3000 cash.",
+            choices: [
+                { label: "Je prends l'argent direct. J'ai des factures.", shift: -15, response: "Le virement fait du bien au portefeuille. Par contre, voir son nom nulle part sur un hit mondial fait un peu mal." },
+                { label: "Je refuse. Mon nom doit figurer sur le travail.", shift: 25, response: "Choix courageux. Tu refuses le gain facile pour construire ta propre marque." }
+            ]
+        },
+        {
+            id: "monitors_buy",
+            question: "Tu as économisé un peu. Tu achètes des enceintes de monitoring pros ou un nouveau synthé à la mode ?",
+            choices: [
+                { label: "Les enceintes. Mes oreilles doivent entendre la vérité.", shift: 15, response: "Excellent investissement. Tes mixs traduisent enfin correctement partout." },
+                { label: "Le synthé. Je veux du sound design de l'espace.", shift: -5, response: "Le son est incroyable dans ton casque, mais tes mixs restent imprévisibles sur d'autres systèmes." }
+            ]
+        },
+        {
+            id: "studio_hygiene",
+            question: "Ton studio est devenu un dépotoir de canettes et d'assiettes sales. C'est l'ambiance créative ou le chaos ?",
+            choices: [
+                { label: "C'est l'esthétique grunge, la saleté m'inspire.", shift: -10, response: "Le grunge a ses limites. Tes maux de tête chroniques et la poussière sur tes machines n'aident pas." },
+                { label: "Je nettoie tout. Un espace propre pour des idées claires.", shift: 15, response: "Un grand bol d'air frais ! Travailler dans un environnement propre redonne un coup de boost immédiat." }
+            ]
         }
     ],
 
@@ -8321,6 +8405,36 @@ function triggerRankUp(oldRank, newRank) {
           question: "Pourquoi mon morceau me semble moins fort que la concurrence sur les plateformes ?",
           trueAnswer: "Les plateformes normalisent à -14 LUFS. Un master à -8 LUFS sera automatiquement baissé au même niveau qu'un master à -14 LUFS avec plus de dynamique. Tu perds sans gagner.",
           falseAnswer: "C'est ton monitoring. Calibre tes enceintes à 85 dB SPL et tout semblera plus équilibré. Le volume perçu est une question de perception, pas de chiffres."
+        },
+        {
+            id: "monitors_placement",
+            question: "Où dois-je placer mes enceintes par rapport à mes oreilles ?",
+            trueAnswer: "Forme un triangle équilatéral parfait entre tes enceintes et ta tête, avec les tweeters orientés pile vers tes tympans.",
+            falseAnswer: "Colle-les contre le mur du fond et tourne-les à l'opposé pour créer une réverbération acoustique naturelle."
+        },
+        {
+            id: "mono_compatibility",
+            question: "Pourquoi est-il si important de vérifier son mix en mono ?",
+            trueAnswer: "La plupart des smartphones, enceintes Bluetooth et clubs diffusent en mono. Si ton mix a des problèmes de phase en stéréo, il va disparaître en mono.",
+            falseAnswer: "C'est inutile en 2026. Tout le matériel moderne traite le signal en stéréo 3D immersive par défaut."
+        },
+        {
+            id: "limiter_ceiling",
+            question: "À quel niveau de True Peak je devrais régler mon limiteur sur le master ?",
+            trueAnswer: "Règle-le à -1.0 dB. C'est la marge de sécurité exigée par Spotify et Apple pour éviter la distorsion lors de l'encodage AAC/MP3.",
+            falseAnswer: "Règle-le à +2.0 dB. Plus tu dépasses, plus l'algorithme détecte un signal fort et le met en avant."
+        },
+        {
+            id: "vocal_compression",
+            question: "Comment compresser une voix de rap pour qu'elle reste punchy ?",
+            trueAnswer: "Utilise une attaque lente (15-30ms) pour laisser passer les transitoires d'articulation, et un relâchement rapide (50-100ms) pour ramener le volume.",
+            falseAnswer: "Attaque instantanée (0.1ms) et release infini. La voix doit être une brique plate sans aucune variation de dynamique."
+        },
+        {
+            id: "sidechain_kick_sub",
+            question: "Mon kick et ma basse s'étouffent mutuellement. Quel est le secret ?",
+            trueAnswer: "Applique un compresseur en sidechain sur ta basse déclenché par le kick, de sorte que la basse baisse de quelques décibels à chaque coup de kick.",
+            falseAnswer: "Augmente le gain des deux de +6dB à la même fréquence (60Hz) pour forcer le mix à fusionner les basses."
         }
     ]
 };
@@ -8586,23 +8700,20 @@ function triggerRankUp(oldRank, newRank) {
             // 1. RÉACTIONS : BANGER (Score >= 7)
             if (isBanger) {
                 pool.push(
-                    "méchant c'est quel plugin ?",
-                    "Bcp trop sous coté",
-                    "808 insane bro 🔥",
-                    "Le mix est tellement clean",
-                    `Ce banger de ${lowerGenre} !`,
-                    "Masterclass absolue.",
-                    "Je viens de le découvrir, pépite.",
+                    "Masterclass, le son est lourd de fou 💿",
+                    "Validé par la street, c'est la base",
+                    "La prod elle tape trop fort, c'est quoi le sample ? 😮",
+                    "C'est validé, direct en playlist",
+                    "Le mix est d'une propreté... ingé son certifié",
+                    "T'as la recette du banger, continue comme ça",
+                    "La 808 elle fait trembler les murs, c'est criminel",
+                    "Ça sent le disque de platine",
+                    "Le sidechain est d'une violence chirurgicale 🔥",
+                    "C'est quoi le VST ? Ce synthé est magique",
                     "Qui a laissé le bro cuisiner ?? 🧑‍🍳🔥",
-                    "j'écoute ça dans la gova à 200km/h",
-                    "ajoutez ça sur toutes les playlists direct",
-                    "c'est du miel pour mes oreilles",
-                    "banger de l'année no cap",
-                    "les drums tapent bcp trop fort",
-                    "il a piraté le game c'est pas possible",
                     `j'attends le remix avec ${rConnu}`,
-                    "Prod de génie.",
-                    "L'arrangement est parfait, 10/10."
+                    "L'arrangement est parfait, 10/10.",
+                    `Ce banger de ${lowerGenre} !`
                 );
                 if(track.voice === 'm' || track.voice === 'f') pool.push(`La voix colle trop bien à la prod`, `Le topline vocal est incroyable`);
                 if(track.voice === 'instru') pool.push(`Donnez un micro à quelqu'un là-dessus !`, `Je kicke dessus demain sans faute.`);
@@ -8610,42 +8721,32 @@ function triggerRankUp(oldRank, newRank) {
             // 2. RÉACTIONS : MID (Score 4 à 6)
             else if (isMid) {
                 pool.push(
-                    "Sympa mais sans plus",
-                    "Ça passe en fond pendant que je game",
-                    "Un peu répétitif non ?",
-                    `Classique ${lowerGenre}, pas ouf mais ok`,
-                    "C'est cool mais j'ai déjà oublié le refrain",
-                    "Mix un peu brouillon au niveau des basses",
-                    "mid, j'attends la prochaine",
-                    "y'a du potentiel mais le mix est plat",
-                    "pourquoi pas, mais on a vu mieux",
-                    "pas ouf la compression",
-                    "Beat de type YouTube libre de droits 💀",
-                    "C'est la prod du pauvre mdr",
-                    "Il manque un vrai drop",
-                    `"${track.title}" mdr le titre est mieux que le son`,
-                    "J'skip à la moitié."
+                    "Ça passe crème en fond, mais manque un peu de sauce",
+                    "C'est carré, mais un peu déjà entendu",
+                    "Le mix est propre mais le topline est fade",
+                    "Correct pour chill, mais ça manque de punch",
+                    "Sympa, mais c'est pas le son de l'année",
+                    "Un peu trop classique à mon goût",
+                    "Le sidechain est mal géré sur le kick",
+                    "La compresse est un peu forte non ?",
+                    "Ça s'écoute, mais sans plus"
                 );
             } 
             // 3. RÉACTIONS : FLOP (Score < 4)
             else { 
                 pool.push(
-                    "mix éclaté par terre mdr",
-                    "ça sent le preset gratuit",
-                    "C'est une blague ce son ?",
-                    "Ratio.",
-                    `Je l'ai aperçu avec ${rCancel} hier, ça m'étonne pas 💀`,
-                    "Mes oreilles saignent",
-                    "Arrête la musique frérot trouve un vrai taff",
-                    `"${track.title}" mdrrr on dirait un mot de passe wifi`,
-                    "Il a exporté avec le micro de son PC ou quoi ?",
-                    "Supprime avant que ton label voit ça",
-                    "Qui lui a dit que c'était une bonne idée ?",
-                    "On dirait une alarme de réveil",
-                    "genant smr",
-                    `Même pour du ${lowerGenre}, c'est insultant`,
+                    "Le mix est éclaté au sol, faut retourner bosser",
+                    "C'est quoi ce foutage de gueule ? 💀",
+                    "Désolé, mais ça manque cruellement de vibe",
+                    "Faut changer de DAW ou de carrière, là c'est gênant",
+                    "C'est le son du mec qui a téléchargé des samples gratuits et qui se croit producteur",
+                    "Supprime avant que ton label voie ça",
+                    "Même le micro de mon téléphone sonne mieux",
+                    "Le kick sature et c'est même pas du clipping créatif",
+                    "La phase stéréo est complètement dans les choux 🤮",
+                    "C'est quoi cette bouillie sonore ?",
                     "Pire son de 2026, félicitations.",
-                    "Remboursez mon temps d'écoute."
+                    `Je l'ai aperçu avec ${rCancel} hier, ça m'étonne pas 💀`
                 );
             }
             
@@ -14303,7 +14404,8 @@ function renderEchoMainChoices() {
     // Bouton 1 : Dilemme d'orientation
     if (orientation) {
         const btnOr = document.createElement('button');
-        btnOr.className = 'btn-action w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 flex gap-2 items-center';
+        btnOr.className = 'btn-action echo-btn-pop w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 flex gap-2 items-center';
+        btnOr.style.animationDelay = "0ms";
         btnOr.innerHTML = `<span class="text-[var(--retro-orange)] font-bold">›</span> <span class="truncate">J'ai besoin d'un conseil stratégique.</span>`;
         btnOr.onclick = () => {
             // Le joueur pose la question
@@ -14327,7 +14429,8 @@ function renderEchoMainChoices() {
     // Bouton 2 : Question technique / factuelle
     if (factual) {
         const btnFact = document.createElement('button');
-        btnFact.className = 'btn-action w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 flex gap-2 items-center';
+        btnFact.className = 'btn-action echo-btn-pop w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 flex gap-2 items-center';
+        btnFact.style.animationDelay = "100ms";
         btnFact.innerHTML = `<span class="text-[var(--retro-orange)] font-bold">›</span> <span class="truncate">${factual.question}</span>`;
         btnFact.onclick = () => processEchoFactualAnswer(factual);
         container.appendChild(btnFact);
@@ -14349,9 +14452,10 @@ function renderPlayerChoiceButtons(choices) {
     const container = document.getElementById('echo-action-choices');
     container.innerHTML = '';
 
-    choices.forEach(choice => {
+    choices.forEach((choice, index) => {
         const btn = document.createElement('button');
-        btn.className = 'btn-action w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 border border-[var(--retro-orange)]/30 hover:border-[var(--retro-orange)] transition-colors';
+        btn.className = 'btn-action echo-btn-pop w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 border border-[var(--retro-orange)]/30 hover:border-[var(--retro-orange)] transition-all';
+        btn.style.animationDelay = `${index * 120}ms`;
         btn.innerText = choice.label;
         
         btn.onclick = () => {
@@ -14427,11 +14531,13 @@ function showEchoTypingIndicator() {
 
     const indicator = document.createElement('div');
     indicator.id = 'echo-typing-indicator';
-    indicator.className = 'flex items-start gap-3 mt-4 animate-pulse';
+    indicator.className = 'flex items-start gap-3 mt-4 echo-msg-bubble';
     indicator.innerHTML = `
-        <div class="w-2 h-2 rounded-full bg-[var(--retro-orange)] shadow-[0_0_8px_rgba(251,191,36,0.8)] mt-2 flex-shrink-0 animate-pulse"></div>
-        <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl rounded-tl-none p-3 text-sm text-[var(--text-muted)] italic max-w-[80%]">
-            ECHO réfléchit...
+        <div class="w-2 h-2 rounded-full bg-[var(--retro-orange)] shadow-[0_0_8px_rgba(251,191,36,0.8)] mt-2.5 flex-shrink-0 animate-pulse"></div>
+        <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl rounded-tl-none p-3 max-w-[80%] flex items-center gap-1.5 min-h-[36px]">
+            <span class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+            <span class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+            <span class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
         </div>
     `;
     history.appendChild(indicator);
@@ -14448,8 +14554,14 @@ function appendEchoDialogue(text, sender, isLying = false, callback = null) {
     const history = document.getElementById('echo-dialogue-history');
     if (!history) return;
 
+    // Clear any previous typing timeout to prevent overlapping text animations
+    if (window.echoTypingTimeout) {
+        clearTimeout(window.echoTypingTimeout);
+        window.echoTypingTimeout = null;
+    }
+
     const msgDiv = document.createElement('div');
-    msgDiv.className = 'flex items-start gap-3 mt-4 animate-fade-in';
+    msgDiv.className = 'flex items-start gap-3 mt-4 echo-msg-bubble';
     
     if (sender === 'echo') {
         const textClass = isLying ? "text-gray-200 echo-glitch" : "text-gray-200";
@@ -14478,9 +14590,11 @@ function appendEchoDialogue(text, sender, isLying = false, callback = null) {
                 target.textContent += text.charAt(index);
                 index++;
                 history.scrollTop = history.scrollHeight;
-                setTimeout(typeChar, 10 + Math.random() * 15);
+                window.echoTypingTimeout = setTimeout(typeChar, 12 + Math.random() * 10);
             } else {
-                if (callback) callback();
+                window.echoTypingTimeout = null;
+                // Slight delay before calling callback to let UI breathe
+                if (callback) setTimeout(callback, 250);
             }
         }
         typeChar();
@@ -14492,7 +14606,7 @@ function appendEchoDialogue(text, sender, isLying = false, callback = null) {
         `;
         history.appendChild(msgDiv);
         history.scrollTop = history.scrollHeight;
-        if (callback) callback();
+        if (callback) setTimeout(callback, 200);
     }
 }
 
@@ -14501,7 +14615,7 @@ function renderEchoBackButton() {
     container.innerHTML = '';
     
     const btn = document.createElement('button');
-    btn.className = 'btn-minimal w-full py-3 text-[10px] tracking-widest rounded-lg uppercase';
+    btn.className = 'btn-minimal echo-btn-pop w-full py-3 text-[10px] tracking-widest rounded-lg uppercase';
     btn.innerText = "← Nouvelle requête";
     btn.onclick = () => renderEchoMainChoices();
     
