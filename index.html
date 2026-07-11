@@ -1413,7 +1413,51 @@
         .btn-daw-pad:disabled::after { display: none; }
 
 
+
         /* --- JUICY HUD ANIMATIONS --- */
+        @keyframes pulseGlowFx {
+            0% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.8), inset 0 0 10px rgba(16, 185, 129, 0.5); }
+            100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.4); }
+        }
+
+        .btn-fx-digger {
+            background: linear-gradient(135deg, #064e3b, #047857);
+            border: 2px solid #10b981;
+            border-bottom: 4px solid #022c22;
+            color: #a7f3d0;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            position: relative;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: pulseGlowFx 2s infinite;
+            text-shadow: 0 0 5px rgba(167, 243, 208, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 12px;
+            padding-right: 12px;
+            gap: 10px;
+            height: 48px;
+        }
+
+        .btn-fx-digger:hover {
+            background: linear-gradient(135deg, #047857, #059669);
+            border-color: #34d399;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.8), inset 0 0 15px rgba(16, 185, 129, 0.6);
+            animation: none;
+        }
+
+        .btn-fx-digger:active, .btn-fx-digger:focus-within {
+            transform: translateY(3px);
+            border-bottom-width: 1px;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5), inset 0 5px 10px rgba(0,0,0,0.6);
+        }
+
         @keyframes pulseGlow {
             0% { box-shadow: 0 0 5px rgba(168, 85, 247, 0.4); }
             50% { box-shadow: 0 0 15px rgba(168, 85, 247, 0.8), inset 0 0 10px rgba(168, 85, 247, 0.5); }
@@ -2731,14 +2775,16 @@
                             </div>
                             
                             <div class="flex flex-col gap-1.5 min-w-[160px]">
-                                <div class="w-full h-[32px] relative group">
-                                    <div class="absolute inset-y-0 left-0 bg-[#27272a] w-8 flex items-center justify-center rounded-l border border-[#3f3f46] pointer-events-none group-hover:border-[#10b981] transition-colors z-10">
-                                        <span class="text-[#a1a1aa] text-[9px] font-bold font-mono">FX</span>
+                                <div class="btn-fx-digger w-full relative group">
+                                    <svg class="w-6 h-6 text-[#34d399] drop-shadow-[0_0_3px_rgba(52,211,153,0.8)] shrink-0 z-10 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                    <div class="flex flex-col items-start leading-tight overflow-hidden z-10 pointer-events-none flex-1 pr-6">
+                                        <span class="text-[11px] text-[#a7f3d0] font-black tracking-widest drop-shadow-md">FX RACK</span>
+                                        <span id="daw-plugin-display" class="text-[9px] text-[#6ee7b7] truncate w-full font-mono mt-0.5">- Clean Mix -</span>
                                     </div>
-                                    <select id="daw-plugin" class="w-full h-full bg-[#09090b] border border-[#3f3f46] rounded pl-10 pr-6 outline-none text-[#d1d5db] text-[9px] font-mono cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] appearance-none group-hover:border-[#10b981] group-hover:shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all">
+                                    <select id="daw-plugin" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" onchange="document.getElementById('daw-plugin-display').innerText = this.options[this.selectedIndex].text;">
                                         <option value="">- Clean Mix -</option>
                                     </select>
-                                    <div class="absolute inset-y-0 right-2 flex items-center pointer-events-none text-[#10b981] text-[9px] opacity-70 group-hover:opacity-100">▼</div>
+                                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-[#10b981] text-[10px] opacity-70 group-hover:opacity-100 z-10">▼</div>
                                 </div>
                                 <button class="btn-sample-digger w-full" onclick="openSampleDigger()">
                                     <svg class="w-6 h-6 text-purple-300 drop-shadow-[0_0_3px_rgba(216,180,254,0.8)] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
