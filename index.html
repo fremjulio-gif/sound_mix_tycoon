@@ -2002,7 +2002,30 @@
                     touch-action: none !important;
                 }
             }
-        </style>
+        
+        /* CRT Scanlines for OS Windows */
+        .crt-bg {
+            position: relative;
+        }
+        .crt-bg::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.15) 50%
+            );
+            background-size: 100% 4px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .crt-bg > * {
+            position: relative;
+            z-index: 2;
+        }
+
+    </style>
             <style>
         #sample-digger-window { z-index: 1900 !important; }
         #meter-energy-fill.is-charging {
@@ -2015,7 +2038,30 @@
             50% { filter: brightness(1.5); opacity: 1; }
             100% { filter: brightness(1); opacity: 0.8; }
         }
-        </style>
+        
+        /* CRT Scanlines for OS Windows */
+        .crt-bg {
+            position: relative;
+        }
+        .crt-bg::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.15) 50%
+            );
+            background-size: 100% 4px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .crt-bg > * {
+            position: relative;
+            z-index: 2;
+        }
+
+    </style>
 </head>
 
         
@@ -2898,7 +2944,7 @@
                     </button>
                     <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-[var(--retro-green)] shadow-[0_0_10px_var(--retro-green)]"></span> Sys_Stats</span>
                 </div>
-                <div class="window-content font-retro text-sm text-[var(--retro-green)] bg-black/80 p-6 md:p-8 leading-loose tracking-wider shadow-[inset_0_0_20px_rgba(0,0,0,1)]">
+                <div class="window-content crt-bg bg-black/90 p-6 md:p-8 shadow-[inset_0_0_40px_rgba(0,0,0,1)] relative overflow-hidden">
                     <div id="stats-content">Loading metrics...</div>
                 </div>
             </div>
@@ -2944,7 +2990,30 @@
                 <style>
         #sample-digger-window { z-index: 1900 !important; }
                     @keyframes diggerMarquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
-                </style>
+                
+        /* CRT Scanlines for OS Windows */
+        .crt-bg {
+            position: relative;
+        }
+        .crt-bg::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.15) 50%
+            );
+            background-size: 100% 4px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .crt-bg > * {
+            position: relative;
+            z-index: 2;
+        }
+
+    </style>
                 <div class="text-[#10b981] text-[9px] font-mono whitespace-nowrap opacity-70 flex gap-8" style="animation: diggerMarquee 15s linear infinite; width: max-content;">
                     <span>[SYS] SECURE CONNECTION ESTABLISHED...</span>
                     <span>[DB] SYNCING CRATES... OK</span>
@@ -13898,21 +13967,125 @@ function triggerRankUp(oldRank, newRank) {
         // 20. STATS
         // ==========================================
         function refreshStats() {
+            const ranks = [
+                { name: 'Bedroom Producer', minReq: 0 },
+                { name: 'Local Talent', minReq: 100 },
+                { name: 'Underground King', minReq: 500 },
+                { name: 'Mainstream Hitmaker', minReq: 2000 },
+                { name: 'Global Icon', minReq: 5000 }
+            ];
+            
+            let currentRank = ranks[0];
+            let nextRank = ranks[1];
+            let progress = 0;
+            
+            for (let i = 0; i < ranks.length; i++) {
+                if (state.rep >= ranks[i].minReq) {
+                    currentRank = ranks[i];
+                    nextRank = ranks[i + 1] || null;
+                }
+            }
+            
+            if (nextRank) {
+                const range = nextRank.minReq - currentRank.minReq;
+                const current = state.rep - currentRank.minReq;
+                progress = Math.min(100, Math.max(0, (current / range) * 100));
+            } else {
+                progress = 100;
+            }
+
             document.getElementById('stats-content').innerHTML = `
-                <div class="mb-6 text-white">root@studio-os:~# ./sys_status</div>
-                <div class="grid grid-cols-2 gap-y-5 gap-x-4 border-l-2 border-[var(--retro-green)] pl-5">
-                    <div class="text-[var(--text-muted)]">USER:</div>            <div class="text-white">${state.username}</div>
-                    <div class="text-[var(--text-muted)]">AVATAR_ID:</div>       <div class="text-white">spr_char_${state.activeCharacter + 1}.png</div>
-                    <div class="text-[var(--text-muted)]">UPTIME (Days):</div>  <div class="text-white">${state.day}</div>
-                    <div class="text-[var(--text-muted)]">REVENUE_MULT:</div>   <div class="text-[var(--accent)] font-bold drop-shadow-[0_0_5px_var(--accent)]">x${parseFloat(state.multiplier).toFixed(1)}</div>
-                    <div class="text-[var(--text-muted)]">PLUGINS_INST:</div>   <div class="text-white">${state.plugins || 0}</div>
-                    <div class="col-span-2 text-gray-800">---------------------------------</div>
-                    <div class="text-[var(--text-muted)]">TRACKS_EXPORTED:</div><div class="text-white">${state.stats.tracks}</div>
-                    <div class="text-[var(--text-muted)]">BANGERS (Hits):</div> <div class="text-[var(--retro-orange)] font-bold drop-shadow-[0_0_5px_var(--retro-orange)]">${state.stats.bangers}</div>
-                    <div class="text-[var(--text-muted)]">FLOPS (Misses):</div> <div class="text-[var(--retro-red)]">${state.stats.flops}</div>
-                    <div class="text-[var(--text-muted)]">VIRUS_INFECTIONS:</div><div class="text-[var(--retro-green)]">${state.stats.viruses}</div>
-                </div>
-                <div class="mt-8 text-[var(--retro-green)] animate-pulse font-bold text-lg">_</div>`;
+                <div class="relative w-full h-full p-2 text-[var(--retro-green)] leading-loose z-10 font-sans">
+                    <!-- Section: RANG & PROGRESSION -->
+                    <div class="flex justify-between items-center mb-5 pb-5 border-b border-[var(--retro-green)]/30 relative">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-[var(--text-muted)] tracking-widest uppercase mb-1 font-retro">Current Rank</span>
+                            <span class="text-xl md:text-2xl text-white font-bold drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] uppercase font-retro tracking-widest">${currentRank.name}</span>
+                            <span class="text-[10px] text-[var(--retro-green)] mt-1 tracking-wider flex items-center gap-2 font-mono"><span class="w-2 h-2 rounded-full bg-[var(--retro-green)] animate-pulse shadow-[0_0_8px_var(--retro-green)]"></span> SYSTEM OK</span>
+                        </div>
+                        <div class="text-right flex flex-col items-end">
+                            <span class="text-[10px] text-[var(--text-muted)] tracking-widest uppercase mb-1 font-retro">Next Rank</span>
+                            <span class="text-xs text-gray-400 uppercase font-retro tracking-wider">${nextRank ? nextRank.name : 'MAX RANK'}</span>
+                            <span class="text-[10px] text-white font-mono mt-1">${Math.floor(state.rep)} / ${nextRank ? nextRank.minReq : '∞'} REP</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar (Rank) -->
+                    <div class="w-full h-4 bg-black border border-[var(--retro-green)]/40 rounded-full mb-8 overflow-hidden shadow-[inset_0_0_10px_rgba(0,0,0,1)] relative">
+                        <div class="h-full bg-[var(--retro-green)] shadow-[0_0_15px_var(--retro-green)] transition-all duration-1000 ease-out" style="width: ${progress}%"></div>
+                        <div class="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(0,0,0,0.2)_10px,rgba(0,0,0,0.2)_20px)]"></div>
+                    </div>
+
+                    <!-- Terminal Output -->
+                    <div class="mb-5 text-white text-[11px] font-mono opacity-80">root@studio-os:~# ./sys_status --verbose</div>
+                    
+                    <div class="grid grid-cols-2 gap-y-4 gap-x-4 border-l-2 border-[var(--retro-green)] pl-4 text-[11px] font-mono">
+                        <div class="text-[var(--text-muted)]">USER:</div>            <div class="text-white">${state.username}</div>
+                        <div class="text-[var(--text-muted)]">UPTIME (Days):</div>   <div class="text-white anim-counter" data-val="${state.day}">0</div>
+                        <div class="text-[var(--text-muted)]">REVENUE_MULT:</div>    <div class="text-[var(--accent)] font-bold drop-shadow-[0_0_5px_var(--accent)]">x<span class="anim-counter" data-val="${state.multiplier}" data-decimals="1">0.0</span></div>
+                        <div class="col-span-2 text-gray-800 tracking-tighter">------------------------------------------</div>
+                        <div class="text-[var(--text-muted)]">TRACKS_EXPORTED:</div> <div class="text-white anim-counter" data-val="${state.stats.tracks}">0</div>
+                        <div class="text-[var(--text-muted)]">BANGERS (Hits):</div>  <div class="text-[var(--retro-orange)] font-bold drop-shadow-[0_0_5px_var(--retro-orange)] anim-counter" data-val="${state.stats.bangers}">0</div>
+                        <div class="text-[var(--text-muted)]">FLOPS (Misses):</div>  <div class="text-[var(--retro-red)] anim-counter" data-val="${state.stats.flops}">0</div>
+                        
+                        <div class="col-span-2 mt-4 border-t border-white/5 pt-4">
+                            <div class="text-[var(--text-muted)] mb-2 font-retro tracking-widest text-[9px]">GLOBAL HYPE LEVEL</div>
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1 h-3 bg-black border border-white/10 rounded-full overflow-hidden shadow-inner">
+                                    <div class="h-full bg-gradient-to-r from-purple-600 to-pink-500 transition-all duration-1000 ease-out" style="width: ${Math.min(100, state.hype)}%"></div>
+                                </div>
+                                <span class="text-xs text-white w-8 text-right font-bold"><span class="anim-counter" data-val="${Math.floor(state.hype)}">0</span>%</span>
+                            </div>
+                        </div>
+
+                        <div class="col-span-2 mt-2">
+                            <div class="text-[var(--text-muted)] mb-2 font-retro tracking-widest text-[9px]">USER ENERGY (INSPI)</div>
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1 h-3 bg-black border border-white/10 rounded-full overflow-hidden shadow-inner">
+                                    <div class="h-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-1000 ease-out" style="width: ${Math.min(100, state.inspi)}%"></div>
+                                </div>
+                                <span class="text-xs text-white w-8 text-right font-bold"><span class="anim-counter" data-val="${Math.floor(state.inspi)}">0</span>%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 text-[var(--retro-green)] animate-pulse font-bold text-lg font-mono">_</div>
+                </div>`;
+            
+            animateCounters();
+        }
+
+        function animateCounters() {
+            const counters = document.querySelectorAll('.anim-counter');
+            counters.forEach(counter => {
+                const target = parseFloat(counter.getAttribute('data-val'));
+                const decimals = parseInt(counter.getAttribute('data-decimals')) || 0;
+                let current = 0;
+                const duration = 1200; // 1.2s for juice
+                const startTime = performance.now();
+                
+                function update(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    // easeOutQuart
+                    const easeOut = 1 - Math.pow(1 - progress, 4);
+                    
+                    current = easeOut * target;
+                    
+                    if (decimals > 0) {
+                        counter.innerText = current.toFixed(decimals);
+                    } else {
+                        counter.innerText = Math.floor(current);
+                    }
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(update);
+                    } else {
+                        counter.innerText = decimals > 0 ? target.toFixed(decimals) : Math.floor(target);
+                    }
+                }
+                
+                requestAnimationFrame(update);
+            });
         }
 
         // ==========================================
