@@ -2553,7 +2553,7 @@
                                placeholder="[UNTITLED_TRACK]..." />
                     </div>
 
-                    <div id="daw-genres-container" class="flex flex-wrap gap-2 max-h-[100px] overflow-y-auto custom-scrollbar pr-1 pb-1 mb-3"></div>
+                    <div id="daw-genres-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[100px] md:max-h-[250px] overflow-y-auto custom-scrollbar pr-1 pb-1 mb-3"></div>
 
                     <div class="flex flex-col md:flex-row gap-3 mb-3 md:mb-0">
                                             <div class="bg-[#18181b] border border-[#27272a] rounded-xl p-3 shadow-inner flex flex-col mb-3 flex-1 min-h-[250px] md:min-h-[300px] relative overflow-hidden group">
@@ -10050,12 +10050,12 @@ function triggerRankUp(oldRank, newRank) {
             const isUnlocked = currentTracks >= g.unlockAt;
             
             if (!isUnlocked) {
-                return `<button class="btn-daw-pad flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest min-w-[40%]" disabled title="Débloqué à ${g.unlockAt} tracks">🔒 ??? (${g.unlockAt} TRK)</button>`;
+                return `<button class="btn-daw-pad w-full py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest" disabled title="Débloqué à ${g.unlockAt} tracks">🔒 ??? (${g.unlockAt} TRK)</button>`;
             }
             
             const isActive = currentDawGenre === g.id;
             const btnClass = isActive ? 'btn-daw-pad selected' : 'btn-daw-pad';
-            return `<button class="${btnClass} flex-1 py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest min-w-[40%]" data-val="${g.id}" onclick="selectDawGenre('${g.id}')">${g.name}</button>`;
+            return `<button class="${btnClass} w-full py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest" data-val="${g.id}" onclick="selectDawGenre('${g.id}')">${g.name}</button>`;
         }).join('');
     }
 
