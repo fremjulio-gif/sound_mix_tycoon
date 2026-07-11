@@ -5276,7 +5276,8 @@ const DEFAULT_STATE = {
             });
 
             if (window.pixarLamp && state && state.ownedFurniture) {
-                const hasLamp = state.ownedFurniture.includes('lamp');
+                const hasLamp = state.ownedFurniture.includes('rack_lamp');
+                window.pixarLamp.visible = hasLamp; // Rendre la lampe visible !
                 if (!hasLamp) {
                     window.pixarLamp.userData.isOn = false;
                     if (window.pixarLamp.userData.spot) {
@@ -13474,6 +13475,11 @@ function triggerRankUp(oldRank, newRank) {
                 // Application Visuelle
                 try {
                     if (typeof syncFurniture3DVisibility === 'function') syncFurniture3DVisibility();
+                    
+                    // Allumer automatiquement la lampe Pixar à l'achat du Rack
+                    if (id === 'rack_lamp' && window.pixarLamp && !window.pixarLamp.userData.isOn) {
+                        if (typeof togglePixarLamp === 'function') togglePixarLamp();
+                    }
                 } catch(e) { console.warn("syncFurniture3DVisibility warning:", e); }
 
                 if (typeof getFurniture3DObject === 'function' && item.sceneObject) {
