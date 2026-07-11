@@ -2221,7 +2221,7 @@
         <div id="three-canvas-container"></div>
 
         <!-- LOW BATTERY WARNING — positionné par projection 3D→2D dans animate3D() -->
-        <div id="floating-energy-warning" style="display: none; position: fixed; z-index: 50; pointer-events: none; transform: translate(-50%, -100%); margin-top: -18px;">
+        <div id="floating-energy-warning" style="display: none; position: fixed; z-index: 5; pointer-events: none; transform: translate(-50%, -100%); margin-top: -18px;">
             <div class="low-batt-inner">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="7" width="16" height="10" rx="2" ry="2"></rect>
@@ -2233,7 +2233,7 @@
         </div>
 
         <!-- LOW INSPIRATION WARNING -->
-        <div id="floating-inspi-warning" style="display: none; position: fixed; z-index: 50; pointer-events: none; transform: translate(-50%, -100%); margin-top: -18px;">
+        <div id="floating-inspi-warning" style="display: none; position: fixed; z-index: 5; pointer-events: none; transform: translate(-50%, -100%); margin-top: -18px;">
             <div class="low-inspi-inner">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2v1"></path><path d="M12 7a5 5 0 0 0-5 5c0 2 1.5 3 2 5a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1c.5-2 2-3 2-5a5 5 0 0 0-5-5Z"></path>
@@ -8063,14 +8063,25 @@ function triggerRankUp(oldRank, newRank) {
                 const now = audioCtx.currentTime;
 
                 currentActiveTrackKey = targetKey; // Met à jour la piste active
+                
+                // On s'assure que le master volume est réactivé si on était dans le DAW
+                if (masterGain) {
+                    masterGain.gain.cancelScheduledValues(now);
+                    masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+                    masterGain.gain.linearRampToValueAtTime(1.0, now + fadeDuration);
+                }
 
                 Object.keys(tracks).forEach(key => {
+                    if (!tracks[key] || !tracks[key].gainNode) return;
                     const gainParam = tracks[key].gainNode.gain;
+                    
                     gainParam.cancelScheduledValues(now); // Annule les changements de volume précédents
-                    gainParam.setValueAtTime(gainParam.value, now); // Définit la valeur actuelle comme point de départ
+                    
                     // Applique le volume cible (avec le volume global de la musique)
                     const finalVol = (key === targetKey) ? tracks[key].targetVol * window.musicVolume : 0;
-                    gainParam.linearRampToValueAtTime(finalVol, now + fadeDuration); // Transition linéaire
+                    
+                    // Transition douce avec setTargetAtTime pour éviter les bugs de linearRamp
+                    gainParam.setTargetAtTime(finalVol, now, fadeDuration / 3); 
                 });
             }
 
