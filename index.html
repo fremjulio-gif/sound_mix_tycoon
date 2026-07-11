@@ -9,6 +9,7 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
         <style>
+        #sample-digger-window { z-index: 999999 !important; }
             /* =========================================
             1. VARIABLES & THEMES
             ========================================= */
@@ -2003,6 +2004,7 @@
             }
         </style>
             <style>
+        #sample-digger-window { z-index: 999999 !important; }
         #meter-energy-fill.is-charging {
             animation: energyChargePulse 1s ease-in-out infinite;
             box-shadow: 0 0 15px #3b82f6, inset 0 0 10px #60a5fa;
@@ -2940,6 +2942,7 @@
             <!-- FAKE TERMINAL LOGS -->
             <div class="w-full bg-black border-b border-[#10b981]/30 p-1 relative z-10 overflow-hidden h-[18px] flex items-center">
                 <style>
+        #sample-digger-window { z-index: 999999 !important; }
                     @keyframes diggerMarquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
                 </style>
                 <div class="text-[#10b981] text-[9px] font-mono whitespace-nowrap opacity-70 flex gap-8" style="animation: diggerMarquee 15s linear infinite; width: max-content;">
@@ -10326,6 +10329,11 @@ function triggerRankUp(oldRank, newRank) {
         window.openSampleDigger = function() {
             document.getElementById('sample-digger-window').style.display = 'flex';
             bringToFront('sample-digger-window');
+            document.getElementById('sample-digger-window').style.zIndex = '999999';
+            document.getElementById('sample-digger-window').style.setProperty('position', 'fixed', 'important');
+            document.getElementById('sample-digger-window').style.setProperty('top', '50%', 'important');
+            document.getElementById('sample-digger-window').style.setProperty('left', '50%', 'important');
+            document.getElementById('sample-digger-window').style.setProperty('transform', 'translate(-50%, -50%)', 'important');
             renderSampleDigger();
             playClick();
         };
