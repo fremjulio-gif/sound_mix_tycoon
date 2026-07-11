@@ -11365,19 +11365,19 @@ function triggerRankUp(oldRank, newRank) {
                     if (avatarChanged) state.activeCharacter = selectedAvatarIndex;
                     if (state.activeCharacter < 0 || state.activeCharacter >= avatars.length) state.activeCharacter = 0;
 
-                    showToast("Session Restored.", "success");
+                    showToast("Session restaurée avec succès.", "success");
                 } else {
                     state = JSON.parse(JSON.stringify(DEFAULT_STATE));
                     state.username = username;
                     state.activeCharacter = selectedAvatarIndex;
-                    showToast("New Profile Registered.", "info");
+                    showToast("Nouveau profil enregistré.", "info");
                 }
             } catch(e) {
                 console.error('Erreur critique au chargement de la sauvegarde :', e); 
                 state = JSON.parse(JSON.stringify(DEFAULT_STATE));
                 state.username = username;
                 state.activeCharacter = selectedAvatarIndex;
-                showToast("Loading failed, loaded default profile.", "warning");
+                showToast("Échec du chargement. Profil par défaut chargé.", "warning");
             }
 
             normalizeAchievementState();
@@ -13814,7 +13814,7 @@ function triggerRankUp(oldRank, newRank) {
 
                 state.downloadedCracks[id] = getTotalMins();
 
-                showToast(`Download Complete! Plugin unlocked in AbleStudio.`, "success");
+                showToast(`Téléchargement terminé ! Plugin débloqué dans AbleStudio.`, "success");
                 playSuccess();
             }
             
@@ -13828,11 +13828,11 @@ function triggerRankUp(oldRank, newRank) {
                 state.multiplier = Math.min(3.0, (parseFloat(state.multiplier) || 1.0) + mult);
                 state.plugins = (parseInt(state.plugins, 10) || 0) + 1;
                 checkAchievement('inge_son_certifie', () => state.plugins >= 1);
-                showToast(`Purchase Confirmed! Multiplier +${mult}`, "success");
+                showToast(`Achat confirmé ! Multiplicateur +${mult}`, "success");
                 fireConfetti('store'); // <-- DÉCLENCHEUR ICI
                 playSuccess(); saveGame(); updateHUD();
             } else {
-                showToast("Insufficient Funds.", "error"); playError();
+                showToast("Fonds insuffisants.", "error"); playError();
             }
         }
 
@@ -13856,7 +13856,7 @@ function triggerRankUp(oldRank, newRank) {
                 p += 4; prog.style.width = p + '%';
                 if (p >= 100) {
                     clearInterval(int);
-                    setTimeout(() => { bsod.classList.add('hidden'); bsod.classList.remove('flex'); showToast(`System Purged. Penalty applied (-$${loss}).`, "error"); }, 800);
+                    setTimeout(() => { bsod.classList.add('hidden'); bsod.classList.remove('flex'); showToast(`Système purgé. Pénalité appliquée (-$${loss}).`, "error"); }, 800);
                 }
             }, 150);
         }
@@ -13932,7 +13932,7 @@ function triggerRankUp(oldRank, newRank) {
             state.rep = Math.max(0, state.rep + repGain);
             
             // Feedback visuel
-            showToast(`Story posted! +${followerGain} Fans | +${repGain} REP`, "info");
+            showToast(`Story publiée ! +${followerGain} Fans | +${repGain} REP`, "info");
             
             // Poster draine l'inspiration
             state.inspi = Math.max(0, state.inspi - 10);
@@ -13956,7 +13956,7 @@ function triggerRankUp(oldRank, newRank) {
             state.inspi = Math.max(0, (Number(state.inspi) || 0) - 15);
             
             checkAchievement('sellout', () => true);
-            showToast(`Contract signed with ${s.name}! Cash in, sell out...`, "success");
+            showToast(`Contrat signé avec ${s.name} ! L'heure d'encaisser...`, "success");
             playBleep(); saveGame(); updateHUD(); refreshSocial();
         }
 
