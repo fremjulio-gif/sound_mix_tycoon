@@ -4639,6 +4639,9 @@ const DEFAULT_STATE = {
 
             const startVal = hudDisplayValues[key] || 0;
             hudLastTargetValues[key] = targetVal;
+            if (typeof playUIAudio === 'function' && targetVal > startVal && !window.isBooting) {
+                playUIAudio('stat', 0.3);
+            }
 
             // Punch effect
             el.classList.remove('juicy-pop');
@@ -8145,6 +8148,66 @@ function triggerRankUp(oldRank, newRank) {
             // Formule standard : La4 (A4) = 440Hz
             return 440 * Math.pow(2, (keyNumber - 9 + (octave - 4) * 12) / 12);
         }
+const UIAudioFiles = {
+    generic: './audio/u_ui_generic.wav',
+    switch: './audio/u_ui_switch.wav',
+    toast: './audio/u_ui_toast.wav',
+    succes: './audio/u_ui_succes.wav',
+    erreur: './audio/u_ui_erreur.wav',
+    hover: './audio/u_ui_hover.wav',
+    stat: './audio/u_ui_stat.wav',
+    transaction: './audio/u_ui_transaction.wav',
+    open: './audio/u_ui_open.wav'
+};
+const UIAudioBuffers = {};
+
+async function preloadUIAudio() {
+    if (!audioCtxUI) initAudio();
+    if (!audioCtxUI) return;
+    
+    const promises = Object.entries(UIAudioFiles).map(async ([key, path]) => {
+        try {
+            const response = await fetch(path);
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await audioCtxUI.decodeAudioData(arrayBuffer);
+            UIAudioBuffers[key] = audioBuffer;
+        } catch (err) {
+            console.error(`Failed to load audio: ${path}`, err);
+        }
+    });
+    await Promise.all(promises);
+}
+
+function playUIAudio(key, volume = 1.0) {
+    if (!audioCtxUI || audioCtxUI.state === 'suspended') return;
+    const buffer = UIAudioBuffers[key];
+    if (!buffer) return;
+    
+    const source = audioCtxUI.createBufferSource();
+    source.buffer = buffer;
+    
+    const gainNode = audioCtxUI.createGain();
+    gainNode.gain.value = volume * (window.sfxVolume !== undefined ? window.sfxVolume : 1.0);
+    
+    source.connect(gainNode);
+    gainNode.connect(audioCtxUI.destination);
+    
+    source.start(0);
+}
+
+document.addEventListener('mouseover', (e) => {
+    const target = e.target.closest('button, .cursor-pointer, .btn, .btn-action, .btn-juice, .genre-btn, .taskbar-btn, .os-window-btn');
+    if (target && !target.disabled) {
+        if (!target.dataset.hoverSoundPlayed) {
+            playUIAudio('hover', 0.15);
+            target.dataset.hoverSoundPlayed = 'true';
+            target.addEventListener('mouseleave', () => {
+                delete target.dataset.hoverSoundPlayed;
+            }, { once: true });
+        }
+    }
+});
+
         function initAudio() {
             if (!audioCtxUI) {
                 try {
@@ -8236,12 +8299,12 @@ function triggerRankUp(oldRank, newRank) {
             } catch(e) {}
         }
         
-        const playBleep   = () => playTone(800, 'sine', 0.05, 0.03);
-        const playSuccess = () => { playTone(600, 'square', 0.1, 0.03); setTimeout(() => playTone(800, 'square', 0.15, 0.03), 100); };
-        const playError   = () => { playTone(200, 'sawtooth', 0.2, 0.05); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); };
+        const playBleep   = () => { if (typeof playUIAudio === 'function') { playUIAudio('generic', 0.6); } else { playTone(800, 'sine', 0.05, 0.03); } };
+        const playSuccess = () => { if (typeof playUIAudio === 'function') { playUIAudio('succes', 0.8); } else { playTone(600, 'square', 0.1, 0.03); setTimeout(() => playTone(800, 'square', 0.15, 0.03), 100); } };
+        const playError   = () => { if (typeof playUIAudio === 'function') { playUIAudio('erreur', 0.8); } else { playTone(200, 'sawtooth', 0.2, 0.05); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.05), 150); } };
         const playKick    = () => { playTone(60, 'sine', 0.2, 0.2); playTone(120, 'square', 0.05, 0.1); };
-        const playCashSound = () => { playTone(600, 'sine', 0.1, 0.08); setTimeout(() => playTone(1200, 'sine', 0.2, 0.08), 100); };
-        window.playClick = () => { if (typeof playTone === 'function') playTone(1200, 'sine', 0.05, 0.02); };
+        const playCashSound = () => { if (typeof playUIAudio === 'function') { playUIAudio('transaction', 0.8); } else { playTone(600, 'sine', 0.1, 0.08); setTimeout(() => playTone(1200, 'sine', 0.2, 0.08), 100); } };
+        window.playClick = () => { if (typeof playUIAudio === 'function') { playUIAudio('generic', 0.6); } else { playTone(1200, 'sine', 0.05, 0.02); } };
         
         // Nouveau son pour le Level Up
         const playLevelUpSound = () => {
@@ -10393,7 +10456,7 @@ function triggerRankUp(oldRank, newRank) {
         }
         updateDawGenres();
         if (typeof populateDawSamples === 'function') populateDawSamples();
-        playBleep();
+        if (typeof playUIAudio === 'function') playUIAudio('switch', 0.7);
     }
         function selectDawVoice(val = 'm') {
         currentDawVoice = val || 'm';
@@ -11348,6 +11411,7 @@ function triggerRankUp(oldRank, newRank) {
         async function attemptLogin() {
             window.isBooting = true; //
             initAudio();
+            preloadUIAudio();
             const username = document.getElementById('login-username').value.trim();
             if (!username) { document.getElementById('login-error').classList.remove('hidden'); playError(); return; }
 
@@ -12934,7 +12998,7 @@ function triggerRankUp(oldRank, newRank) {
             if (!isMobile) updateTaskbar();
             // realign widgets after opening a window to avoid layout gaps
             try { if (typeof realignWidgets === 'function') realignWidgets(); } catch(e) {}
-            playBleep();
+            if (typeof playUIAudio === 'function') { playUIAudio('open', 0.8); } else { playBleep(); }
             
             if (id === 'app-echo') initEchoApp();
             if (id === 'app-stats')  refreshStats();
@@ -14158,6 +14222,7 @@ function triggerRankUp(oldRank, newRank) {
 
         function showToast(msg, type = 'info', onClick = null, priority = 1) {
              if (window.isBooting) return; // Si la session charge, on bloque 
+             if (typeof playUIAudio === 'function') playUIAudio('toast', 0.7);
             const zone = document.getElementById('toast-zone');
             if (!zone) return;
             const t = document.createElement('div');
