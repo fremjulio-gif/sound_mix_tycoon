@@ -6667,6 +6667,7 @@ const DEFAULT_STATE = {
     };
 
         function quitPC() {
+            if (typeof stopGenrePreview === 'function') stopGenrePreview();
             document.getElementById('pc-ui-layer').style.display = 'none';
             document.getElementById('room-ui').style.display = 'flex';
             document.body.classList.add('os-active');
@@ -10057,8 +10058,55 @@ function triggerRankUp(oldRank, newRank) {
     }
 
         
+
+        // ==========================================
+        // GENRE PREVIEW AUDIO
+        // ==========================================
+        let currentGenrePreviewAudio = null;
+
+        function stopGenrePreview() {
+            if (currentGenrePreviewAudio) {
+                currentGenrePreviewAudio.pause();
+                currentGenrePreviewAudio.currentTime = 0;
+                // Restore music volume
+                if (typeof MusicSystem !== 'undefined') {
+                    MusicSystem.setMusicVolume(window.musicVolume);
+                }
+                currentGenrePreviewAudio = null;
+            }
+        }
+
+        function playGenrePreview(genre) {
+            stopGenrePreview(); // Choke group: Stop previous
+            
+            currentGenrePreviewAudio = new Audio(`./audio/${genre}.mp3`);
+            currentGenrePreviewAudio.loop = false; // Règle absolue : One-Shot
+            currentGenrePreviewAudio.volume = window.sfxVolume * 1.5; // Foreground mix
+            
+            // Ducking effect: Lower room volume
+            if (typeof MusicSystem !== 'undefined') {
+                MusicSystem.setMusicVolume(window.musicVolume * 0.3);
+            }
+            
+            currentGenrePreviewAudio.addEventListener('ended', () => {
+                if (typeof MusicSystem !== 'undefined') {
+                    MusicSystem.setMusicVolume(window.musicVolume);
+                }
+                currentGenrePreviewAudio = null;
+            });
+            
+            currentGenrePreviewAudio.play().catch(e => {
+                console.warn(`Preview not found for genre: ${genre}`, e);
+                stopGenrePreview();
+            });
+        }
+
         function selectDawGenre(val = null) {
-        if (val) currentDawGenre = val;
+
+        if (val) {
+            currentDawGenre = val;
+            playGenrePreview(val);
+        }
         updateDawGenres();
         if (typeof populateDawSamples === 'function') populateDawSamples();
         playBleep();
@@ -12669,6 +12717,7 @@ function triggerRankUp(oldRank, newRank) {
         window.closeMiniGameMenu = closeMiniGameMenu;
         window.launchDoorMiniGame = launchDoorMiniGame;
         function exportTrack() {
+            if (typeof stopGenrePreview === 'function') stopGenrePreview();
             if (getTotalMins() < (parseInt(state.cooldowns.dawTimeReady, 10) || 0) || state.isExporting) return;
 
             if (state.energy <= 0) {
