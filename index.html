@@ -9,7 +9,7 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
         <style>
-        #sample-digger-window { z-index: 999999 !important; }
+        #sample-digger-window { z-index: 1900 !important; }
             /* =========================================
             1. VARIABLES & THEMES
             ========================================= */
@@ -2004,7 +2004,7 @@
             }
         </style>
             <style>
-        #sample-digger-window { z-index: 999999 !important; }
+        #sample-digger-window { z-index: 1900 !important; }
         #meter-energy-fill.is-charging {
             animation: energyChargePulse 1s ease-in-out infinite;
             box-shadow: 0 0 15px #3b82f6, inset 0 0 10px #60a5fa;
@@ -2942,7 +2942,7 @@
             <!-- FAKE TERMINAL LOGS -->
             <div class="w-full bg-black border-b border-[#10b981]/30 p-1 relative z-10 overflow-hidden h-[18px] flex items-center">
                 <style>
-        #sample-digger-window { z-index: 999999 !important; }
+        #sample-digger-window { z-index: 1900 !important; }
                     @keyframes diggerMarquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
                 </style>
                 <div class="text-[#10b981] text-[9px] font-mono whitespace-nowrap opacity-70 flex gap-8" style="animation: diggerMarquee 15s linear infinite; width: max-content;">
@@ -10329,9 +10329,9 @@ function triggerRankUp(oldRank, newRank) {
         window.openSampleDigger = function() {
             document.getElementById('sample-digger-window').style.display = 'flex';
             bringToFront('sample-digger-window');
-            document.getElementById('sample-digger-window').style.zIndex = '999999';
+            document.getElementById('sample-digger-window').style.zIndex = '1900';
             document.getElementById('sample-digger-window').style.setProperty('position', 'fixed', 'important');
-            document.getElementById('sample-digger-window').style.setProperty('top', '50%', 'important');
+            document.getElementById('sample-digger-window').style.setProperty('top', '55%', 'important');
             document.getElementById('sample-digger-window').style.setProperty('left', '50%', 'important');
             document.getElementById('sample-digger-window').style.setProperty('transform', 'translate(-50%, -50%)', 'important');
             renderSampleDigger();
@@ -10347,27 +10347,20 @@ function triggerRankUp(oldRank, newRank) {
             const grid = document.getElementById('sample-digger-grid');
             grid.innerHTML = '';
             
+            const renderQueue = [];
+            
             SAMPLE_CATALOG.forEach(sample => {
                 const isOwned = state.ownedSamples && state.ownedSamples.includes(sample.id);
                 const isActive = state.activeSample && state.activeSample.id === sample.id;
                 
-                let coverHtml = '';
-                if (typeof window.createVinylCoverTexture === 'function') {
-                    const tex = window.createVinylCoverTexture(sample.id, 256);
-                    if (tex && tex.image) {
-                        const dataUrl = tex.image.toDataURL();
-                        coverHtml = `<div class="vinyl-icon w-10 h-10 rounded-sm border border-white/20 shadow-md bg-cover bg-center shrink-0" style="background-image: url('${dataUrl}')"></div>`;
-                    }
-                }
-                if (!coverHtml) {
-                    coverHtml = `
-                        <svg class="vinyl-icon w-10 h-10 text-[#10b981] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <circle cx="12" cy="12" r="3"></circle>
-                            <circle cx="12" cy="12" r="1"></circle>
-                        </svg>
-                    `;
-                }
+                // Placeholder HTML pour le chargement asynchrone
+                let coverHtml = `
+                    <div id="vinyl-placeholder-${sample.id}" class="vinyl-icon w-10 h-10 rounded-sm border border-white/20 shadow-md bg-black/40 flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6 text-white/20 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
+                    </div>
+                `;
+                
+                renderQueue.push(sample.id);
 
                 const reqLevel = sample.tier === 1 ? 1 : (sample.tier === 2 ? 10 : (sample.tier === 3 ? 25 : 50));
                 const playerLevel = state.lastLevel || 1;
@@ -10428,6 +10421,42 @@ function triggerRankUp(oldRank, newRank) {
                 
                 grid.appendChild(item);
             });
+
+            // Lazy loading des covers pour ne pas bloquer le thread principal (UI Freeze)
+            let queueIndex = 0;
+            const defaultSvg = `
+                <svg class="vinyl-icon w-10 h-10 text-[#10b981] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <circle cx="12" cy="12" r="1"></circle>
+                </svg>
+            `;
+            
+            function processRenderQueue() {
+                if (queueIndex >= renderQueue.length) return;
+                
+                // Traiter 1 vinyl par frame pour garantir 60fps sans lag
+                const sampleId = renderQueue[queueIndex];
+                const placeholder = document.getElementById(`vinyl-placeholder-${sampleId}`);
+                
+                if (placeholder) {
+                    if (typeof window.createVinylCoverTexture === 'function') {
+                        const tex = window.createVinylCoverTexture(sampleId, 256);
+                        if (tex && tex.image) {
+                            const dataUrl = tex.image.toDataURL();
+                            placeholder.outerHTML = `<div class="vinyl-icon w-10 h-10 rounded-sm border border-white/20 shadow-md bg-cover bg-center shrink-0" style="background-image: url('${dataUrl}')"></div>`;
+                        } else {
+                            placeholder.outerHTML = defaultSvg;
+                        }
+                    } else {
+                        placeholder.outerHTML = defaultSvg;
+                    }
+                }
+                
+                queueIndex++;
+                requestAnimationFrame(processRenderQueue);
+            }
+            requestAnimationFrame(processRenderQueue);
         };
 
         window.pendingLicenseSampleId = null;
