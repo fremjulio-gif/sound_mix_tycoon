@@ -2966,8 +2966,15 @@
                 </div>
 
                 <div>
-                        <h4 class="text-xs text-white mb-5 uppercase tracking-widest font-retro border-b border-[var(--accent)]/30 pb-3 font-bold">Brand Deals (Sellout)</h4>
+                        <h4 class="text-xs text-white mb-3 uppercase tracking-widest font-retro border-b border-[var(--accent)]/30 pb-3 font-bold flex justify-between items-center">
+                            <span>Brand Deals (Sellout)</span>
+                            <div class="flex gap-2">
+                                <button onclick="switchDealTab('available')" id="tab-deals-avail" class="text-[9px] px-2 py-1 bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)] rounded cursor-pointer transition-colors">OFFRES</button>
+                                <button onclick="switchDealTab('history')" id="tab-deals-hist" class="text-[9px] px-2 py-1 bg-black/40 text-gray-400 border border-white/10 rounded cursor-pointer hover:text-white transition-colors">HISTORIQUE</button>
+                            </div>
+                        </h4>
                         <div id="sponsor-list" class="space-y-4"></div>
+                        <div id="sponsor-history" class="space-y-4 hidden"></div>
                     </div>
                 </div>
                 <div class="window-content hidden flex-col p-4 md:p-6 bg-[#121214]" id="social-content-dms">
@@ -3262,6 +3269,9 @@ const DEFAULT_STATE = {
             echoAlignment: 0, // De -100 (Cynique/Sellout) à +100 (Qualité/Puriste)
             echoTrialUsed: false, // True si le joueur a déjà consommé ses 2 jours d'essai
             activeDoorBoosts: { vinylCharges: 0, proStudioCharges: 0 },
+            activeContracts: [],
+            completedDeals: [],
+            dealPool: {},
             // Weekly challenge system
             activeChallenge: {
                 id: null,
@@ -9026,6 +9036,27 @@ document.addEventListener('mouseover', (e) => {
         return `@${core}${num}${suffix}`;
     }
 
+    let currentDealTab = 'available';
+    function switchDealTab(tabId) {
+        currentDealTab = tabId;
+        const btnAvail = document.getElementById('tab-deals-avail');
+        const btnHist = document.getElementById('tab-deals-hist');
+        const listAvail = document.getElementById('sponsor-list');
+        const listHist = document.getElementById('sponsor-history');
+        
+        if (tabId === 'available') {
+            btnAvail.className = "text-[9px] px-2 py-1 bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)] rounded cursor-pointer transition-colors";
+            btnHist.className = "text-[9px] px-2 py-1 bg-black/40 text-gray-400 border border-white/10 rounded cursor-pointer hover:text-white transition-colors";
+            listAvail.classList.remove('hidden');
+            listHist.classList.add('hidden');
+        } else {
+            btnHist.className = "text-[9px] px-2 py-1 bg-[var(--accent)]/20 text-[var(--accent)] border border-[var(--accent)] rounded cursor-pointer transition-colors";
+            btnAvail.className = "text-[9px] px-2 py-1 bg-black/40 text-gray-400 border border-white/10 rounded cursor-pointer hover:text-white transition-colors";
+            listHist.classList.remove('hidden');
+            listAvail.classList.add('hidden');
+        }
+    }
+
     function switchSocialTab(tab) {
         const btnFeed = document.getElementById('tab-social-feed');
         const btnDMs = document.getElementById('tab-social-dms');
@@ -9368,10 +9399,29 @@ document.addEventListener('mouseover', (e) => {
         liveChatTimeout = setTimeout(postMessage, 1000);
     }
 
-        const sponsors = [
-            { id: 'sp1', name: "Enerji Drink",  reqFollowers: 1000,  reward: 500,  repCost: 15, cooldownDays: 1 },
-            { id: 'sp2', name: "CryptoCoinZ",   reqFollowers: 5000,  reward: 2500, repCost: 20, cooldownDays: 1 },
-            { id: 'sp3', name: "AudioGear Pro", reqFollowers: 10000, reward: 8000, repCost: 5,  cooldownDays: 2 }
+        const TIERED_DEALS = [
+            // TIER 1
+            { id: 't1_enerji', name: "Enerji Drink", emoji: "⚡", tier: 1, reqFol: 0, reward: 500, repCost: 15, duration: 3 },
+            { id: 't1_snack', name: "SnackByte", emoji: "🍫", tier: 1, reqFol: 0, reward: 300, repCost: 10, duration: 3 },
+            { id: 't1_loop', name: "LoopCase", emoji: "📱", tier: 1, reqFol: 0, reward: 400, repCost: 8, duration: 3 },
+            { id: 't1_boost', name: "BoostCola", emoji: "🥤", tier: 1, reqFol: 0, reward: 600, repCost: 18, duration: 3 },
+            // TIER 2
+            { id: 't2_revo', name: "Revopute", emoji: "💸", tier: 2, reqFol: 5000, reward: 2500, repCost: 20, duration: 5 },
+            { id: 't2_street', name: "StreetDrip Co.", emoji: "🧢", tier: 2, reqFol: 5000, reward: 1800, repCost: 12, duration: 5 },
+            { id: 't2_totol', name: "TotolEnergy", emoji: "⛽", tier: 2, reqFol: 5000, reward: 2000, repCost: 22, duration: 7 },
+            { id: 't2_parions', name: "ParionsFort", emoji: "🎲", tier: 2, reqFol: 5000, reward: 2200, repCost: 25, duration: 7 },
+            { id: 't2_camion', name: "VendezVotreCamion.fr", emoji: "🚛", tier: 2, reqFol: 5000, reward: 1500, repCost: 30, duration: 7 },
+            // TIER 3 (Expires in 12h = 720 mins)
+            { id: 't3_audio', name: "AudioGear Pro", emoji: "🎛️", tier: 3, reqFol: 15000, reward: 8000, repCost: 5, duration: 10, expiresIn: 720 },
+            { id: 't3_nova', name: "NovaPhone", emoji: "📱", tier: 3, reqFol: 15000, reward: 12000, repCost: 30, duration: 10, expiresIn: 720 },
+            { id: 't3_meta', name: "MetaChain NFT", emoji: "🐒", tier: 3, reqFol: 15000, reward: 15000, repCost: 50, duration: 14, expiresIn: 720 },
+            { id: 't3_sound', name: "SoundWave Headsets", emoji: "🎧", tier: 3, reqFol: 15000, reward: 9000, repCost: 8, duration: 10, expiresIn: 720 },
+            // TIER 4 (Expires in 24h = 1440 mins)
+            { id: 't4_label', name: "Label majeur", emoji: "🏢", tier: 4, reqFol: 40000, reward: 50000, repCost: 40, duration: 30, expiresIn: 1440 },
+            { id: 't4_aveed', name: "Aveed", emoji: "🌿", tier: 4, reqFol: 40000, reward: 20000, repCost: 30, duration: 20, expiresIn: 1440 },
+            { id: 't4_lux', name: "LuxWatch", emoji: "⌚", tier: 4, reqFol: 40000, reward: 25000, repCost: 35, duration: 20, expiresIn: 1440 },
+            { id: 't4_ghost', name: "GhostVPN", emoji: "👻", tier: 4, reqFol: 40000, reward: 18000, repCost: 15, duration: 15, expiresIn: 1440 },
+            { id: 't4_echo', name: "EchoSound", emoji: "🔊", tier: 4, reqFol: 40000, reward: 5000, repCost: -50, duration: 7, expiresIn: 1440 }, // Note: -50 cost means +50 REP
         ];
 
         // LISTES DES RAPPEURS POUR ÉVÈNEMENTS ALÉATOIRES
@@ -11478,6 +11528,10 @@ document.addEventListener('mouseover', (e) => {
                     state.cooldowns.dawTimeReady    = parseInt(state.cooldowns.dawTimeReady, 10) || 0;
                     state.cooldowns.crackzTimeReady = parseInt(state.cooldowns.crackzTimeReady, 10) || 0;
                     state.cooldowns.storyTimeReady  = 0; // Bonus QoL
+                    
+                    state.activeContracts = state.activeContracts || [];
+                    state.completedDeals = state.completedDeals || [];
+                    state.dealPool = state.dealPool || {};
 
                     Object.keys(state.cooldowns.sponsors).forEach(k => {
                         state.cooldowns.sponsors[k] = parseInt(state.cooldowns.sponsors[k], 10) || 0;
@@ -12364,6 +12418,26 @@ document.addEventListener('mouseover', (e) => {
                 state.lastPlayedDay = state.day;
                 state.maxStreak = Math.max(state.maxStreak || 0, state.streakDays);
 
+                // --- PAIEMENT DES CONTRATS DE SELLOUT ---
+                if (state.activeContracts && state.activeContracts.length > 0) {
+                    for (let i = state.activeContracts.length - 1; i >= 0; i--) {
+                        const c = state.activeContracts[i];
+                        const dailyPay = Math.floor(c.reward / c.duration);
+                        const dailyRepCost = c.repCost / c.duration;
+                        
+                        logMoney(dailyPay, 'Contrat Deal: ' + c.name);
+                        state.rep = Math.max(0, state.rep - dailyRepCost);
+                        
+                        c.daysLeft--;
+                        if (c.daysLeft <= 0) {
+                            state.completedDeals.push({ id: c.id, name: c.name, emoji: c.emoji, totalPay: c.reward, totalRep: c.repCost });
+                            showToast(`Le contrat avec ${c.name} est terminé !`, 'info');
+                            state.activeContracts.splice(i, 1);
+                        }
+                    }
+                    if (isAppOpen('app-social')) refreshSocial();
+                }
+                
                 if (state.streakDays === 3) {
                     logMoney(500, "Streak 3 Jours");
                     showToast("🔥 Streak de 3 jours ! +500$", "success");
@@ -14084,24 +14158,104 @@ document.addEventListener('mouseover', (e) => {
             }
 
             const sList = document.getElementById('sponsor-list');
-            sList.innerHTML = sponsors.map(s => {
-                const spCd        = parseInt(state.cooldowns.sponsors[s.id], 10) || 0;
-                const isReady     = spCd <= state.day;
-                const hasFollowers = state.followers >= s.reqFollowers;
-                let btnHtml = "";
-                if (!hasFollowers) {
-                    btnHtml = `<span class="text-[10px] text-gray-600 font-retro tracking-widest">REQ: ${formatNum(s.reqFollowers)} FOL</span>`;
-                } else if (!isReady) {
-                    const daysLeft = spCd - state.day;
-                    btnHtml = `<span class="text-[10px] text-[var(--retro-orange)] font-retro tracking-widest">WAIT ${daysLeft}D</span>`;
-                } else {
-                    btnHtml = `<button class="btn-minimal px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] hover:bg-[var(--retro-green)] hover:text-black rounded" onclick="acceptSponsor('${s.id}')">ACCEPT</button>`;
+            const hList = document.getElementById('sponsor-history');
+            
+            // Render Available Deals
+            let availHtml = '';
+            let activeDealsCount = 0;
+            
+            TIERED_DEALS.forEach(deal => {
+                const dealData = state.dealPool[deal.id];
+                if (!dealData || dealData.status !== 'available') return;
+                
+                // Si on a déjà ce contrat d'actif, on ne l'affiche plus dans les dispos
+                const isActive = state.activeContracts.find(c => c.id === deal.id);
+                if (isActive) return;
+                
+                let repColor = "text-yellow-400"; // Neutre
+                if (deal.repCost > 20) repColor = "text-rose-500";
+                else if (deal.repCost > 0) repColor = "text-orange-400";
+                else if (deal.repCost < 0) repColor = "text-emerald-400"; // Gain de REP
+                
+                let expiryHtml = '';
+                if (deal.expiresIn && dealData.expiresAt) {
+                    const minsLeft = dealData.expiresAt - getTotalMins();
+                    const hoursLeft = Math.floor(minsLeft / 60);
+                    const remMins = minsLeft % 60;
+                    expiryHtml = `<div class="text-[9px] text-rose-500 font-retro animate-pulse mt-1 tracking-widest border border-rose-500/30 bg-rose-500/10 px-1 py-0.5 w-fit rounded">⏳ Expire dans ${hoursLeft}h${remMins}</div>`;
                 }
-                return `<div class="flex justify-between items-center bg-black/40 p-5 border border-[var(--glass-border)] rounded-lg">
-                    <div><p class="font-bold text-sm text-gray-200">${s.name}</p><p class="text-[10px] text-[var(--text-muted)] mt-2 font-retro tracking-widest">PAY: +$${s.reward} | REP: -${s.repCost}</p></div>
-                    <div>${btnHtml}</div>
+                
+                availHtml += `
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-black/60 p-4 border border-white/10 rounded-lg hover:border-[var(--accent)]/50 transition-colors gap-4">
+                    <div class="flex items-start gap-3">
+                        <div class="text-2xl">${deal.emoji}</div>
+                        <div>
+                            <p class="font-bold text-sm text-gray-200 tracking-wider">${deal.name} <span class="text-[8px] px-1 py-0.5 bg-white/10 rounded text-gray-400 ml-1">TIER ${deal.tier}</span></p>
+                            <p class="text-[10px] text-gray-400 mt-1 font-sans">Contrat sur <span class="text-white">${deal.duration} jours</span> in-game.</p>
+                            <p class="text-[10px] mt-1 font-retro tracking-widest"><span class="text-emerald-400">+$${deal.reward}</span> <span class="text-gray-500 mx-1">|</span> <span class="${repColor}">${deal.repCost > 0 ? '-' : '+'}${Math.abs(deal.repCost)} REP</span></p>
+                            ${expiryHtml}
+                        </div>
+                    </div>
+                    <button class="btn-minimal px-6 py-2.5 text-[10px] border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-black rounded w-full sm:w-auto text-center" onclick="acceptDeal('${deal.id}')">SIGNER</button>
                 </div>`;
-            }).join('');
+            });
+            
+            if (availHtml === '') {
+                availHtml = `<div class="text-center p-6 bg-black/40 border border-white/5 rounded-lg text-gray-500 text-xs font-retro tracking-widest">AUCUNE OFFRE DISPONIBLE. (Montez vos followers !)</div>`;
+            }
+            sList.innerHTML = availHtml;
+
+            // Render History & Active Deals
+            let histHtml = '';
+            let totalPay = 0;
+            let totalRep = 0;
+            
+            // Actifs
+            if (state.activeContracts.length > 0) {
+                histHtml += `<div class="text-[9px] text-[var(--accent)] uppercase font-retro tracking-widest mb-2 border-b border-[var(--accent)]/30 pb-1">CONTRATS EN COURS</div>`;
+                state.activeContracts.forEach(c => {
+                    histHtml += `
+                    <div class="bg-[var(--accent)]/5 border border-[var(--accent)]/30 p-3 rounded-lg mb-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-gray-200">${c.emoji} ${c.name}</span>
+                            <span class="text-[9px] text-[var(--accent)] font-retro">${c.daysLeft} JOURS RESTANTS</span>
+                        </div>
+                        <div class="w-full bg-black/50 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-[var(--accent)] h-full" style="width: ${((c.duration - c.daysLeft) / c.duration) * 100}%"></div>
+                        </div>
+                        <p class="text-[9px] text-gray-400 mt-2">Revenu journalier : <span class="text-emerald-400">+$${Math.floor(c.reward / c.duration)}/j</span> | Rep : <span class="text-rose-400">-${(c.repCost / c.duration).toFixed(1)}/j</span></p>
+                    </div>`;
+                    totalPay += Math.floor(c.reward / c.duration) * (c.duration - c.daysLeft); // Ce qui a déjà été payé
+                    totalRep -= (c.repCost / c.duration) * (c.duration - c.daysLeft);
+                });
+            }
+            
+            // Terminés
+            if (state.completedDeals.length > 0) {
+                histHtml += `<div class="text-[9px] text-gray-500 uppercase font-retro tracking-widest mb-2 mt-4 border-b border-white/10 pb-1">CONTRATS TERMINÉS</div>`;
+                state.completedDeals.forEach(c => {
+                    histHtml += `
+                    <div class="flex justify-between items-center bg-black/30 p-2 border border-white/5 rounded mb-2">
+                        <span class="text-[10px] text-gray-400">${c.emoji} ${c.name}</span>
+                        <div class="text-[9px] font-retro tracking-widest"><span class="text-emerald-400/50">+$${c.totalPay}</span> <span class="text-gray-600">|</span> <span class="text-rose-400/50">-${c.totalRep} REP</span></div>
+                    </div>`;
+                    totalPay += c.totalPay;
+                    totalRep -= c.totalRep;
+                });
+            }
+            
+            // Bilan global
+            histHtml += `
+            <div class="mt-5 p-3 border-t border-white/20 flex justify-between items-center bg-[#111]">
+                <span class="text-[10px] font-bold text-gray-300">BILAN GLOBAL SELLOUT</span>
+                <div class="text-xs font-retro tracking-widest"><span class="text-emerald-400">+$${totalPay}</span> <span class="text-gray-500 mx-2">|</span> <span class="${totalRep < 0 ? 'text-rose-500' : 'text-emerald-400'}">${Math.floor(totalRep)} REP</span></div>
+            </div>`;
+            
+            if (state.activeContracts.length === 0 && state.completedDeals.length === 0) {
+                histHtml = `<div class="text-center p-6 bg-black/40 border border-white/5 rounded-lg text-gray-500 text-xs font-retro tracking-widest">AUCUN HISTORIQUE.</div>`;
+            }
+            hList.innerHTML = histHtml;
+
 
             // État persistant des DMs (Vibration si non lus)
             const hasUnread = (state.dms || []).some(dm => !dm.resolved);
