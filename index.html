@@ -7150,7 +7150,7 @@ function calculateLevelData(isSilentInit = false) {
     // We normalize each axis roughly into a 0-100 range, then apply the weights:
     // Followers: 40%, Reputation: 30%, Money: 20%, Skill: 10%
     const follScore = Math.min(100, Math.log10(followers + 1) * 22); // log10 scaling, tuned
-    const moneyScore = Math.min(100, Math.log10(money + 1) * 16);     // log10 scaling
+    const moneyScore = Math.min(100, Math.log10(money + 1) * 25);     // NOUVEAU: Multiplicateur 25 au lieu de 16 pour accélérer le Bank Mastery (10K = 100%)
     const repScore = Math.min(100, rep);                              // assume rep is already on a friendly scale
 
     // Skill: ratio of bangers to tracks, normalized to 0-100
@@ -13605,14 +13605,15 @@ document.addEventListener('mouseover', (e) => {
                         // Cherche un format [BADGE] TEXTE
                         const match = line.match(/^\[(.*?)\]\s*[:]?(.*)$/);
                         if (match) {
-                            return `<div class="flex items-start gap-3 bg-white/5 pr-3 rounded-md border border-white/10 w-full h-auto">
-                                <span class="bg-white/10 text-white px-2 py-2 text-[9px] font-bold uppercase tracking-wider shrink-0 h-full flex items-center justify-center">${match[1]}</span>
-                                <span class="text-[10px] text-gray-300 leading-relaxed whitespace-normal break-words py-2">${match[2].trim()}</span>
+                            // Utilisation d'une grille stricte (Grid) avec colonne gauche fixée à 120px
+                            return `<div class="grid items-center bg-white/5 rounded-md border border-white/10 w-full h-auto overflow-hidden" style="grid-template-columns: 140px 1fr; gap: 12px;">
+                                <div class="bg-white/10 text-white px-2 py-2 text-[9px] font-bold uppercase tracking-wider h-full flex items-center justify-center border-r border-white/10 text-center">${match[1]}</div>
+                                <div class="text-[10px] text-gray-300 leading-relaxed whitespace-normal break-words py-2 pr-3 flex items-center">${match[2].trim()}</div>
                             </div>`;
                         } else {
                             // Textes divers non badgés (comme la viralité exprès)
                             if (line.includes('VIRALITÉ') || line.includes('Flow State')) {
-                                return `<div class="flex items-start gap-2 bg-[var(--accent)]/10 px-3 py-2 rounded-md border border-[var(--accent)]/30 w-full h-auto">
+                                return `<div class="flex items-center gap-2 bg-[var(--accent)]/10 px-3 py-2 rounded-md border border-[var(--accent)]/30 w-full h-auto">
                                     <span class="text-[10px] text-[var(--accent)] font-bold whitespace-normal break-words leading-relaxed">${line}</span>
                                 </div>`;
                             }
@@ -13620,7 +13621,7 @@ document.addEventListener('mouseover', (e) => {
                         }
                     }).join('');
                     
-                    // Passage sur 1 seule colonne (flex-col) pour garantir 100% de la largeur sur mobile et éviter toute coupure
+                    // Conteneur sur 1 seule colonne
                     formattedModifiers = `<div class="flex flex-col gap-2 mt-3 mb-2 px-4">${badgesHTML}</div>`;
                 }
 
