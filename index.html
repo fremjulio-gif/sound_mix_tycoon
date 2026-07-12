@@ -11532,6 +11532,8 @@ document.addEventListener('mouseover', (e) => {
                     state.activeContracts = state.activeContracts || [];
                     state.completedDeals = state.completedDeals || [];
                     state.dealPool = state.dealPool || {};
+                    // Force l'évaluation des offres disponibles au chargement de la sauvegarde (retrocompatibilité)
+                    setTimeout(() => updateBrandDealsAvailability(), 500);
 
                     Object.keys(state.cooldowns.sponsors).forEach(k => {
                         state.cooldowns.sponsors[k] = parseInt(state.cooldowns.sponsors[k], 10) || 0;
@@ -12418,7 +12420,10 @@ document.addEventListener('mouseover', (e) => {
                 state.lastPlayedDay = state.day;
                 state.maxStreak = Math.max(state.maxStreak || 0, state.streakDays);
 
-                // --- PAIEMENT DES CONTRATS DE SELLOUT ---
+                // Évaluation à chaque tick
+            updateBrandDealsAvailability();
+            
+            // --- PAIEMENT DES CONTRATS DE SELLOUT ---
                 if (state.activeContracts && state.activeContracts.length > 0) {
                     for (let i = state.activeContracts.length - 1; i >= 0; i--) {
                         const c = state.activeContracts[i];
