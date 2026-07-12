@@ -5521,7 +5521,14 @@ const DEFAULT_STATE = {
                             }
                             if (isOwned) {
                                 child.material = child.userData.originalMaterial;
-                                if (child.material) child.material.needsUpdate = true;
+                                if (child.material) {
+                                    // FIX: Forcer la mise à jour du matériau en bloc solide 
+                                    // (corrige le bug de la TV qui reste transparente)
+                                    child.material.wireframe = false;
+                                    child.material.transparent = false;
+                                    child.material.opacity = 1.0;
+                                    child.material.needsUpdate = true;
+                                }
                             } else {
                                 child.material = new THREE.MeshBasicMaterial({ color: 0x000000 });
                             }
@@ -13812,8 +13819,10 @@ document.addEventListener('mouseover', (e) => {
                     });
 
                     originalMeshes.forEach(mesh => {
-                        mesh.material.transparent = mesh.userData.origTransparent;
-                        mesh.material.opacity = mesh.userData.origOpacity;
+                        // FIX: Rétablir le bloc solide (empêche le bug de transparence sur les matériaux partagés comme la TV)
+                        mesh.material.wireframe = false;
+                        mesh.material.transparent = false;
+                        mesh.material.opacity = 1.0;
                         mesh.material.needsUpdate = true;
                     });
                 }
