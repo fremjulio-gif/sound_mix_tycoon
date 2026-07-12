@@ -13523,9 +13523,51 @@ document.addEventListener('mouseover', (e) => {
                 
                 // On met à jour toastMsg et finalTrackScore avec un max de 10
                 finalTrackScore = Math.min(10, finalTrackScore);
-                toastMsg = `${resultTxt}${critique}\n+$${moneyGain}`;
-                if (follGain > 0) toastMsg += ` | +${follGain} Fans`;
-                if (repGain !== 0) toastMsg += ` | ${repGain > 0 ? '+' : ''}${repGain} Rep`;
+                // --- NOUVEAU FORMATAGE HTML DU TOAST DE REVIEW ---
+                let formattedModifiers = '';
+                if (critique) {
+                    const lines = critique.split('\n').filter(l => l.trim() !== '');
+                    const badgesHTML = lines.map(line => {
+                        // Cherche un format [BADGE] TEXTE
+                        const match = line.match(/^\[(.*?)\]\s*[:]?(.*)$/);
+                        if (match) {
+                            return `<div class="flex items-center gap-2 bg-white/5 pr-3 rounded-md border border-white/10 w-full overflow-hidden">
+                                <span class="bg-white/10 text-white px-2 py-1.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider shrink-0">${match[1]}</span>
+                                <span class="text-[9px] sm:text-[10px] text-gray-300 leading-tight truncate" title="${match[2].trim()}">${match[2].trim()}</span>
+                            </div>`;
+                        } else {
+                            // Textes divers non badgés (comme la viralité exprès)
+                            if (line.includes('VIRALITÉ') || line.includes('Flow State')) {
+                                return `<div class="flex items-center gap-2 bg-[var(--accent)]/10 px-3 py-1.5 rounded-md border border-[var(--accent)]/30 w-full">
+                                    <span class="text-[10px] text-[var(--accent)] font-bold">${line}</span>
+                                </div>`;
+                            }
+                            return `<div class="text-[9px] text-gray-400 italic px-1">${line}</div>`;
+                        }
+                    }).join('');
+                    
+                    // Flexbox en 2 colonnes sur grand écran, 1 colonne sur mobile
+                    formattedModifiers = `<div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3 mb-2 px-4">${badgesHTML}</div>`;
+                }
+
+                // Couleurs dynamiques selon le score
+                let headerColor = "text-white";
+                let borderColor = "border-white/10";
+                if (result.score === 3) { headerColor = "text-emerald-400"; borderColor = "border-emerald-500/30"; }
+                else if (result.score === 0) { headerColor = "text-rose-400"; borderColor = "border-rose-500/30"; }
+
+                toastMsg = `
+                <div class="toast-review-report w-full flex flex-col">
+                    <div class="text-sm md:text-base font-bold ${headerColor} mb-1 border-b ${borderColor} pb-3 px-4 pt-4 uppercase tracking-widest">${resultTxt}</div>
+                    ${formattedModifiers}
+                    <div class="mt-1 pt-3 pb-4 px-4 bg-black/40 border-t ${borderColor} flex flex-wrap gap-x-4 gap-y-2 items-center justify-between">
+                        <span class="text-emerald-400 font-bold text-sm tracking-widest">+$${moneyGain}</span>
+                        <div class="flex gap-3">
+                            ${follGain > 0 ? `<span class="text-blue-400 font-bold text-xs tracking-wider">+${follGain} FANS</span>` : ''}
+                            ${repGain !== 0 ? `<span class="text-orange-400 font-bold text-xs tracking-wider">${repGain > 0 ? '+' : ''}${repGain} REP</span>` : ''}
+                        </div>
+                    </div>
+                </div>`;
 
                 try {
                     if ((Number(state.inspi) || 0) <= 0) {
@@ -13544,7 +13586,7 @@ document.addEventListener('mouseover', (e) => {
                     money: moneyGain,
                     rep: repGain,
                     fans: follGain,
-                    toast: { msg: toastMsg, type: result.score === 3 ? 'success' : (result.score === 1 ? 'info' : 'error') },
+                    toast: { msg: toastMsg, type: 'review' },
                     track: { title: trackTitle, genre: (genre || 'drill').toUpperCase(), score: finalTrackScore, voice: voice }
                 };
 
@@ -14261,8 +14303,15 @@ document.addEventListener('mouseover', (e) => {
             if (type === 'error')   colorClass = "bg-[#4c0519] border-[var(--retro-red)] text-rose-100 shadow-[0_0_15px_rgba(251,113,133,0.3)]";
             if (type === 'info')    colorClass = "bg-[#1e1b4b] border-[var(--accent)] text-indigo-100 shadow-[0_0_15px_rgba(129,140,248,0.3)]";
             if (type === 'discreet') colorClass = "bg-black/30 border-white/5 text-gray-500 shadow-none !py-2 !text-[9px]";
-            t.className = `toast px-6 py-4 w-full rounded-lg border text-xs font-retro tracking-widest uppercase backdrop-blur-md ${colorClass} whitespace-pre-line leading-relaxed ${onClick ? 'cursor-pointer' : ''}`;
-            t.innerText = msg;
+            
+            if (type === 'review') {
+                colorClass = "bg-[#0a0a0a]/95 border-gray-700 text-gray-100 shadow-[0_0_30px_rgba(0,0,0,0.8)] !p-0 overflow-hidden";
+                t.className = `toast w-full rounded-lg border font-retro backdrop-blur-xl ${colorClass} ${onClick ? 'cursor-pointer' : ''}`;
+                t.innerHTML = msg;
+            } else {
+                t.className = `toast px-6 py-4 w-full rounded-lg border text-xs font-retro tracking-widest uppercase backdrop-blur-md ${colorClass} whitespace-pre-line leading-relaxed ${onClick ? 'cursor-pointer' : ''}`;
+                t.innerText = msg;
+            }
             zone.appendChild(t);
             
             // Fix UI Mobile : Limite de 3 toasts maximum
