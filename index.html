@@ -735,6 +735,16 @@
             @keyframes slideInLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
             .toast { animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; pointer-events: auto; cursor: grab; }
             .toast:active { cursor: grabbing; }
+            @media (max-width: 768px) {
+                .toast {
+                    padding: 8px 12px !important;
+                    font-size: 9px !important;
+                    line-height: 1.2 !important;
+                    width: 95% !important;
+                    margin: 0 auto !important;
+                }
+            }
+
 
             .avatar-sel { border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.4); transition: all 0.2s; touch-action: manipulation; }
             .avatar-sel.selected { border-color: var(--accent); background: rgba(129, 140, 248, 0.2); box-shadow: 0 0 25px rgba(129, 140, 248, 0.4), inset 0 1px 1px rgba(255,255,255,0.3); }
@@ -3524,7 +3534,7 @@ const DEFAULT_STATE = {
         renderer.setPixelRatio(dpr);
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = isMobile ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
 
         const listener = new THREE.AudioListener();
@@ -3595,10 +3605,10 @@ const DEFAULT_STATE = {
         dirLight.shadow.mapSize.height = shadowSize;
         dirLight.shadow.bias = -0.0005;
         // On concentre les pixels de l'ombre uniquement sur la taille de la pièce
-        dirLight.shadow.camera.left = -8; 
-        dirLight.shadow.camera.right = 8;
-        dirLight.shadow.camera.top = 8;   
-        dirLight.shadow.camera.bottom = -8;
+        dirLight.shadow.camera.left = -5; 
+        dirLight.shadow.camera.right = 5;
+        dirLight.shadow.camera.top = 5;   
+        dirLight.shadow.camera.bottom = -5;
         // NOUVEAU : Le lissage magique qui cache la pixellisation
         dirLight.shadow.radius = 4; 
         dirLight.shadow.normalBias = 0.02; // Évite les bugs de hachures sur les murs plats
@@ -14245,6 +14255,13 @@ document.addEventListener('mouseover', (e) => {
             t.className = `toast px-6 py-4 w-full rounded-lg border text-xs font-retro tracking-widest uppercase backdrop-blur-md ${colorClass} whitespace-pre-line leading-relaxed ${onClick ? 'cursor-pointer' : ''}`;
             t.innerText = msg;
             zone.appendChild(t);
+            
+            // Fix UI Mobile : Limite de 3 toasts maximum
+            if (window.isMobile || window.innerWidth <= 768) {
+                while (zone.children.length > MAX_TOASTS) {
+                    zone.removeChild(zone.firstChild);
+                }
+            }
 
             const addSwipe = () => {
                 let isDragging = false;
