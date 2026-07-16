@@ -3000,9 +3000,30 @@
                     </button>
                     <span class="font-retro text-xs text-white tracking-widest uppercase flex items-center gap-3 font-bold"><span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_#3b82f6]"></span> Web_Nav App</span>
                 </div>
-                <div class="flex border-b border-[var(--glass-border)] text-[12px] md:text-[11px] font-retro uppercase tracking-widest flex-shrink-0 bg-black/60 font-bold">
-                    <button class="flex-1 py-4 md:py-4 transition-colors border-r border-[var(--glass-border)]" id="tab-crackz" onclick="switchBrowserTab('crackz')">CrackZ.net</button>
-                    <button class="flex-1 py-4 md:py-4 transition-colors" id="tab-audio" onclick="switchBrowserTab('audio')">AudioStore</button>
+                <!-- Browser Chrome: Tabs -->
+                <div class="flex bg-[#0A0A0D] pt-2 px-2 overflow-x-auto custom-scrollbar flex-shrink-0 border-b border-[#1E1E24]">
+                    <button class="flex items-center gap-2 px-4 py-2.5 min-w-[140px] max-w-[200px] bg-[#1E1E24] text-white rounded-t-lg border-b-0 transition-all" id="tab-crackz" onclick="switchBrowserTab('crackz')">
+                        <span class="text-sm">☠️</span> <span class="font-sans text-xs truncate">CrackZ.net</span>
+                    </button>
+                    <button class="flex items-center gap-2 px-4 py-2.5 min-w-[140px] max-w-[200px] bg-[#0A0A0D] text-gray-500 hover:bg-[#1E1E24]/50 hover:text-white rounded-t-lg transition-all" id="tab-audio" onclick="switchBrowserTab('audio')">
+                        <span class="text-sm">🎵</span> <span class="font-sans text-xs truncate">AudioStore</span>
+                    </button>
+                </div>
+                <!-- Browser Chrome: Address Bar -->
+                <div class="flex flex-col bg-[#1E1E24] p-2 flex-shrink-0 border-b border-black/50">
+                    <div class="flex items-center gap-2 bg-[#0A0A0D] rounded-full px-4 py-1.5 border border-white/5 shadow-inner">
+                        <div id="browser-lock-icon" class="flex-shrink-0 text-rose-500">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18"></path></svg>
+                        </div>
+                        <span id="browser-url-text" class="font-sans text-xs text-gray-300 w-full truncate">https://crackz.world/downloads</span>
+                    </div>
+                </div>
+                <!-- Browser Chrome: Search Bar -->
+                <div class="bg-[#1E1E24] px-4 py-3 flex-shrink-0 border-b border-black/80 shadow-[0_4px_10px_rgba(0,0,0,0.3)] z-10">
+                    <div class="flex items-center gap-3 bg-white/5 rounded-full px-4 py-2 border border-white/10 hover:border-white/20 transition-colors">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" class="bg-transparent border-none outline-none text-sm text-white w-full placeholder-gray-500 font-sans" placeholder="Rechercher un plugin, un pack, un effet..." disabled>
+                    </div>
                 </div>
                 <div class="window-content" id="browser-content"></div>
             </div>
@@ -9106,14 +9127,26 @@ document.addEventListener('mouseover', (e) => {
     }
 
     function generateSenderName(base) {
-        const prefixes = ['Neo','Sky','Urban','Wave','Lil','DJ','MC','Meta','Echo','Nova','Grand','Prod','Beat'];
-        const suffixes = ['Prod','Beats','Official','Music','Studio','Sounds','Records','Co'];
-        const name = prefixes[Math.floor(Math.random() * prefixes.length)];
-        const num = Math.random() < 0.35 ? String(Math.floor(Math.random() * 90) + 10) : '';
-        const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-        const core = base ? base.split(' ')[0] : name;
-        return `@${core}${num}${suffix}`;
-    }
+    const prefixes = [
+        'Neo','Sky','Urban','Wave','Lil','DJ','MC','Meta','Echo','Nova','Grand','Prod','Beat',
+        'Mr','Mrs','TheReal','Its','Only','Kingg','Queenn','Young','Bigg','Reall',
+        'xX','iam','iamthe','LeVraii','Mister','Ladyy','Captainn','Bosss',
+        'Cryptoo','Instaa','Virall','Trendd','Hypee','Glow','Flexx','Dripp',
+        'Zeuz','Apexx','Alphaa','Omegaa','Turboo','Ultraa','Megaa','Superr'
+    ];
+    const suffixes = [
+        'Prodz','Beatz','Officiel','Musiik','Studioo','Soundz','Recordz','Co',
+        'TVV','Vlogz','Vlogg','0fficiel','Reell','Reelz','Gangg','Squadd',
+        'Worldd','Nationn','HQ','Lifee','Empirre','Mediaa','Networkk','Fr',
+        '_Reell','_0fficiel','Francee','Livee','24_7','Dailyy','Showw',
+        'XxTV','TVxX','_YTT','_Instaa','Tokk','Clipz','Momentz','Storiez'
+    ];
+    const name = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const num = Math.random() < 0.4 ? String(Math.floor(Math.random() * 9999)) : '';
+    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+    const core = base ? base.split(' ')[0] : name;
+    return `@${core}${num}${suffix}`;
+}
 
     let currentDealTab = 'available';
     function switchDealTab(tabId) {
@@ -9756,10 +9789,28 @@ document.addEventListener('mouseover', (e) => {
         }
     }
         function generateFanName() {
-            const p = ['Lil_','DJ_','MC_','Prod_','User','Fan_'];
-            const s = ['_Beat','Vibe','Master','99','2026','Z'];
-            return p[Math.floor(Math.random()*p.length)] + s[Math.floor(Math.random()*s.length)];
-        }
+    const p = [
+        'Lil_', 'DJ_', 'MC_', 'Prod_', 'User', 'Fan_',
+        'Jeune_', 'Big_', 'Real_', 'King_', 'Queen_', 'Sir_',
+        'Baby_', 'Chief_', 'Master_', 'Yung_', 'Lit_', 'Top_',
+        'OG_', 'Sub_', 'Trap_', 'Beat_', 'Sound_', 'Wave_',
+        'Nova_', 'Cash_', 'Neon_', 'Ghost_', 'Shadow_', 'Crypto_',
+        'Pixel_', 'Lofi_', 'Bass_', 'Drip_', 'Flex_', 'Vybz_',
+        'Anon_', 'True_', 'Xx', 'iam', 'The_'
+    ];
+    const s = [
+        '_Beat', 'Vibe', 'Master', '99', '2026', 'Z',
+        '_Wave', '_Flow', '_Drip', '_Loop', '_Mix', '_Sound',
+        '_FX', '_God', '_King', '_Queen', '_X', '_Prod',
+        '_Studio', '_Life', '_Gang', '_Squad', '_Nation', 'TV',
+        '_Official', '_Music', '_808', '_303', '_HQ', '_World',
+        '_Radio', '_Records', '_Sessions', '_Type', '_Cloud', '_2dg'
+    ];
+
+    const base = p[Math.floor(Math.random()*p.length)] + s[Math.floor(Math.random()*s.length)];
+    const addNumber = Math.random() < 0.35; // 35% de chance d'ajouter un nombre
+    return addNumber ? base + Math.floor(Math.random()*999) : base;
+}
         function logFollower(amount) {
             if (amount !== 0) {
                 spawnFloatingText('hud-foll', (amount > 0 ? '+' : '') + amount + ' FOL', amount > 0 ? 'text-blue-400' : 'text-rose-500');
@@ -13984,14 +14035,23 @@ document.addEventListener('mouseover', (e) => {
         function switchBrowserTab(tab) {
             const btnC = document.getElementById('tab-crackz');
             const btnA = document.getElementById('tab-audio');
+            const lockIcon = document.getElementById('browser-lock-icon');
+            const urlText = document.getElementById('browser-url-text');
 
-            if (btnC) btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
-            if (btnA) btnA.className = "flex-1 py-4 transition-colors text-[var(--text-muted)] hover:bg-white/5 hover:text-white";
+            // Reset classes
+            if (btnC) btnC.className = "flex items-center gap-2 px-4 py-2.5 min-w-[140px] max-w-[200px] bg-[#0A0A0D] text-gray-500 hover:bg-[#1E1E24]/50 hover:text-white rounded-t-lg transition-all";
+            if (btnA) btnA.className = "flex items-center gap-2 px-4 py-2.5 min-w-[140px] max-w-[200px] bg-[#0A0A0D] text-gray-500 hover:bg-[#1E1E24]/50 hover:text-white rounded-t-lg transition-all";
 
             if (tab === 'crackz') {
-                if (btnC) btnC.className = "flex-1 py-4 transition-colors border-r border-[var(--glass-border)] bg-white/10 text-white shadow-inner";
+                if (btnC) btnC.className = "flex items-center gap-2 px-4 py-2.5 min-w-[140px] max-w-[200px] bg-[#1E1E24] text-white rounded-t-lg border-b-0 transition-all";
+                if (urlText) urlText.innerText = "https://crackz.world/downloads";
+                if (lockIcon) lockIcon.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18"></path></svg>`;
+                if (lockIcon) lockIcon.className = "flex-shrink-0 text-rose-500";
             } else if (tab === 'audio') {
-                if (btnA) btnA.className = "flex-1 py-4 transition-colors bg-white/10 text-white shadow-inner";
+                if (btnA) btnA.className = "flex items-center gap-2 px-4 py-2.5 min-w-[140px] max-w-[200px] bg-[#1E1E24] text-white rounded-t-lg border-b-0 transition-all";
+                if (urlText) urlText.innerText = "https://audiostore.pro/plugins";
+                if (lockIcon) lockIcon.innerHTML = `<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>`;
+                if (lockIcon) lockIcon.className = "flex-shrink-0 text-emerald-400";
             }
 
             renderStore(tab);
@@ -14013,58 +14073,121 @@ document.addEventListener('mouseover', (e) => {
                         </div>`;
                     return;
                 }
-                let crackHTML = `<h3 class="font-bold text-xl mb-5 text-[var(--retro-green)] tracking-widest uppercase drop-shadow-[0_0_5px_var(--retro-green)]">💀 CrackZ_World_2026</h3>
-                                <p class="text-[10px] mb-8 text-[var(--text-muted)] border-b border-gray-800 pb-3 uppercase">Attention à ce que tu télécharges...</p>
-                                <div class="space-y-4">`;
+                let crackHTML = `<div class="mb-8 border border-rose-500/30 bg-rose-500/10 p-4 rounded flex items-center gap-4">
+                                    <span class="text-2xl">⚠️</span>
+                                    <div>
+                                        <p class="text-rose-500 font-bold font-sans text-sm drop-shadow-[0_0_2px_#f43f5e]">Attention à ce que tu télécharges...</p>
+                                        <p class="text-rose-400/80 font-sans text-xs mt-1">Ces liens dirigent vers des fichiers non vérifiés. Ton adresse IP n'est pas masquée.</p>
+                                    </div>
+                                 </div>
+                                 <p class="text-xs text-gray-500 font-sans mb-6">Environ 8 résultats (0,04 secondes)</p>
+                                <div class="flex flex-col w-full">`;
                 let foundAny = false;
                 cracks.forEach(c => {
-                    // 🛠️ CORRECTION 1 : On vérifie à la fois la nouvelle variable (ownedCracks) et l'ancienne (inventory)
                     const alreadyOwned = (state.ownedCracks && state.ownedCracks.includes(c.id)) || (state.inventory && state.inventory.includes(c.id));
-                    
-                    // 🛠️ CORRECTION 2 : Si le joueur l'a déjà téléchargé dans le passé, le lien reste visible à vie !
                     const alreadyDiscovered = state.downloadedCracks && state.downloadedCracks[c.id] !== undefined;
 
                     if (alreadyOwned) {
-                        // ÉTAPE 1 : Le plugin est déjà dans l'inventaire
                         foundAny = true;
-                         crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/40 rounded-lg opacity-70">
-                            <div class="flex-1 pr-4 mb-3 sm:mb-0"><p class="font-bold text-sm text-[var(--retro-green)]">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc}</p></div>
-                            <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] rounded border-gray-600 text-gray-500 cursor-not-allowed" disabled>OWNED</button>
+                        crackHTML += `
+                        <div class="mb-8 flex flex-col w-full group opacity-50 grayscale pointer-events-none">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] text-gray-500 font-retro truncate">crackz.world › downloads › ${c.id}</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-base text-gray-400 line-through">${c.name}</h4>
+                                    <p class="text-[11px] text-gray-500 mt-1.5 leading-relaxed font-sans">[FICHIER DÉJÀ PRÉSENT SUR LE SYSTÈME]</p>
+                                </div>
+                                <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-8 py-3 text-[11px] border-gray-600 text-gray-500 rounded">OWNED</button>
+                            </div>
                         </div>`;
                     } else if (!alreadyDiscovered && state.money < c.reqMoney) {
-                        // ÉTAPE 2 : Le joueur n'a pas l'argent requis ET ne l'a jamais téléchargé avant
-                         crackHTML += `<div class="border border-gray-800 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/60 rounded-lg opacity-50 select-none">
-                            <div class="flex-1 mb-3 sm:mb-0"><p class="font-bold text-sm text-gray-500 font-retro">???_LOCKED_FILE_???</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Requires: $${formatNum(c.reqMoney)} in Bank</p></div>
-                            <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] rounded opacity-50 cursor-not-allowed" disabled>LOCKED</button>
+                        crackHTML += `
+                        <div class="mb-8 flex flex-col w-full group opacity-30 select-none">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] text-gray-600 font-retro truncate">darkweb.onion › encrypted › file</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-base text-gray-600">???_LOCKED_FILE_???</h4>
+                                    <p class="text-[11px] text-gray-600 mt-1.5 leading-relaxed font-sans">Requires: $${formatNum(c.reqMoney)} in Bank</p>
+                                </div>
+                                <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-8 py-3 text-[11px] border-gray-700 text-gray-600 rounded">LOCKED</button>
+                            </div>
                         </div>`;
                     } else {
-                        // ÉTAPE 3 : Plugin disponible au téléchargement
                         foundAny = true;
-                        crackHTML += `<div class="border border-[var(--glass-border)] p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-black/40 rounded-lg hover:border-[var(--retro-green)] transition-colors group">
-                            <div class="flex-1 pr-4 mb-3 sm:mb-0"><p class="font-bold text-sm text-gray-200">${c.name}</p><p class="text-[9px] text-[var(--text-muted)] mt-1.5 font-retro">Effect: ${c.desc} | Risk: <span class="text-[var(--retro-red)]">${c.risk*100}%</span></p></div>
-                            <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-5 py-2.5 text-[10px] border-[var(--retro-green)] text-[var(--retro-green)] group-hover:bg-[var(--retro-green)] group-hover:text-black rounded" onclick="downloadCrack('${c.id}')">Download</button>
+                        crackHTML += `
+                        <div class="mb-8 flex flex-col w-full group">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] bg-black border border-[#39FF88]/30 px-1 py-0.5 rounded text-[#39FF88]/70 font-retro">AD</span>
+                                <span class="text-[10px] text-[#39FF88]/50 font-retro truncate">crackz.world › downloads › ${c.id}</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-base text-[#39FF88] underline decoration-[#39FF88]/50 group-hover:text-white cursor-pointer drop-shadow-[0_0_3px_#39FF88]" style="text-shadow: 2px 0px 2px rgba(255,0,0,0.5), -2px 0px 2px rgba(0,0,255,0.5);">${c.name}</h4>
+                                    <p class="text-[11px] text-gray-400 mt-1.5 leading-relaxed font-sans"><strong>Info:</strong> ${c.desc} — File has been unpacked. Warning: Security scan failed. Risk level: <span class="text-rose-500 font-bold">${c.risk*100}%</span>.</p>
+                                </div>
+                                <button class="btn-minimal w-full sm:w-auto flex-shrink-0 px-8 py-3 text-[11px] border-[#39FF88] text-[#39FF88] hover:bg-[#39FF88] hover:text-black rounded transition-all tracking-widest font-bold" onclick="downloadCrack('${c.id}')">DOWNLOAD</button>
+                            </div>
                         </div>`;
                     }
                 });
-                if (!foundAny) crackHTML += `<p class="text-sm text-gray-500 text-center py-10 font-retro">Make some money to access deep web links.</p>`;
+                if (!foundAny) crackHTML += `<p class="text-sm text-gray-500 py-10 font-sans">Aucun résultat correspondant à votre recherche. Revenez plus tard ou amassez plus de capital.</p>`;
                 crackHTML += '</div>';
-                content.innerHTML = `<div class="p-8 bg-[#050505] font-sans h-full min-h-[300px] overflow-y-auto shadow-inner">${crackHTML}</div>`;
+                content.innerHTML = `<div class="p-4 md:p-8 bg-[#050505] font-sans h-full min-h-[300px] overflow-y-auto shadow-inner">${crackHTML}</div>`;
             } else if (tab === 'audio') {
                 if (state.rep < 100) {
-                    content.innerHTML = `<div class="p-10 text-center text-[var(--text-muted)] font-retro h-full min-h-[300px] flex items-center justify-center bg-black/30 shadow-inner"><p class="leading-loose text-sm uppercase tracking-widest">🔒 ACCESS DENIED.<br>AudioStore requires 100 REP.<br>(Who are you bro?)</p></div>`;
-                } else {
-                    content.innerHTML = `<div class="p-8 bg-black/30 text-white h-full min-h-[300px] font-sans shadow-inner">
-                        <h3 class="font-bold text-xl text-white mb-8 tracking-widest uppercase drop-shadow-md">🛒 AudioStore Pro</h3>
-                        <div class="space-y-5">
-                             <div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
-                                <div class="mb-4 sm:mb-0"><p class="font-bold text-base">ProEQ Studio Bundle</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +0.5x</p></div>
-                                <button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(300, 0.5)">BUY ($300)</button>
-                             </div>
-                             <div class="border border-[var(--glass-border)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl bg-black/50 hover:border-[var(--accent)] transition-colors">
-                                <div class="mb-4 sm:mb-0"><p class="font-bold text-base">Analog Tape Saturation</p><p class="text-[11px] text-[var(--text-muted)] mt-2 font-retro uppercase tracking-widest">Permanent Mult: +1.0x</p></div>
-                                <button class="btn-action w-full sm:w-auto px-6 py-3 text-[11px] rounded-lg shadow-lg" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button>
-                             </div>
+                    content.innerHTML = `<div class="p-10 text-center text-gray-500 font-sans h-full min-h-[300px] flex items-center justify-center bg-[#0E0E14] shadow-inner">
+                        <div class="flex flex-col items-center max-w-sm">
+                            <span class="text-4xl mb-4">🔒</span>
+                            <p class="font-bold text-lg text-gray-300 mb-2">403 Forbidden</p>
+                            <p class="text-xs leading-relaxed text-center">L'accès à AudioStore.pro est restreint aux professionnels certifiés. Vous devez atteindre au moins <span class="text-white font-bold">100 de Réputation</span> pour créer un compte professionnel.</p>
                         </div>
+                    </div>`;
+                } else {
+                    content.innerHTML = `<div class="p-4 md:p-8 bg-[#0E0E14] text-white h-full min-h-[300px] font-sans shadow-inner overflow-y-auto">
+                        <p class="text-xs text-gray-500 font-sans mb-6">Environ 2 résultats (0,12 secondes)</p>
+                        
+                        <!-- SERP ITEM 1 -->
+                        <div class="mb-8 flex flex-col w-full group border-b border-white/5 pb-8">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] bg-emerald-900/30 text-emerald-400 px-1.5 py-0.5 rounded font-bold font-sans">Sponsored</span>
+                                <span class="text-[10px] text-gray-400 font-sans truncate">https://audiostore.pro › products › eq-bundle</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mt-1">
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-lg text-[#4DD8E8] underline decoration-[#4DD8E8]/50 group-hover:text-cyan-300 cursor-pointer font-sans">ProEQ Studio Bundle</h4>
+                                    <div class="mt-2 flex gap-2">
+                                        <span class="text-[9px] bg-[#4DD8E8]/10 border border-[#4DD8E8]/30 text-[#4DD8E8] px-2 py-1 rounded font-retro uppercase tracking-widest shadow-inner">PERMANENT MULT: +0.5X</span>
+                                        <span class="text-[9px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2 py-1 rounded font-retro uppercase tracking-widest shadow-inner">VERIFIED</span>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-3 leading-relaxed font-sans">Achetez la licence officielle ProEQ. Outils d'égalisation professionnels certifiés sans virus. Intégration instantanée dans votre DAW.</p>
+                                </div>
+                                <button class="btn-action w-full sm:w-auto flex-shrink-0 px-8 py-3.5 text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded shadow-[0_4px_15px_rgba(37,99,235,0.3)] transition-all border-none font-sans" onclick="buyLegit(300, 0.5)">BUY ($300)</button>
+                            </div>
+                        </div>
+
+                        <!-- SERP ITEM 2 -->
+                        <div class="mb-8 flex flex-col w-full group border-b border-white/5 pb-8">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] bg-emerald-900/30 text-emerald-400 px-1.5 py-0.5 rounded font-bold font-sans">Sponsored</span>
+                                <span class="text-[10px] text-gray-400 font-sans truncate">https://audiostore.pro › products › tape-sat</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mt-1">
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-lg text-[#4DD8E8] underline decoration-[#4DD8E8]/50 group-hover:text-cyan-300 cursor-pointer font-sans">Analog Tape Saturation</h4>
+                                    <div class="mt-2 flex gap-2">
+                                        <span class="text-[9px] bg-[#4DD8E8]/10 border border-[#4DD8E8]/30 text-[#4DD8E8] px-2 py-1 rounded font-retro uppercase tracking-widest shadow-inner">PERMANENT MULT: +1.0X</span>
+                                        <span class="text-[9px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2 py-1 rounded font-retro uppercase tracking-widest shadow-inner">VERIFIED</span>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-3 leading-relaxed font-sans">Réplique hardware analogique authentique. Donnez de la chaleur et du corps à vos productions avec cette licence perpétuelle.</p>
+                                </div>
+                                <button class="btn-action w-full sm:w-auto flex-shrink-0 px-8 py-3.5 text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded shadow-[0_4px_15px_rgba(37,99,235,0.3)] transition-all border-none font-sans" onclick="buyLegit(1000, 1.0)">BUY ($1000)</button>
+                            </div>
+                        </div>
+
                     </div>`;
                 }
             }
