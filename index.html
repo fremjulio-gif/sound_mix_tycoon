@@ -695,7 +695,7 @@
             .seq-pad.active { background: var(--accent); border-color: var(--accent-hover); box-shadow: 0 0 10px var(--accent), inset 0 0 4px rgba(255,255,255,0.6); }
             
             .tl-track { height: 52px; border-bottom: 1px solid rgba(0,0,0,0.4); display: flex; align-items: center; position: relative; background: rgba(255,255,255,0.015); }
-            .tl-clip { position: absolute; border-radius: 10px; top: 6px; bottom: 6px; z-index: 10; }
+            .tl-clip { position: absolute; border-radius: 10px; top: 6px; bottom: 6px; z-index: 10; overflow: hidden; max-height: 40px; }
             
             .knob-container { display: flex; flex-direction: column; align-items: center; gap: 6px; }
             .knob { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #3f3f46, #18181b); border: 2px solid #27272a; position: relative; transform: rotate(-135deg); cursor: grab; box-shadow: 0 4px 8px rgba(0,0,0,0.8), inset 0 1px 2px rgba(255,255,255,0.2); }
@@ -11329,7 +11329,7 @@ document.addEventListener('mouseover', (e) => {
                     }
                     pathData += "L 100 50 Z";
 
-                    clip.innerHTML = `<svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width: 100%; height: 100%; display: block;">
+                    clip.innerHTML = `<svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width: 100%; height: 40px; max-height: 40px; display: block; overflow: hidden;">
                         <path d="${pathData}" fill="none" stroke="currentColor" stroke-width="2" class="text-${colorBase}-400 opacity-80"></path>
                         <path d="${pathData}" fill="currentColor" class="text-${colorBase}-500/30"></path>
                     </svg>
@@ -11404,12 +11404,30 @@ document.addEventListener('mouseover', (e) => {
         function playGenrePreview(genre) {
             stopGenrePreview(); 
             
-            // UI Click "Tick" (Web Audio API)
             if (typeof playTone === 'function') {
-                playTone(2000, 'square', 0.01, 0.05);
-                // Procedural Synth Bloop to simulate preview
-                setTimeout(() => playTone(300 + Math.random()*200, 'sine', 0.3, 0.1), 50);
+                playTone(2000, 'square', 0.01, 0.05); // Tick UI
             }
+            
+            // Format strict demandé : /audio/[nom_du_genre].mp3
+            currentGenrePreviewAudio = new Audio(`/audio/${genre}.mp3`);
+            currentGenrePreviewAudio.loop = false;
+            currentGenrePreviewAudio.volume = window.sfxVolume * 0.25;
+            
+            if (typeof MusicSystem !== 'undefined') {
+                MusicSystem.setMusicVolume(window.musicVolume * 0.3); // Ducking
+            }
+            
+            currentGenrePreviewAudio.addEventListener('ended', () => {
+                if (typeof MusicSystem !== 'undefined') {
+                    MusicSystem.setMusicVolume(window.musicVolume);
+                }
+                currentGenrePreviewAudio = null;
+            });
+            
+            currentGenrePreviewAudio.play().catch(e => {
+                console.warn(`Preview audio not found for genre: ${genre}`, e);
+                stopGenrePreview();
+            });
         }
 
 
