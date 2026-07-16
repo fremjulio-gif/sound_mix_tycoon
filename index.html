@@ -880,7 +880,7 @@
         overflow-y: scroll !important;
         -webkit-overflow-scrolling: touch !important;
         pointer-events: auto !important;
-        padding-top: calc(130px + env(safe-area-inset-top)) !important;
+        padding-top: calc(60px + env(safe-area-inset-top)) !important;
         padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
         padding-left: 18px !important;
         padding-right: 18px !important;
@@ -960,7 +960,7 @@
                     border-radius: 0 !important;
                     resize: none !important;
                     border: none !important;
-                    padding-top: calc(140px + env(safe-area-inset-top)) !important; /* Dégage la nouvelle Top Bar OS */
+                    padding-top: calc(60px + env(safe-area-inset-top)) !important; /* Remonte l'appli près de la Dynamic Island */
                     background: rgba(10, 10, 15, 0.98) !important;
                     box-shadow: none !important;
                     display: flex !important;
@@ -13979,12 +13979,20 @@ document.addEventListener('mouseover', (e) => {
                     return;
                 }
             }
+            
             // 1. Fermeture automatique des autres apps (Exclusivité stricte Desktop & Mobile)
             document.querySelectorAll('.os-window').forEach(win => {
                 if (win.id !== id && win.style.display !== 'none') {
                     closeApp(win.id);
                 }
             });
+
+            // Masquage des boutons OS (optimisation de l'espace)
+            const gear = document.getElementById('audio-settings-gear');
+            const quitBtn = document.getElementById('btn-quit-pc');
+            if (gear) gear.style.display = 'none';
+            if (quitBtn) quitBtn.style.display = 'none';
+
 
             const win = document.getElementById(id);
             if (!win) return;
@@ -14012,7 +14020,7 @@ document.addEventListener('mouseover', (e) => {
                 const w = win.offsetWidth || 700;
                 const h = win.offsetHeight || 500;
                 win.style.left = `${Math.max(20, window.innerWidth/2 - w/2)}px`;
-                win.style.top  = `${Math.max(80, window.innerHeight/2 - h/2 + 20)}px`;
+                win.style.top  = `${Math.max(20, window.innerHeight/2 - h/2 + 20)}px`;
             }
 
             bringToFront(id);
@@ -14038,10 +14046,24 @@ document.addEventListener('mouseover', (e) => {
                 document.getElementById('playhead').classList.remove('playhead-animated');
             }
             const win = document.getElementById(id);
+            
             if (win) {
                 win.style.display = 'none';
                 win.classList.remove('active-window');
             }
+            
+            // Restauration des boutons OS si plus aucune app n'est ouverte
+            let anyOpen = false;
+            document.querySelectorAll('.os-window').forEach(w => {
+                if (w.style.display !== 'none' && w.style.display !== '') anyOpen = true;
+            });
+            if (!anyOpen) {
+                const gear = document.getElementById('audio-settings-gear');
+                const quitBtn = document.getElementById('btn-quit-pc');
+                if (gear) gear.style.display = 'flex';
+                if (quitBtn) quitBtn.style.display = 'flex';
+            }
+
             if (!isMobile) updateTaskbar();
             try { if (typeof realignWidgets === 'function') realignWidgets(); } catch(err) {}
             playBleep();
