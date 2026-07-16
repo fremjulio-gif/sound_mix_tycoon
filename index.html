@@ -9424,6 +9424,39 @@ document.addEventListener('mouseover', (e) => {
             { id: 't4_echo', name: "EchoSound", emoji: "🔊", tier: 4, reqFol: 40000, reward: 5000, repCost: -50, duration: 7, expiresIn: 1440 }, // Note: -50 cost means +50 REP
         ];
 
+        // ==========================================
+        // GESTION DES EXPIRATIONS BRAND DEALS
+        // ==========================================
+        function updateBrandDealsAvailability() {
+            if (!state || !state.dealPool) return;
+            let needsSocialRefresh = false;
+            
+            TIERED_DEALS.forEach(deal => {
+                if (state.followers >= deal.reqFol) {
+                    if (!state.dealPool[deal.id]) {
+                        // Spawn new deal
+                        state.dealPool[deal.id] = { status: 'available', spawnedAt: getTotalMins(), expiresAt: deal.expiresIn ? getTotalMins() + deal.expiresIn : null };
+                        if (deal.expiresIn) {
+                            showToast(`NOUVEAU CONTRAT : ${deal.name} (Expire vite !)`, 'info');
+                        }
+                        needsSocialRefresh = true;
+                    }
+                }
+                // Check expiry
+                if (state.dealPool[deal.id] && state.dealPool[deal.id].status === 'available' && state.dealPool[deal.id].expiresAt) {
+                    if (getTotalMins() >= state.dealPool[deal.id].expiresAt) {
+                        state.dealPool[deal.id].status = 'missed';
+                        showToast(`Le contrat avec ${deal.name} a expiré !`, 'error');
+                        needsSocialRefresh = true;
+                    }
+                }
+            });
+            
+            if (needsSocialRefresh && typeof isAppOpen === 'function' && isAppOpen('app-social') && typeof refreshSocial === 'function') {
+                refreshSocial();
+            }
+        }
+
         // LISTES DES RAPPEURS POUR ÉVÈNEMENTS ALÉATOIRES
         const rappersConnus = ["Yannvs", "Zandame", "Kali", "Disiznot", "Khabat & Jean-Jacque", "Lescram", "JeuneTortue", "Luthier", "Joule", "SCHash", "Adèle Tatillon", "Jolared44"];
         const rappersPasConnus = ["Fto", "Tom B", "Rosmii", "36Morphé", "44ASKIP", "9Rookie", "Nus", "GrandeSœur", "JaimeRose"];
@@ -11533,7 +11566,7 @@ document.addEventListener('mouseover', (e) => {
                     state.completedDeals = state.completedDeals || [];
                     state.dealPool = state.dealPool || {};
                     // Force l'évaluation des offres disponibles au chargement de la sauvegarde (retrocompatibilité)
-                    setTimeout(() => updateBrandDealsAvailability(), 500);
+                    setTimeout(() => { if (typeof updateBrandDealsAvailability === 'function') updateBrandDealsAvailability(); }, 500);
 
                     Object.keys(state.cooldowns.sponsors).forEach(k => {
                         state.cooldowns.sponsors[k] = parseInt(state.cooldowns.sponsors[k], 10) || 0;
@@ -12420,8 +12453,10 @@ document.addEventListener('mouseover', (e) => {
                 state.lastPlayedDay = state.day;
                 state.maxStreak = Math.max(state.maxStreak || 0, state.streakDays);
 
-                // Évaluation à chaque tick
-            updateBrandDealsAvailability();
+                // Évaluation à chaque tick sécurisée
+                if (typeof updateBrandDealsAvailability === 'function') {
+                    updateBrandDealsAvailability();
+                }
             
             // --- PAIEMENT DES CONTRATS DE SELLOUT ---
                 if (state.activeContracts && state.activeContracts.length > 0) {
@@ -14309,19 +14344,35 @@ document.addEventListener('mouseover', (e) => {
             try { checkChallengeProgress('story', {}); } catch(e) {}
         }
 
-        function acceptSponsor(id) {
-            const s = sponsors.find(x => x.id === id);
-            if (!s) return;
-            logMoney(s.reward, 'Sponsor: ' + s.name);
-            state.rep = Math.max(0, (parseInt(state.rep, 10) || 0) - s.repCost);
-            state.cooldowns.sponsors[s.id] = (parseInt(state.day, 10) || 1) + s.cooldownDays;
+        function acceptDeal(id) {
+            const deal = TIERED_DEALS.find(x => x.id === id);
+            if (!deal) return;
             
-            // Le sellout draine modérément l'inspiration
+            // Marquer comme accepté dans le pool
+            if (state.dealPool[deal.id]) {
+                state.dealPool[deal.id].status = 'active';
+            }
+            
+            // Ajouter aux contrats actifs
+            state.activeContracts.push({
+                id: deal.id,
+                name: deal.name,
+                emoji: deal.emoji,
+                duration: deal.duration,
+                daysLeft: deal.duration,
+                reward: deal.reward,
+                repCost: deal.repCost
+            });
+            
+            showToast(`Contrat signé avec ${deal.name} pour ${deal.duration} jours !`, 'success');
+            
+            // Le sellout draine modérément l'inspiration instantanément
             state.inspi = Math.max(0, (Number(state.inspi) || 0) - 15);
             
-            checkAchievement('sellout', () => true);
-            showToast(`Contrat signé avec ${s.name} ! L'heure d'encaisser...`, "success");
-            playBleep(); saveGame(); updateHUD(); refreshSocial();
+            if (typeof checkAchievement === 'function') checkAchievement('sellout', () => true);
+            if (typeof refreshSocial === 'function') refreshSocial();
+            if (typeof updateHUD === 'function') updateHUD();
+            if (typeof saveGame === 'function') saveGame();
         }
 
         // ==========================================
@@ -15858,7 +15909,7 @@ function checkEchoAchievements() {
         window.buyLegit         = buyLegit;
         window.buyFurniture     = buyFurniture;
         window.postStory        = postStory;
-        window.acceptSponsor    = acceptSponsor;
+        window.acceptDeal       = acceptDeal;
         window.quitPC           = quitPC;
         window.selectAvatar     = selectAvatar;
         window.attemptLogin     = attemptLogin;
