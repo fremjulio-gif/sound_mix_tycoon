@@ -2099,6 +2099,79 @@
             transform: scale(0.96) !important;
         }
 
+
+        /* ==========================================
+           GAME FEEL / JUICE CSS REFACTOR
+           ========================================== */
+        
+        /* 1. Floating Text */
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(0) scale(0.8); }
+            20% { opacity: 1; transform: translateY(-10px) scale(1.1); }
+            100% { opacity: 0; transform: translateY(-30px) scale(1); }
+        }
+        .floating-text {
+            position: absolute;
+            pointer-events: none;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
+            animation: floatUp 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            z-index: 9999;
+        }
+
+        /* 2. Review Tension (Flop & Banger) */
+        @keyframes violentShake {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            10% { transform: translate(-5px, -5px) rotate(-1deg); }
+            20% { transform: translate(5px, 5px) rotate(1deg); }
+            30% { transform: translate(-5px, 5px) rotate(0deg); }
+            40% { transform: translate(5px, -5px) rotate(1deg); }
+            50% { transform: translate(-5px, 0px) rotate(-1deg); }
+            60% { transform: translate(5px, 0px) rotate(0deg); }
+            70% { transform: translate(-2px, -2px) rotate(-0.5deg); }
+            80% { transform: translate(2px, 2px) rotate(0.5deg); }
+            90% { transform: translate(-1px, 1px) rotate(0deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        .screen-shake {
+            animation: violentShake 0.5s ease-in-out;
+            filter: sepia(1) hue-rotate(-50deg) saturate(3) !important;
+        }
+
+        @keyframes whiteFlash {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        .banger-flash::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: white;
+            z-index: 10000;
+            pointer-events: none;
+            animation: whiteFlash 0.8s ease-out forwards;
+        }
+
+        /* 3. Micro-interactions */
+        button, .clickable {
+            transition: transform 0.05s ease, filter 0.15s ease, background-color 0.15s ease;
+        }
+        button:active, .clickable:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes windowOpen {
+            from { opacity: 0; transform: scale(0.98) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .os-window {
+            transform-origin: center;
+            animation: windowOpen 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            will-change: transform, opacity;
+        }
+
     </style>
 </head>
 
@@ -9575,11 +9648,34 @@ document.addEventListener('mouseover', (e) => {
             return m > 0 ? `${h}H ${m}M` : `${h}H`;
         }
 
-            function logMoney(amount, reason, customRect = null) {
+            function spawnFloatingText(elementId, text, colorClass) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            const floatDiv = document.createElement('div');
+            floatDiv.className = `floating-text ${colorClass}`;
+            floatDiv.innerText = text;
+            
+            const offsetX = (Math.random() - 0.5) * 40;
+            const offsetY = (Math.random() - 0.5) * 20;
+            
+            floatDiv.style.left = (rect.left + window.scrollX + offsetX + (rect.width/2)) + 'px';
+            floatDiv.style.top = (rect.top + window.scrollY + offsetY) + 'px';
+            
+            document.body.appendChild(floatDiv);
+            
+            setTimeout(() => {
+                if (floatDiv.parentNode) floatDiv.parentNode.removeChild(floatDiv);
+            }, 1200);
+        }
+
+        function logMoney(amount, reason, customRect = null) {
         state.money = (parseInt(state.money, 10) || 0) + amount;
         if (state.money < 0) state.money = 0;
         state.history.money.unshift({ amt: amount, txt: reason });
         if (state.history.money.length > 5) state.history.money.pop();
+        
+        spawnFloatingText('hud-money', (amount > 0 ? '+$' : '-$') + Math.abs(amount), amount > 0 ? 'text-emerald-400' : 'text-rose-500');
 
         // Ajoute une animation quand de l'argent est gagné
         if (amount > 0) {
@@ -9630,6 +9726,9 @@ document.addEventListener('mouseover', (e) => {
             return p[Math.floor(Math.random()*p.length)] + s[Math.floor(Math.random()*s.length)];
         }
         function logFollower(amount) {
+            if (amount !== 0) {
+                spawnFloatingText('hud-foll', (amount > 0 ? '+' : '') + amount + ' FOL', amount > 0 ? 'text-blue-400' : 'text-rose-500');
+            }
             if (amount > 0) {
                 let actualAmount = amount;
                 if (state.viralActive) {
@@ -13597,10 +13696,20 @@ document.addEventListener('mouseover', (e) => {
                     const hypeBoost = Math.floor(10 + Math.random() * 10);
                     state.hype = Math.min(100, state.hype + hypeBoost);
                     critique += `\n[BANGER] La street valide fort ! Hype +${hypeBoost}`;
+                    if (typeof spawnFloatingText === 'function') spawnFloatingText('hud-rep-num', '+' + hypeBoost + '% HYPE', 'text-yellow-400');
+                    // Banger Flash
+                    const osMain = document.getElementById('os-main') || document.body;
+                    osMain.classList.add('banger-flash');
+                    setTimeout(() => osMain.classList.remove('banger-flash'), 800);
                 } else if (finalTrackScore <= 4) {
                     const hypeDrop = Math.floor(10 + Math.random() * 5);
                     state.hype = Math.max(0, state.hype - hypeDrop);
                     critique += `\n[FLOP] Les fans sont déçus... Hype -${hypeDrop}`;
+                    if (typeof spawnFloatingText === 'function') spawnFloatingText('hud-rep-num', '-' + hypeDrop + '% HYPE', 'text-rose-500');
+                    // Flop Shake
+                    const osMain = document.getElementById('os-main') || document.body;
+                    osMain.classList.add('screen-shake');
+                    setTimeout(() => osMain.classList.remove('screen-shake'), 500);
                 } else {
                     // Mid score, hype normalizes towards 50
                     if (state.hype > 50) state.hype = Math.max(50, state.hype - 2);
