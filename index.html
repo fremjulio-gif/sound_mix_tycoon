@@ -9431,8 +9431,12 @@ document.addEventListener('mouseover', (e) => {
             if (!state || !state.dealPool) return;
             let needsSocialRefresh = false;
             
+            const levelData = typeof calculateLevelData === 'function' ? calculateLevelData(true) : null;
+            const currentRankId = levelData && levelData.currentRank ? levelData.currentRank.id : 0;
+            
             TIERED_DEALS.forEach(deal => {
-                if (state.followers >= deal.reqFol) {
+                // Le Tier 1 correspond au Rank 1 (Street Certified), Tier 2 au Rank 2, etc.
+                if (currentRankId >= deal.tier) {
                     if (!state.dealPool[deal.id]) {
                         // Spawn new deal
                         state.dealPool[deal.id] = { status: 'available', spawnedAt: getTotalMins(), expiresAt: deal.expiresIn ? getTotalMins() + deal.expiresIn : null };
@@ -14242,7 +14246,7 @@ document.addEventListener('mouseover', (e) => {
             });
             
             if (availHtml === '') {
-                availHtml = `<div class="text-center p-6 bg-black/40 border border-white/5 rounded-lg text-gray-500 text-xs font-retro tracking-widest">AUCUNE OFFRE DISPONIBLE. (Montez vos followers !)</div>`;
+                availHtml = `<div class="text-center p-6 bg-black/40 border border-white/5 rounded-lg text-gray-500 text-xs font-retro tracking-widest">AUCUNE OFFRE DISPONIBLE.<br><span class="text-[10px] text-gray-600 mt-2 block">(Atteignez le rang 'Street Certified' pour débloquer les premiers sponsors !)</span></div>`;
             }
             sList.innerHTML = availHtml;
 
