@@ -11343,7 +11343,7 @@ document.addEventListener('mouseover', (e) => {
         }
 
         // --- DICTIONNAIRE DES STYLES MUSICAUX ---
-    const DAW_GENRES = [
+        const DAW_GENRES = [
         { id: 'drill',      name: 'UK Drill',      unlockAt: 0,  targetBpm: 140, tol: 5, targetVoice: 'm',      reward: 'money' },
         { id: 'afropop',    name: 'Afro-Pop',      unlockAt: 0,  targetBpm: 110, tol: 5, targetVoice: 'f',      reward: 'followers' },
         { id: '2step',      name: '2 Step',        unlockAt: 5,  targetBpm: 135, tol: 2, targetVoice: 'instru', reward: 'stable' },
@@ -11361,15 +11361,15 @@ document.addEventListener('mouseover', (e) => {
         const container = document.getElementById('daw-genres-container');
         if (!container || !DAW_GENRES) return;
         
-        // On s'assure de récupérer la valeur numérique correcte
         const currentTracks = (state && state.stats && typeof state.stats.tracks === 'number') ? state.stats.tracks : 0;
         
         container.innerHTML = DAW_GENRES.map(g => {
             const isUnlocked = currentTracks >= g.unlockAt;
             
             if (!isUnlocked) {
-                return `<div class="relative group" title="Nécessite ${g.unlockAt} Tracks produits">
-                            <button class="btn-daw-pad w-full py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest opacity-50 grayscale flex items-center justify-center gap-2 cursor-not-allowed" disabled>
+                // CORRECTION : Plus de onclick="selectDawGenre" ici. Le clic est purement et simplement inactif.
+                return `<div class="relative group locked disabled" title="Nécessite ${g.unlockAt} Tracks produits">
+                            <button class="btn-daw-pad w-full py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest opacity-50 grayscale flex items-center justify-center gap-2 cursor-not-allowed locked disabled" disabled>
                                 <span class="drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] text-sm">🔒</span> ???
                             </button>
                             <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/90 border border-[#27272a] text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">Débloqué à ${g.unlockAt} Tracks</div>
@@ -11378,81 +11378,111 @@ document.addEventListener('mouseover', (e) => {
             
             const isActive = currentDawGenre === g.id;
             const btnClass = isActive ? 'btn-daw-pad btn-juice selected border-[#10b981]' : 'btn-daw-pad btn-juice';
-            return `<button class="${btnClass} w-full py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest" data-val="${g.id}" onclick="selectDawGenre('${g.id}', event)" onmousedown="document.getElementById('daw-active-genre-badge').classList.remove('hidden'); document.getElementById('daw-active-genre-badge').innerText='${g.name}'; document.getElementById('daw-genres-details').open=false;">${g.name}</button>`;
+            
+            // CORRECTION : HTML allégé, le nom du genre est passé en argument à la fonction pour gérer l'affichage
+            return `<button class="${btnClass} w-full py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest" data-val="${g.id}" onclick="selectDawGenre('${g.id}', '${g.name}', event)">${g.name}</button>`;
         }).join('');
     }
 
-        
+    // ==========================================
+    // GENRE PREVIEW AUDIO
+    // ==========================================
+    let currentGenrePreviewAudio = null;
 
-        // ==========================================
-        // GENRE PREVIEW AUDIO
-        // ==========================================
-        let currentGenrePreviewAudio = null;
-
-        function stopGenrePreview() {
-            if (currentGenrePreviewAudio) {
-                currentGenrePreviewAudio.pause();
-                currentGenrePreviewAudio.currentTime = 0;
-                // Restore music volume
-                if (typeof MusicSystem !== 'undefined') {
-                    MusicSystem.setMusicVolume(window.musicVolume);
-                }
-                currentGenrePreviewAudio = null;
-            }
-        }
-
-        function playGenrePreview(genre) {
-            stopGenrePreview(); 
-            
-            if (typeof playTone === 'function') {
-                playTone(2000, 'square', 0.01, 0.05); // Tick UI
-            }
-            
-            // Format strict demandé : /audio/[nom_du_genre].mp3
-            currentGenrePreviewAudio = new Audio(`/audio/${genre}.mp3`);
-            currentGenrePreviewAudio.loop = false;
-            currentGenrePreviewAudio.volume = window.sfxVolume * 0.25;
-            
+    function stopGenrePreview() {
+        if (currentGenrePreviewAudio) {
+            currentGenrePreviewAudio.pause();
+            currentGenrePreviewAudio.currentTime = 0;
             if (typeof MusicSystem !== 'undefined') {
-                MusicSystem.setMusicVolume(window.musicVolume * 0.3); // Ducking
+                MusicSystem.setMusicVolume(window.musicVolume);
             }
-            
-            currentGenrePreviewAudio.addEventListener('ended', () => {
-                if (typeof MusicSystem !== 'undefined') {
-                    MusicSystem.setMusicVolume(window.musicVolume);
-                }
-                currentGenrePreviewAudio = null;
-            });
-            
-            currentGenrePreviewAudio.play().catch(e => {
-                console.warn(`Preview audio not found for genre: ${genre}`, e);
-                stopGenrePreview();
-            });
+            currentGenrePreviewAudio = null;
         }
+    }
 
+    function playGenrePreview(genre) {
+        stopGenrePreview(); 
+        
+        if (typeof playTone === 'function') {
+            playTone(2000, 'square', 0.01, 0.05);
+        }
+        
+        currentGenrePreviewAudio = new Audio(`/audio/${genre}.mp3`);
+        currentGenrePreviewAudio.loop = false;
+        currentGenrePreviewAudio.volume = window.sfxVolume * 0.25;
+        
+        if (typeof MusicSystem !== 'undefined') {
+            MusicSystem.setMusicVolume(window.musicVolume * 0.3); // Ducking
+        }
+        
+        currentGenrePreviewAudio.addEventListener('ended', () => {
+            if (typeof MusicSystem !== 'undefined') {
+                MusicSystem.setMusicVolume(window.musicVolume);
+            }
+            currentGenrePreviewAudio = null;
+        });
+        
+        currentGenrePreviewAudio.play().catch(e => {
+            console.warn(`Preview audio not found for genre: ${genre}`, e);
+            stopGenrePreview();
+        });
+    }
 
-        function selectDawGenre(val = null, event = null) {
-        if (event) { event.stopPropagation(); }
+    function selectDawGenre(val = null, genreName = null, event = null) {
+        if (event) {
+            event.stopPropagation();
+            event.preventDefault();
+            
+            // Backup de sécurité pour les clics
+            const target = event.currentTarget || event.target;
+            if (target) {
+                const isLocked = target.classList.contains('locked') || 
+                                 target.classList.contains('disabled') || 
+                                 target.hasAttribute('disabled');
+                if (isLocked) {
+                    return;
+                }
+            }
+        }
 
         if (val) {
+            const currentTracks = (state && state.stats && typeof state.stats.tracks === 'number') ? state.stats.tracks : 0;
+            const genreData = DAW_GENRES.find(g => g.id === val);
+            if (genreData && currentTracks < genreData.unlockAt) {
+                return;
+            }
 
             currentDawGenre = val;
+            
+            // CORRECTION : L'affichage du badge est géré proprement ici
+            if (genreName) {
+                const badge = document.getElementById('daw-active-genre-badge');
+                if (badge) {
+                    badge.classList.remove('hidden');
+                    badge.innerText = genreName;
+                }
+            }
+            
             playGenrePreview(val);
         }
+        
         updateDawGenres();
         if (typeof populateDawSamples === 'function') populateDawSamples();
         if (typeof playUIAudio === 'function') playUIAudio('switch', 0.7);
     }
-        function selectDawVoice(val = 'm') {
+
+    // L'accolade orpheline qui faisait crasher tout le fichier a été supprimée.
+
+    function selectDawVoice(val = 'm') {
         currentDawVoice = val || 'm';
 
         document.querySelectorAll('.btn-voice').forEach(btn => {
             btn.classList.toggle('selected', btn.dataset.val === currentDawVoice);
         });
 
-        playBleep();
+        if (typeof playBleep === 'function') playBleep();
     }
-
+    
     function updateDawPlugins() {
             const select = document.getElementById('daw-plugin');
             
