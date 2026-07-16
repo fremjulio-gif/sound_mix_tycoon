@@ -2238,6 +2238,162 @@
         }
 
         /* UI Juice for AbleStudio Buttons */
+
+            /* =========================================
+            SPLASH / CHARACTER SELECT JUICE & GAME FEEL
+            ========================================= */
+            @keyframes staggerFadeScale {
+                0% { opacity: 0; transform: scale(0.95) translateY(12px); }
+                100% { opacity: 1; transform: scale(1) translateY(0); }
+            }
+            .stagger-logo {
+                opacity: 0;
+                animation: staggerFadeScale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                animation-delay: 50ms;
+            }
+            .stagger-title {
+                opacity: 0;
+                animation: staggerFadeScale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                animation-delay: 200ms;
+            }
+            .stagger-form {
+                opacity: 0;
+                animation: staggerFadeScale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                animation-delay: 350ms;
+            }
+
+            /* Champ Artist ID Focus */
+            #login-username {
+                transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            }
+            #login-username:focus {
+                border-color: var(--accent) !important;
+                box-shadow: 0 0 12px rgba(129, 140, 248, 0.4) !important;
+            }
+
+            /* Avatar scale & selection ripple */
+            .avatar-sel {
+                transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s ease-out !important;
+            }
+            .avatar-sel:hover {
+                transform: scale(1.04) !important;
+                border-color: rgba(129, 140, 248, 0.5) !important;
+            }
+            @keyframes avatarSelectPulse {
+                0% { transform: scale(1.04); box-shadow: 0 0 0 0px rgba(129, 140, 248, 0.7); }
+                50% { transform: scale(0.96); box-shadow: 0 0 0 8px rgba(129, 140, 248, 0.4); }
+                100% { transform: scale(1); box-shadow: 0 0 0 16px rgba(129, 140, 248, 0); }
+            }
+            .avatar-sel.animate-select {
+                animation: avatarSelectPulse 0.3s ease-out forwards !important;
+            }
+
+            /* Background de l'écran Login */
+            #login-screen {
+                position: relative;
+                overflow: hidden;
+            }
+            #login-screen::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: 
+                    radial-gradient(circle at 70% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 20% 80%, rgba(219, 39, 119, 0.05) 0%, transparent 40%),
+                    radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.8) 100%),
+                    repeating-linear-gradient(rgba(255,255,255,0.01) 0px, rgba(255,255,255,0.01) 1px, transparent 1px, transparent 20px),
+                    repeating-linear-gradient(90deg, rgba(255,255,255,0.01) 0px, rgba(255,255,255,0.01) 1px, transparent 1px, transparent 20px);
+                background-size: 100% 100%, 100% 100%, 100% 100%, 20px 20px, 20px 20px;
+                pointer-events: none;
+                z-index: 0;
+                opacity: 0.8;
+            }
+            #login-screen > * {
+                position: relative;
+                z-index: 1;
+            }
+
+            /* Loader Eq Bars */
+            @keyframes eqBounce {
+                0%, 100% { transform: scaleY(0.25); }
+                50% { transform: scaleY(1.0); }
+            }
+            .eq-bar {
+                transform-origin: bottom;
+                animation: eqBounce 0.8s ease-in-out infinite;
+            }
+            .eq-bar:nth-child(1) { animation-duration: 0.6s; animation-delay: 0.1s; }
+            .eq-bar:nth-child(2) { animation-duration: 0.9s; animation-delay: 0.3s; }
+            .eq-bar:nth-child(3) { animation-duration: 0.7s; animation-delay: 0.0s; }
+
+            /* Progress Bar tip glow */
+            #loader-progress {
+                position: relative;
+                transition: width 0.1s ease-out;
+            }
+            #loader-progress::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                width: 12px;
+                background: #ffffff;
+                box-shadow: 0 0 20px #ffffff, 0 0 40px var(--accent);
+                border-radius: 50%;
+                filter: blur(1px);
+                animation: pulseProgressTip 0.6s ease-in-out infinite alternate;
+            }
+            @keyframes pulseProgressTip {
+                0% { opacity: 0.7; }
+                100% { opacity: 1; }
+            }
+
+            /* Loader background animation */
+            #studio-loader {
+                position: relative;
+                background: #050508 !important;
+                overflow: hidden;
+            }
+            #studio-loader::before {
+                content: "";
+                position: absolute;
+                inset: -50px;
+                background: radial-gradient(circle at center, #1e1b4b 0%, #050508 100%);
+                animation: loaderBgRespire 12s ease-in-out infinite alternate;
+                z-index: 0;
+            }
+            #studio-loader > * {
+                position: relative;
+                z-index: 1;
+            }
+            @keyframes loaderBgRespire {
+                0% { transform: translate(0, 0) scale(1); }
+                50% { transform: translate(-20px, 20px) scale(1.08); }
+                100% { transform: translate(20px, -10px) scale(1.04); }
+            }
+
+            /* Engine Ready animation */
+            @keyframes terminalFlash {
+                from { opacity: 0; filter: brightness(2); }
+                to { opacity: 1; filter: brightness(1); }
+            }
+            .engine-ready-fade {
+                animation: terminalFlash 0.3s steps(3, start) forwards;
+                font-weight: bold;
+                text-shadow: 0 0 10px #34d399;
+            }
+
+            /* Accessible / Motion-reduced mode fallback */
+            @media (prefers-reduced-motion: reduce) {
+                .stagger-logo, .stagger-title, .stagger-form, .eq-bar, #studio-loader::before, .avatar-sel, #login-username, .avatar-sel.animate-select, #loader-progress::after, .engine-ready-fade {
+                    animation: none !important;
+                    transition: none !important;
+                    opacity: 1 !important;
+                    transform: none !important;
+                }
+            }
+
 </style>
             <style>
         
@@ -2816,21 +2972,21 @@
 
 <div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
             <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
-                <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it</h1>
-                <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">v18</p>
-                <div class="mb-6 flex justify-center">
+                <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl stagger-title">bounce_it</h1>
+                <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center stagger-title" style="white-space: nowrap;">Version Beta</p>
+                <div class="mb-6 flex justify-center stagger-logo">
                     <img src="logo.jpeg" alt="Logo bounce_it" 
                         class="w-32 h-32 md:w-40 md:h-40 object-cover rounded-2xl border border-white/10 shadow-[0_0_25px_rgba(129,140,248,0.2)] pixelated" />
                 </div>
-                <div class="w-full mb-4 md:mb-6">
+                <div class="w-full mb-4 md:mb-6 stagger-form">
                     <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
                     <input type="text" id="login-username" class="w-full bg-black/60 border border-gray-600 rounded-lg px-4 py-2 md:py-3 text-white font-retro text-sm focus:outline-none focus:border-[var(--accent)] transition-all shadow-inner" placeholder="Enter Alias...">
                 </div>
-                <div class="w-full mb-6 md:mb-8">
+                <div class="w-full mb-6 md:mb-8 stagger-form">
                     <label class="block text-[10px] font-retro text-gray-300 mb-2 md:mb-4 uppercase tracking-widest">Select_Avatar</label>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-6" id="avatar-container"></div>
                 </div>
-                <div class="w-full mb-4 md:mb-6">
+                <div class="w-full mb-4 md:mb-6 stagger-form">
                 <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-2 shrink-0">Boot Studio Environment</button>
                 <p id="login-error" class="text-[var(--retro-red)] font-retro text-xs mt-4 hidden text-center">Error: Missing ID</p>
             </div>
@@ -3949,13 +4105,12 @@
 
         <div id="studio-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500" style="background: radial-gradient(circle at center, #1e1b4b 0%, #050508 100%);">
             <div class="splash-card">
-                <h1 class="font-retro text-2xl md:text-3xl text-white tracking-[0.3em] uppercase mb-10 drop-shadow-2xl">bounce_it <span class="text-[var(--accent)] opacity-60">v18</span></h1>
+                <h1 class="font-retro text-2xl md:text-3xl text-white tracking-[0.3em] uppercase mb-10 drop-shadow-2xl" style="white-space: nowrap;">bounce_it <span class="text-[var(--accent)] opacity-60">Version Beta</span></h1>
                 
-                <div class="flex items-end gap-2 h-10 mb-8">
-                    <div class="w-2 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.0s"></div>
-                    <div class="w-2 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.2s"></div>
-                    <div class="w-2 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.4s"></div>
-                    <div class="w-2 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.1s"></div>
+                <div class="flex items-end gap-2 h-10 mb-8 justify-center">
+                    <div class="w-2 bg-[var(--accent)] rounded-t-sm eq-bar" style="height: 100%;"></div>
+                    <div class="w-2 bg-[var(--accent)] rounded-t-sm eq-bar" style="height: 100%;"></div>
+                    <div class="w-2 bg-[var(--accent)] rounded-t-sm eq-bar" style="height: 100%;"></div>
                 </div>
 
                 <div class="loader-track">
@@ -4125,10 +4280,12 @@ const DEFAULT_STATE = {
                 loadPercentage = 100;
                 clearInterval(progressInterval);
                 clearInterval(textInterval);
-                lText.innerText = loadingPhrases[loadingPhrases.length - 1]; 
                 
-                // Laisse le texte "Prêt" visible une demi-seconde avant de fondre
-                setTimeout(() => hideLoader(sLoader), 500); 
+                lText.innerText = loadingPhrases[loadingPhrases.length - 1]; 
+                lText.classList.add('engine-ready-fade');
+                
+                // Laisse le texte "Prêt" visible un peu plus longtemps pour savourer l'activation
+                setTimeout(() => hideLoader(sLoader), 1200); 
             }
             
             lProgress.style.width = `${loadPercentage}%`;
@@ -8474,7 +8631,7 @@ function triggerRankUp(oldRank, newRank) {
 
         function getAchievementUnlockLabel(achievement) {
             if (!achievement.unlocked) return 'LOCKED';
-            if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant v18';
+            if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant Version Beta';
             if (achievement.unlockedDay) return `JOUR ${achievement.unlockedDay}${achievement.unlockedTime ? ' · ' + achievement.unlockedTime : ''}`;
             return 'Débloqué avant v16';
         }
@@ -11128,8 +11285,16 @@ document.addEventListener('mouseover', (e) => {
         function selectAvatar(idx) {
             selectedAvatarIndex = idx;
             avatarChanged = true; 
-            document.querySelectorAll('.avatar-sel').forEach(el => el.classList.remove('selected'));
-            document.querySelector(`.avatar-sel[data-idx="${idx}"]`).classList.add('selected');
+            document.querySelectorAll('.avatar-sel').forEach(el => {
+                el.classList.remove('selected');
+                el.classList.remove('animate-select');
+            });
+            const target = document.querySelector(`.avatar-sel[data-idx="${idx}"]`);
+            if (target) {
+                target.classList.add('selected');
+                target.classList.add('animate-select');
+                setTimeout(() => target.classList.remove('animate-select'), 300);
+            }
             playBleep();
 
             updateThemeColors();
