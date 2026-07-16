@@ -2037,92 +2037,126 @@
 
     
         
+        
+
+        
         /* =========================================
-           ABLESTUDIO PRO 11 - THEMING SYSTEM
+           ABLESTUDIO PRO 11 - THEMING SYSTEM (FIXED OPACITY & HIERARCHY)
            ========================================= */
         /* STOCK THEME (Default) */
         #app-daw.theme-daw-stock {
-            --daw-bg: #121214;
-            --daw-panel: #18181b;
-            --daw-border: #27272a;
-            --daw-text: #a1a1aa;
-            --daw-text-hl: #f4f4f5;
-            --daw-accent: #10b981;
-            --daw-playhead: #ffffff;
-            --daw-grid-line: rgba(255,255,255,0.02);
-            --daw-grid-bar: rgba(255,255,255,0.05);
+            --daw-bg: #14141A;
+            --daw-panel: #1A1A22;
+            --daw-border: #2A2A35;
+            --daw-arr-bg: #1B1B22;
+            --daw-track-odd: rgba(255,255,255,0.02);
+            --daw-track-even: rgba(255,255,255,0.04);
+            --daw-text: #A1A1AA;
+            --daw-text-hl: #F4F4F5;
+            --daw-accent: #10B981;
+            --daw-playhead: #FFFFFF;
+            --daw-grid-line: rgba(255,255,255,0.03);
+            --daw-grid-bar: rgba(255,255,255,0.08);
         }
 
         /* VINTAGE ANALOG THEME */
         #app-daw.theme-daw-vintage {
-            --daw-bg: #2b2723;
-            --daw-panel: #3d3731;
-            --daw-border: #564c42;
-            --daw-text: #b3a492;
-            --daw-text-hl: #ffe8cd;
-            --daw-accent: #d97736;
-            --daw-playhead: #ff3333;
-            --daw-grid-line: rgba(255,232,205,0.03);
-            --daw-grid-bar: rgba(255,232,205,0.08);
+            --daw-bg: #262320;
+            --daw-panel: #332D29;
+            --daw-border: #4A423A;
+            --daw-arr-bg: #2B2723;
+            --daw-track-odd: rgba(255,232,205,0.02);
+            --daw-track-even: rgba(255,232,205,0.05);
+            --daw-text: #B3A492;
+            --daw-text-hl: #FFE8CD;
+            --daw-accent: #D97736;
+            --daw-playhead: #FF3333;
+            --daw-grid-line: rgba(255,232,205,0.04);
+            --daw-grid-bar: rgba(255,232,205,0.1);
         }
 
         /* MONO MINIMAL THEME */
         #app-daw.theme-daw-minimal {
-            --daw-bg: #ececec;
-            --daw-panel: #ffffff;
-            --daw-border: #cccccc;
-            --daw-text: #666666;
+            --daw-bg: #E5E5E5;
+            --daw-panel: #F5F5F5;
+            --daw-border: #CCCCCC;
+            --daw-arr-bg: #EAEAEA;
+            --daw-track-odd: rgba(0,0,0,0.02);
+            --daw-track-even: rgba(0,0,0,0.05);
+            --daw-text: #555555;
             --daw-text-hl: #111111;
             --daw-accent: #000000;
-            --daw-playhead: #ff0000;
-            --daw-grid-line: rgba(0,0,0,0.04);
-            --daw-grid-bar: rgba(0,0,0,0.1);
+            --daw-playhead: #FF0000;
+            --daw-grid-line: rgba(0,0,0,0.05);
+            --daw-grid-bar: rgba(0,0,0,0.15);
         }
 
         /* SUNSET WAVE THEME */
         #app-daw.theme-daw-sunset {
-            --daw-bg: #1a0b2e;
-            --daw-panel: #2b1154;
-            --daw-border: #501d8a;
-            --daw-text: #d4b3ff;
-            --daw-text-hl: #ffffff;
-            --daw-accent: #ff007f;
-            --daw-playhead: #00ffff;
+            --daw-bg: #110722;
+            --daw-panel: #1A0A33;
+            --daw-border: #3A1366;
+            --daw-arr-bg: #15082B;
+            --daw-track-odd: rgba(255,0,127,0.03);
+            --daw-track-even: rgba(255,0,127,0.07);
+            --daw-text: #D4B3FF;
+            --daw-text-hl: #FFFFFF;
+            --daw-accent: #FF007F;
+            --daw-playhead: #00FFFF;
             --daw-grid-line: rgba(0,255,255,0.05);
-            --daw-grid-bar: rgba(255,0,127,0.1);
+            --daw-grid-bar: rgba(255,0,127,0.15);
         }
 
-        /* Apply Theme Variables */
+        /* Enforce Absolute Opacity */
         #app-daw {
             background-color: var(--daw-bg) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            opacity: 1 !important;
             color: var(--daw-text) !important;
         }
-        #app-daw .window-header, #app-daw .bg-\[\#18181b\] {
+        #app-daw .window-content {
+            background-color: var(--daw-bg) !important;
+            padding: 24px !important; /* Respirez ! */
+        }
+        
+        /* Panel Hierarchy */
+        #app-daw .window-header, 
+        #app-daw #daw-genres-details,
+        #app-daw .bg-\[\#18181b\],
+        #app-daw .daw-toolbar {
             background-color: var(--daw-panel) !important;
             border-color: var(--daw-border) !important;
         }
+        
         #app-daw .border-\[\#27272a\] {
             border-color: var(--daw-border) !important;
         }
-        #app-daw .bg-\[\#09090b\] {
-            background-color: var(--daw-bg) !important;
-            border-color: var(--daw-border) !important;
-        }
-        #app-daw .text-\[\#10b981\] {
-            color: var(--daw-accent) !important;
-        }
-        
-        #timeline-container {
-            background-color: var(--daw-bg) !important;
-        }
-        
-        /* Grid Timeline */
-        #timeline-container .timeline-grid-bg {
+
+        /* Arrangement Container */
+        #app-daw #timeline-container {
+            background-color: var(--daw-arr-bg) !important;
+            /* Full height background grid */
             background-image: 
                 linear-gradient(90deg, var(--daw-grid-line) 1px, transparent 1px),
-                linear-gradient(90deg, var(--daw-grid-bar) 1px, transparent 1px),
-                linear-gradient(var(--daw-grid-line) 1px, transparent 1px) !important;
-            background-size: 12.5px 100%, 50px 100%, 100% 52px !important;
+                linear-gradient(90deg, var(--daw-grid-bar) 1px, transparent 1px);
+            background-size: 12.5px 100%, 50px 100%;
+            background-position: left top;
+            background-repeat: repeat;
+        }
+
+        /* Alternating Track Backgrounds */
+        #app-daw .tl-track:nth-child(odd) {
+            background-color: var(--daw-track-odd);
+        }
+        #app-daw .tl-track:nth-child(even) {
+            background-color: var(--daw-track-even);
+        }
+        #app-daw .tl-track {
+            border-bottom: 1px solid var(--daw-border);
+            margin-bottom: 0 !important; /* Remove the gap, use alternating bg */
+            padding-top: 4px;
+            padding-bottom: 4px;
         }
 
         /* Animations */
@@ -2131,7 +2165,6 @@
             50% { transform: scaleY(0.8); }
             100% { transform: scaleY(0.3); }
         }
-        
         .vu-bar-active {
             transform-origin: bottom;
             animation: vuMeterBounce 0.4s ease-in-out infinite alternate;
@@ -2141,7 +2174,6 @@
             animation: vuMeterBounce 2s ease-in-out infinite alternate;
             opacity: 0.3;
         }
-
         .btn-render-loading {
             animation: renderPulse 1s infinite alternate;
             pointer-events: none;
@@ -2152,7 +2184,7 @@
             100% { opacity: 1; transform: scale(1.02); }
         }
 
-        /* Draggable Playhead */
+        /* Playhead */
         #playhead-handle {
             width: 0; 
             height: 0; 
@@ -2170,31 +2202,6 @@
             height: 100%;
             background-color: var(--daw-playhead);
             box-shadow: 0 0 4px var(--daw-playhead);
-        }
-        
-        /* Waveform Clips */
-        .daw-svg-clip {
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            transition: all 0.2s ease;
-            position: absolute;
-            height: 48px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-        }
-        .daw-svg-clip:hover {
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            filter: brightness(1.2);
-            z-index: 51;
-            cursor: ew-resize;
-        }
-        .daw-svg-clip svg {
-            width: 100%;
-            height: 80%;
-            display: block;
         }
         
         /* Studio Customization Grid */
@@ -2267,92 +2274,126 @@
 
     
         
+        
+
+        
         /* =========================================
-           ABLESTUDIO PRO 11 - THEMING SYSTEM
+           ABLESTUDIO PRO 11 - THEMING SYSTEM (FIXED OPACITY & HIERARCHY)
            ========================================= */
         /* STOCK THEME (Default) */
         #app-daw.theme-daw-stock {
-            --daw-bg: #121214;
-            --daw-panel: #18181b;
-            --daw-border: #27272a;
-            --daw-text: #a1a1aa;
-            --daw-text-hl: #f4f4f5;
-            --daw-accent: #10b981;
-            --daw-playhead: #ffffff;
-            --daw-grid-line: rgba(255,255,255,0.02);
-            --daw-grid-bar: rgba(255,255,255,0.05);
+            --daw-bg: #14141A;
+            --daw-panel: #1A1A22;
+            --daw-border: #2A2A35;
+            --daw-arr-bg: #1B1B22;
+            --daw-track-odd: rgba(255,255,255,0.02);
+            --daw-track-even: rgba(255,255,255,0.04);
+            --daw-text: #A1A1AA;
+            --daw-text-hl: #F4F4F5;
+            --daw-accent: #10B981;
+            --daw-playhead: #FFFFFF;
+            --daw-grid-line: rgba(255,255,255,0.03);
+            --daw-grid-bar: rgba(255,255,255,0.08);
         }
 
         /* VINTAGE ANALOG THEME */
         #app-daw.theme-daw-vintage {
-            --daw-bg: #2b2723;
-            --daw-panel: #3d3731;
-            --daw-border: #564c42;
-            --daw-text: #b3a492;
-            --daw-text-hl: #ffe8cd;
-            --daw-accent: #d97736;
-            --daw-playhead: #ff3333;
-            --daw-grid-line: rgba(255,232,205,0.03);
-            --daw-grid-bar: rgba(255,232,205,0.08);
+            --daw-bg: #262320;
+            --daw-panel: #332D29;
+            --daw-border: #4A423A;
+            --daw-arr-bg: #2B2723;
+            --daw-track-odd: rgba(255,232,205,0.02);
+            --daw-track-even: rgba(255,232,205,0.05);
+            --daw-text: #B3A492;
+            --daw-text-hl: #FFE8CD;
+            --daw-accent: #D97736;
+            --daw-playhead: #FF3333;
+            --daw-grid-line: rgba(255,232,205,0.04);
+            --daw-grid-bar: rgba(255,232,205,0.1);
         }
 
         /* MONO MINIMAL THEME */
         #app-daw.theme-daw-minimal {
-            --daw-bg: #ececec;
-            --daw-panel: #ffffff;
-            --daw-border: #cccccc;
-            --daw-text: #666666;
+            --daw-bg: #E5E5E5;
+            --daw-panel: #F5F5F5;
+            --daw-border: #CCCCCC;
+            --daw-arr-bg: #EAEAEA;
+            --daw-track-odd: rgba(0,0,0,0.02);
+            --daw-track-even: rgba(0,0,0,0.05);
+            --daw-text: #555555;
             --daw-text-hl: #111111;
             --daw-accent: #000000;
-            --daw-playhead: #ff0000;
-            --daw-grid-line: rgba(0,0,0,0.04);
-            --daw-grid-bar: rgba(0,0,0,0.1);
+            --daw-playhead: #FF0000;
+            --daw-grid-line: rgba(0,0,0,0.05);
+            --daw-grid-bar: rgba(0,0,0,0.15);
         }
 
         /* SUNSET WAVE THEME */
         #app-daw.theme-daw-sunset {
-            --daw-bg: #1a0b2e;
-            --daw-panel: #2b1154;
-            --daw-border: #501d8a;
-            --daw-text: #d4b3ff;
-            --daw-text-hl: #ffffff;
-            --daw-accent: #ff007f;
-            --daw-playhead: #00ffff;
+            --daw-bg: #110722;
+            --daw-panel: #1A0A33;
+            --daw-border: #3A1366;
+            --daw-arr-bg: #15082B;
+            --daw-track-odd: rgba(255,0,127,0.03);
+            --daw-track-even: rgba(255,0,127,0.07);
+            --daw-text: #D4B3FF;
+            --daw-text-hl: #FFFFFF;
+            --daw-accent: #FF007F;
+            --daw-playhead: #00FFFF;
             --daw-grid-line: rgba(0,255,255,0.05);
-            --daw-grid-bar: rgba(255,0,127,0.1);
+            --daw-grid-bar: rgba(255,0,127,0.15);
         }
 
-        /* Apply Theme Variables */
+        /* Enforce Absolute Opacity */
         #app-daw {
             background-color: var(--daw-bg) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            opacity: 1 !important;
             color: var(--daw-text) !important;
         }
-        #app-daw .window-header, #app-daw .bg-\[\#18181b\] {
+        #app-daw .window-content {
+            background-color: var(--daw-bg) !important;
+            padding: 24px !important; /* Respirez ! */
+        }
+        
+        /* Panel Hierarchy */
+        #app-daw .window-header, 
+        #app-daw #daw-genres-details,
+        #app-daw .bg-\[\#18181b\],
+        #app-daw .daw-toolbar {
             background-color: var(--daw-panel) !important;
             border-color: var(--daw-border) !important;
         }
+        
         #app-daw .border-\[\#27272a\] {
             border-color: var(--daw-border) !important;
         }
-        #app-daw .bg-\[\#09090b\] {
-            background-color: var(--daw-bg) !important;
-            border-color: var(--daw-border) !important;
-        }
-        #app-daw .text-\[\#10b981\] {
-            color: var(--daw-accent) !important;
-        }
-        
-        #timeline-container {
-            background-color: var(--daw-bg) !important;
-        }
-        
-        /* Grid Timeline */
-        #timeline-container .timeline-grid-bg {
+
+        /* Arrangement Container */
+        #app-daw #timeline-container {
+            background-color: var(--daw-arr-bg) !important;
+            /* Full height background grid */
             background-image: 
                 linear-gradient(90deg, var(--daw-grid-line) 1px, transparent 1px),
-                linear-gradient(90deg, var(--daw-grid-bar) 1px, transparent 1px),
-                linear-gradient(var(--daw-grid-line) 1px, transparent 1px) !important;
-            background-size: 12.5px 100%, 50px 100%, 100% 52px !important;
+                linear-gradient(90deg, var(--daw-grid-bar) 1px, transparent 1px);
+            background-size: 12.5px 100%, 50px 100%;
+            background-position: left top;
+            background-repeat: repeat;
+        }
+
+        /* Alternating Track Backgrounds */
+        #app-daw .tl-track:nth-child(odd) {
+            background-color: var(--daw-track-odd);
+        }
+        #app-daw .tl-track:nth-child(even) {
+            background-color: var(--daw-track-even);
+        }
+        #app-daw .tl-track {
+            border-bottom: 1px solid var(--daw-border);
+            margin-bottom: 0 !important; /* Remove the gap, use alternating bg */
+            padding-top: 4px;
+            padding-bottom: 4px;
         }
 
         /* Animations */
@@ -2361,7 +2402,6 @@
             50% { transform: scaleY(0.8); }
             100% { transform: scaleY(0.3); }
         }
-        
         .vu-bar-active {
             transform-origin: bottom;
             animation: vuMeterBounce 0.4s ease-in-out infinite alternate;
@@ -2371,7 +2411,6 @@
             animation: vuMeterBounce 2s ease-in-out infinite alternate;
             opacity: 0.3;
         }
-
         .btn-render-loading {
             animation: renderPulse 1s infinite alternate;
             pointer-events: none;
@@ -2382,7 +2421,7 @@
             100% { opacity: 1; transform: scale(1.02); }
         }
 
-        /* Draggable Playhead */
+        /* Playhead */
         #playhead-handle {
             width: 0; 
             height: 0; 
@@ -2400,31 +2439,6 @@
             height: 100%;
             background-color: var(--daw-playhead);
             box-shadow: 0 0 4px var(--daw-playhead);
-        }
-        
-        /* Waveform Clips */
-        .daw-svg-clip {
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            transition: all 0.2s ease;
-            position: absolute;
-            height: 48px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-        }
-        .daw-svg-clip:hover {
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            filter: brightness(1.2);
-            z-index: 51;
-            cursor: ew-resize;
-        }
-        .daw-svg-clip svg {
-            width: 100%;
-            height: 80%;
-            display: block;
         }
         
         /* Studio Customization Grid */
@@ -3157,7 +3171,7 @@
                 </div>
             </div>
 
-            <div class="window-content daw-grid-container bg-[#121214] p-2 md:p-4 gap-3 md:gap-4 flex flex-col md:flex-row relative">
+            <div class="window-content daw-grid-container flex flex-col md:flex-row relative gap-6 p-4 md:p-6">
             <!-- STUDIO CUSTOMIZATION MODAL -->
             <div id="daw-settings-modal" class="absolute inset-0 z-[1000] bg-black/90 backdrop-blur-md hidden flex-col items-center justify-center p-4">
                 <div class="w-full max-w-2xl bg-[#18181b] border border-[#27272a] shadow-2xl rounded-xl flex flex-col overflow-hidden">
@@ -3230,7 +3244,7 @@
                             <span class="text-[9px] font-mono text-gray-500">ZOOM: 100% | 4/4 Sig.</span>
                         </div>
 
-                        <div class="flex-1 border border-[#27272a] rounded-lg flex flex-col overflow-x-auto overflow-y-hidden relative bg-[#09090b] cursor-crosshair shadow-[inset_0_5px_15px_rgba(0,0,0,0.9)]" id="timeline-container">
+                        <div class="flex-1 border border-[#27272a] rounded-lg flex flex-col overflow-x-auto overflow-y-hidden relative bg-[#09090b] cursor-crosshair shadow-[inset_0_5px_15px_rgba(0,0,0,0.9)]" id="timeline-container" class="timeline-grid-bg">
                             
                             <div class="h-7 timeline-ruler flex items-end pb-1 min-w-[700px] select-none sticky top-0 z-40">
                                 <div class="flex-1 flex justify-between px-2" style="background-image: linear-gradient(90deg, #3f3f46 1px, transparent 1px), linear-gradient(90deg, #27272a 1px, transparent 1px); background-size: 50px 100%, 12.5px 50%; background-repeat: no-repeat, repeat-x; background-position: bottom;">
@@ -3238,7 +3252,7 @@
                                 </div>
                             </div>
                             
-                            <div class="absolute inset-0 top-7 pointer-events-none z-0 min-w-[700px]" style="background-image: linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px); background-size: 12.5px 100%, 100% 52px;"></div>
+                            
 
                             <div class="flex flex-col flex-1 min-w-[700px] relative z-10 py-1">
                                 
@@ -3382,7 +3396,7 @@
                             </div>
                     </div>
 
-                    <div class="flex flex-col md:flex-row gap-4 md:gap-8 items-stretch bg-[#18181b] p-3 md:p-5 rounded-xl md:rounded-t-none border border-[#27272a] shadow-inner">
+                    <div class="daw-toolbar flex flex-col md:flex-row gap-4 md:gap-8 items-stretch bg-[#18181b] mt-4 p-3 md:p-5 rounded-xl md:rounded-t-none border border-[#27272a] shadow-inner">
                             
                             <div class="flex gap-2 flex-1">
                                 <button class="btn-voice btn-daw-pad flex-1 py-2 text-[9px] rounded" data-val="m" onclick="selectDawVoice('m')">Male Voc</button>
@@ -3601,92 +3615,126 @@
 
     
         
+        
+
+        
         /* =========================================
-           ABLESTUDIO PRO 11 - THEMING SYSTEM
+           ABLESTUDIO PRO 11 - THEMING SYSTEM (FIXED OPACITY & HIERARCHY)
            ========================================= */
         /* STOCK THEME (Default) */
         #app-daw.theme-daw-stock {
-            --daw-bg: #121214;
-            --daw-panel: #18181b;
-            --daw-border: #27272a;
-            --daw-text: #a1a1aa;
-            --daw-text-hl: #f4f4f5;
-            --daw-accent: #10b981;
-            --daw-playhead: #ffffff;
-            --daw-grid-line: rgba(255,255,255,0.02);
-            --daw-grid-bar: rgba(255,255,255,0.05);
+            --daw-bg: #14141A;
+            --daw-panel: #1A1A22;
+            --daw-border: #2A2A35;
+            --daw-arr-bg: #1B1B22;
+            --daw-track-odd: rgba(255,255,255,0.02);
+            --daw-track-even: rgba(255,255,255,0.04);
+            --daw-text: #A1A1AA;
+            --daw-text-hl: #F4F4F5;
+            --daw-accent: #10B981;
+            --daw-playhead: #FFFFFF;
+            --daw-grid-line: rgba(255,255,255,0.03);
+            --daw-grid-bar: rgba(255,255,255,0.08);
         }
 
         /* VINTAGE ANALOG THEME */
         #app-daw.theme-daw-vintage {
-            --daw-bg: #2b2723;
-            --daw-panel: #3d3731;
-            --daw-border: #564c42;
-            --daw-text: #b3a492;
-            --daw-text-hl: #ffe8cd;
-            --daw-accent: #d97736;
-            --daw-playhead: #ff3333;
-            --daw-grid-line: rgba(255,232,205,0.03);
-            --daw-grid-bar: rgba(255,232,205,0.08);
+            --daw-bg: #262320;
+            --daw-panel: #332D29;
+            --daw-border: #4A423A;
+            --daw-arr-bg: #2B2723;
+            --daw-track-odd: rgba(255,232,205,0.02);
+            --daw-track-even: rgba(255,232,205,0.05);
+            --daw-text: #B3A492;
+            --daw-text-hl: #FFE8CD;
+            --daw-accent: #D97736;
+            --daw-playhead: #FF3333;
+            --daw-grid-line: rgba(255,232,205,0.04);
+            --daw-grid-bar: rgba(255,232,205,0.1);
         }
 
         /* MONO MINIMAL THEME */
         #app-daw.theme-daw-minimal {
-            --daw-bg: #ececec;
-            --daw-panel: #ffffff;
-            --daw-border: #cccccc;
-            --daw-text: #666666;
+            --daw-bg: #E5E5E5;
+            --daw-panel: #F5F5F5;
+            --daw-border: #CCCCCC;
+            --daw-arr-bg: #EAEAEA;
+            --daw-track-odd: rgba(0,0,0,0.02);
+            --daw-track-even: rgba(0,0,0,0.05);
+            --daw-text: #555555;
             --daw-text-hl: #111111;
             --daw-accent: #000000;
-            --daw-playhead: #ff0000;
-            --daw-grid-line: rgba(0,0,0,0.04);
-            --daw-grid-bar: rgba(0,0,0,0.1);
+            --daw-playhead: #FF0000;
+            --daw-grid-line: rgba(0,0,0,0.05);
+            --daw-grid-bar: rgba(0,0,0,0.15);
         }
 
         /* SUNSET WAVE THEME */
         #app-daw.theme-daw-sunset {
-            --daw-bg: #1a0b2e;
-            --daw-panel: #2b1154;
-            --daw-border: #501d8a;
-            --daw-text: #d4b3ff;
-            --daw-text-hl: #ffffff;
-            --daw-accent: #ff007f;
-            --daw-playhead: #00ffff;
+            --daw-bg: #110722;
+            --daw-panel: #1A0A33;
+            --daw-border: #3A1366;
+            --daw-arr-bg: #15082B;
+            --daw-track-odd: rgba(255,0,127,0.03);
+            --daw-track-even: rgba(255,0,127,0.07);
+            --daw-text: #D4B3FF;
+            --daw-text-hl: #FFFFFF;
+            --daw-accent: #FF007F;
+            --daw-playhead: #00FFFF;
             --daw-grid-line: rgba(0,255,255,0.05);
-            --daw-grid-bar: rgba(255,0,127,0.1);
+            --daw-grid-bar: rgba(255,0,127,0.15);
         }
 
-        /* Apply Theme Variables */
+        /* Enforce Absolute Opacity */
         #app-daw {
             background-color: var(--daw-bg) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            opacity: 1 !important;
             color: var(--daw-text) !important;
         }
-        #app-daw .window-header, #app-daw .bg-\[\#18181b\] {
+        #app-daw .window-content {
+            background-color: var(--daw-bg) !important;
+            padding: 24px !important; /* Respirez ! */
+        }
+        
+        /* Panel Hierarchy */
+        #app-daw .window-header, 
+        #app-daw #daw-genres-details,
+        #app-daw .bg-\[\#18181b\],
+        #app-daw .daw-toolbar {
             background-color: var(--daw-panel) !important;
             border-color: var(--daw-border) !important;
         }
+        
         #app-daw .border-\[\#27272a\] {
             border-color: var(--daw-border) !important;
         }
-        #app-daw .bg-\[\#09090b\] {
-            background-color: var(--daw-bg) !important;
-            border-color: var(--daw-border) !important;
-        }
-        #app-daw .text-\[\#10b981\] {
-            color: var(--daw-accent) !important;
-        }
-        
-        #timeline-container {
-            background-color: var(--daw-bg) !important;
-        }
-        
-        /* Grid Timeline */
-        #timeline-container .timeline-grid-bg {
+
+        /* Arrangement Container */
+        #app-daw #timeline-container {
+            background-color: var(--daw-arr-bg) !important;
+            /* Full height background grid */
             background-image: 
                 linear-gradient(90deg, var(--daw-grid-line) 1px, transparent 1px),
-                linear-gradient(90deg, var(--daw-grid-bar) 1px, transparent 1px),
-                linear-gradient(var(--daw-grid-line) 1px, transparent 1px) !important;
-            background-size: 12.5px 100%, 50px 100%, 100% 52px !important;
+                linear-gradient(90deg, var(--daw-grid-bar) 1px, transparent 1px);
+            background-size: 12.5px 100%, 50px 100%;
+            background-position: left top;
+            background-repeat: repeat;
+        }
+
+        /* Alternating Track Backgrounds */
+        #app-daw .tl-track:nth-child(odd) {
+            background-color: var(--daw-track-odd);
+        }
+        #app-daw .tl-track:nth-child(even) {
+            background-color: var(--daw-track-even);
+        }
+        #app-daw .tl-track {
+            border-bottom: 1px solid var(--daw-border);
+            margin-bottom: 0 !important; /* Remove the gap, use alternating bg */
+            padding-top: 4px;
+            padding-bottom: 4px;
         }
 
         /* Animations */
@@ -3695,7 +3743,6 @@
             50% { transform: scaleY(0.8); }
             100% { transform: scaleY(0.3); }
         }
-        
         .vu-bar-active {
             transform-origin: bottom;
             animation: vuMeterBounce 0.4s ease-in-out infinite alternate;
@@ -3705,7 +3752,6 @@
             animation: vuMeterBounce 2s ease-in-out infinite alternate;
             opacity: 0.3;
         }
-
         .btn-render-loading {
             animation: renderPulse 1s infinite alternate;
             pointer-events: none;
@@ -3716,7 +3762,7 @@
             100% { opacity: 1; transform: scale(1.02); }
         }
 
-        /* Draggable Playhead */
+        /* Playhead */
         #playhead-handle {
             width: 0; 
             height: 0; 
@@ -3734,31 +3780,6 @@
             height: 100%;
             background-color: var(--daw-playhead);
             box-shadow: 0 0 4px var(--daw-playhead);
-        }
-        
-        /* Waveform Clips */
-        .daw-svg-clip {
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            transition: all 0.2s ease;
-            position: absolute;
-            height: 48px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-        }
-        .daw-svg-clip:hover {
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            filter: brightness(1.2);
-            z-index: 51;
-            cursor: ew-resize;
-        }
-        .daw-svg-clip svg {
-            width: 100%;
-            height: 80%;
-            display: block;
         }
         
         /* Studio Customization Grid */
