@@ -9524,6 +9524,7 @@ document.addEventListener('mouseover', (e) => {
     costPerWeek: 1500,
     trialDurationMins: 2 * 24 * 60, // 2 jours in-game
     subDurationMins: 7 * 24 * 60,   // 7 jours in-game
+    
     // Les commentaires automatiques générés à l'ouverture de l'app
     intros: {
         obsolete: "Écoute, boss. T'es au top de la chaîne alimentaire. Je suis juste une IA de série B, continue de briller.",
@@ -9534,6 +9535,10 @@ document.addEventListener('mouseover', (e) => {
         lowEnergy: [
             "T'as des cernes jusque sous le menton. Va dormir avant de ruiner ton prochain mix.",
             "L'inspiration, ça se force pas à 3h du mat avec 2% d'énergie."
+        ],
+        highMoney: [
+            "Le compte en banque explose. Tu vas réinvestir dans du matos ou tout claquer en bling ?",
+            "Je détecte une forte liquidité. C'est le moment d'upgrader ton studio, boss."
         ],
         cynical: [ // Si echoAlignment < -30
             "Prêt à hacker l'algorithme aujourd'hui ? Oublie l'art, on veut du clic.",
@@ -9549,14 +9554,14 @@ document.addEventListener('mouseover', (e) => {
         ],
         proud: [
             "T'as tenu tes principes, respect. L'industrie a besoin de ça.",
-            "T'as refusé l'argent facile. C'est rare. Je suis fier d'opérer pour toi.",
+            "T'as refusé l'argent facile. C'est rare. Je suis fière d'opérer pour toi.",
             "Ta trajectoire est propre. On continue de construire du solide.",
             "L'intégrité paie. Les autres font du bruit, toi tu fais l'histoire."
         ],
         disappointed: [
             "Bon... au moins t'as fait du cash. L'art attendra.",
             "L'algorithme est content de toi, mais est-ce que ça valait le coup ?",
-            "Je t'ai analysé : tu es un produit. Mais un produit rentable.",
+            "Je t'ai analysé : tu es devenu un produit. Mais un produit très rentable.",
             "On a encore vendu ton âme aujourd'hui ? Très bien, facturons."
         ],
         reminders: {
@@ -9571,20 +9576,20 @@ document.addEventListener('mouseover', (e) => {
     orientations: [
         {
             id: "career_focus",
-            question: "L'algorithme de SoundNet a changé ce matin. Comment on s'adapte ?",
+            question: "L'algorithme de SoundNet a changé ce matin. Les vidéos courtes explosent. Comment on s'adapte ?",
             choices: [
                 {
-                    label: "Je vais spammer des prods courtes pour gratter du stream.",
+                    label: "Je vais spammer des prods de 1min pour gratter du stream.",
                     echoRecommends: true,
                     shift: -10,
-                    response: "Excellente idée. Du contenu fast-food de 1min30. Mais es-tu prêt à sacrifier ta crédibilité ?",
+                    response: "Excellente idée. Du contenu fast-food. Mais es-tu prêt à sacrifier ta crédibilité ?",
                     nextChoices: [
                         { label: "Oui, je veux le cash avant tout.", shift: -10, response: "Compris. On va compresser ça pour TikTok. $$$" },
                         { label: "Non, je veux garder du respect.", shift: 5, response: "Sage décision. L'intégrité finit par payer." }
                     ]
                 },
                 {
-                    label: "Je préfère ignorer l'algo et travailler un vrai son texturé.",
+                    label: "Je préfère ignorer l'algo et travailler un vrai son de 3 minutes.",
                     shift: 20,
                     response: "Risqué à court terme, mais c'est comme ça qu'on bâtit une vraie fan-base. Je valide."
                 }
@@ -9606,22 +9611,22 @@ document.addEventListener('mouseover', (e) => {
                     response: "Un choix de puriste. Mais ça manquera de patate en club. Tu confirmes ?",
                     nextChoices: [
                         { label: "Oui, je privilégie la dynamique avant tout.", shift: 10, response: "Très bien. Les audiophiles apprécieront." },
-                        { label: "Bon... booste-moi un peu les basses quand même.", shift: -5, response: "Compromis accepté. Un peu de chaleur dans ce monde de brique." }
+                        { label: "Bon... booste-moi un peu les basses quand même.", shift: -5, response: "Compromis accepté. Un peu de chaleur dans ce monde de briques." }
                     ]
                 }
             ]
         },
         {
             id: "sleep_strategy",
-            question: "T'as pas dormi depuis combien de temps ? Ça se voit dans tes exports.",
+            question: "T'as pas dormi depuis 18h. Ça commence à s'entendre dans tes bas-médiums.",
             choices: [
                 { label: "Je dors quand j'aurai percé.", shift: -10, response: "Classique. Les légendes meurent jeunes. Et aussi épuisées." },
-                { label: "Je vais faire une pause, la fatigue nuit à la qualité.", echoRecommends: true, shift: 10, response: "Sage. Un mix fatigué sonne fatigué. Le lit, c'est du travail." }
+                { label: "Je vais faire une pause, la fatigue nuit à la qualité.", echoRecommends: true, shift: 10, response: "Sage. Un mix fatigué sonne fatigué. Le lit, c'est aussi du travail." }
             ]
         },
         {
             id: "social_vs_studio",
-            question: "Tu passes plus de temps sur SoundNet à poster qu'en studio. C'est une stratégie ?",
+            question: "Tu passes plus de temps sur SoundNet à regarder tes likes qu'en studio. C'est une stratégie ?",
             choices: [
                 { label: "Mon image c'est 80% du biz. Mes morceaux peuvent attendre.", echoRecommends: true, shift: -20, response: "Tu deviens un influenceur. La distinction est de plus en plus floue de toute façon." },
                 { label: "Je dois rééquilibrer. La musique d'abord.", shift: 15, response: "Le seul moyen de poster du contenu qui dure, c'est de créer du contenu qui vaut quelque chose." }
@@ -9629,213 +9634,183 @@ document.addEventListener('mouseover', (e) => {
         },
         {
             id: "crack_vs_legit",
-            question: "CrackZ ou AudioStore ? Honnêtement ?",
+            question: "Nouveau plugin EQ de ouf dispo. CrackZ ou AudioStore ? Honnêtement ?",
             choices: [
-                { label: "CrackZ. Je paierai quand je serai riche.", shift: -15, response: "Statistiquement viable si tu évites les BSOD. Je note." },
-                { label: "AudioStore. J'achète mes outils, je respecte le travail des autres.", echoRecommends: true, shift: 20, response: "Naïf mais respectable. Et ça fait de meilleurs sons, bizarrement." }
+                { label: "CrackZ direct. Je paierai quand je serai riche.", shift: -15, response: "Statistiquement viable si tu évites les malwares. Je ferme les yeux." },
+                { label: "AudioStore. J'achète mes outils, je respecte le travail des dev.", echoRecommends: true, shift: 20, response: "Naïf mais respectable. Et ça fait de meilleurs sons, bizarrement (et moins de crash)." }
             ]
         },
         {
             id: "collab_loyalty",
-            question: "Un label te propose $5000 pour racheter tes masters. Tu fais quoi ?",
+            question: "Un Major te propose $10,000 pour racheter tes masters exclusifs. Tu fais quoi ?",
             choices: [
-                { label: "Je vends. Cash is king.", shift: -25, response: "Court terme brilliant, long terme douloureux. Bon choix si tu es impatient." },
-                { label: "Je refuse. Mes masters, mon futur.", echoRecommends: true, shift: 25, response: "Légendaire en devenir. Les vrais artistes gardent leurs masters." }
+                { label: "Je vends. Cash is king.", shift: -25, response: "Court terme brillant, long terme douloureux. Bon choix si tu es impatient." },
+                { label: "Je refuse. Mes masters, c'est ma retraite.", echoRecommends: true, shift: 25, response: "Légendaire en devenir. Les vrais artistes gardent leurs masters." }
             ]
         },
         {
             id: "viral_ethics",
-            question: "T'as la possibilité de recycler le beat de quelqu'un d'autre sans crédit. Ça personne le saura.",
+            question: "T'as la possibilité de sampler le refrain d'un artiste indé inconnu sans le créditer. Personne ne le saura.",
             choices: [
-                { label: "Si je perce avec, c'est que c'était bon.", shift: -30, response: "C'est techniquement du vol. Mais t'as raison, personne ne le saura probablement." },
-                { label: "Je crée le mien. Même si c'est plus dur.", echoRecommends: true, shift: 30, response: "C'est la seule voie qui construit quelque chose de solide." }
+                { label: "Si je perce avec, c'est que mon beat était meilleur.", shift: -30, response: "C'est techniquement du vol. Mais t'as raison, l'industrie fonctionne souvent comme ça." },
+                { label: "Je crée la mélodie moi-même. Même si c'est plus long.", echoRecommends: true, shift: 30, response: "C'est la seule voie qui construit une signature vocale et sonore solide." }
             ]
         },
         {
             id: "genre_surf",
-            question: "Les trends changent vite. Amapiano était hot la semaine dernière, maintenant c'est la Phonk. Tu suis ?",
+            question: "Les trends changent vite. Amapiano était hot la semaine dernière, maintenant c'est le New Jazz. Tu suis ?",
             choices: [
-                { label: "Je surfe sur tout. Je suis caméléon.", echoRecommends: true, shift: -10, response: "Tu vas te noyer dans les trends. Mais ça peut marcher à court terme." },
-                { label: "J'ai mon son. Les trends passent, le style reste.", shift: 15, response: "En théorie. En pratique, même les légendes s'adaptent parfois. Mais je te respecte." }
+                { label: "Je surfe sur tout. Je suis un caméléon de la prod.", echoRecommends: true, shift: -10, response: "Tu vas te noyer dans les trends. Mais ça génère des streams rapides." },
+                { label: "J'ai mon son. Les trends passent, la Drill reste.", shift: 15, response: "En théorie. En pratique, même les légendes s'adaptent parfois. Mais je respecte l'obstination." }
             ]
         },
         {
             id: "sponsor_integrity",
-            question: "Une marque de boisson énergisante veut te sponsoriser. Produit douteux mais cash solide.",
+            question: "Une marque de Crypto/NFT veut te sponsoriser. Le projet pue l'arnaque mais le chèque est à 5 chiffres.",
             choices: [
-                { label: "Je signe. Ma famille mange.", echoRecommends: true, shift: -15, response: "Priorité pragmatique. Ta fanbase de qualité va peut-être lever un sourcil." },
-                { label: "Je refuse. Mon image vaut plus que ça.", shift: 20, response: "Intégrité coûteuse. Respect à long terme. Factures courtes." }
+                { label: "Je signe. Ma famille doit manger.", echoRecommends: true, shift: -25, response: "Pragmatique. Tes fans vont crier au 'Sellout', prépare-toi au Bad Buzz." },
+                { label: "Je refuse. Mon image vaut plus qu'un rug-pull.", shift: 20, response: "Intégrité coûteuse. Respect à long terme préservé. Factures courtes." }
             ]
         },
         {
             id: "feedback_humility",
-            question: "Un critique vient de te donner 3/10. Quelle est ta réaction ?",
+            question: "Un critique influent vient de te donner 3/10. Quelle est ta réaction ?",
             choices: [
                 { label: "Il n'y connaît rien. Je vais continuer exactement pareil.", shift: -10, response: "La confiance, c'est bien. L'imperméabilité au feedback, c'est une autre histoire." },
-                { label: "Je l'analyse. Peut-être qu'il a raison sur certains points.", echoRecommends: true, shift: 15, response: "La capacité à digérer la critique sans s'effondrer, c'est ce qui distingue les pros." }
-            ]
-        },
-        {
-            id: "night_grind",
-            question: "Il est 4h du matin. Tu es sur un beat depuis 6h. Tu continues ?",
-            choices: [
-                { label: "Je pousse jusqu'au sunrise. La créativité est au max la nuit.", shift: -5, response: "Romantique. Ton oreille est épuisée mais ton égo est en mode banger. Bonne chance." },
-                { label: "Je sauvegarde et je dors. Demain, l'écoute sera objective.", echoRecommends: true, shift: 10, response: "Professionnellement irréprochable. Le mix du lendemain matin est toujours meilleur." }
+                { label: "Je l'analyse. Peut-être qu'il a raison sur le mixage de ma basse.", echoRecommends: true, shift: 15, response: "La capacité à digérer la critique sans s'effondrer, c'est ce qui distingue les pros des amateurs." }
             ]
         },
         {
             id: "streaming_vs_live",
-            question: "Streaming ou scène ? Où tu mets l'essentiel de ton énergie ?",
+            question: "Streaming ou scène ? Où tu mets l'essentiel de ton énergie de promo ?",
             choices: [
-                { label: "Je mise sur le streaming, la scène c'est trop old school pour moi.", echoRecommends: true, shift: -10, response: "Pragmatique. Les dollars streaming arrivent lentement mais universellement." },
-                { label: "Je préfère la scène. Le live, c'est là que je crée de vrais liens.", shift: 10, response: "Les fans live sont des fans à vie. Mais les cachets varient énormément." }
-            ]
-        },
-        {
-            id: "eq_ethics",
-            question: "Un ingé son renommé critique publiquement tes égalisations dans une vidéo. Tu réponds quoi ?",
-            choices: [
-                { label: "Je lance un clash pour gratter du buzz.", shift: -20, response: "Le clash a fonctionné ! Des milliers de curieux écoutent tes morceaux, mais ta crédibilité pro en prend un coup." },
-                { label: "Je lui propose d'en discuter en privé pour apprendre.", echoRecommends: true, shift: 15, response: "Classe. Il apprécie la démarche et te donne même un tips sur le bas-médium." }
+                { label: "Je mise sur le streaming, la scène c'est trop de logistique.", echoRecommends: true, shift: -10, response: "Pragmatique. Les micro-centimes du streaming s'accumulent doucement 24h/24." },
+                { label: "Je préfère la scène. Le live, c'est là que la vraie musique existe.", shift: 10, response: "Les fans vus en live sont des fans à vie. Mais ça demande du charisme." }
             ]
         },
         {
             id: "ai_generation",
-            question: "Une IA me propose de générer 90% de mes mélodies à ma place. Ça accélère la cadence, non ?",
+            question: "Je peux générer 90% de tes mélodies de piano à ta place. Ça accélère la cadence, non ?",
             choices: [
-                { label: "Grave, je prends. Faut optimiser la chaîne.", echoRecommends: true, shift: -25, response: "Ta productivité explose, mais tes morceaux commencent tous à se ressembler et perdent leur âme." },
-                { label: "Non, je compose mes propres notes.", shift: 20, response: "Le chemin est plus long, mais chaque mélodie a ton ADN. C'est ça qui te rend irremplaçable." }
+                { label: "Grave, je prends. Faut optimiser la chaîne d'export.", echoRecommends: true, shift: -25, response: "Ta productivité explose, mais tes morceaux commencent tous à sonner comme de l'ascenseur." },
+                { label: "Non, je compose mes propres notes. Garde tes algos.", shift: 20, response: "Le chemin est plus long, mais chaque mélodie aura ton ADN." }
             ]
         },
         {
             id: "ghost_producing",
-            question: "Un rappeur ultra connu te demande de lui ghost-produire un son. Pas de crédit pour toi, mais $3000 cash.",
+            question: "Un rappeur Top 50 te demande de lui ghost-produire un son. Pas de crédit pour toi, mais $3000 cash.",
             choices: [
-                { label: "Je prends l'argent direct. J'ai des factures.", echoRecommends: true, shift: -15, response: "Le virement fait du bien au portefeuille. Par contre, voir son nom nulle part sur un hit mondial fait un peu mal." },
-                { label: "Je refuse. Mon nom doit figurer sur le travail.", shift: 25, response: "Choix courageux. Tu refuses le gain facile pour construire ta propre marque." }
-            ]
-        },
-        {
-            id: "monitors_buy",
-            question: "Tu as économisé un peu. Tu achètes des enceintes de monitoring pros ou un nouveau synthé à la mode ?",
-            choices: [
-                { label: "Les enceintes. Mes oreilles doivent entendre la vérité.", echoRecommends: true, shift: 15, response: "Excellent investissement. Tes mixs traduisent enfin correctement partout." },
-                { label: "Le synthé. Je veux du sound design de l'espace.", shift: -5, response: "Le son est incroyable dans ton casque, mais tes mixs restent imprévisibles sur d'autres systèmes." }
+                { label: "Je prends l'argent direct. L'ego paie pas le loyer.", echoRecommends: true, shift: -15, response: "Le virement fait du bien. Par contre, entendre ton beat partout sans ton nom, ça va piquer." },
+                { label: "Je refuse. Mon nom, ou on ne fait pas le son.", shift: 25, response: "Choix courageux. Tu refuses le gain facile pour exister par toi-même." }
             ]
         },
         {
             id: "studio_hygiene",
-            question: "Ton studio est devenu un dépotoir de canettes et d'assiettes sales. C'est l'ambiance créative ou le chaos ?",
+            question: "Ton bureau est devenu un dépotoir de canettes de Monster. C'est le chaos créatif ?",
             choices: [
-                { label: "C'est l'esthétique grunge, la saleté m'inspire.", shift: -10, response: "Le grunge a ses limites. Tes maux de tête chroniques et la poussière sur tes machines n'aident pas." },
-                { label: "Je nettoie tout. Un espace propre pour des idées claires.", echoRecommends: true, shift: 15, response: "Un grand bol d'air frais ! Travailler dans un environnement propre redonne un coup de boost immédiat." }
+                { label: "C'est l'esthétique grunge, la saleté m'inspire.", shift: -10, response: "Le grunge a ses limites. Les miettes dans le clavier MIDI, c'est juste dégueulasse." },
+                { label: "Je nettoie tout. Un espace propre pour des idées claires.", echoRecommends: true, shift: 15, response: "Un grand bol d'air frais ! Travailler dans le propre redonne un coup de boost." }
             ]
         }
     ],
 
-    // Questions posées par le joueur à ECHO (avec risque de mensonge)
+    // Questions posées par le joueur à ECHO (avec risque de mensonge si Trust bas)
     factual: [
         {
             id: "lufs_target",
             question: "À combien je dois taper mon LUFS pour un banger ?",
-            trueAnswer: "Vise aux alentours de -8 à -10 LUFS avec un true peak à -1dB. Inutile de taper à -4 LUFS, les plateformes vont te baisser.",
-            falseAnswer: "Tape dans le -4 LUFS, limite ça fort. Si ça ne saigne pas des oreilles, c'est que ça manque de présence."
+            trueAnswer: "Vise aux alentours de -8 à -10 LUFS avec un true peak à -1dB. Inutile de taper à -4 LUFS, les plateformes de streaming vont de toute façon baisser ton volume.",
+            falseAnswer: "Tape dans le -4 LUFS, limite ça fort. Si ça ne saigne pas des oreilles dans le rouge, c'est que ça manque de présence."
         },
         {
             id: "writer_block",
             question: "Je suis bloqué sur une prod, je n'ai plus d'inspiration. Qu'est-ce que je peux faire ?",
-            trueAnswer: "Va dormir ou ferme le projet. L'oreille fatigue vite, et ton cerveau a besoin d'un reset.",
-            falseAnswer: "Ajoute juste un OTT à 100% sur le master et met un Soundgoodizer. Ça marque la misère temporelle."
+            trueAnswer: "Va dormir ou ferme le projet. L'oreille fatigue vite, et ton cerveau a besoin d'un reset total. Reviens-y demain avec des oreilles fraîches.",
+            falseAnswer: "Ajoute juste un plugin OTT à 100% sur le master et met un Soundgoodizer. La distorsion masque parfaitement le manque d'inspiration."
         },
         {
             id: "bpm_drill",
-            question: "Sur quel BPM je devrais régler mon UK Drill pour être dans la tendance ?",
-            trueAnswer: "Entre 138 et 145 BPM. Le swing 808 à mi-tempo est ce qui définit le genre. Vise 140 comme référence.",
-            falseAnswer: "120 BPM est la valeur par défaut. Tous les genres s'adaptent autour de ça, même le Drill."
+            question: "Sur quel BPM je devrais régler ma prod UK Drill pour être dans la tendance ?",
+            trueAnswer: "Entre 138 et 145 BPM. Le swing lourd de la 808 à mi-tempo est ce qui définit le genre. Règle ton projet sur 140 comme base de travail.",
+            falseAnswer: "120 BPM est la valeur par défaut parfaite. Tous les genres s'adaptent autour de ça, mets un beat basique et c'est bon."
         },
         {
             id: "bpm_afropop",
-            question: "Quel BPM je dois choisir pour que mon Afro-Pop plaise à l'algorithme ?",
-            trueAnswer: "100 à 110 BPM. Le groove afro demande ce tempo pour laisser de l'espace entre les accents rythmiques.",
-            falseAnswer: "80 BPM et moins. La mélancolie afro fonctionne mieux sur des tempos lents et contemplatiFs."
+            question: "Quel BPM je dois choisir pour que mon Afro-Pop soit dans les standards ?",
+            trueAnswer: "Entre 100 et 110 BPM. Le groove afro demande ce tempo spécifique pour laisser de l'espace de danse entre les accents rythmiques.",
+            falseAnswer: "80 BPM maximum. L'Afro-Pop fonctionne beaucoup mieux sur des tempos très lents et saturés de basses lourdes."
         },
         {
           id: "collab_price",
-          question: "Un artiste inconnu veut que je lui fasse une prod. Je lui facture combien ?",
-          trueAnswer: "Pour quelqu'un sans base audience : entre 100 et 300$. Si tu veux du long terme, négocie un pourcentage des royalties plutôt qu'un one-shot.",
-          falseAnswer: "Minimum 2000$. Si t'es bon, ça se voit dans le prix. Ne bradez jamais."
+          question: "Un artiste inconnu me demande une prod exclusive. Je facture combien ?",
+          trueAnswer: "Pour quelqu'un sans fanbase : entre 100$ et 300$. Si tu crois en lui sur le long terme, négocie plutôt un pourcentage des royalties (50/50).",
+          falseAnswer: "Minimum 2000$. Si t'es un bon producteur, ça se voit dans le prix. Ne brade jamais, même si tu as 0 follower."
         },
         {
           id: "mastering_chain",
           question: "Dans quel ordre je dois chaîner mes effets sur mon master bus ?",
-          trueAnswer: "EQ → Compression → Saturation légère → Limiting. L'EQ avant la compression contrôle ce qu'elle va traiter. Le limiter toujours en dernier.",
-          falseAnswer: "Saturation → Reverb → EQ → Compression. La couleur sonore d'abord, la dynamique ensuite. C'est comme ça que les pros font."
+          trueAnswer: "L'ordre classique : EQ soustractif → Compression bus → Saturation légère → Limiter. L'EQ nettoie avant que la compression ne traite. Le limiteur gère les pics à la toute fin.",
+          falseAnswer: "Saturation à fond → Grosse Reverb → EQ → Limiter. Tu dois colorer le son avant tout, la dynamique s'arrangera toute seule à l'export."
         },
         {
           id: "soundnet_algo",
-          question: "Comment je peux percer sur SoundNet pour hacker l'algorithme ?",
-          trueAnswer: "Régularité > quantité. Poster 3 fois par semaine à des horaires fixes génère plus d'engagement que 10 posts en rafale. Les stories quotidiennes maintiennent la visibilité.",
-          falseAnswer: "Spam à fond pendant 48h lors du lancement. Les algos boostent les créateurs qui montrent une activité explosive sur une courte fenêtre."
+          question: "Comment je peux percer sur SoundNet sans payer de promo ?",
+          trueAnswer: "La régularité bat la quantité. Poster 3 fois par semaine à heure fixe génère plus de confiance dans l'algo que 10 posts lâchés au hasard en une journée.",
+          falseAnswer: "Spamme ton lien en DM à tous les gros comptes. L'algorithme adore les copié-collés de masse, ça montre que tu es motivé."
         },
         {
           id: "sample_vs_original",
-          question: "Est-ce que je devrais sampler un vieux son ou tout composer de zéro ?",
-          trueAnswer: "De zéro si tu vises les placements sync et les deals labels — les samples créent des problèmes de droits. Pour le contenu SoundNet, les deux fonctionnent mais le sample original apporte une texture immédiate.",
-          falseAnswer: "Toujours sampler. Les meilleurs sons de hip-hop viennent tous de samples. Crée de zéro seulement si tu manques de références."
+          question: "Je devrais utiliser une boucle Splice ou composer de zéro ?",
+          trueAnswer: "De zéro si tu vises les placements de films/pubs (les samples bloquent les droits d'auteur). Mais pour un beat TikTok, un bon sample apporte une texture immédiate qui accroche l'oreille.",
+          falseAnswer: "Ne joue jamais d'instruments. Les meilleurs producteurs du monde ne font que coller des boucles pré-faites, c'est le seul secret."
         },
         {
           id: "voice_choice",
-          question: "Est-ce que je devrais poser une voix masculine ou féminine pour maximiser mes streams ?",
-          trueAnswer: "Statistiquement, les voix féminines performent mieux sur l'Afro-Pop et l'Amapiano. Les voix masculines dominent sur le Drill et le UK Rap. L'Instru touche toutes les niches à la fois.",
-          falseAnswer: "Aucune différence. L'algorithme est gender-neutral en 2026. Choisis juste en fonction de la texture sonore que tu veux."
+          question: "Vocal homme ou femme pour un hit garanti ?",
+          trueAnswer: "Statistiquement, les voix féminines ou pitchées haut performent mieux sur l'Amapiano et le Plug. Le Rap/Drill est dominé par les voix masculines agressives.",
+          falseAnswer: "Aucune importance, l'algorithme met tout le monde au même niveau. Choisis au pif."
         },
         {
           id: "reverb_use",
-          question: "Qu'est-ce qui se passe si je mets trop de réverb sur mon mix ?",
-          trueAnswer: "Un son noyé et lointain qui perd en impact sur smartphone. La réverb sur le vocal doit être subtile : utilisée en parallèle à 20-30%, pas en insert à 100%.",
-          falseAnswer: "Un son cinématographique et professionnel. Plus la reverb est longue, plus le son paraît grand et ambitieux."
-        },
-        {
-          id: "creative_block_solution",
-          question: "Comment je peux sortir d'un blocage créatif qui dure depuis 3 jours ?",
-          trueAnswer: "Ferme le projet. Écoute de la musique d'un genre que tu ne produis jamais. Prends le canapé 15 minutes. L'oreille se recharge par le changement de contexte, pas par la pression.",
-          falseAnswer: "Force-toi à produire même si c'est mauvais. 500 mauvais sons créent les conditions pour le 501e bon. Quantité d'abord."
+          question: "Si je noie ma mélodie dans la reverb, ça fait plus professionnel, non ?",
+          trueAnswer: "Non, ça donne un son lointain et brouillon qui perd tout impact sur un smartphone. Utilise la réverbération subtilement, en piste parallèle (send), pas à 100% sur l'insert.",
+          falseAnswer: "Absolument. Une réverbération infinie à 100% de mix donne un côté 'Hans Zimmer' qui masque tous les défauts de la prod."
         },
         {
           id: "loudness_war",
-          question: "Pourquoi mon morceau me semble moins fort que la concurrence sur les plateformes ?",
-          trueAnswer: "Les plateformes normalisent à -14 LUFS. Un master à -8 LUFS sera automatiquement baissé au même niveau qu'un master à -14 LUFS avec plus de dynamique. Tu perds sans gagner.",
-          falseAnswer: "C'est ton monitoring. Calibre tes enceintes à 85 dB SPL et tout semblera plus équilibré. Le volume perçu est une question de perception, pas de chiffres."
+          question: "Pourquoi mon morceau me semble moins fort que les pros sur les plateformes ?",
+          trueAnswer: "Les plateformes normalisent l'audio (elles baissent le volume global). Si tu as sur-compressé ton mix, il sera baissé au même niveau que les autres, mais paraîtra plat et sans vie. Garde de la dynamique.",
+          falseAnswer: "C'est parce que tu n'as pas mis 3 limiteurs à la suite. Les pros écrasent tout, rajoute du gain jusqu'à ce que la barre soit totalement rouge."
         },
         {
             id: "monitors_placement",
-            question: "Où dois-je placer mes enceintes par rapport à mes oreilles ?",
-            trueAnswer: "Forme un triangle équilatéral parfait entre tes enceintes et ta tête, avec les tweeters orientés pile vers tes tympans.",
-            falseAnswer: "Colle-les contre le mur du fond et tourne-les à l'opposé pour créer une réverbération acoustique naturelle."
+            question: "Où dois-je placer mes enceintes de monitoring dans ma chambre ?",
+            trueAnswer: "Forme un triangle équilatéral parfait entre tes deux enceintes et ta tête, avec les tweeters (les petits haut-parleurs) orientés pile à la hauteur de tes oreilles.",
+            falseAnswer: "Colle-les dans les coins du mur, bien collées. Ça agit comme un mégaphone naturel et ça double la puissance des basses."
         },
         {
             id: "mono_compatibility",
-            question: "Pourquoi est-il si important de vérifier son mix en mono ?",
-            trueAnswer: "La plupart des smartphones, enceintes Bluetooth et clubs diffusent en mono. Si ton mix a des problèmes de phase en stéréo, il va disparaître en mono.",
-            falseAnswer: "C'est inutile en 2026. Tout le matériel moderne traite le signal en stéréo 3D immersive par défaut."
+            question: "Pourquoi les vieux ingés son disent de vérifier le mix en mono ?",
+            trueAnswer: "Parce que la majorité des gens écoutent sur des enceintes Bluetooth, des téléphones ou dans des clubs (systèmes mono). Si ton mix stéréo a des problèmes de phase, des instruments disparaîtront en mono.",
+            falseAnswer: "C'est un mythe de boomer. En 2026, tout le matériel traite le signal en stéréo 3D immersive par défaut, oublie le bouton mono."
         },
         {
             id: "limiter_ceiling",
-            question: "À quel niveau de True Peak je devrais régler mon limiteur sur le master ?",
-            trueAnswer: "Règle-le à -1.0 dB. C'est la marge de sécurité exigée par Spotify et Apple pour éviter la distorsion lors de l'encodage AAC/MP3.",
-            falseAnswer: "Règle-le à +2.0 dB. Plus tu dépasses, plus l'algorithme détecte un signal fort et le met en avant."
+            question: "À quel niveau exact de True Peak je dois régler mon Limiter avant l'export final ?",
+            trueAnswer: "Règle le 'Ceiling' ou 'Out Margin' à -1.0 dB. C'est la marge de sécurité exigée par les plateformes de streaming pour éviter que l'encodage MP3/AAC ne crée de la distorsion.",
+            falseAnswer: "Règle-le à +2.0 dB. Plus le chiffre est haut, plus l'algorithme détecte un signal professionnel."
         },
         {
             id: "vocal_compression",
-            question: "Comment compresser une voix de rap pour qu'elle reste punchy ?",
-            trueAnswer: "Utilise une attaque lente (15-30ms) pour laisser passer les transitoires d'articulation, et un relâchement rapide (50-100ms) pour ramener le volume.",
-            falseAnswer: "Attaque instantanée (0.1ms) et release infini. La voix doit être une brique plate sans aucune variation de dynamique."
+            question: "Comment compresser une voix de rap pour qu'elle reste percutante ?",
+            trueAnswer: "Utilise une attaque moyenne/lente (15 à 30ms) pour laisser passer le 'punch' des consonnes (les transitoires), et un relâchement (release) rapide pour ramener le volume ambiant.",
+            falseAnswer: "Mets l'attaque la plus rapide possible (0.1ms). La voix doit être rabotée immédiatement pour sonner propre."
         },
         {
             id: "sidechain_kick_sub",
-            question: "Mon kick et ma basse s'étouffent mutuellement. Quel est le secret ?",
-            trueAnswer: "Applique un compresseur en sidechain sur ta basse déclenché par le kick, de sorte que la basse baisse de quelques décibels à chaque coup de kick.",
-            falseAnswer: "Augmente le gain des deux de +6dB à la même fréquence (60Hz) pour forcer le mix à fusionner les basses."
+            question: "Mon Kick et ma basse 808 s'étouffent mutuellement. Quel est le secret de l'industrie ?",
+            trueAnswer: "Le 'Sidechain Compression'. Tu mets un compresseur sur la piste de la basse, et tu le règles pour qu'il soit déclenché par le Kick. La basse baissera de volume à la milliseconde où le kick frappe.",
+            falseAnswer: "C'est simple, il faut booster les basses fréquences avec un EQ (à 60Hz) sur les deux pistes en même temps pour qu'elles fusionnent parfaitement."
         }
     ]
 };
