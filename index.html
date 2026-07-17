@@ -746,7 +746,9 @@
             }
 
 
-            .avatar-sel { border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.4); transition: all 0.2s; touch-action: manipulation; }
+            .avatar-sel { border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.4); transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); touch-action: manipulation; }
+            .avatar-sel:hover { transform: scale(1.05); }
+            .avatar-sel:active { transform: scale(0.95); }
             .avatar-sel.selected { border-color: var(--accent); background: rgba(129, 140, 248, 0.2); box-shadow: 0 0 25px rgba(129, 140, 248, 0.4), inset 0 1px 1px rgba(255,255,255,0.3); }
 
             #mobile-nav { display: none; }
@@ -1880,6 +1882,40 @@
 
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+
+        /* SPLASH & LOGIN JUICE */
+        .wave-bar {
+            animation: audio-wave 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+        }
+        @keyframes audio-wave {
+            0% { height: 10%; opacity: 0.3; }
+            100% { height: 100%; opacity: 1; box-shadow: 0 0 15px currentColor; }
+        }
+
+        .impact-text {
+            animation: text-glitch-impact 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+            color: #fff !important;
+            text-shadow: 0 0 10px #fff, 0 0 20px var(--accent), 0 0 40px var(--accent) !important;
+        }
+        @keyframes text-glitch-impact {
+            0% { transform: scale(1); filter: contrast(200%); }
+            20% { transform: scale(1.1) skewX(10deg); filter: invert(1); }
+            40% { transform: scale(0.9) skewX(-10deg); filter: invert(0); }
+            100% { transform: scale(1) skewX(0); filter: none; }
+        }
+
+        .stagger-in {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        #login-screen.login-active .stagger-in {
+            animation: slideFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideFadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
 
         @keyframes text-glitch {
@@ -2861,7 +2897,7 @@
             <div class="settings-shell liquid-glass-heavy p-5 md:p-7 rounded-2xl border border-[var(--accent)] shadow-[0_0_60px_rgba(0,0,0,0.8)] flex flex-col">
                 <div class="flex items-center justify-between gap-3 shrink-0 mb-4">
                     <div>
-                        <p class="text-[10px] font-retro text-[var(--accent)] tracking-widest uppercase mb-1">bounce_it v16</p>
+                        <p class="text-[10px] font-retro text-[var(--accent)] tracking-widest uppercase mb-1">bounce_it Version Beta</p>
                         <h2 class="text-xl md:text-2xl font-retro text-white tracking-widest uppercase drop-shadow-lg">Paramètres</h2>
                     </div>
                     <button onclick="closeAudioSettings()" class="btn-system !p-0" aria-label="Fermer les paramètres">
@@ -2903,28 +2939,32 @@
             <div class="joystick-knob" id="joystick-knob"></div>
         </div>
 
-<div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
-            <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
-                <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it</h1>
-                <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">v18</p>
-                <div class="mb-6 flex justify-center">
+<div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col items-center justify-center bg-black px-4 transition-opacity duration-1000 hidden">
+            <div class="w-full max-w-xl flex flex-col items-center justify-center h-full max-h-[100dvh] overflow-y-auto overflow-x-hidden pt-10 pb-20">
+                <div class="w-full flex justify-center mb-10 stagger-in" style="animation-delay: 50ms">
                     <img src="logo.jpeg" alt="Logo bounce_it" 
-                        class="w-32 h-32 md:w-40 md:h-40 object-cover rounded-2xl border border-white/10 shadow-[0_0_25px_rgba(129,140,248,0.2)] pixelated" />
+                        class="w-28 h-28 md:w-36 md:h-36 object-cover rounded-xl border border-white/5 shadow-[0_0_40px_rgba(255,255,255,0.05)] pixelated" />
                 </div>
-                <div class="w-full mb-4 md:mb-6">
-                    <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
-                    <input type="text" id="login-username" class="w-full bg-black/60 border border-gray-600 rounded-lg px-4 py-2 md:py-3 text-white font-retro text-sm focus:outline-none focus:border-[var(--accent)] transition-all shadow-inner" placeholder="Enter Alias...">
+                
+                <h1 class="text-3xl md:text-5xl font-retro font-bold text-white tracking-[0.5em] text-center mb-4 stagger-in" style="animation-delay: 100ms">BOUNCE_IT</h1>
+                <p class="text-gray-600 font-retro text-[10px] md:text-xs tracking-[0.4em] uppercase text-center mb-16 stagger-in whitespace-nowrap" style="animation-delay: 150ms">Version Beta</p>
+                
+                <div class="w-full max-w-sm mb-12 stagger-in" style="animation-delay: 200ms">
+                    <label class="block text-[10px] font-retro text-gray-500 mb-4 uppercase tracking-[0.3em] text-center">Artist_ID</label>
+                    <input type="text" id="login-username" class="w-full bg-[#050505] border-b border-gray-800 px-4 py-4 text-center text-white font-retro text-lg focus:outline-none focus:border-[var(--accent)] focus:bg-[#0a0a0a] transition-all duration-300 focus:shadow-[0_4px_25px_rgba(var(--echo-c1, 6, 182, 212),0.2)] placeholder-gray-800" placeholder="ENTER ALIAS">
                 </div>
-                <div class="w-full mb-6 md:mb-8">
-                    <label class="block text-[10px] font-retro text-gray-300 mb-2 md:mb-4 uppercase tracking-widest">Select_Avatar</label>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-6" id="avatar-container"></div>
+                
+                <div class="w-full max-w-md mb-16 stagger-in" style="animation-delay: 250ms">
+                    <label class="block text-[10px] font-retro text-gray-500 mb-6 uppercase tracking-[0.3em] text-center">Select_Avatar</label>
+                    <div class="flex flex-wrap justify-center gap-4 md:gap-6" id="avatar-container"></div>
                 </div>
-                <div class="w-full mb-4 md:mb-6">
-                <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-2 shrink-0">Boot Studio Environment</button>
-                <p id="login-error" class="text-[var(--retro-red)] font-retro text-xs mt-4 hidden text-center">Error: Missing ID</p>
+                
+                <div class="w-full max-w-sm stagger-in flex flex-col items-center" style="animation-delay: 300ms">
+                    <button id="btn-login" class="w-full bg-white text-black py-4 rounded-none text-sm md:text-base font-retro tracking-[0.3em] uppercase font-bold hover:scale-105 active:scale-95 hover:bg-[var(--accent)] hover:text-white transition-all duration-200 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(var(--echo-c1, 6, 182, 212),0.5)]">INITIALIZE</button>
+                    <p id="login-error" class="text-rose-500 font-retro text-[10px] mt-6 tracking-widest hidden text-center uppercase">Error: Missing ID</p>
+                </div>
             </div>
         </div>
-    </div>
 
 <div id="achievements-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden px-4">
         <div class="settings-shell liquid-glass-heavy p-5 md:p-7 rounded-2xl border-2 border-[var(--retro-orange)] shadow-[0_0_60px_rgba(251,191,36,0.15)] flex flex-col relative">
@@ -4088,22 +4128,31 @@
 
         <div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[10000000] pointer-events-none w-[calc(100vw-32px)] md:w-80" style="z-index: 10000000 !important;"></div>
 
-        <div id="studio-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-500" style="background: radial-gradient(circle at center, #1e1b4b 0%, #050508 100%);">
-            <div class="splash-card">
-                <h1 class="font-retro text-2xl md:text-3xl text-white tracking-[0.3em] uppercase mb-10 drop-shadow-2xl">bounce_it <span class="text-[var(--accent)] opacity-60">v18</span></h1>
+        <div id="studio-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-1000 bg-black">
+            <div class="splash-card flex flex-col items-center w-full max-w-lg px-8">
+                <h1 class="font-retro text-3xl md:text-5xl text-white tracking-[0.4em] uppercase mb-16 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] flex flex-col items-center justify-center w-full">BOUNCE_IT<span class="text-[var(--accent)] opacity-80 whitespace-nowrap text-[10px] md:text-xs mt-4 tracking-widest block text-center w-full">Version Beta</span></h1>
                 
-                <div class="flex items-end gap-2 h-10 mb-8">
-                    <div class="w-2 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.0s"></div>
-                    <div class="w-2 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.2s"></div>
-                    <div class="w-2 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.4s"></div>
-                    <div class="w-2 bg-[var(--accent)] rounded-full animate-wave" style="animation-delay: 0.1s"></div>
+                <!-- Fluid Audio Waveform -->
+                <div class="flex items-end justify-center gap-1.5 md:gap-2 h-20 mb-20 w-full" id="splash-wave">
+                    <div class="w-1.5 md:w-2 bg-gray-600 rounded-full wave-bar" style="animation-delay: 0.1s"></div>
+                    <div class="w-1.5 md:w-2 bg-[var(--accent)] rounded-full wave-bar" style="animation-delay: 0.2s"></div>
+                    <div class="w-1.5 md:w-2 bg-white rounded-full wave-bar" style="animation-delay: 0.3s"></div>
+                    <div class="w-1.5 md:w-2 bg-gray-500 rounded-full wave-bar" style="animation-delay: 0.15s"></div>
+                    <div class="w-1.5 md:w-2 bg-[var(--accent)] rounded-full wave-bar" style="animation-delay: 0.4s"></div>
+                    <div class="w-1.5 md:w-2 bg-white rounded-full wave-bar" style="animation-delay: 0.25s"></div>
+                    <div class="w-1.5 md:w-2 bg-gray-600 rounded-full wave-bar" style="animation-delay: 0.5s"></div>
+                    <div class="w-1.5 md:w-2 bg-[var(--accent)] rounded-full wave-bar" style="animation-delay: 0.35s"></div>
                 </div>
 
-                <div class="loader-track">
-                    <div id="loader-progress" class="h-full bg-gradient-to-r from-[var(--accent)] to-[#a5b4fc] w-0" style="box-shadow: 0 0 15px rgba(129, 140, 248, 0.4); background-image: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.2) 4px, rgba(0,0,0,0.2) 6px);"></div>
+                <!-- Progress Bar with front glow -->
+                <div class="w-full h-1 bg-white/10 rounded-full relative overflow-visible mt-4">
+                    <div id="loader-progress" class="h-full bg-[var(--accent)] w-0 transition-all duration-75 relative rounded-full">
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full blur-[4px] shadow-[0_0_20px_var(--accent)]"></div>
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_8px_#fff]"></div>
+                    </div>
                 </div>
 
-                <div id="loader-text" class="text-[#34d399] font-mono text-[10px] tracking-[0.15em] uppercase mt-4 w-full text-left h-4 loader-glitch">Initializing Kernel...</div>
+                <div id="loader-text" class="text-gray-400 font-retro text-[10px] md:text-xs tracking-[0.3em] uppercase mt-10 text-center h-4 transition-all duration-300 w-full">Initializing Kernel...</div>
             </div>
         </div>
 
@@ -4267,9 +4316,9 @@ const DEFAULT_STATE = {
                 clearInterval(progressInterval);
                 clearInterval(textInterval);
                 lText.innerText = loadingPhrases[loadingPhrases.length - 1]; 
+                lText.classList.add('impact-text');
                 
-                // Laisse le texte "Prêt" visible une demi-seconde avant de fondre
-                setTimeout(() => hideLoader(sLoader), 500); 
+                setTimeout(() => hideLoader(sLoader), 1200); 
             }
             
             lProgress.style.width = `${loadPercentage}%`;
@@ -4278,17 +4327,16 @@ const DEFAULT_STATE = {
 
     function hideLoader(sLoader) {
         if (!sLoader) return;
-        // Ajoute une classe pour baisser l'opacité (transition CSS)
         sLoader.style.opacity = '0';
         
-        // Supprime le loader du DOM après la transition (1s) pour libérer la mémoire
+        const ls = document.getElementById('login-screen');
+        if (ls && ls.style.display !== 'none') {
+            ls.classList.add('login-active');
+        }
+
         setTimeout(() => {
             sLoader.style.display = 'none';
-            
-            // C'est ICI qu'il faut appeler ta fonction qui affiche l'écran de login 
-            // ou qui démarre l'animation de la room 3D.
-            // ex: initGame();
-        }, 500);
+        }, 1000);
     }
 
     // Lancement automatique au chargement de la page
@@ -8615,7 +8663,7 @@ function triggerRankUp(oldRank, newRank) {
 
         function getAchievementUnlockLabel(achievement) {
             if (!achievement.unlocked) return 'LOCKED';
-            if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant v18';
+            if (achievement.legacyUnlocked && !achievement.unlockedDay) return 'Débloqué avant la Beta';
             if (achievement.unlockedDay) return `JOUR ${achievement.unlockedDay}${achievement.unlockedTime ? ' · ' + achievement.unlockedTime : ''}`;
             return 'Débloqué avant v16';
         }
