@@ -2414,6 +2414,12 @@
            MOBILE OPTIMIZATIONS (Lag fix & UX)
            ========================================== */
         @media (max-width: 768px) {
+            /* GPU Compositing (Hardware Acceleration) for room containers & avatars */
+            #three-canvas-container, #room-ui, #hud-avatar, .avatar-sel, .echo-avatar, #avatar-container, .holo-core, .echo-entity-svg {
+                transform: translateZ(0) !important;
+                will-change: transform !important;
+            }
+
             /* 1. HUD & Text Scaling */
             #hud {
                 gap: 0.25rem !important;
@@ -2453,9 +2459,11 @@
                 -webkit-backdrop-filter: none !important;
             }
 
-            /* Simplify background and shadows in Room */
-            #room-ui, #pc-ui-layer, .os-window, .liquid-glass, .liquid-glass-heavy {
+            /* Simplify background and shadows in Room (No box-shadow, text-shadow, filter) */
+            #room-ui, #pc-ui-layer, .os-window, .liquid-glass, .liquid-glass-heavy, .glass-panel, #hud, .avatar-sel {
                 box-shadow: none !important;
+                text-shadow: none !important;
+                filter: none !important;
             }
 
             /* Hide heavy animated clouds/particles strictly on mobile */
@@ -4579,7 +4587,7 @@ const DEFAULT_STATE = {
         const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio, 2);
         renderer.setPixelRatio(dpr);
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.enabled = !isMobile;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
 
@@ -13932,8 +13940,8 @@ document.addEventListener('mouseover', (e) => {
 
             const nextDay = `JOUR ${state.day}`;
             const dayEl = document.getElementById('hud-day');
-            if (dayEl && dayEl.innerText !== nextDay) {
-                dayEl.innerText = nextDay;
+            if (dayEl && dayEl.textContent !== nextDay) {
+                dayEl.textContent = nextDay;
             }
 
             const energyVal = Math.floor(state.energy);
@@ -13951,8 +13959,8 @@ document.addEventListener('mouseover', (e) => {
             }
             const energyValEl = document.getElementById('meter-energy-val');
             const nextValText = `${energyVal}%`;
-            if (energyValEl && energyValEl.innerText !== nextValText) {
-                energyValEl.innerText = nextValText;
+            if (energyValEl && energyValEl.textContent !== nextValText) {
+                energyValEl.textContent = nextValText;
             }
             
 
@@ -14017,7 +14025,10 @@ document.addEventListener('mouseover', (e) => {
             const timeStrSystem = `${hs}:${ms}`;
             const timeStrWidget = `${hs}<span class="clock-colon">:</span>${ms}`;
 
-            document.getElementById('sys-time').textContent          = timeStrSystem;
+            const sysTimeEl = document.getElementById('sys-time');
+            if (sysTimeEl && sysTimeEl.textContent !== timeStrSystem) {
+                sysTimeEl.textContent = timeStrSystem;
+            }
 
             // --- REP GAUGE: compute fill percent relative to next rank's minRep ---
             try {
@@ -14070,9 +14081,15 @@ document.addEventListener('mouseover', (e) => {
             } catch(e) {}
             
             const widgetClock = document.getElementById('widget-clock-time');
-            if(widgetClock) widgetClock.innerHTML = timeStrWidget;
+            if (widgetClock && widgetClock.innerHTML !== timeStrWidget) {
+                widgetClock.innerHTML = timeStrWidget;
+            }
             
-            document.getElementById('widget-clock-date').innerText = `Virtual Day ${state.day}`;
+            const widgetClockDate = document.getElementById('widget-clock-date');
+            const nextDateText = `Virtual Day ${state.day}`;
+            if (widgetClockDate && widgetClockDate.textContent !== nextDateText) {
+                widgetClockDate.textContent = nextDateText;
+            }
         }
 
         
