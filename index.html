@@ -1938,58 +1938,93 @@
             }
         }
 
-        /* ECHO AVATAR STYLES */
-        .echo-avatar-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 1.5rem 0 0.5rem 0;
+        /* ECHO ABSTRACT ENTITY STYLES */
+        .echo-abstract-container {
+            width: 100%;
+            height: 180px;
+            background: radial-gradient(circle at bottom center, rgba(var(--echo-c1, 6, 182, 212), 0.15) 0%, transparent 70%);
             position: relative;
-            z-index: 10;
-        }
-        .echo-avatar {
-            --echo-c1: 6, 182, 212; /* Cyan default */
-            --echo-c2: 139, 92, 246; /* Deep Purple default */
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(10, 10, 15, 0.8);
-            border: 2px solid rgba(var(--echo-c1), 0.5);
             display: flex;
             justify-content: center;
-            align-items: center;
-            animation: echo-breathe 4s ease-in-out infinite;
-            transition: all 0.5s ease;
+            align-items: flex-end;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 1s ease;
         }
-        .echo-avatar svg {
-            width: 60%;
-            height: 60%;
-            filter: drop-shadow(0 0 6px rgba(var(--echo-c1), 0.8));
-            transition: all 0.3s ease;
+
+        .echo-entity-wrapper {
+            --echo-c1: 6, 182, 212;
+            --echo-c2: 139, 92, 246;
+            width: 300px;
+            height: 300px;
+            position: absolute;
+            bottom: -50px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
         }
-        .echo-avatar svg rect { fill: rgb(var(--echo-c1)); transition: fill 0.5s; }
-        .echo-avatar svg path { stroke: rgb(var(--echo-c2)); transition: stroke 0.5s; }
-        .echo-avatar svg circle:nth-of-type(1) { stroke: rgb(var(--echo-c1)); }
-        .echo-avatar svg circle:nth-of-type(2) { stroke: rgb(var(--echo-c2)); }
-        
-        @keyframes echo-breathe {
-            0%, 100% { transform: scale(0.98); box-shadow: 0 0 10px rgba(var(--echo-c1), 0.3), inset 0 0 15px rgba(var(--echo-c2), 0.2); }
-            50% { transform: scale(1.02); box-shadow: 0 0 25px rgba(var(--echo-c1), 0.6), inset 0 0 30px rgba(var(--echo-c2), 0.5); }
+
+        .echo-entity-svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 20px rgba(var(--echo-c1), 0.5));
+            transition: filter 0.8s ease;
         }
-        
-        .echo-talking .echo-avatar {
-            animation: echo-talk-vibrate 0.15s ease-in-out infinite alternate;
-            border-color: rgba(var(--echo-c2), 0.8);
-            box-shadow: 0 0 30px rgba(var(--echo-c2), 0.8), inset 0 0 25px rgba(var(--echo-c1), 0.6);
+
+        .echo-entity-path {
+            stroke: rgb(var(--echo-c1));
+            fill: none;
+            stroke-linecap: round;
+            transition: stroke 1s ease;
         }
-        .echo-talking .echo-avatar svg {
-            filter: drop-shadow(0 0 10px rgba(var(--echo-c2), 1));
-            transform: scale(1.05);
+        .echo-entity-path.alt {
+            stroke: rgb(var(--echo-c2));
         }
-        
-        @keyframes echo-talk-vibrate {
-            0% { transform: scale(0.99) translateY(1px); }
-            100% { transform: scale(1.03) translateY(-1px); }
+
+        /* IDLE: Morphing/breathing paths via dashoffset and scale */
+        @keyframes entity-breathe {
+            0%, 100% { transform: scaleY(0.98) translateY(2px); opacity: 0.8; }
+            50% { transform: scaleY(1.02) translateY(-2px); opacity: 1; }
+        }
+
+        @keyframes path-flow {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 40; }
+        }
+
+        .holo-core {
+            animation: entity-breathe 5s ease-in-out infinite;
+            transform-origin: center bottom;
+        }
+
+        .echo-entity-path.wave {
+            stroke-dasharray: 10 30;
+            animation: path-flow 8s linear infinite;
+        }
+        .echo-entity-path.wave.alt {
+            stroke-dasharray: 15 25;
+            animation: path-flow 6s linear infinite reverse;
+        }
+        .echo-entity-path.wave-h {
+            stroke-dasharray: 20 20;
+            animation: path-flow 4s linear infinite;
+        }
+
+        /* TALKING: Visceral glitch/vibration */
+        .echo-talking .echo-entity-svg {
+            filter: url(#talking-glitch) drop-shadow(0 0 30px rgba(var(--echo-c2), 0.8));
+            animation: entity-talk-shake 0.1s infinite;
+        }
+
+        .echo-talking .echo-abstract-container {
+            background: radial-gradient(circle at bottom center, rgba(var(--echo-c2, 139, 92, 246), 0.25) 0%, transparent 80%);
+        }
+
+        @keyframes entity-talk-shake {
+            0% { transform: translateX(0) scaleY(1.05); }
+            33% { transform: translateX(-2px) scaleY(0.95); opacity: 0.9; }
+            66% { transform: translateX(3px) scaleY(1.02); opacity: 0.7; }
+            100% { transform: translateX(-1px) scaleY(1); opacity: 1; }
         }
 
 
@@ -3964,20 +3999,45 @@
         </div>
 
         <div id="echo-active" class="hidden flex-col h-full">
-            <div id="echo-avatar-wrapper" class="echo-avatar-container">
-                <div id="echo-avatar-element" class="echo-avatar">
-                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Holo rings -->
-                        <circle cx="50" cy="50" r="45" stroke-width="1.5" stroke-dasharray="4 8" fill="none" opacity="0.4">
-                            <animateTransform attributeName="transform" type="rotate" from="360 50 50" to="0 50 50" dur="20s" repeatCount="indefinite" />
-                        </circle>
-                        <circle cx="50" cy="50" r="35" stroke-width="2" stroke-dasharray="15 15" fill="none" opacity="0.3">
-                            <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="10s" repeatCount="indefinite" />
-                        </circle>
-                        <!-- Minimalist pixel face/holo structure -->
-                        <rect x="30" y="35" width="12" height="10" rx="2" />
-                        <rect x="58" y="35" width="12" height="10" rx="2" />
-                        <path d="M35 70 Q50 80 65 70" stroke-width="4" fill="none" stroke-linecap="round" />
+            <div id="echo-avatar-wrapper" class="echo-abstract-container shrink-0">
+                <div id="echo-avatar-element" class="echo-entity-wrapper">
+                    <svg class="echo-entity-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <filter id="talking-glitch" x="-20%" y="-20%" width="140%" height="140%">
+                                <feTurbulence type="fractalNoise" baseFrequency="0.1 0.8" numOctaves="2" result="noise" />
+                                <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G" />
+                                <feGaussianBlur stdDeviation="1.5" result="blur" />
+                                <feMerge>
+                                    <feMergeNode in="blur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <g class="holo-core">
+                            <!-- Center Spine -->
+                            <path class="echo-entity-path alt" stroke-width="3" d="M100,200 Q100,100 100,20" opacity="0.2"/>
+                            
+                            <!-- Left Shoulder lines -->
+                            <path class="echo-entity-path wave" stroke-width="1.5" d="M100,160 Q50,160 0,200" />
+                            <path class="echo-entity-path wave alt" stroke-width="1" d="M100,145 Q60,135 0,180" opacity="0.7"/>
+                            <path class="echo-entity-path wave" stroke-width="0.5" d="M100,130 Q70,115 0,160" opacity="0.5"/>
+                            
+                            <!-- Right Shoulder lines -->
+                            <path class="echo-entity-path wave alt" stroke-width="1.5" d="M100,160 Q150,160 200,200" />
+                            <path class="echo-entity-path wave" stroke-width="1" d="M100,145 Q140,135 200,180" opacity="0.7"/>
+                            <path class="echo-entity-path wave alt" stroke-width="0.5" d="M100,130 Q130,115 200,160" opacity="0.5"/>
+                            
+                            <!-- Abstract Head Shell -->
+                            <path class="echo-entity-path alt" stroke-width="2" d="M70,120 C50,80 65,30 100,30 C135,30 150,80 130,120" opacity="0.8"/>
+                            <path class="echo-entity-path" stroke-width="1.5" d="M80,115 C65,85 75,40 100,40 C125,40 135,85 120,115" opacity="0.6"/>
+                            <path class="echo-entity-path alt" stroke-width="1" d="M88,110 C78,90 83,50 100,50 C117,50 122,90 112,110" opacity="0.4"/>
+                            
+                            <!-- Horizontal Internal Frequencies -->
+                            <path class="echo-entity-path wave-h" stroke-width="1.5" d="M60,100 Q100,130 140,100" />
+                            <path class="echo-entity-path wave-h alt" stroke-width="1.2" d="M55,80 Q100,50 145,80" />
+                            <path class="echo-entity-path wave-h" stroke-width="1.8" d="M60,60 Q100,90 140,60" />
+                            <path class="echo-entity-path wave-h alt" stroke-width="1" d="M72,40 Q100,20 128,40" opacity="0.7"/>
+                        </g>
                     </svg>
                 </div>
             </div>
