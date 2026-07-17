@@ -1425,7 +1425,47 @@
         }
         .btn-daw-pad:disabled::after { display: none; }
 
+        .btn-juice {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+        .btn-juice:hover:not(:disabled) {
+            transform: scale(1.03) !important;
+            filter: brightness(1.2);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4) !important;
+        }
+        .btn-juice:active:not(:disabled) {
+            transform: scale(0.95) !important;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.5) !important;
+        }
 
+        .locked-genre {
+            opacity: 0.7;
+            filter: grayscale(0.8) blur(0.5px);
+            transition: all 0.3s ease;
+        }
+        .locked-genre:hover {
+            opacity: 1;
+            filter: grayscale(0.5) blur(0);
+        }
+        .locked-btn {
+            background: rgba(20, 20, 25, 0.6) !important;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+        }
+        .locked-genre:hover .lock-icon {
+            display: inline-block;
+            animation: lock-shake 0.4s ease-in-out infinite alternate;
+        }
+        @keyframes lock-shake {
+            0% { transform: rotate(-10deg) scale(1.1); }
+            100% { transform: rotate(10deg) scale(1.1); }
+        }
+        .locked-genre:active .locked-btn {
+            border-color: rgba(239, 68, 68, 0.8) !important;
+            box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.1) !important;
+        }
 
         /* --- JUICY HUD ANIMATIONS --- */
         @keyframes pulseGlowFx {
@@ -3368,6 +3408,7 @@
                             <svg class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </summary>
                         <div id="daw-genres-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[150px] md:max-h-[200px] overflow-y-auto custom-scrollbar px-3"></div>
+                        <canvas id="genre-spectrogram" class="w-full h-16 bg-[#09090b] rounded-lg mt-3 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] border border-[#27272a]"></canvas>
                     </details>
 
                     <div class="flex flex-col md:flex-row gap-3 mb-3 md:mb-0">
@@ -11561,6 +11602,64 @@ document.addEventListener('mouseover', (e) => {
     // GENRE PREVIEW AUDIO
     // ==========================================
     let currentGenrePreviewAudio = null;
+    let specCtx = null;
+    let specAnalyser = null;
+    let specDataArray = null;
+    let specReqId = null;
+
+    function initSpectrogram() {
+        if (!specCtx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            specCtx = new AudioContext();
+            specAnalyser = specCtx.createAnalyser();
+            specAnalyser.fftSize = 64;
+            specAnalyser.smoothingTimeConstant = 0.8;
+            specDataArray = new Uint8Array(specAnalyser.frequencyBinCount);
+        }
+    }
+
+    function drawSpectrogram() {
+        const canvas = document.getElementById('genre-spectrogram');
+        if (!canvas) return;
+        
+        // Match internal resolution to display size
+        if (canvas.width !== canvas.clientWidth) {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+
+        if (currentGenrePreviewAudio && !currentGenrePreviewAudio.paused && specAnalyser) {
+            specAnalyser.getByteFrequencyData(specDataArray);
+        } else if (specDataArray) {
+            for (let i = 0; i < specDataArray.length; i++) {
+                specDataArray[i] = Math.max(0, specDataArray[i] - 5);
+            }
+        }
+
+        ctx.clearRect(0, 0, W, H);
+        
+        if (specDataArray) {
+            const barWidth = (W / specDataArray.length) * 1.5;
+            let x = 0;
+
+            for (let i = 0; i < specDataArray.length; i++) {
+                const barHeight = (specDataArray[i] / 255) * H;
+                
+                ctx.fillStyle = '#10b981';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#10b981';
+                
+                ctx.fillRect(x, H - barHeight, barWidth - 2, barHeight);
+                x += barWidth;
+            }
+        }
+
+        specReqId = requestAnimationFrame(drawSpectrogram);
+    }
 
     function stopGenrePreview() {
         if (currentGenrePreviewAudio) {
@@ -11581,8 +11680,23 @@ document.addEventListener('mouseover', (e) => {
         }
         
         currentGenrePreviewAudio = new Audio(`/audio/${genre}.mp3`);
+        currentGenrePreviewAudio.crossOrigin = "anonymous";
         currentGenrePreviewAudio.loop = false;
         currentGenrePreviewAudio.volume = window.sfxVolume * 0.25;
+        
+        initSpectrogram();
+        try {
+            const source = specCtx.createMediaElementSource(currentGenrePreviewAudio);
+            source.connect(specAnalyser);
+            specAnalyser.connect(specCtx.destination);
+        } catch (e) {
+            console.warn("Spectrogram connect error", e);
+        }
+
+        if (!specReqId) drawSpectrogram();
+        if (specCtx.state === 'suspended') {
+            specCtx.resume();
+        }
         
         if (typeof MusicSystem !== 'undefined') {
             MusicSystem.setMusicVolume(window.musicVolume * 0.3); // Ducking
@@ -17370,4 +17484,3 @@ if (reviewOverlay) {
     </script>
         </body>
             </html>
-                            
