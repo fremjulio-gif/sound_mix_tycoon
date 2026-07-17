@@ -13493,19 +13493,37 @@ document.addEventListener('mouseover', (e) => {
                     let needsHUDUpdate = false;
                     for (let i = state.activeContracts.length - 1; i >= 0; i--) {
                         const c = state.activeContracts[i];
-                        const dailyPay = Math.floor(c.reward / c.duration);
-                        const dailyRepCost = c.repCost / c.duration;
                         
-                        logMoney(dailyPay, 'Contrat Deal: ' + c.name);
-                        state.rep = Math.max(0, state.rep - dailyRepCost);
-                        
-                        if (typeof spawnFloatingText === 'function') {
-                            spawnFloatingText('hud-rep-num', (dailyRepCost > 0 ? '-' : '+') + Math.abs(dailyRepCost).toFixed(1) + ' REP', dailyRepCost > 0 ? 'text-rose-500' : 'text-emerald-400');
+                        // Sécurité pour les anciennes sauvegardes où daysLeft n'existait pas ou est corrompu (NaN)
+                        if (c.daysLeft === undefined || isNaN(c.daysLeft)) {
+                            c.daysLeft = c.duration;
                         }
-                        needsHUDUpdate = true;
+                        
+                        // Logique de paiement : si le contrat est censé payer à la fin, on le signale. Par défaut, paiement quotidien.
+                        const isEndPay = c.paymentType === 'end';
+                        
+                        if (!isEndPay && c.daysLeft > 0) {
+                            const dailyPay = Math.floor(c.reward / c.duration);
+                            const dailyRepCost = c.repCost / c.duration;
+                            
+                            logMoney(dailyPay, 'Contrat Deal: ' + c.name);
+                            state.rep = Math.max(0, state.rep - dailyRepCost);
+                            
+                            if (typeof spawnFloatingText === 'function') {
+                                spawnFloatingText('hud-rep-num', (dailyRepCost > 0 ? '-' : '+') + Math.abs(dailyRepCost).toFixed(1) + ' REP', dailyRepCost > 0 ? 'text-rose-500' : 'text-emerald-400');
+                            }
+                            needsHUDUpdate = true;
+                        }
                         
                         c.daysLeft--;
+                        
                         if (c.daysLeft <= 0) {
+                            if (isEndPay) {
+                                logMoney(c.reward, 'Contrat Terminé: ' + c.name);
+                                state.rep = Math.max(0, state.rep - c.repCost);
+                                needsHUDUpdate = true;
+                            }
+                            
                             if (!state.completedDeals) state.completedDeals = [];
                             state.completedDeals.push({ id: c.id, name: c.name, emoji: c.emoji, totalPay: c.reward, totalRep: c.repCost });
                             showToast(`Le contrat avec ${c.name} est terminé !`, 'info');
@@ -14492,6 +14510,13 @@ document.addEventListener('mouseover', (e) => {
 
         function finishExport(genre, bpm, voice, pads, pluginId, trackTitle) {
             try {
+                const deferredToasts = [];
+                const originalShowToast = showToast;
+                // Temporarily override showToast to intercept toasts during export calculation
+                showToast = function(msg, type, onClick, priority) {
+                    deferredToasts.push({msg, type, onClick, priority});
+                };
+
                 const result = calculateSuccess(genre, bpm, voice);
                 let moneyGain = 0, repGain = 0, follGain = 0, resultTxt = "", critique = "";
 
@@ -14525,7 +14550,7 @@ document.addEventListener('mouseover', (e) => {
                     if (result.rewardType === 'stable')    { moneyGain = 300;  repGain += 15; }
                     if (result.rewardType === 'rep')       { moneyGain = 100;  repGain += 45; follGain = 1000; }
                 } else if (result.score === 1) {
-                    resultTxt = "👍 Decent track. It'll stream."; 
+                    resultTxt = "👍 Prod correcte. Ça va faire des streams."; 
                     state.stats.consecutiveFlops = 0; 
                     if (result.rewardType === 'money')     { moneyGain = 150;  repGain += 7; }
                     if (result.rewardType === 'followers') { moneyGain = 35;   follGain = 800; repGain += 8; }
@@ -14777,8 +14802,12 @@ document.addEventListener('mouseover', (e) => {
                     rep: repGain,
                     fans: follGain,
                     toast: { msg: toastMsg, type: 'review' },
-                    track: { title: trackTitle, genre: (genre || 'drill').toUpperCase(), score: finalTrackScore, voice: voice }
+                    track: { title: trackTitle, genre: (genre || 'drill').toUpperCase(), score: finalTrackScore, voice: voice },
+                    extraToasts: deferredToasts
                 };
+                
+                // Restore original showToast
+                showToast = originalShowToast;
 
                 state.stats.tracks++;
                 if (typeof window.updateVinylCrate === 'function') window.updateVinylCrate();
@@ -14848,6 +14877,7 @@ document.addEventListener('mouseover', (e) => {
                     onReviewOpen();
                 }
             } catch (err) {
+                if (typeof originalShowToast === 'function') showToast = originalShowToast;
                 console.error("Error in finishExport:", err);
                 showToast("Erreur fatale dans finishExport : " + err.message, "error");
             }
@@ -15700,7 +15730,7 @@ document.addEventListener('mouseover', (e) => {
             
             if (type === 'review') {
                 colorClass = "bg-[#0a0a0a]/95 border-gray-700 text-gray-100 shadow-[0_0_30px_rgba(0,0,0,0.8)] !p-0 overflow-hidden";
-                t.className = `toast w-full rounded-lg border font-retro backdrop-blur-xl ${colorClass} ${onClick ? 'cursor-pointer' : ''}`;
+                t.className = `toast w-full max-w-[90%] md:max-w-md text-sm p-0 rounded-lg border font-retro backdrop-blur-xl ${colorClass} ${onClick ? 'cursor-pointer' : ''}`;
                 t.innerHTML = msg;
             } else {
                 t.className = `toast px-6 py-4 w-full rounded-lg border text-xs font-retro tracking-widest uppercase backdrop-blur-md ${colorClass} whitespace-pre-line leading-relaxed ${onClick ? 'cursor-pointer' : ''}`;
@@ -15808,6 +15838,16 @@ document.addEventListener('mouseover', (e) => {
                 }
                 if (d.money > 0) playCashSound();
                 showToast(d.toast.msg, d.toast.type);
+                
+                // Trigger deferred toasts with a slight delay
+                if (d.extraToasts && d.extraToasts.length > 0) {
+                    d.extraToasts.forEach((t, idx) => {
+                        setTimeout(() => {
+                            showToast(t.msg, t.type, t.onClick, t.priority);
+                        }, 800 * (idx + 1)); // Stagger toasts
+                    });
+                }
+                
                 updateHUD();
                 saveGame();
 
