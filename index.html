@@ -3920,16 +3920,26 @@
             </div>
 
             <div class="p-4 bg-[#121214] border-t border-white/10 shrink-0">
-                <p class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-widest mb-2 flex justify-between items-center">
-                    <span>Requête requise</span>
-                    <span class="flex items-center gap-2">
-                        <span id="echo-alignment-label" class="text-[9px]">MODE: NEUTRE ⚖️</span>
-                        <span class="inline-block w-20 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10">
-                            <span id="echo-alignment-bar" class="block h-full bg-gradient-to-r from-orange-500 to-purple-500" style="width: 50%"></span>
+                <div class="flex justify-between items-start mb-3">
+                    <div class="flex flex-col gap-1.5">
+                        <span class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-widest">Requête requise</span>
+                        <span id="echo-sub-timer" class="text-[10px] text-[var(--retro-orange)] font-retro tracking-widest">EXP: 0J</span>
+                    </div>
+                    <div class="flex flex-col gap-2 items-end">
+                        <span class="flex items-center gap-2">
+                            <span id="echo-alignment-label" class="text-[9px] font-retro text-gray-300">MODE: NEUTRE ⚖️</span>
+                            <span class="inline-block w-20 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10">
+                                <span id="echo-alignment-bar" class="block h-full bg-gradient-to-r from-orange-500 to-purple-500" style="width: 50%"></span>
+                            </span>
                         </span>
-                    </span>
-                    <span id="echo-sub-timer" class="text-[var(--retro-orange)]">EXP: 0J</span>
-                </p>
+                        <span class="flex items-center gap-2">
+                            <span id="echo-trust-label" class="text-[9px] font-retro text-gray-300">CONFIANCE: NEUTRE</span>
+                            <span class="inline-block w-20 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10">
+                                <span id="echo-trust-bar" class="block h-full bg-blue-500 transition-all duration-300" style="width: 50%"></span>
+                            </span>
+                        </span>
+                    </div>
+                </div>
                 <div id="echo-action-choices" class="flex flex-col gap-2">
                     </div>
             </div>
@@ -9465,7 +9475,25 @@ document.addEventListener('mouseover', (e) => {
         neutral: [
             "ECHO OS v2.1 prêt. Que puis-je faire pour ta carrière aujourd'hui ?",
             "Analyse de ton profil terminée. Je t'écoute."
-        ]
+        ],
+        proud: [
+            "T'as tenu tes principes, respect. L'industrie a besoin de ça.",
+            "T'as refusé l'argent facile. C'est rare. Je suis fier d'opérer pour toi.",
+            "Ta trajectoire est propre. On continue de construire du solide.",
+            "L'intégrité paie. Les autres font du bruit, toi tu fais l'histoire."
+        ],
+        disappointed: [
+            "Bon... au moins t'as fait du cash. L'art attendra.",
+            "L'algorithme est content de toi, mais est-ce que ça valait le coup ?",
+            "Je t'ai analysé : tu es un produit. Mais un produit rentable.",
+            "On a encore vendu ton âme aujourd'hui ? Très bien, facturons."
+        ],
+        reminders: {
+            "career_focus": ["Tu m'as déjà interrogé sur l'algorithme il y a %d jours. Tu doutes encore ?", "L'algorithme de SoundNet, encore ? On en a parlé il y a %d jours."],
+            "social_vs_studio": ["On a déjà débattu de l'image vs la musique il y a %d jours. Tu te cherches toujours ?", "Réseaux ou Studio ? Tu m'as posé la même question il y a %d jours."],
+            "collab_loyalty": ["Une question de loyauté ? Comme celle d'il y a %d jours ?", "Les histoires de contrats, on en a déjà géré il y a %d jours."],
+            "generic": ["Tu avais déjà eu un souci de ce type il y a %d jours. Encore ?", "Un dilemme similaire s'est présenté il y a %d jours. Fais un choix."]
+        }
     },
 
     // Dilemmes qui modifient l'alignement (posés par ECHO)
@@ -9476,6 +9504,7 @@ document.addEventListener('mouseover', (e) => {
             choices: [
                 {
                     label: "Je vais spammer des prods courtes pour gratter du stream.",
+                    echoRecommends: true,
                     shift: -10,
                     response: "Excellente idée. Du contenu fast-food de 1min30. Mais es-tu prêt à sacrifier ta crédibilité ?",
                     nextChoices: [
@@ -9496,6 +9525,7 @@ document.addEventListener('mouseover', (e) => {
             choices: [
                 {
                     label: "Éclate le limiteur. Je veux que ça sonne plus fort que tout le monde.",
+                    echoRecommends: true,
                     shift: -15,
                     response: "Compris. On va compresser ça jusqu'à en faire un rectangle parfait. Au diable la dynamique."
                 },
@@ -9515,14 +9545,14 @@ document.addEventListener('mouseover', (e) => {
             question: "T'as pas dormi depuis combien de temps ? Ça se voit dans tes exports.",
             choices: [
                 { label: "Je dors quand j'aurai percé.", shift: -10, response: "Classique. Les légendes meurent jeunes. Et aussi épuisées." },
-                { label: "Je vais faire une pause, la fatigue nuit à la qualité.", shift: 10, response: "Sage. Un mix fatigué sonne fatigué. Le lit, c'est du travail." }
+                { label: "Je vais faire une pause, la fatigue nuit à la qualité.", echoRecommends: true, shift: 10, response: "Sage. Un mix fatigué sonne fatigué. Le lit, c'est du travail." }
             ]
         },
         {
             id: "social_vs_studio",
             question: "Tu passes plus de temps sur SoundNet à poster qu'en studio. C'est une stratégie ?",
             choices: [
-                { label: "Mon image c'est 80% du biz. Mes morceaux peuvent attendre.", shift: -20, response: "Tu deviens un influenceur. La distinction est de plus en plus floue de toute façon." },
+                { label: "Mon image c'est 80% du biz. Mes morceaux peuvent attendre.", echoRecommends: true, shift: -20, response: "Tu deviens un influenceur. La distinction est de plus en plus floue de toute façon." },
                 { label: "Je dois rééquilibrer. La musique d'abord.", shift: 15, response: "Le seul moyen de poster du contenu qui dure, c'est de créer du contenu qui vaut quelque chose." }
             ]
         },
@@ -9531,7 +9561,7 @@ document.addEventListener('mouseover', (e) => {
             question: "CrackZ ou AudioStore ? Honnêtement ?",
             choices: [
                 { label: "CrackZ. Je paierai quand je serai riche.", shift: -15, response: "Statistiquement viable si tu évites les BSOD. Je note." },
-                { label: "AudioStore. J'achète mes outils, je respecte le travail des autres.", shift: 20, response: "Naïf mais respectable. Et ça fait de meilleurs sons, bizarrement." }
+                { label: "AudioStore. J'achète mes outils, je respecte le travail des autres.", echoRecommends: true, shift: 20, response: "Naïf mais respectable. Et ça fait de meilleurs sons, bizarrement." }
             ]
         },
         {
@@ -9539,7 +9569,7 @@ document.addEventListener('mouseover', (e) => {
             question: "Un label te propose $5000 pour racheter tes masters. Tu fais quoi ?",
             choices: [
                 { label: "Je vends. Cash is king.", shift: -25, response: "Court terme brilliant, long terme douloureux. Bon choix si tu es impatient." },
-                { label: "Je refuse. Mes masters, mon futur.", shift: 25, response: "Légendaire en devenir. Les vrais artistes gardent leurs masters." }
+                { label: "Je refuse. Mes masters, mon futur.", echoRecommends: true, shift: 25, response: "Légendaire en devenir. Les vrais artistes gardent leurs masters." }
             ]
         },
         {
@@ -9547,14 +9577,14 @@ document.addEventListener('mouseover', (e) => {
             question: "T'as la possibilité de recycler le beat de quelqu'un d'autre sans crédit. Ça personne le saura.",
             choices: [
                 { label: "Si je perce avec, c'est que c'était bon.", shift: -30, response: "C'est techniquement du vol. Mais t'as raison, personne ne le saura probablement." },
-                { label: "Je crée le mien. Même si c'est plus dur.", shift: 30, response: "C'est la seule voie qui construit quelque chose de solide." }
+                { label: "Je crée le mien. Même si c'est plus dur.", echoRecommends: true, shift: 30, response: "C'est la seule voie qui construit quelque chose de solide." }
             ]
         },
         {
             id: "genre_surf",
             question: "Les trends changent vite. Amapiano était hot la semaine dernière, maintenant c'est la Phonk. Tu suis ?",
             choices: [
-                { label: "Je surfe sur tout. Je suis caméléon.", shift: -10, response: "Tu vas te noyer dans les trends. Mais ça peut marcher à court terme." },
+                { label: "Je surfe sur tout. Je suis caméléon.", echoRecommends: true, shift: -10, response: "Tu vas te noyer dans les trends. Mais ça peut marcher à court terme." },
                 { label: "J'ai mon son. Les trends passent, le style reste.", shift: 15, response: "En théorie. En pratique, même les légendes s'adaptent parfois. Mais je te respecte." }
             ]
         },
@@ -9562,7 +9592,7 @@ document.addEventListener('mouseover', (e) => {
             id: "sponsor_integrity",
             question: "Une marque de boisson énergisante veut te sponsoriser. Produit douteux mais cash solide.",
             choices: [
-                { label: "Je signe. Ma famille mange.", shift: -15, response: "Priorité pragmatique. Ta fanbase de qualité va peut-être lever un sourcil." },
+                { label: "Je signe. Ma famille mange.", echoRecommends: true, shift: -15, response: "Priorité pragmatique. Ta fanbase de qualité va peut-être lever un sourcil." },
                 { label: "Je refuse. Mon image vaut plus que ça.", shift: 20, response: "Intégrité coûteuse. Respect à long terme. Factures courtes." }
             ]
         },
@@ -9571,7 +9601,7 @@ document.addEventListener('mouseover', (e) => {
             question: "Un critique vient de te donner 3/10. Quelle est ta réaction ?",
             choices: [
                 { label: "Il n'y connaît rien. Je vais continuer exactement pareil.", shift: -10, response: "La confiance, c'est bien. L'imperméabilité au feedback, c'est une autre histoire." },
-                { label: "Je l'analyse. Peut-être qu'il a raison sur certains points.", shift: 15, response: "La capacité à digérer la critique sans s'effondrer, c'est ce qui distingue les pros." }
+                { label: "Je l'analyse. Peut-être qu'il a raison sur certains points.", echoRecommends: true, shift: 15, response: "La capacité à digérer la critique sans s'effondrer, c'est ce qui distingue les pros." }
             ]
         },
         {
@@ -9579,14 +9609,14 @@ document.addEventListener('mouseover', (e) => {
             question: "Il est 4h du matin. Tu es sur un beat depuis 6h. Tu continues ?",
             choices: [
                 { label: "Je pousse jusqu'au sunrise. La créativité est au max la nuit.", shift: -5, response: "Romantique. Ton oreille est épuisée mais ton égo est en mode banger. Bonne chance." },
-                { label: "Je sauvegarde et je dors. Demain, l'écoute sera objective.", shift: 10, response: "Professionnellement irréprochable. Le mix du lendemain matin est toujours meilleur." }
+                { label: "Je sauvegarde et je dors. Demain, l'écoute sera objective.", echoRecommends: true, shift: 10, response: "Professionnellement irréprochable. Le mix du lendemain matin est toujours meilleur." }
             ]
         },
         {
             id: "streaming_vs_live",
             question: "Streaming ou scène ? Où tu mets l'essentiel de ton énergie ?",
             choices: [
-                { label: "Je mise sur le streaming, la scène c'est trop old school pour moi.", shift: -10, response: "Pragmatique. Les dollars streaming arrivent lentement mais universellement." },
+                { label: "Je mise sur le streaming, la scène c'est trop old school pour moi.", echoRecommends: true, shift: -10, response: "Pragmatique. Les dollars streaming arrivent lentement mais universellement." },
                 { label: "Je préfère la scène. Le live, c'est là que je crée de vrais liens.", shift: 10, response: "Les fans live sont des fans à vie. Mais les cachets varient énormément." }
             ]
         },
@@ -9595,14 +9625,14 @@ document.addEventListener('mouseover', (e) => {
             question: "Un ingé son renommé critique publiquement tes égalisations dans une vidéo. Tu réponds quoi ?",
             choices: [
                 { label: "Je lance un clash pour gratter du buzz.", shift: -20, response: "Le clash a fonctionné ! Des milliers de curieux écoutent tes morceaux, mais ta crédibilité pro en prend un coup." },
-                { label: "Je lui propose d'en discuter en privé pour apprendre.", shift: 15, response: "Classe. Il apprécie la démarche et te donne même un tips sur le bas-médium." }
+                { label: "Je lui propose d'en discuter en privé pour apprendre.", echoRecommends: true, shift: 15, response: "Classe. Il apprécie la démarche et te donne même un tips sur le bas-médium." }
             ]
         },
         {
             id: "ai_generation",
             question: "Une IA me propose de générer 90% de mes mélodies à ma place. Ça accélère la cadence, non ?",
             choices: [
-                { label: "Grave, je prends. Faut optimiser la chaîne.", shift: -25, response: "Ta productivité explose, mais tes morceaux commencent tous à se ressembler et perdent leur âme." },
+                { label: "Grave, je prends. Faut optimiser la chaîne.", echoRecommends: true, shift: -25, response: "Ta productivité explose, mais tes morceaux commencent tous à se ressembler et perdent leur âme." },
                 { label: "Non, je compose mes propres notes.", shift: 20, response: "Le chemin est plus long, mais chaque mélodie a ton ADN. C'est ça qui te rend irremplaçable." }
             ]
         },
@@ -9610,7 +9640,7 @@ document.addEventListener('mouseover', (e) => {
             id: "ghost_producing",
             question: "Un rappeur ultra connu te demande de lui ghost-produire un son. Pas de crédit pour toi, mais $3000 cash.",
             choices: [
-                { label: "Je prends l'argent direct. J'ai des factures.", shift: -15, response: "Le virement fait du bien au portefeuille. Par contre, voir son nom nulle part sur un hit mondial fait un peu mal." },
+                { label: "Je prends l'argent direct. J'ai des factures.", echoRecommends: true, shift: -15, response: "Le virement fait du bien au portefeuille. Par contre, voir son nom nulle part sur un hit mondial fait un peu mal." },
                 { label: "Je refuse. Mon nom doit figurer sur le travail.", shift: 25, response: "Choix courageux. Tu refuses le gain facile pour construire ta propre marque." }
             ]
         },
@@ -9618,7 +9648,7 @@ document.addEventListener('mouseover', (e) => {
             id: "monitors_buy",
             question: "Tu as économisé un peu. Tu achètes des enceintes de monitoring pros ou un nouveau synthé à la mode ?",
             choices: [
-                { label: "Les enceintes. Mes oreilles doivent entendre la vérité.", shift: 15, response: "Excellent investissement. Tes mixs traduisent enfin correctement partout." },
+                { label: "Les enceintes. Mes oreilles doivent entendre la vérité.", echoRecommends: true, shift: 15, response: "Excellent investissement. Tes mixs traduisent enfin correctement partout." },
                 { label: "Le synthé. Je veux du sound design de l'espace.", shift: -5, response: "Le son est incroyable dans ton casque, mais tes mixs restent imprévisibles sur d'autres systèmes." }
             ]
         },
@@ -9627,7 +9657,7 @@ document.addEventListener('mouseover', (e) => {
             question: "Ton studio est devenu un dépotoir de canettes et d'assiettes sales. C'est l'ambiance créative ou le chaos ?",
             choices: [
                 { label: "C'est l'esthétique grunge, la saleté m'inspire.", shift: -10, response: "Le grunge a ses limites. Tes maux de tête chroniques et la poussière sur tes machines n'aident pas." },
-                { label: "Je nettoie tout. Un espace propre pour des idées claires.", shift: 15, response: "Un grand bol d'air frais ! Travailler dans un environnement propre redonne un coup de boost immédiat." }
+                { label: "Je nettoie tout. Un espace propre pour des idées claires.", echoRecommends: true, shift: 15, response: "Un grand bol d'air frais ! Travailler dans un environnement propre redonne un coup de boost immédiat." }
             ]
         }
     ],
@@ -12541,6 +12571,9 @@ document.addEventListener('mouseover', (e) => {
             if (typeof state.echoTrialUsed === 'undefined') state.echoTrialUsed = false;
             if (!state.cooldowns.echoSubExpiry) state.cooldowns.echoSubExpiry = 0;
             if (typeof state.cooldowns.echoQueryReady === 'undefined') state.cooldowns.echoQueryReady = 0;
+            state.echoHistory = state.echoHistory || [];
+            state.echoTrust = state.echoTrust !== undefined ? state.echoTrust : 50;
+            state.echoStance = state.echoStance || 'neutral';
 
             // Mise à jour de l'indicateur avant le blocage GPU
             const loginBtn = document.getElementById('btn-login');
@@ -13320,6 +13353,28 @@ document.addEventListener('mouseover', (e) => {
         initEchoApp();
     }
 }
+
+            // TÂCHE 3 - Prise de Position Progressive
+            if (state.day >= 20 && state.echoStance === 'neutral' && !state.cooldowns._echoStanceCheckThisDay) {
+                state.cooldowns._echoStanceCheckThisDay = state.day;
+                
+                let badDeals = 0;
+                let goodDeals = 0;
+                if (state.completedDeals) {
+                    state.completedDeals.forEach(d => {
+                        if (d.totalRep < 0) badDeals++;
+                        else if (d.totalRep >= 0) goodDeals++;
+                    });
+                }
+                const isUnderground = goodDeals >= badDeals;
+                
+                if (state.echoTrust > 65 && isUnderground) {
+                    state.echoStance = 'proud';
+                } else if (state.echoTrust < 35 || !isUnderground) {
+                    state.echoStance = 'disappointed';
+                }
+                saveGame();
+            }
 
             // Décroissance lente de la Hype (-0.5% toutes les 5 min in-game)
             state.hype = Math.max(0, (parseFloat(state.hype) || 50) - 0.5);
@@ -16649,9 +16704,28 @@ function _getEchoRandom(arr) {
 }
 
 // --- 1. LECTURE DU CONTEXTE (Intro automatique) ---
+function findRecentEchoMemory(category, withinDays = 15) {
+    if (!state.echoHistory) return null;
+    const recent = state.echoHistory.filter(e => 
+        e.category === category && (state.day - e.day) <= withinDays
+    );
+    return recent.length > 0 ? recent[recent.length - 1] : null;
+}
+
 function generateEchoContext() {
     const introEl = document.getElementById('echo-intro-text');
     let text = "";
+    let prefix = "";
+
+    // TÂCHE 3 : Priorité 33% pour la stance si non-neutre
+    if (state.echoStance && state.echoStance !== 'neutral' && Math.random() < 0.33) {
+        text = _getEchoRandom(ECHO_DATA.intros[state.echoStance]);
+        // Modificateur textuel selon echoTrust
+        if (state.echoTrust > 75) text += " On est une bonne équipe.";
+        if (state.echoTrust < 25) text += " Pas que j'apprécie ta compagnie, mais c'est un fait.";
+        if (introEl) introEl.innerText = text;
+        return;
+    }
 
     // Sécurité pour récupérer le rang actuel selon la structure existante
     const currentRank = typeof getCurrentRank === 'function' ? getCurrentRank() : null;
@@ -16683,7 +16757,28 @@ function generateEchoContext() {
         text = _getEchoRandom(ECHO_DATA.intros.neutral);
     }
 
-    if (introEl) introEl.innerText = text;
+    // TÂCHE 1.3 : Modificateur Mémoire
+    let memoryMatched = false;
+    // On vérifie une catégorie au hasard parmi celles qu'on veut tracker
+    const memCats = ["career_focus", "social_vs_studio", "collab_loyalty"];
+    for (let c of memCats) {
+        const memory = findRecentEchoMemory(c, 15);
+        if (memory) {
+            const arr = ECHO_DATA.intros.reminders[c] || ECHO_DATA.intros.reminders["generic"];
+            prefix = _getEchoRandom(arr).replace("%d", state.day - memory.day) + " ";
+            memoryMatched = true;
+            break;
+        }
+    }
+
+    // Modificateurs de ton liés à echoTrust (Tâche 2.5)
+    if (state.echoTrust > 75) {
+        text = "Salut boss. " + text;
+    } else if (state.echoTrust < 25) {
+        text = "[INIT_ERROR_IGNORE] " + text;
+    }
+
+    if (introEl) introEl.innerText = prefix + text;
 }
 
 // --- 2. MENU PRINCIPAL DES CHOIX ---
@@ -16700,6 +16795,15 @@ function renderEchoMainChoices() {
                 :                              "MODE: NEUTRE ⚖️";
     const labelEl = document.getElementById('echo-alignment-label');
     if (labelEl) labelEl.innerText = label;
+    
+    // Tâche 2 : UI Trust Bar
+    const trustBarEl = document.getElementById('echo-trust-bar');
+    if (trustBarEl) trustBarEl.style.width = state.echoTrust + '%';
+    const trustLabel = state.echoTrust <= 33 ? "MÉFIANT"
+                     : state.echoTrust >= 67 ? "CONFIANT"
+                     : "NEUTRE";
+    const trustLabelEl = document.getElementById('echo-trust-label');
+    if (trustLabelEl) trustLabelEl.innerText = `CONFIANCE: ${trustLabel}`;
 
     // Amélioration 1 - Cooldown de 30 min in-game
     const totalMins = getTotalMins();
@@ -16711,7 +16815,16 @@ function renderEchoMainChoices() {
     }
 
     // On tire au sort 1 dilemme et 1 question factuelle pour ne pas surcharger l'UI
-    const orientation = _getEchoRandom(ECHO_DATA.orientations);
+    
+    // Tâche 1.4 : Filtrer les répétitions des dilemmes (10 jours in-game)
+    const validOrientations = ECHO_DATA.orientations.filter(o => {
+        if (!state.echoHistory) return true;
+        const recent = state.echoHistory.find(e => e.dilemmaId === o.id && (state.day - e.day) <= 10);
+        return !recent;
+    });
+    const orientationList = validOrientations.length > 0 ? validOrientations : ECHO_DATA.orientations;
+    const orientation = _getEchoRandom(orientationList);
+    
     const factual = _getEchoRandom(ECHO_DATA.factual);
 
     // Bouton 1 : Dilemme d'orientation
@@ -16732,7 +16845,7 @@ function renderEchoMainChoices() {
                 removeEchoTypingIndicator();
                 // ECHO pose la question/dilemme
                 appendEchoDialogue(orientation.question, 'echo', false, () => {
-                    renderPlayerChoiceButtons(orientation.choices);
+                    renderPlayerChoiceButtons(orientation.choices, orientation.id);
                 });
             }, 1200);
         };
@@ -16757,11 +16870,11 @@ function renderEchoOrientationChoices(orientationData) {
     
     // ECHO pose le dilemme (dialogue ping-pong)
     appendEchoDialogue(orientationData.question, 'echo', false, () => {
-        renderPlayerChoiceButtons(orientationData.choices);
+        renderPlayerChoiceButtons(orientationData.choices, orientationData.id);
     });
 }
 
-function renderPlayerChoiceButtons(choices) {
+function renderPlayerChoiceButtons(choices, dilemmaId = null) {
     const container = document.getElementById('echo-action-choices');
     container.innerHTML = '';
 
@@ -16782,6 +16895,31 @@ function renderPlayerChoiceButtons(choices) {
                 if (state.echoAlignment > 100) state.echoAlignment = 100;
             }
             
+            // Tâche 2 : Jauge de confiance
+            let followedEchoAdvice = null;
+            if (choice.echoRecommends) {
+                state.echoTrust = Math.min(100, state.echoTrust + 5);
+                followedEchoAdvice = true;
+            } else {
+                // S'il y a au moins un choix recommandé dans ce dilemme, et qu'on ne l'a pas pris
+                const hasRecommendedChoice = choices.some(c => c.echoRecommends);
+                if (hasRecommendedChoice) {
+                    state.echoTrust = Math.max(0, state.echoTrust - 5);
+                    followedEchoAdvice = false;
+                }
+            }
+
+            // Tâche 1.2 : Enregistrer dans la mémoire conversationnelle
+            if (!state.echoHistory) state.echoHistory = [];
+            state.echoHistory.push({
+                day: state.day,
+                category: dilemmaId || 'general',
+                dilemmaId: dilemmaId,
+                choiceLabel: choice.label,
+                followedEchoAdvice: followedEchoAdvice
+            });
+            if (state.echoHistory.length > 50) state.echoHistory.shift();
+
             // Amélioration 1 - Set Cooldown
             state.cooldowns.echoQueryReady = getTotalMins() + 30;
             
