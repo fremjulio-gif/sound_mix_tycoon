@@ -1938,6 +1938,60 @@
             }
         }
 
+        /* ECHO AVATAR STYLES */
+        .echo-avatar-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem 0 0.5rem 0;
+            position: relative;
+            z-index: 10;
+        }
+        .echo-avatar {
+            --echo-c1: 6, 182, 212; /* Cyan default */
+            --echo-c2: 139, 92, 246; /* Deep Purple default */
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(10, 10, 15, 0.8);
+            border: 2px solid rgba(var(--echo-c1), 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: echo-breathe 4s ease-in-out infinite;
+            transition: all 0.5s ease;
+        }
+        .echo-avatar svg {
+            width: 60%;
+            height: 60%;
+            filter: drop-shadow(0 0 6px rgba(var(--echo-c1), 0.8));
+            transition: all 0.3s ease;
+        }
+        .echo-avatar svg rect { fill: rgb(var(--echo-c1)); transition: fill 0.5s; }
+        .echo-avatar svg path { stroke: rgb(var(--echo-c2)); transition: stroke 0.5s; }
+        .echo-avatar svg circle:nth-of-type(1) { stroke: rgb(var(--echo-c1)); }
+        .echo-avatar svg circle:nth-of-type(2) { stroke: rgb(var(--echo-c2)); }
+        
+        @keyframes echo-breathe {
+            0%, 100% { transform: scale(0.98); box-shadow: 0 0 10px rgba(var(--echo-c1), 0.3), inset 0 0 15px rgba(var(--echo-c2), 0.2); }
+            50% { transform: scale(1.02); box-shadow: 0 0 25px rgba(var(--echo-c1), 0.6), inset 0 0 30px rgba(var(--echo-c2), 0.5); }
+        }
+        
+        .echo-talking .echo-avatar {
+            animation: echo-talk-vibrate 0.15s ease-in-out infinite alternate;
+            border-color: rgba(var(--echo-c2), 0.8);
+            box-shadow: 0 0 30px rgba(var(--echo-c2), 0.8), inset 0 0 25px rgba(var(--echo-c1), 0.6);
+        }
+        .echo-talking .echo-avatar svg {
+            filter: drop-shadow(0 0 10px rgba(var(--echo-c2), 1));
+            transform: scale(1.05);
+        }
+        
+        @keyframes echo-talk-vibrate {
+            0% { transform: scale(0.99) translateY(1px); }
+            100% { transform: scale(1.03) translateY(-1px); }
+        }
+
 
         /* --- SAMPLE DIGGER UI --- */
         #sample-digger-window {
@@ -3910,6 +3964,23 @@
         </div>
 
         <div id="echo-active" class="hidden flex-col h-full">
+            <div id="echo-avatar-wrapper" class="echo-avatar-container">
+                <div id="echo-avatar-element" class="echo-avatar">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Holo rings -->
+                        <circle cx="50" cy="50" r="45" stroke-width="1.5" stroke-dasharray="4 8" fill="none" opacity="0.4">
+                            <animateTransform attributeName="transform" type="rotate" from="360 50 50" to="0 50 50" dur="20s" repeatCount="indefinite" />
+                        </circle>
+                        <circle cx="50" cy="50" r="35" stroke-width="2" stroke-dasharray="15 15" fill="none" opacity="0.3">
+                            <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="10s" repeatCount="indefinite" />
+                        </circle>
+                        <!-- Minimalist pixel face/holo structure -->
+                        <rect x="30" y="35" width="12" height="10" rx="2" />
+                        <rect x="58" y="35" width="12" height="10" rx="2" />
+                        <path d="M35 70 Q50 80 65 70" stroke-width="4" fill="none" stroke-linecap="round" />
+                    </svg>
+                </div>
+            </div>
             <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4" id="echo-dialogue-history">
                 <div class="flex items-start gap-3">
                     <div class="w-8 h-8 rounded bg-[var(--retro-orange)] flex items-center justify-center text-black font-bold flex-shrink-0 shadow-[0_0_10px_rgba(251,191,36,0.5)]">E</div>
@@ -17035,6 +17106,26 @@ function appendEchoDialogue(text, sender, isLying = false, callback = null) {
             setTimeout(() => playTone(180, 'sine', 0.08, 0.02), 100);
         }
 
+        // Update avatar colors based on trust (Tâche 2.5)
+        const avatarWrapper = document.getElementById('echo-avatar-wrapper');
+        const avatarEl = document.getElementById('echo-avatar-element');
+        if (avatarWrapper && avatarEl) {
+            let c1 = '6, 182, 212';     // Cyan
+            let c2 = '139, 92, 246';    // Deep Purple
+            if (state.echoTrust > 70) {
+                c1 = '236, 72, 153';    // Pink (Warm)
+                c2 = '168, 85, 247';    // Bright Purple
+            } else if (state.echoTrust < 30) {
+                c1 = '59, 130, 246';    // Cold Blue
+                c2 = '14, 165, 233';    // Light Blue
+            }
+            avatarEl.style.setProperty('--echo-c1', c1);
+            avatarEl.style.setProperty('--echo-c2', c2);
+            
+            // Activate talking animation
+            avatarWrapper.classList.add('echo-talking');
+        }
+
         // Animation d'écriture progressive (Typing effect)
         function typeChar() {
             if (index < text.length) {
@@ -17044,6 +17135,7 @@ function appendEchoDialogue(text, sender, isLying = false, callback = null) {
                 window.echoTypingTimeout = setTimeout(typeChar, 12 + Math.random() * 10);
             } else {
                 window.echoTypingTimeout = null;
+                if (avatarWrapper) avatarWrapper.classList.remove('echo-talking');
                 // Slight delay before calling callback to let UI breathe
                 if (callback) setTimeout(callback, 250);
             }
