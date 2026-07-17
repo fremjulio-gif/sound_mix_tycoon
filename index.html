@@ -2410,79 +2410,6 @@
         }
 
         /* UI Juice for AbleStudio Buttons */
-        /* ==========================================
-           MOBILE OPTIMIZATIONS (Lag fix & UX)
-           ========================================== */
-        @media (max-width: 768px) {
-            /* GPU Compositing (Hardware Acceleration) for room containers & avatars */
-            #three-canvas-container, #room-ui, #hud-avatar, .avatar-sel, .echo-avatar, #avatar-container, .holo-core, .echo-entity-svg {
-                transform: translateZ(0) !important;
-                will-change: transform !important;
-            }
-
-            /* 1. HUD & Text Scaling */
-            #hud {
-                gap: 0.25rem !important;
-                padding: 0.25rem 0.5rem !important;
-                border-radius: 12px !important;
-            }
-            #hud-name { display: none !important; }
-            #hud span { font-size: 10px !important; }
-            #hud-money, #hud-foll, #hud-streak { font-size: 12px !important; }
-            #hud-avatar { width: 32px !important; height: 32px !important; border-width: 1px !important; }
-            #hud-day { font-size: 10px !important; }
-
-            /* 2. Windows 100% width */
-            .os-window {
-                width: 100vw !important;
-                max-width: 100vw !important;
-                left: 0 !important;
-                border-radius: 0 !important;
-                border-left: none !important;
-                border-right: none !important;
-            }
-
-            /* 3. Touch Targets (Minimum height 44px) */
-            .btn-daw-pad, .btn, .btn-action, .genre-btn, .contract-btn, .choice-btn, button {
-                min-height: 44px !important;
-            }
-
-            /* 4. Scroll optimization */
-            .overflow-y-auto, .custom-scrollbar, .window-content {
-                -webkit-overflow-scrolling: touch !important;
-            }
-
-            /* 5. FIX PERFORMANCE : The "Lag de la Room" on Mobile */
-            /* Disable heavy backdrop filters everywhere */
-            * {
-                backdrop-filter: none !important;
-                -webkit-backdrop-filter: none !important;
-            }
-
-            /* Simplify background and shadows in Room (No box-shadow, text-shadow, filter) */
-            #room-ui, #pc-ui-layer, .os-window, .liquid-glass, .liquid-glass-heavy, .glass-panel, #hud, .avatar-sel {
-                box-shadow: none !important;
-                text-shadow: none !important;
-                filter: none !important;
-            }
-
-            /* Hide heavy animated clouds/particles strictly on mobile */
-            .cloud, #clouds-container, .particle, .ambient-light, .glow-fx, #ambient-glow-container {
-                display: none !important;
-                animation: none !important;
-            }
-
-            /* Simplify window backgrounds */
-            .liquid-glass, .liquid-glass-heavy, .glass-panel {
-                background: rgba(15, 15, 20, 0.98) !important;
-                border: 1px solid rgba(255,255,255,0.05) !important;
-            }
-
-            /* Disable heavy continuous animations */
-            .animate-pulse, .pulseGlow, .organic-wave {
-                animation: none !important;
-            }
-        }
 </style>
             <style>
         
@@ -4587,7 +4514,7 @@ const DEFAULT_STATE = {
         const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio, 2);
         renderer.setPixelRatio(dpr);
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = !isMobile;
+        renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
 
@@ -13940,8 +13867,8 @@ document.addEventListener('mouseover', (e) => {
 
             const nextDay = `JOUR ${state.day}`;
             const dayEl = document.getElementById('hud-day');
-            if (dayEl && dayEl.textContent !== nextDay) {
-                dayEl.textContent = nextDay;
+            if (dayEl && dayEl.innerText !== nextDay) {
+                dayEl.innerText = nextDay;
             }
 
             const energyVal = Math.floor(state.energy);
@@ -13959,8 +13886,8 @@ document.addEventListener('mouseover', (e) => {
             }
             const energyValEl = document.getElementById('meter-energy-val');
             const nextValText = `${energyVal}%`;
-            if (energyValEl && energyValEl.textContent !== nextValText) {
-                energyValEl.textContent = nextValText;
+            if (energyValEl && energyValEl.innerText !== nextValText) {
+                energyValEl.innerText = nextValText;
             }
             
 
@@ -14025,10 +13952,7 @@ document.addEventListener('mouseover', (e) => {
             const timeStrSystem = `${hs}:${ms}`;
             const timeStrWidget = `${hs}<span class="clock-colon">:</span>${ms}`;
 
-            const sysTimeEl = document.getElementById('sys-time');
-            if (sysTimeEl && sysTimeEl.textContent !== timeStrSystem) {
-                sysTimeEl.textContent = timeStrSystem;
-            }
+            document.getElementById('sys-time').textContent          = timeStrSystem;
 
             // --- REP GAUGE: compute fill percent relative to next rank's minRep ---
             try {
@@ -14081,15 +14005,9 @@ document.addEventListener('mouseover', (e) => {
             } catch(e) {}
             
             const widgetClock = document.getElementById('widget-clock-time');
-            if (widgetClock && widgetClock.innerHTML !== timeStrWidget) {
-                widgetClock.innerHTML = timeStrWidget;
-            }
+            if(widgetClock) widgetClock.innerHTML = timeStrWidget;
             
-            const widgetClockDate = document.getElementById('widget-clock-date');
-            const nextDateText = `Virtual Day ${state.day}`;
-            if (widgetClockDate && widgetClockDate.textContent !== nextDateText) {
-                widgetClockDate.textContent = nextDateText;
-            }
+            document.getElementById('widget-clock-date').innerText = `Virtual Day ${state.day}`;
         }
 
         
