@@ -2946,32 +2946,28 @@
             <div class="joystick-knob" id="joystick-knob"></div>
         </div>
 
-<div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col items-center justify-center bg-black px-4 transition-opacity duration-1000">
-            <div class="w-full max-w-xl flex flex-col items-center justify-center h-full max-h-[100dvh] overflow-y-auto overflow-x-hidden pt-10 pb-20">
-                <div class="w-full flex justify-center mb-10 stagger-in" style="animation-delay: 50ms">
+<div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
+            <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
+                <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it</h1>
+                <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">Version Beta</p>
+                <div class="mb-6 flex justify-center">
                     <img src="logo.jpeg" alt="Logo bounce_it" 
-                        class="w-28 h-28 md:w-36 md:h-36 object-cover rounded-xl border border-white/5 shadow-[0_0_40px_rgba(255,255,255,0.05)] pixelated" />
+                        class="w-32 h-32 md:w-40 md:h-40 object-cover rounded-2xl border border-white/10 shadow-[0_0_25px_rgba(129,140,248,0.2)] pixelated" />
                 </div>
-                
-                <h1 class="text-3xl md:text-5xl font-retro font-bold text-white tracking-[0.5em] text-center mb-4 stagger-in" style="animation-delay: 100ms">BOUNCE_IT</h1>
-                <p class="text-gray-600 font-retro text-[10px] md:text-xs tracking-[0.4em] uppercase text-center mb-16 stagger-in whitespace-nowrap" style="animation-delay: 150ms">Version Beta</p>
-                
-                <div class="w-full max-w-sm mb-12 stagger-in" style="animation-delay: 200ms">
-                    <label class="block text-[10px] font-retro text-gray-500 mb-4 uppercase tracking-[0.3em] text-center">Artist_ID</label>
-                    <input type="text" id="login-username" class="w-full bg-[#050505] border-b border-gray-800 px-4 py-4 text-center text-white font-retro text-lg focus:outline-none focus:border-[var(--accent)] focus:bg-[#0a0a0a] transition-all duration-300 focus:shadow-[0_4px_25px_rgba(var(--echo-c1, 6, 182, 212),0.2)] placeholder-gray-800" placeholder="ENTER ALIAS">
+                <div class="w-full mb-4 md:mb-6">
+                    <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
+                    <input type="text" id="login-username" class="w-full bg-black/60 border border-gray-600 rounded-lg px-4 py-2 md:py-3 text-white font-retro text-sm focus:outline-none focus:border-[var(--accent)] transition-all shadow-inner" placeholder="Enter Alias...">
                 </div>
-                
-                <div class="w-full max-w-md mb-16 stagger-in" style="animation-delay: 250ms">
-                    <label class="block text-[10px] font-retro text-gray-500 mb-6 uppercase tracking-[0.3em] text-center">Select_Avatar</label>
-                    <div class="flex flex-wrap justify-center gap-4 md:gap-6" id="avatar-container"></div>
+                <div class="w-full mb-6 md:mb-8">
+                    <label class="block text-[10px] font-retro text-gray-300 mb-2 md:mb-4 uppercase tracking-widest">Select_Avatar</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-6" id="avatar-container"></div>
                 </div>
-                
-                <div class="w-full max-w-sm stagger-in flex flex-col items-center" style="animation-delay: 300ms">
-                    <button id="btn-login" class="w-full bg-white text-black py-4 rounded-none text-sm md:text-base font-retro tracking-[0.3em] uppercase font-bold hover:scale-105 active:scale-95 hover:bg-[var(--accent)] hover:text-white transition-all duration-200 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(var(--echo-c1, 6, 182, 212),0.5)]">INITIALIZE</button>
-                    <p id="login-error" class="text-rose-500 font-retro text-[10px] mt-6 tracking-widest hidden text-center uppercase">Error: Missing ID</p>
-                </div>
+                <div class="w-full mb-4 md:mb-6">
+                <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-2 shrink-0">Boot Studio Environment</button>
+                <p id="login-error" class="text-[var(--retro-red)] font-retro text-xs mt-4 hidden text-center">Error: Missing ID</p>
             </div>
         </div>
+    </div>
 
 <div id="achievements-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden px-4">
         <div class="settings-shell liquid-glass-heavy p-5 md:p-7 rounded-2xl border-2 border-[var(--retro-orange)] shadow-[0_0_60px_rgba(251,191,36,0.15)] flex flex-col relative">
@@ -4323,33 +4319,8 @@ const DEFAULT_STATE = {
         sLoader.style.opacity = '0';
         
         const ls = document.getElementById('login-screen');
-        
-        // CHECK SAVE GAME
-        let lastUser = null;
-        try {
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key.startsWith('smt_save_') || key.startsWith('bounceit_save_')) {
-                    lastUser = key.replace('smt_save_', '').replace('bounceit_save_', '');
-                    break;
-                }
-            }
-        } catch(e) {
-            console.warn("Could not check local storage for saves:", e);
-        }
-
-        if (lastUser) {
-            // Auto login!
-            document.getElementById('login-username').value = lastUser;
-            setTimeout(() => {
-                const btn = document.getElementById('btn-login');
-                if (btn) btn.click();
-            }, 600);
-        } else {
-            // Show login screen
-            if (ls && ls.style.display !== 'none') {
-                ls.classList.add('login-active');
-            }
+        if (ls && ls.style.display !== 'none') {
+            ls.classList.add('login-active');
         }
 
         setTimeout(() => {
@@ -17399,3 +17370,4 @@ if (reviewOverlay) {
     </script>
         </body>
             </html>
+                            
