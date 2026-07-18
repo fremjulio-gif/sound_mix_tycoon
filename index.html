@@ -2472,6 +2472,11 @@
                 display: none !important;
             }
         }
+
+        /* 3. Restauration du défilement AbleStudio (Desktop & Mobile) */
+        .window-content, .daw-grid-container {
+            overflow-y: auto !important;
+        }
 </style>
             <style>
         
@@ -11314,6 +11319,10 @@ document.addEventListener('mouseover', (e) => {
                 let isDragging = false, startX, startY, initX, initY;
                 const startDrag = (e) => {
                     if (isMobile) return;
+                    
+                    // Restriction stricte de la zone de drag au header pour libérer le scroll du contenu
+                    if (e.target && e.target.closest && !e.target.closest('.window-header')) return;
+                    
                     isDragging = true; bringToFront(win.id);
                     const cx = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
                     const cy = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
@@ -11329,7 +11338,14 @@ document.addEventListener('mouseover', (e) => {
                     if (newY < 100) newY = 100;
                     win.style.left = `${newX}px`; win.style.top = `${newY}px`;
                 };
-                const stopDrag = () => { isDragging = false; };
+                const stopDrag = () => { 
+                    if (isDragging) {
+                        isDragging = false; 
+                        if (window.innerWidth > 768 && typeof snapWindowAABB === 'function') {
+                            snapWindowAABB(win);
+                        }
+                    }
+                };
                 header.addEventListener('mousedown', startDrag);
                 document.addEventListener('mousemove', doDrag);
                 document.addEventListener('mouseup', stopDrag);
@@ -14409,7 +14425,70 @@ document.addEventListener('mouseover', (e) => {
         // 16. WINDOW MANAGEMENT
 
         // ==========================================
+        // ==========================================
         let zIndexCounter = 50;
+
+        // Fonction de magnétisme inversé (AABB Collision) - EXCLUSIVEMENT DESKTOP
+        function snapWindowAABB(activeWin) {
+            if (window.innerWidth <= 768) return; 
+            
+            const openWindows = Array.from(document.querySelectorAll('.os-window')).filter(w => 
+                w !== activeWin && w.style.display !== 'none' && w.style.display !== ''
+            );
+            
+            if (openWindows.length === 0) return;
+            
+            let rectA = activeWin.getBoundingClientRect();
+            let overlapped = true;
+            let iterations = 0;
+            
+            while (overlapped && iterations < 5) { // Sécurité anti-boucle infinie
+                overlapped = false;
+                rectA = activeWin.getBoundingClientRect();
+                
+                for (const winB of openWindows) {
+                    const rectB = winB.getBoundingClientRect();
+                    
+                    // Détection AABB
+                    if (rectA.left < rectB.right &&
+                        rectA.right > rectB.left &&
+                        rectA.top < rectB.bottom &&
+                        rectA.bottom > rectB.top) {
+                        
+                        overlapped = true;
+                        
+                        // Calcul des distances d'interpénétration
+                        const pushRight = rectB.right - rectA.left;
+                        const pushLeft = rectA.right - rectB.left;
+                        const pushDown = rectB.bottom - rectA.top;
+                        const pushUp = rectA.bottom - rectB.top;
+                        
+                        const minPush = Math.min(pushRight, pushLeft, pushDown, pushUp);
+                        
+                        let newLeft = parseInt(activeWin.style.left) || activeWin.offsetLeft;
+                        let newTop = parseInt(activeWin.style.top) || activeWin.offsetTop;
+                        
+                        // Décalage pour "snap" au bord sans chevaucher (+2px de marge)
+                        if (minPush === pushRight) newLeft += pushRight + 2;
+                        else if (minPush === pushLeft) newLeft -= pushLeft + 2;
+                        else if (minPush === pushDown) newTop += pushDown + 2;
+                        else if (minPush === pushUp) newTop -= pushUp + 2;
+                        
+                        // Gestion des limites (Boundaries) de l'écran
+                        if (newLeft < 0) newLeft = 0;
+                        if (newTop < 60) newTop = 60; // Top-bar OS
+                        if (newLeft + rectA.width > window.innerWidth) newLeft = window.innerWidth - rectA.width;
+                        if (newTop + rectA.height > window.innerHeight) newTop = window.innerHeight - rectA.height;
+                        
+                        activeWin.style.left = `${newLeft}px`;
+                        activeWin.style.top = `${newTop}px`;
+                        
+                        break; // Re-vérifier les collisions après avoir bougé
+                    }
+                }
+                iterations++;
+            }
+        }
 
         function openApp(id) {
             if (id === 'app-browser') {
@@ -14521,9 +14600,16 @@ document.addEventListener('mouseover', (e) => {
                 const isAudioTab = document.getElementById('tab-audio').classList.contains('text-white');
                 renderStore(isAudioTab ? 'audio' : 'crackz');
             }
+            
+            // Nouveau: Magnétisme inversé au lancement (Collision AABB)
+            if (window.innerWidth > 768 && typeof snapWindowAABB === 'function') {
+                setTimeout(() => snapWindowAABB(win), 10);
+            }
         }
             function closeApp(id, e) {
             if (e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
                 e.stopPropagation();
             }
             if (id === 'app-daw') {
@@ -14533,7 +14619,7 @@ document.addEventListener('mouseover', (e) => {
             const win = document.getElementById(id);
             
             if (win) {
-                win.style.display = 'none';
+                win.style.setProperty('display', 'none', 'important');
                 win.classList.remove('active-window');
             }
             
