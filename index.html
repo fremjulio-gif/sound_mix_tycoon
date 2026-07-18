@@ -955,7 +955,6 @@
         flex-shrink: 0 !important;
         overflow: visible !important;
         }
-    }
                 
                 /* Les Fenêtres OS s'insèrent exactement entre la barre du haut et celle du bas */
                 .os-window {
@@ -1019,34 +1018,9 @@
                     top: calc(80px + env(safe-area-inset-top)) !important;
                 }
 
-                /* Fix des Superpositions & Alignement horizontal des Icônes */
+                /* Suppression des icônes hautes sur Mobile (Redondant avec la barre de navigation) */
                 #desktop-icons-container {
-                    padding-top: calc(110px + env(safe-area-inset-top)) !important;
-                    display: flex !important;
-                    flex-direction: row !important;
-                    justify-content: space-evenly !important;
-                    align-items: flex-start !important;
-                    gap: 2px !important;
-                }
-                #desktop-icons-container .desktop-icon {
-                    width: auto !important;
-                    min-width: 0 !important;
-                    flex: 1 !important;
-                    margin: 0 !important;
-                    transform: scale(0.9);
-                }
-                #desktop-icons-container .desktop-icon svg {
-                    width: 28px !important;
-                    height: 28px !important;
-                    margin: 0 auto;
-                }
-                #desktop-icons-container .desktop-icon span {
-                    font-size: 8.5px !important;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    max-width: 50px;
-                    display: inline-block;
+                    display: none !important;
                 }
                 
                 /* HUD Mobile : Restauration de REP/FOL en version miniature */
@@ -1154,6 +1128,7 @@
                 touch-action: none; /* Bloque le comportement tactile natif (zoom, scroll) */
                 overflow: hidden;   /* Évite l'apparition de barres de défilement */
                 }
+            } /* FIN DE @media (max-width: 767px) */
 
             
 
@@ -7013,7 +6988,7 @@ const DEFAULT_STATE = {
 
                     const keepAnimatingAfterStop = !isMoving && (typeof stoppedMovingAt !== 'undefined') && (now - stoppedMovingAt < 1000);
                     // Si on force walkTime à 0 (mur), on annule le keepAnimatingAfterStop
-                    if ((isMoving || keepAnimatingAfterStop) && walkTime > 0) {
+                    if (isMoving || (keepAnimatingAfterStop && walkTime > 0)) {
                         const fade = isMoving ? 1 : Math.max(0, 1 - ((now - stoppedMovingAt) / 1000));
                         walkTime += isMoving ? (0.16 * energySpeedMult) : 0.05;
 
