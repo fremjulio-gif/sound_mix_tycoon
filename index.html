@@ -2481,30 +2481,22 @@
         /* 4. Auto-Resizable AbleStudio (Desktop uniquement) */
         @media (min-width: 769px) {
             #app-daw .window-content {
-                overflow: hidden !important; 
+                /* On restaure le scroll vertical du contenu principal tout en gardant l'en-tête fixe */
+                overflow-y: auto !important; 
+                overflow-x: hidden !important;
                 display: flex !important;
                 flex-direction: column !important;
             }
             #app-daw .window-content > .flex-1.flex-col {
-                min-height: 0 !important;
-                flex: 1 1 0% !important;
+                /* On supprime les min-height: 0 qui masquaient l'Arrangement View */
+                flex: 1 0 auto !important;
                 display: flex;
                 flex-direction: column;
             }
             #app-daw .window-content .flex-1.flex-col > .flex-col.md\:flex-row {
-                flex: 1 1 0% !important;
-                min-height: 0 !important;
-                overflow: hidden !important;
-            }
-            #app-daw .window-content .flex-1.flex-col > .flex-col.md\:flex-row > div:first-child {
-                flex: 1 1 0% !important;
-                min-height: 0 !important;
-                display: flex;
-                flex-direction: column;
+                flex: 1 0 auto !important;
             }
             #app-daw #timeline-container {
-                flex: 1 1 0% !important;
-                min-height: 0 !important;
                 overflow: auto !important;
             }
             #app-daw .daw-toolbar, #app-daw #daw-genres-details {
@@ -15139,6 +15131,24 @@ document.addEventListener('mouseover', (e) => {
                     state.stats.flops++; 
                     state.stats.consecutiveFlops++; 
                     
+                    // NOUVEAU : Impact moral (Baisse d'inspiration)
+                    if (state.inspi > 0) {
+                        state.inspi = Math.max(0, state.inspi - 20);
+                        const inspFill = document.getElementById('meter-inspi-fill');
+                        if (inspFill) {
+                            const originalBg = inspFill.style.backgroundImage;
+                            const originalShadow = inspFill.style.boxShadow;
+                            inspFill.style.backgroundImage = 'none';
+                            inspFill.style.backgroundColor = '#ef4444';
+                            inspFill.style.boxShadow = '0 0 20px #ef4444';
+                            setTimeout(() => {
+                                inspFill.style.backgroundImage = originalBg;
+                                inspFill.style.backgroundColor = '';
+                                inspFill.style.boxShadow = originalShadow;
+                            }, 500);
+                        }
+                    } 
+                    
                     // Nerf the flop spiral: base is -2 REP, pity is +1 REP if consecutiveFlops >= 3
                     if (state.stats.consecutiveFlops >= 3) {
                         repGain = 1;
@@ -15914,6 +15924,25 @@ document.addEventListener('mouseover', (e) => {
             const loss = Math.floor(state.money * 0.2);
             checkAchievement('alerte_rouge', () => state.stats.viruses >= 1);
             logMoney(-loss, 'System Virus Purge');
+            
+            // NOUVEAU : Impact moral (Baisse d'inspiration)
+            if (state.inspi > 0) {
+                state.inspi = Math.max(0, state.inspi - 15);
+                const inspFill = document.getElementById('meter-inspi-fill');
+                if (inspFill) {
+                    const originalBg = inspFill.style.backgroundImage;
+                    const originalShadow = inspFill.style.boxShadow;
+                    inspFill.style.backgroundImage = 'none';
+                    inspFill.style.backgroundColor = '#ef4444';
+                    inspFill.style.boxShadow = '0 0 20px #ef4444';
+                    setTimeout(() => {
+                        inspFill.style.backgroundImage = originalBg;
+                        inspFill.style.backgroundColor = '';
+                        inspFill.style.boxShadow = originalShadow;
+                    }, 500);
+                }
+            }
+            
             saveGame(); updateHUD(); playError();
 
             const isRareBsod = Math.random() < 0.01;
