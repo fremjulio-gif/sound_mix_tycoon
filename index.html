@@ -2987,7 +2987,7 @@
                     <span id="s-tooltip-price" class="text-[var(--retro-green)] font-bold">$0</span>
                 </div>
             </div>
-            <button id="s-tooltip-buy-btn" class="btn-action w-full py-2 text-xs rounded-lg font-bold shadow-md uppercase tracking-wider" onclick="buyFurnitureDirect(event)">Install</button>
+            <button id="s-tooltip-buy-btn" class="btn-action w-full py-2 text-xs rounded-lg font-bold shadow-md uppercase tracking-wider" onclick="buyFurnitureDirect(event)" ontouchstart="buyFurnitureDirect(event)">Install</button>
         </div>
 
                 <button id="door-action-btn" class="hidden fixed bottom-24 left-1/2 transform -translate-x-1/2 z-[90] btn-action py-3 px-6 rounded-full text-xs font-retro tracking-widest shadow-[0_0_20px_rgba(129,140,248,0.5)] flex items-center gap-2 pointer-events-auto transition-all duration-300" onclick="openMiniGameMenu()">
@@ -7565,7 +7565,12 @@ const DEFAULT_STATE = {
                         const objId = clickedObj.parent?.userData?.id || clickedObj.userData?.id;
                         
                         if (objId && state && Array.isArray(state.ownedFurniture) && !state.ownedFurniture.includes(objId)) {
-                            showToast("Tu dois d'abord acheter cet objet dans Studio+ !", "warning");
+                            if (window.innerWidth <= 768) {
+                                if (window.mobileInteractionToastTimer) clearTimeout(window.mobileInteractionToastTimer);
+                                window.mobileInteractionToastTimer = setTimeout(() => showToast("Tu dois d'abord acheter cet objet dans Studio+ !", "warning"), 350);
+                            } else {
+                                showToast("Tu dois d'abord acheter cet objet dans Studio+ !", "warning");
+                            }
                             return; // Stoppe l'action si l'objet n'est pas possédé
                         }
                     }
@@ -7597,16 +7602,31 @@ const DEFAULT_STATE = {
                         }
                         else if (objName === 'synth_mesh') {
                             if (isOwned('synth')) openPianoRoll();
-                            else showToast("Tu dois d'abord acheter le Synthétiseur dans Studio+ !", "warning");
+                            else {
+                                if (window.innerWidth <= 768) {
+                                    if (window.mobileInteractionToastTimer) clearTimeout(window.mobileInteractionToastTimer);
+                                    window.mobileInteractionToastTimer = setTimeout(() => showToast("Tu dois d'abord acheter le Synthétiseur dans Studio+ !", "warning"), 350);
+                                } else showToast("Tu dois d'abord acheter le Synthétiseur dans Studio+ !", "warning");
+                            }
                         }
                         else if (objName === 'bed_mesh') { if (state.energy < 50) goSleep(); else showToast("Tu n'es pas assez fatigué (< 50% NRJ).", "info"); }
                         else if (objName === 'sofa_mesh') {
                             if (isOwned('sofa')) goSit();
-                            else showToast("Tu dois d'abord acheter le Canapé en cuir dans Studio+ !", "warning");
+                            else {
+                                if (window.innerWidth <= 768) {
+                                    if (window.mobileInteractionToastTimer) clearTimeout(window.mobileInteractionToastTimer);
+                                    window.mobileInteractionToastTimer = setTimeout(() => showToast("Tu dois d'abord acheter le Canapé en cuir dans Studio+ !", "warning"), 350);
+                                } else showToast("Tu dois d'abord acheter le Canapé en cuir dans Studio+ !", "warning");
+                            }
                         }
                         else if (objName === 'interactiveLamp') {
                             if (isOwned('rack_lamp')) togglePixarLamp();
-                            else showToast("Tu dois d'abord acheter le Rack & Lampe dans Studio+ !", "warning");
+                            else {
+                                if (window.innerWidth <= 768) {
+                                    if (window.mobileInteractionToastTimer) clearTimeout(window.mobileInteractionToastTimer);
+                                    window.mobileInteractionToastTimer = setTimeout(() => showToast("Tu dois d'abord acheter le Rack & Lampe dans Studio+ !", "warning"), 350);
+                                } else showToast("Tu dois d'abord acheter le Rack & Lampe dans Studio+ !", "warning");
+                            }
                         }
                         else if (objName === 'speaker_mesh') openAudioSettings();
                     }
@@ -7735,6 +7755,7 @@ const DEFAULT_STATE = {
                 
                 // 2. Détection du Double Tap (< 300ms)
                 if (tapLength < 300 && tapLength > 0) {
+                    if (window.mobileInteractionToastTimer) clearTimeout(window.mobileInteractionToastTimer); // Annule le toast d'erreur de clic simple
                     ev.preventDefault(); // Sécurité anti-zoom
                     const touch = ev.changedTouches[0];
                     
@@ -15851,7 +15872,9 @@ document.addEventListener('mouseover', (e) => {
             }
             
             const btn = document.getElementById('s-tooltip-buy-btn');
-            const id = btn ? btn.getAttribute('data-id') : null;
+            if (btn && btn.disabled) return; // Stoppe l'action si le bouton est inactif (sécurité anti-spam tactile)
+            
+            const id = btn ? (btn.getAttribute('data-id') || btn.getAttribute('data-item-id') || btn.dataset.itemId) : null;
             if (id) {
                 buyFurniture(id);
             }
@@ -16313,6 +16336,32 @@ document.addEventListener('mouseover', (e) => {
              if (typeof playUIAudio === 'function') playUIAudio('toast', 0.7);
             const zone = document.getElementById('toast-zone');
             if (!zone) return;
+            
+            // Fix UI Mobile & Desktop : Anti-Spam (On ne duplique pas les toasts identiques)
+            for (let child of zone.children) {
+                const childText = type === 'review' ? child.innerHTML : child.innerText;
+                if (childText === msg && child.dataset.toastType === type) {
+                    // C'est un doublon strict, on relance son timer et on le fait clignoter
+                    child.style.transform = 'scale(1.05)';
+                    child.style.filter = 'brightness(1.5)';
+                    setTimeout(() => {
+                        if (child.parentElement) {
+                            child.style.transform = 'translateX(0) scale(1)';
+                            child.style.filter = 'brightness(1)';
+                        }
+                    }, 150);
+                    
+                    if (child.hideTimer) clearTimeout(child.hideTimer);
+                    child.hideTimer = setTimeout(() => { 
+                        if (child.parentElement) { 
+                            child.style.opacity = '0'; 
+                            child.style.transition = 'opacity 0.4s'; 
+                            setTimeout(() => { if (child.parentElement) child.remove(); }, 400); 
+                        } 
+                    }, 4000);
+                    return; // Stoppe l'exécution, on n'ajoute pas de nouveau toast
+                }
+            }
             const t = document.createElement('div');
             let colorClass = "bg-black/90 border-gray-700 text-gray-100";
             if (type === 'success') colorClass = "bg-[#022c22] border-[var(--retro-green)] text-emerald-100 shadow-[0_0_15px_rgba(52,211,153,0.3)]";
@@ -16328,6 +16377,7 @@ document.addEventListener('mouseover', (e) => {
                 t.className = `toast px-6 py-4 w-full rounded-lg border text-xs font-retro tracking-widest uppercase backdrop-blur-md ${colorClass} whitespace-pre-line leading-relaxed ${onClick ? 'cursor-pointer' : ''}`;
                 t.innerText = msg;
             }
+            t.dataset.toastType = type; // NOUVEAU: on stocke le type pour l'anti-spam
             zone.appendChild(t);
             
             // Fix UI Mobile : Limite de 3 toasts maximum
@@ -16402,7 +16452,7 @@ document.addEventListener('mouseover', (e) => {
             
             addSwipe();
 
-            setTimeout(() => { if (t.parentElement) { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => { if (t.parentElement) t.remove(); }, 400); } }, 4000);
+            t.hideTimer = setTimeout(() => { if (t.parentElement) { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => { if (t.parentElement) t.remove(); }, 400); } }, 4000);
         }
 
         function closeReview() {
@@ -17890,4 +17940,3 @@ if (reviewOverlay) {
     </script>
         </body>
             </html>
- 
