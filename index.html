@@ -6760,16 +6760,20 @@ const DEFAULT_STATE = {
             
             // --- JOYSTICK LOGIC (DYNAMIC BRAWL STARS STYLE) ---
             if (isJoystickActive && joystickUI && joystickKnob) {
-                if (typeof hideBuyTooltip === 'function') hideBuyTooltip();
+                const dx = (window.lastPointerX || 0) - joystickStartX;
+                const dy = (window.lastPointerY || 0) - joystickStartY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                // NOUVEAU: Filtrage du Jitter. Tolérance > 10px pour ne pas fermer le tooltip accidentellement sur un simple tap.
+                if (dist > 10) {
+                    if (typeof hideBuyTooltip === 'function') hideBuyTooltip();
+                }
                 
                 // 3. Dynamic scale based on camera zoom (Smaller when zoomed in)
                 const currentZoom = window.targetCamZoom || 1.0;
                 const joyScale = Math.min(1.0, 1.0 / Math.sqrt(currentZoom));
                 joystickUI.style.transform = `translate(-50%, -50%) scale(${joyScale})`;
 
-                const dx = (window.lastPointerX || 0) - joystickStartX;
-                const dy = (window.lastPointerY || 0) - joystickStartY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
                 const maxRadius = 40; // Max movement radius for the knob
 
                 // 2. Constraint: The base slides to follow but stays within 20% of its size from anchor
@@ -7757,6 +7761,7 @@ const DEFAULT_STATE = {
                 if (tapLength < 300 && tapLength > 0) {
                     if (window.mobileInteractionToastTimer) clearTimeout(window.mobileInteractionToastTimer); // Annule le toast d'erreur de clic simple
                     ev.preventDefault(); // Sécurité anti-zoom
+                    ev.stopPropagation(); // NOUVEAU: Empêche l'Event Bubbling vers le document global
                     const touch = ev.changedTouches[0];
                     
                     try {
