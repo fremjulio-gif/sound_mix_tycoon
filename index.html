@@ -7715,25 +7715,29 @@ const DEFAULT_STATE = {
                 return null;
             }
 
-            // NOUVEAU : Interaction "Long Press" pour les objets (Mobile Uniquement)
-            let mobileLongPressTimer = null;
-            let mobileTouchStartX = 0;
-            let mobileTouchStartY = 0;
+            // NOUVEAU : Interaction "Double Tap" pour les objets (Mobile Uniquement)
+            let lastTapTime = 0;
             
-            canvasCont.addEventListener('touchstart', (ev) => {
+            canvasCont.addEventListener('touchend', (ev) => {
                 if (window.innerWidth > 768) return; // Cloisonné au Mobile
                 if (isJoystickActive) return;
-                if (ev.touches.length > 1) return;
                 
-                const touch = ev.touches[0];
-                mobileTouchStartX = touch.clientX;
-                mobileTouchStartY = touch.clientY;
+                // 1. Fermeture si l'info-bulle est déjà ouverte
+                if (tooltipEl && tooltipEl.style.display !== 'none' && tooltipEl.style.display !== '') {
+                    if (typeof hideBuyTooltip === 'function') hideBuyTooltip();
+                    return; // Annule la suite, ce tapotement sert juste à fermer
+                }
+
+                if (ev.changedTouches.length === 0) return;
                 
-                if (typeof hideBuyTooltip === 'function') hideBuyTooltip();
-                if (mobileLongPressTimer) clearTimeout(mobileLongPressTimer);
+                const currentTime = Date.now();
+                const tapLength = currentTime - lastTapTime;
                 
-                mobileLongPressTimer = setTimeout(() => {
-                    mobileLongPressTimer = null;
+                // 2. Détection du Double Tap (< 300ms)
+                if (tapLength < 300 && tapLength > 0) {
+                    ev.preventDefault(); // Sécurité anti-zoom
+                    const touch = ev.changedTouches[0];
+                    
                     try {
                         const rect = canvasCont.getBoundingClientRect();
                         const clientX = touch.clientX - rect.left;
@@ -7841,29 +7845,9 @@ const DEFAULT_STATE = {
                             }
                         }
                     } catch(e) {}
-                }, 1000);
-            }, { passive: true });
-
-            canvasCont.addEventListener('touchmove', (ev) => {
-                if (window.innerWidth > 768) return;
-                const touch = ev.touches[0];
-                const dx = touch.clientX - mobileTouchStartX;
-                const dy = touch.clientY - mobileTouchStartY;
-                if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
-                    if (mobileLongPressTimer) {
-                        clearTimeout(mobileLongPressTimer);
-                        mobileLongPressTimer = null;
-                    }
                 }
-            }, { passive: true });
-
-            canvasCont.addEventListener('touchend', (ev) => {
-                if (window.innerWidth > 768) return;
-                if (mobileLongPressTimer) {
-                    clearTimeout(mobileLongPressTimer);
-                    mobileLongPressTimer = null;
-                }
-            });
+                lastTapTime = currentTime;
+            }, { passive: false });
 
             function hideBuyTooltip() {
                 if (tooltipHideTimer) {
@@ -17906,3 +17890,4 @@ if (reviewOverlay) {
     </script>
         </body>
             </html>
+ 
