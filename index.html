@@ -2477,6 +2477,40 @@
         .window-content, .daw-grid-container {
             overflow-y: auto !important;
         }
+
+        /* 4. Auto-Resizable AbleStudio (Desktop uniquement) */
+        @media (min-width: 769px) {
+            #app-daw .window-content {
+                overflow: hidden !important; 
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            #app-daw .window-content > .flex-1.flex-col {
+                min-height: 0 !important;
+                flex: 1 1 0% !important;
+                display: flex;
+                flex-direction: column;
+            }
+            #app-daw .window-content .flex-1.flex-col > .flex-col.md\:flex-row {
+                flex: 1 1 0% !important;
+                min-height: 0 !important;
+                overflow: hidden !important;
+            }
+            #app-daw .window-content .flex-1.flex-col > .flex-col.md\:flex-row > div:first-child {
+                flex: 1 1 0% !important;
+                min-height: 0 !important;
+                display: flex;
+                flex-direction: column;
+            }
+            #app-daw #timeline-container {
+                flex: 1 1 0% !important;
+                min-height: 0 !important;
+                overflow: auto !important;
+            }
+            #app-daw .daw-toolbar, #app-daw #daw-genres-details {
+                flex-shrink: 0 !important;
+            }
+        }
 </style>
             <style>
         
@@ -6734,6 +6768,8 @@ const DEFAULT_STATE = {
             
             // --- JOYSTICK LOGIC (DYNAMIC BRAWL STARS STYLE) ---
             if (isJoystickActive && joystickUI && joystickKnob) {
+                if (typeof hideBuyTooltip === 'function') hideBuyTooltip();
+                
                 // 3. Dynamic scale based on camera zoom (Smaller when zoomed in)
                 const currentZoom = window.targetCamZoom || 1.0;
                 const joyScale = Math.min(1.0, 1.0 / Math.sqrt(currentZoom));
@@ -7686,6 +7722,156 @@ const DEFAULT_STATE = {
                 }
                 return null;
             }
+
+            // NOUVEAU : Interaction "Long Press" pour les objets (Mobile Uniquement)
+            let mobileLongPressTimer = null;
+            let mobileTouchStartX = 0;
+            let mobileTouchStartY = 0;
+            
+            canvasCont.addEventListener('touchstart', (ev) => {
+                if (window.innerWidth > 768) return; // Cloisonné au Mobile
+                if (isJoystickActive) return;
+                if (ev.touches.length > 1) return;
+                
+                const touch = ev.touches[0];
+                mobileTouchStartX = touch.clientX;
+                mobileTouchStartY = touch.clientY;
+                
+                if (typeof hideBuyTooltip === 'function') hideBuyTooltip();
+                if (mobileLongPressTimer) clearTimeout(mobileLongPressTimer);
+                
+                mobileLongPressTimer = setTimeout(() => {
+                    mobileLongPressTimer = null;
+                    try {
+                        const rect = canvasCont.getBoundingClientRect();
+                        const clientX = touch.clientX - rect.left;
+                        const clientY = touch.clientY - rect.top;
+                        mousePos.x = (clientX / rect.width) * 2 - 1;
+                        mousePos.y = -(clientY / rect.height) * 2 + 1;
+                        raycaster.setFromCamera(mousePos, camera);
+                        
+                        const intersects = raycaster.intersectObjects(scene.children, true).filter(hit => {
+                            let isVisibleMesh = hit.object.isMesh && hit.object.visible;
+                            if (!isVisibleMesh) return false;
+                            let curr = hit.object.parent;
+                            while (curr) {
+                                if (!curr.visible) return false;
+                                curr = curr.parent;
+                            }
+                            return true;
+                        });
+
+                        let foundSilhouette = null;
+                        for (let hit of intersects) {
+                            const hitInfo = findCatalogItemByObject(hit.object);
+                            if (hitInfo && hitInfo.item) {
+                                const isOwned = state && state.ownedFurniture && state.ownedFurniture.includes(hitInfo.item.id);
+                                if (!isOwned) {
+                                    foundSilhouette = { hit, info: hitInfo };
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (foundSilhouette) {
+                            const { hit, info } = foundSilhouette;
+                            const item = info.item;
+                            const group = info.group;
+
+                            if (lastHoveredSilhouetteGroup !== group) {
+                                if (lastHoveredSilhouetteGroup) {
+                                    lastHoveredSilhouetteGroup.traverse(child => {
+                                        if (child.isMesh && child.userData.mysticMaterial) {
+                                            child.userData.mysticMaterial.userData.targetOpacity = 0.9;
+                                        }
+                                    });
+                                }
+                                group.traverse(child => {
+                                    if (child.isMesh && child.userData.mysticMaterial) {
+                                        child.userData.mysticMaterial.userData.targetOpacity = 0.7;
+                                    }
+                                });
+                                lastHoveredSilhouetteGroup = group;
+                            }
+
+                            const pos3D = new THREE.Vector3();
+                            const box = new THREE.Box3().setFromObject(group);
+                            box.getCenter(pos3D);
+                            
+                            const distToCam = camera.position.distanceTo(pos3D);
+                            let scaleValue = 35 / distToCam;
+                            scaleValue = Math.max(0.4, Math.min(1.5, scaleValue));
+
+                            pos3D.y += (box.max.y - box.min.y) * 0.4 + 0.3;
+                            pos3D.project(camera);
+
+                            const widthHalf = rect.width / 2;
+                            const heightHalf = rect.height / 2;
+                            
+                            if (tooltipEl) {
+                                let screenX = (pos3D.x * widthHalf) + widthHalf + rect.left;
+                                let screenY = -(pos3D.y * heightHalf) + heightHalf + rect.top;
+                                const tw = tooltipEl.offsetWidth || 280;
+                                const th = tooltipEl.offsetHeight || 120;
+                                const margin = 15;
+
+                                if (screenX - (tw / 2) < margin) {
+                                    screenX = (tw / 2) + margin;
+                                } else if (screenX + (tw / 2) > window.innerWidth - margin) {
+                                    screenX = window.innerWidth - (tw / 2) - margin;
+                                }
+
+                                if (screenY - th < margin) {
+                                    screenY = th + margin;
+                                }
+
+                                tooltipEl.style.left = `${screenX}px`;
+                                tooltipEl.style.top = `${screenY}px`;
+                                tooltipEl.style.transform = `translate(-50%, -100%) scale(${scaleValue})`;
+                                tooltipEl.style.display = 'flex';
+                                
+                                document.getElementById('s-tooltip-name').innerText = item.name;
+                                document.getElementById('s-tooltip-price').innerText = `$${item.price}`;
+                                document.getElementById('s-tooltip-perk').innerText = item.perkDesc;
+                                
+                                const canAfford = state.money >= item.price;
+                                const btn = document.getElementById('s-tooltip-buy-btn');
+                                btn.dataset.itemId = item.id;
+                                if (!canAfford) {
+                                    btn.disabled = true;
+                                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                                    btn.classList.remove('hover:brightness-110');
+                                } else {
+                                    btn.disabled = false;
+                                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                                    btn.classList.add('hover:brightness-110');
+                                }
+                            }
+                        }
+                    } catch(e) {}
+                }, 1000);
+            }, { passive: true });
+
+            canvasCont.addEventListener('touchmove', (ev) => {
+                if (window.innerWidth > 768) return;
+                const touch = ev.touches[0];
+                const dx = touch.clientX - mobileTouchStartX;
+                const dy = touch.clientY - mobileTouchStartY;
+                if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                    if (mobileLongPressTimer) {
+                        clearTimeout(mobileLongPressTimer);
+                        mobileLongPressTimer = null;
+                    }
+                }
+            }, { passive: true });
+
+            canvasCont.addEventListener('touchend', (ev) => {
+                if (window.innerWidth > 768) return;
+                if (mobileLongPressTimer) {
+                    clearTimeout(mobileLongPressTimer);
+                    mobileLongPressTimer = null;
+                }
+            });
 
             function hideBuyTooltip() {
                 if (tooltipHideTimer) {
@@ -14491,6 +14677,8 @@ document.addEventListener('mouseover', (e) => {
         }
 
         function openApp(id) {
+            if (typeof hideBuyTooltip === 'function') hideBuyTooltip();
+            
             if (id === 'app-browser') {
                 if (canTriggerMiniGame() && Math.random() < 0.20) {
                     state.lastMiniGameTime = Date.now();
