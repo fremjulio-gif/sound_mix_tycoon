@@ -1013,6 +1013,19 @@
                     top: calc(80px + env(safe-area-inset-top)) !important;
                 }
 
+                /* Fix des Superpositions (Icônes vs Boutons Flottants) */
+                #desktop-icons-container {
+                    padding-top: calc(140px + env(safe-area-inset-top)) !important;
+                }
+                
+                /* Épuration du HUD (Top Bar) */
+                #hud div[onclick*="'rep'"],
+                #hud div[onclick*="'fol'"],
+                #hud div[onclick*="'hype'"],
+                #hud div[onclick*="'streak'"] {
+                    display: none !important;
+                }
+
                 .btn-minimal, .btn-action, .seq-pad, .btn-daw-pad, .taskbar-btn { min-height: 44px; }
                 .btn-minimal, .btn-action { padding: 12px 10px !important; }
 
@@ -15831,6 +15844,8 @@ document.addEventListener('mouseover', (e) => {
                         <div class="text-[var(--text-muted)]">USER:</div>            <div class="text-white">${state.username}</div>
                         <div class="text-[var(--text-muted)]">UPTIME (Days):</div>   <div class="text-white anim-counter" data-val="${state.day}">0</div>
                         <div class="text-[var(--text-muted)]">REVENUE_MULT:</div>    <div class="text-[var(--accent)] font-bold drop-shadow-[0_0_5px_var(--accent)]">x<span class="anim-counter" data-val="${state.multiplier}" data-decimals="1">0.0</span></div>
+                        <div class="text-[var(--text-muted)]">REPUTATION:</div>      <div class="text-[var(--retro-orange)] font-bold drop-shadow-[0_0_5px_var(--retro-orange)] anim-counter" data-val="${Math.floor(state.rep)}">0</div>
+                        <div class="text-[var(--text-muted)]">FOLLOWERS:</div>       <div class="text-[var(--accent)] font-bold drop-shadow-[0_0_5px_var(--accent)] anim-counter" data-val="${Math.floor(state.followers)}">0</div>
                         <div class="col-span-2 text-gray-800 tracking-tighter">------------------------------------------</div>
                         <div class="text-[var(--text-muted)]">TRACKS_EXPORTED:</div> <div class="text-white anim-counter" data-val="${state.stats.tracks}">0</div>
                         <div class="text-[var(--text-muted)]">BANGERS (Hits):</div>  <div class="text-[var(--retro-orange)] font-bold drop-shadow-[0_0_5px_var(--retro-orange)] anim-counter" data-val="${state.stats.bangers}">0</div>
