@@ -543,14 +543,20 @@
     }
 
     #desktop-icons-container {
-        grid-column: 1;
-        grid-row: 1 / 3;
+        grid-column: 1 / -1;
+        grid-row: 1;
         align-self: start;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        gap: 40px !important;
+        width: 100%;
+        margin-bottom: 10px;
     }
 
             .widgets-container {
-                grid-column: 2 / 4;
-                grid-row: 1 / 3;
+                grid-column: 1 / -1;
+                grid-row: 2 / 4;
                 width: 100%;
                 height: 100%;
                 max-height: none;
@@ -1013,17 +1019,59 @@
                     top: calc(80px + env(safe-area-inset-top)) !important;
                 }
 
-                /* Fix des Superpositions (Icônes vs Boutons Flottants) */
+                /* Fix des Superpositions & Alignement horizontal des Icônes */
                 #desktop-icons-container {
-                    padding-top: calc(140px + env(safe-area-inset-top)) !important;
+                    padding-top: calc(110px + env(safe-area-inset-top)) !important;
+                    display: flex !important;
+                    flex-direction: row !important;
+                    justify-content: space-evenly !important;
+                    align-items: flex-start !important;
+                    gap: 2px !important;
+                }
+                #desktop-icons-container .desktop-icon {
+                    width: auto !important;
+                    min-width: 0 !important;
+                    flex: 1 !important;
+                    margin: 0 !important;
+                    transform: scale(0.9);
+                }
+                #desktop-icons-container .desktop-icon svg {
+                    width: 28px !important;
+                    height: 28px !important;
+                    margin: 0 auto;
+                }
+                #desktop-icons-container .desktop-icon span {
+                    font-size: 8.5px !important;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 50px;
+                    display: inline-block;
                 }
                 
-                /* Épuration du HUD (Top Bar) */
-                #hud div[onclick*="'rep'"],
-                #hud div[onclick*="'fol'"],
+                /* HUD Mobile : Restauration de REP/FOL en version miniature */
                 #hud div[onclick*="'hype'"],
                 #hud div[onclick*="'streak'"] {
                     display: none !important;
+                }
+                #hud div[onclick*="'rep'"],
+                #hud div[onclick*="'fol'"] {
+                    display: flex !important;
+                    padding: 0 4px !important;
+                    gap: 2px !important;
+                    transform: scale(0.85);
+                    transform-origin: center;
+                    margin-left: -4px !important;
+                    margin-right: -4px !important;
+                }
+                #hud div[onclick*="'rep'"] span,
+                #hud div[onclick*="'fol'"] span {
+                    font-size: 11px !important;
+                }
+                #hud div[onclick*="'rep'"] > div:nth-child(2),
+                #hud div[onclick*="'fol'"] > div:nth-child(2) {
+                    min-width: 45px !important;
+                    height: 4px !important;
                 }
 
                 .btn-minimal, .btn-action, .seq-pad, .btn-daw-pad, .taskbar-btn { min-height: 44px; }
@@ -3117,7 +3165,7 @@
             </div>
 
             <div id="desktop-content">
-            <div class="flex flex-col gap-2 pt-1" id="desktop-icons-container">
+            <div class="" id="desktop-icons-container">
                     <div class="desktop-icon group" onclick="openApp('app-daw')">
                         <div class="icon-box"><svg class="w-9 h-9 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg></div>
                         <span class="text-[11px] font-retro mt-1 text-gray-200 tracking-wider group-hover:text-white group-hover:drop-shadow-[0_0_5px_#fff]">AbleStudio</span>
@@ -6802,7 +6850,8 @@ const DEFAULT_STATE = {
 
             // Utilisation de safeEnergy pour empêcher l'infection NaN
             const energySpeedMult = 0.7 + (Math.max(0, safeEnergy) / 100) * 0.3;
-            const maxSpeed = 0.04 * energySpeedMult;
+            const mobileSpeedMult = ((typeof isMobile !== 'undefined' && isMobile) || window.innerWidth <= 768) ? 1.8 : 1.0;
+            const maxSpeed = 0.04 * energySpeedMult * mobileSpeedMult;
             
             if (Math.abs(window.velX) > 0.005 || Math.abs(window.velZ) > 0.005) {
                 if (typeof targetPosition !== 'undefined' && targetPosition) targetPosition = null; // Clear mouse target if moving by keyboard/joystick
@@ -6860,7 +6909,7 @@ const DEFAULT_STATE = {
                 if (distance > 0.02) { 
                     if (typeof rotateAvatarToward === 'function') rotateAvatarToward(targetPosition, 0.12);
 
-                    const baseSpeed = 0.03 * energySpeedMult;
+                    const baseSpeed = 0.03 * energySpeedMult * mobileSpeedMult;
                     const easing = Math.min(1, distance * 4); 
                     const currentSpeed = baseSpeed * easing;
 
