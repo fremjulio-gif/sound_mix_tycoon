@@ -14420,12 +14420,14 @@ document.addEventListener('mouseover', (e) => {
                 }
             }
             
-            // 1. Fermeture automatique des autres apps (Exclusivité stricte Desktop & Mobile)
-            document.querySelectorAll('.os-window').forEach(win => {
-                if (win.id !== id && win.style.display !== 'none') {
-                    closeApp(win.id);
-                }
-            });
+            // 1. Fermeture automatique des autres apps (Exclusivité stricte sur Mobile uniquement)
+            if (window.innerWidth <= 768) {
+                document.querySelectorAll('.os-window').forEach(wnd => {
+                    if (wnd.id !== id && wnd.style.display !== 'none' && wnd.style.display !== '') {
+                        closeApp(wnd.id);
+                    }
+                });
+            }
 
             // Masquage des boutons OS (optimisation de l'espace)
             const gear = document.getElementById('audio-settings-gear');
@@ -14455,12 +14457,55 @@ document.addEventListener('mouseover', (e) => {
                 }
             }
 
-            // Positionnement initial (Desktop uniquement)
-            if (wasHidden && !isMobile) {
-                const w = win.offsetWidth || 700;
-                const h = win.offsetHeight || 500;
-                win.style.left = `${Math.max(20, window.innerWidth/2 - w/2)}px`;
-                win.style.top  = `${Math.max(20, window.innerHeight/2 - h/2 + 20)}px`;
+            // Positionnement initial généreux et Cascade (Desktop uniquement)
+            if (wasHidden && window.innerWidth > 768) {
+                // Dimensions généreuses par défaut si non définies
+                if (!win.style.width) win.style.width = '800px';
+                if (!win.style.height) win.style.height = '600px';
+                
+                // Forcer le reflow pour obtenir les bonnes dimensions
+                const w = win.offsetWidth || 800;
+                const h = win.offsetHeight || 600;
+
+                // Trouver les autres fenêtres visibles pour la cascade
+                let openWindows = [];
+                document.querySelectorAll('.os-window').forEach(wnd => {
+                    if (wnd.id !== id && wnd.style.display !== 'none' && wnd.style.display !== '') {
+                        openWindows.push(wnd);
+                    }
+                });
+
+                if (openWindows.length === 0) {
+                    // Première fenêtre : centrer
+                    win.style.left = `${Math.max(20, window.innerWidth/2 - w/2)}px`;
+                    win.style.top  = `${Math.max(20, window.innerHeight/2 - h/2)}px`;
+                } else {
+                    // Cascade depuis la dernière fenêtre active (celle avec le plus grand z-index)
+                    let topWindow = openWindows[0];
+                    let maxZ = parseInt(window.getComputedStyle(topWindow).zIndex) || 0;
+                    for (let i = 1; i < openWindows.length; i++) {
+                        let z = parseInt(window.getComputedStyle(openWindows[i]).zIndex) || 0;
+                        if (z > maxZ) {
+                            maxZ = z;
+                            topWindow = openWindows[i];
+                        }
+                    }
+                    
+                    let refLeft = parseInt(topWindow.style.left) || (window.innerWidth/2 - w/2);
+                    let refTop = parseInt(topWindow.style.top) || (window.innerHeight/2 - h/2);
+                    
+                    let newLeft = refLeft + 40;
+                    let newTop = refTop + 40;
+                    
+                    // Sécurité : si ça sort de l'écran, on reset au centre
+                    if (newLeft + w > window.innerWidth || newTop + h > window.innerHeight) {
+                        newLeft = Math.max(20, window.innerWidth/2 - w/2);
+                        newTop = Math.max(20, window.innerHeight/2 - h/2);
+                    }
+                    
+                    win.style.left = `${newLeft}px`;
+                    win.style.top  = `${newTop}px`;
+                }
             }
 
             bringToFront(id);
