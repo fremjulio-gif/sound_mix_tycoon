@@ -2446,6 +2446,32 @@
         }
 
         /* UI Juice for AbleStudio Buttons */
+        
+        /* --- MOBILE OCCLUSION & FATIGUE OPTIMIZATION --- */
+        @media (max-width: 768px) {
+            /* 1. Simplification extrême de la fatigue (Vignette) */
+            #exhaustion-overlay {
+                background: rgba(0, 0, 0, 0.4) !important;
+                mix-blend-mode: normal !important;
+                animation: none !important;
+                will-change: auto !important;
+                box-shadow: none !important;
+            }
+            .exhausted-pulse {
+                animation: none !important;
+            }
+            
+            /* 2. Coupe les animations CSS inutiles de la Room */
+            body.os-active #game-container *,
+            body.os-active #three-canvas-container {
+                animation: none !important;
+                transition: none !important;
+            }
+            /* Optimisation massive : masquer le canvas pour éviter le compositing GPU inutile */
+            body.os-active #three-canvas-container {
+                display: none !important;
+            }
+        }
 </style>
             <style>
         
@@ -11668,6 +11694,15 @@ document.addEventListener('mouseover', (e) => {
         const ctx = canvas.getContext('2d');
         const W = canvas.width;
         const H = canvas.height;
+
+        // OCCLUSION CULLING MOBILE : Ne rien calculer ni dessiner si AbleStudio est caché
+        if (window.innerWidth <= 768) {
+            const dawApp = document.getElementById('app-daw');
+            if (dawApp && (dawApp.style.display === 'none' || dawApp.classList.contains('hidden'))) {
+                specReqId = requestAnimationFrame(drawSpectrogram);
+                return;
+            }
+        }
 
         if (currentGenrePreviewAudio && !currentGenrePreviewAudio.paused && specAnalyser) {
             specAnalyser.getByteFrequencyData(specDataArray);
