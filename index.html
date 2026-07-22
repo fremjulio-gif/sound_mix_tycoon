@@ -2111,39 +2111,65 @@
             100% { stroke-dashoffset: 40; }
         }
 
-        .holo-core {
+        /* Active animations under a helper class .echo-active-anim */
+        .echo-active-anim .holo-core {
             animation: entity-breathe 5s ease-in-out infinite;
-            transform-origin: center bottom;
         }
-
-        .echo-entity-path.wave {
+        .echo-active-anim .echo-entity-path.wave {
             stroke-dasharray: 10 30;
             animation: path-flow 8s linear infinite;
         }
-        .echo-entity-path.wave.alt {
+        .echo-active-anim .echo-entity-path.wave.alt {
             stroke-dasharray: 15 25;
             animation: path-flow 6s linear infinite reverse;
         }
-        .echo-entity-path.wave-h {
+        .echo-active-anim .echo-entity-path.wave-h {
             stroke-dasharray: 20 20;
             animation: path-flow 4s linear infinite;
+        }
+
+        .holo-core {
+            transform-origin: center bottom;
+        }
+
+        /* Dynamic Shaking Classes */
+        .echo-shake-light {
+            animation: entity-talk-shake-light 0.1s infinite !important;
+        }
+        .echo-shake-heavy {
+            animation: entity-talk-shake-heavy 0.1s infinite !important;
+        }
+        
+        @keyframes entity-talk-shake-light {
+            0% { transform: translateX(0) scaleY(1.01); }
+            50% { transform: translateX(-1px) scaleY(0.99); opacity: 0.95; }
+            100% { transform: translateX(1px) scaleY(1); opacity: 1; }
+        }
+        @keyframes entity-talk-shake-heavy {
+            0% { transform: translateX(0) scaleY(1.05); }
+            25% { transform: translateX(-4px) scaleY(0.92); opacity: 0.9; }
+            50% { transform: translateX(5px) scaleY(1.08); opacity: 0.7; }
+            75% { transform: translateX(-3px) scaleY(0.95); opacity: 0.85; }
+            100% { transform: translateX(2px) scaleY(1.02); opacity: 1; }
+        }
+
+        /* Juicy pop feedback for gauges */
+        .juicy-pop {
+            animation: juicyPopAnim 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes juicyPopAnim {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); filter: brightness(1.3); }
+            100% { transform: scale(1); }
         }
 
         /* TALKING: Visceral glitch/vibration */
         .echo-talking .echo-entity-svg {
             filter: url(#talking-glitch) drop-shadow(0 0 30px rgba(var(--echo-c2), 0.8));
-            animation: entity-talk-shake 0.1s infinite;
         }
 
         .echo-talking .echo-abstract-container {
             background: radial-gradient(circle at bottom center, rgba(var(--echo-c2, 139, 92, 246), 0.25) 0%, transparent 80%);
-        }
-
-        @keyframes entity-talk-shake {
-            0% { transform: translateX(0) scaleY(1.05); }
-            33% { transform: translateX(-2px) scaleY(0.95); opacity: 0.9; }
-            66% { transform: translateX(3px) scaleY(1.02); opacity: 0.7; }
-            100% { transform: translateX(-1px) scaleY(1); opacity: 1; }
         }
 
 
@@ -2208,7 +2234,7 @@
         }
 
 
-            /* --- EXTREME MOBILE OPTIMIZATIONS --- */
+             /* --- EXTREME MOBILE OPTIMIZATIONS --- */
             @media (max-width: 767px) {
                 .liquid-glass, .liquid-glass-heavy, .glass-panel, .os-window, #pc-ui-layer {
                     backdrop-filter: none !important;
@@ -2218,6 +2244,23 @@
                 }
                 .joystick-container, #joystick-ui, .joystick-base, .joystick-knob, .btn-daw-pad, .seq-pad, .os-window {
                     touch-action: none !important;
+                }
+                /* Mobile Optimizations for ECHO SVG Filter */
+                .echo-talking .echo-entity-svg {
+                    filter: none !important;
+                    animation: mobile-echo-opacity-pulse 0.3s infinite alternate !important;
+                }
+                @keyframes mobile-echo-opacity-pulse {
+                    from { opacity: 0.65; transform: scale(0.97) translateY(1px); }
+                    to { opacity: 1; transform: scale(1.03) translateY(-1px); }
+                }
+                /* Mobile Touch Target Ergonomics for ECHO Choices */
+                #echo-action-choices button {
+                    min-height: 48px !important;
+                    margin-bottom: 8px !important;
+                }
+                #echo-action-choices {
+                    gap: 8px !important;
                 }
             }
         
@@ -4234,13 +4277,13 @@
                         <span id="echo-sub-timer" class="text-[10px] text-[var(--retro-orange)] font-retro tracking-widest">EXP: 0J</span>
                     </div>
                     <div class="flex flex-col gap-2 items-end">
-                        <span class="flex items-center gap-2">
+                        <span class="flex items-center gap-2" id="echo-alignment-container">
                             <span id="echo-alignment-label" class="text-[9px] font-retro text-gray-300">MODE: NEUTRE ⚖️</span>
                             <span class="inline-block w-20 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10">
                                 <span id="echo-alignment-bar" class="block h-full bg-gradient-to-r from-orange-500 to-purple-500" style="width: 50%"></span>
                             </span>
                         </span>
-                        <span class="flex items-center gap-2">
+                        <span class="flex items-center gap-2" id="echo-trust-container">
                             <span id="echo-trust-label" class="text-[9px] font-retro text-gray-300">CONFIANCE: NEUTRE</span>
                             <span class="inline-block w-20 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10">
                                 <span id="echo-trust-bar" class="block h-full bg-blue-500 transition-all duration-300" style="width: 50%"></span>
@@ -17759,7 +17802,34 @@ function removeEchoTypingIndicator() {
     if (indicator) indicator.remove();
 }
 
-function appendEchoDialogue(text, sender, isLying = false, callback = null) {
+function triggerEchoGaugeFeedback(type) {
+    const containerId = type === 'alignment' ? 'echo-alignment-container' : 'echo-trust-container';
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.classList.remove('juicy-pop');
+        void container.offsetWidth; // Force Reflow
+        container.classList.add('juicy-pop');
+        setTimeout(() => container.classList.remove('juicy-pop'), 600);
+    }
+    
+    // Flash background de l'avatar
+    const avatarWrapper = document.getElementById('echo-avatar-wrapper');
+    if (avatarWrapper) {
+        const flashColor = type === 'alignment' ? 'rgba(251, 191, 36, 0.45)' : 'rgba(59, 130, 246, 0.45)';
+        avatarWrapper.style.transition = 'none';
+        avatarWrapper.style.background = `radial-gradient(circle at bottom center, ${flashColor} 0%, transparent 80%)`;
+        setTimeout(() => {
+            avatarWrapper.style.transition = 'background 1s ease';
+            // Restaure selon trust
+            let c1 = '6, 182, 212';
+            if (state.echoTrust > 70) c1 = '236, 72, 153';
+            else if (state.echoTrust < 30) c1 = '59, 130, 246';
+            avatarWrapper.style.background = `radial-gradient(circle at bottom center, rgba(${c1}, 0.15) 0%, transparent 70%)`;
+        }, 200);
+    }
+}
+
+function appendEchoDialogue(text, sender, isLying = false, callback = null, toneIntensity = 0) {
     const history = document.getElementById('echo-dialogue-history');
     if (!history) return;
 
@@ -17786,8 +17856,44 @@ function appendEchoDialogue(text, sender, isLying = false, callback = null) {
 
         const target = msgDiv.querySelector('.typing-target');
         let index = 0;
-        
-        if (typeof playBleep === 'function') playBleep();
+
+        // Sound design: pitch calculé dynamiquement
+        let pitch = 750;
+        if (isLying) {
+            pitch = 350;
+        } else {
+            pitch = Math.max(300, 750 - (toneIntensity * 80));
+            if (state.echoAlignment <= -30) {
+                pitch -= 150; // Pitch plus bas pour le ton cynique
+            } else if (state.echoAlignment >= 30) {
+                pitch += 150; // Pitch plus aigu pour le puriste
+            }
+        }
+
+        // Web Audio Procedural Click
+        function playTypewriterClick(frequency) {
+            try {
+                if (!audioCtxUI) initAudio();
+                if (!audioCtxUI) return;
+                if (audioCtxUI.state === 'suspended') audioCtxUI.resume();
+                
+                const osc = audioCtxUI.createOscillator();
+                const gainNode = audioCtxUI.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(frequency, audioCtxUI.currentTime);
+                
+                const sfxVol = typeof window.sfxVolume === 'number' ? window.sfxVolume : 1.0;
+                gainNode.gain.setValueAtTime(0.004 * sfxVol, audioCtxUI.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtxUI.currentTime + 0.015);
+                
+                osc.connect(gainNode);
+                gainNode.connect(audioCtxUI.destination);
+                
+                osc.start();
+                osc.stop(audioCtxUI.currentTime + 0.015);
+            } catch (e) {}
+        }
         
         if (isLying && typeof playTone === 'function') {
             setTimeout(() => playTone(180, 'sine', 0.08, 0.02), 100);
@@ -17796,6 +17902,13 @@ function appendEchoDialogue(text, sender, isLying = false, callback = null) {
         // Update avatar colors based on trust (Tâche 2.5)
         const avatarWrapper = document.getElementById('echo-avatar-wrapper');
         const avatarEl = document.getElementById('echo-avatar-element');
+        const svgEl = avatarEl ? avatarEl.querySelector('.echo-entity-svg') : null;
+        
+        let shakeClass = 'echo-shake-light';
+        if (isLying || toneIntensity > 2 || state.echoAlignment <= -30) {
+            shakeClass = 'echo-shake-heavy';
+        }
+
         if (avatarWrapper && avatarEl) {
             let c1 = '6, 182, 212';     // Cyan
             let c2 = '139, 92, 246';    // Deep Purple
@@ -17809,20 +17922,27 @@ function appendEchoDialogue(text, sender, isLying = false, callback = null) {
             avatarEl.style.setProperty('--echo-c1', c1);
             avatarEl.style.setProperty('--echo-c2', c2);
             
-            // Activate talking animation
+            // Activate talking animation & shake
             avatarWrapper.classList.add('echo-talking');
+            if (svgEl) {
+                svgEl.classList.remove('echo-shake-light', 'echo-shake-heavy');
+                svgEl.classList.add(shakeClass);
+            }
         }
 
         // Animation d'écriture progressive (Typing effect)
         function typeChar() {
             if (index < text.length) {
                 target.textContent += text.charAt(index);
+                playTypewriterClick(pitch);
                 index++;
                 history.scrollTop = history.scrollHeight;
-                window.echoTypingTimeout = setTimeout(typeChar, 12 + Math.random() * 10);
+                // Typewriter speed: 20 to 40ms
+                window.echoTypingTimeout = setTimeout(typeChar, 20 + Math.random() * 20);
             } else {
                 window.echoTypingTimeout = null;
                 if (avatarWrapper) avatarWrapper.classList.remove('echo-talking');
+                if (svgEl) svgEl.classList.remove('echo-shake-light', 'echo-shake-heavy');
                 // Slight delay before calling callback to let UI breathe
                 if (callback) setTimeout(callback, 250);
             }
