@@ -2306,6 +2306,27 @@
             transform: scale(0.96) !important;
         }
 
+        /* QTE DISS TRACK MODE CSS */
+        #qte-diss-overlay {
+            z-index: 10000000 !important;
+        }
+        .screen-shake {
+            animation: qte-screen-shake-anim 0.3s ease-in-out infinite;
+        }
+        .qte-micro-shake {
+            animation: qte-screen-shake-anim 0.1s ease-in-out 2;
+        }
+        @keyframes qte-screen-shake-anim {
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(3px, -3px); }
+            60% { transform: translate(-3px, -3px); }
+            80% { transform: translate(3px, 3px); }
+        }
+        #qte-crate-grid button {
+            min-height: 48px;
+        }
+
     
         /* =========================================
            ABLESTUDIO PRO 11 - THEMING SYSTEM (SAFE OPACITY)
@@ -2920,8 +2941,58 @@
                             <p class="text-xs text-[var(--text-muted)] font-retro mb-1">AVERAGE SCORE</p>
                             <p id="review-average" class="text-5xl font-bold font-retro text-white">/10</p>
                         </div>
-                        <button onclick="closeReview()" class="btn-action py-3 px-8 rounded-lg text-xs font-retro tracking-widest">CLOSE</button>
+                        <div class="flex items-center gap-3">
+                            <button id="review-diss-btn" class="hidden btn-action py-3 px-8 rounded-lg text-xs font-retro tracking-widest bg-red-600 hover:bg-red-700 text-white animate-pulse border border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.8)]" onclick="startDissTrackQTE()">⚡ RESPOND (DISS TRACK)</button>
+                            <button onclick="closeReview()" class="btn-action py-3 px-8 rounded-lg text-xs font-retro tracking-widest">CLOSE</button>
+                        </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="qte-diss-overlay" class="fixed inset-0 bg-black/95 flex flex-col items-center justify-center hidden z-[10000000] px-4 font-retro uppercase tracking-widest text-white border-4 border-red-600/50 transition-opacity duration-300" style="opacity: 0; pointer-events: none;">
+            <div id="qte-heartbeat-glow" class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.25)_0%,transparent_70%)] pointer-events-none transition-all duration-300"></div>
+
+            <div class="relative w-full max-w-2xl flex flex-col gap-6 p-6 rounded-2xl border border-red-500 bg-black/90 shadow-[0_0_30px_rgba(239,68,68,0.3)] max-h-[95vh] overflow-y-auto">
+                <div class="flex justify-between items-center border-b border-red-500/30 pb-3">
+                    <span class="text-xs text-red-500 animate-pulse font-bold">⚡ CLAPBACK EMERGENCY ⚡</span>
+                    <span id="qte-timer-display" class="text-3xl font-bold text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]">15.00s</span>
+                </div>
+
+                <div class="text-center text-[10px] text-gray-400">
+                    DISS TRACK MODE ACTIVE! REMPLIS LES 3 PADS POUR RÉPLIQUER !
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 my-2">
+                    <div id="qte-pad-drums" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]" onclick="selectQTEPadSlot('drums')">
+                        <span class="text-2xl mb-1">🥁</span>
+                        <span class="text-[9px] text-gray-400">DRUMS</span>
+                        <span id="qte-pad-drums-val" class="text-[10px] text-red-400 font-bold mt-1 text-center truncate w-full">VIDE</span>
+                    </div>
+                    <div id="qte-pad-melody" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]" onclick="selectQTEPadSlot('melody')">
+                        <span class="text-2xl mb-1">🎹</span>
+                        <span class="text-[9px] text-gray-400">MELODY</span>
+                        <span id="qte-pad-melody-val" class="text-[10px] text-red-400 font-bold mt-1 text-center truncate w-full">VIDE</span>
+                    </div>
+                    <div id="qte-pad-vocal" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]" onclick="selectQTEPadSlot('vocal')">
+                        <span class="text-2xl mb-1">🎤</span>
+                        <span class="text-[9px] text-gray-400">VOCAL/FX</span>
+                        <span id="qte-pad-vocal-val" class="text-[10px] text-red-400 font-bold mt-1 text-center truncate w-full">VIDE</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <span class="text-[10px] text-gray-400">TON CRATE DE SAMPLES :</span>
+                    <div id="qte-crate-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2 overflow-y-auto max-h-[160px] p-1 border border-white/5 rounded-lg bg-black/40"></div>
+                </div>
+
+                <div id="qte-echo-banner" class="hidden flex flex-col items-center justify-center gap-2 border border-purple-500 bg-purple-950/40 p-3 rounded-lg text-center echo-glitch">
+                    <span class="text-[9px] text-purple-400 animate-pulse">🤖 ECHO A PIRATÉ LA TIMELINE !</span>
+                    <button id="qte-echo-hack-btn" class="btn-action w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-[10px] rounded-lg border border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.6)]" onclick="triggerQTEEchoHack()">👾 ECHO HACK: INJECTER SAMPLE VIRAL (ILLÉGAL)</button>
+                </div>
+
+                <div class="flex flex-col gap-2 mt-auto">
+                    <button id="qte-smash-btn" class="hidden btn-action w-full py-3 bg-red-600 text-xs font-bold rounded-xl border-2 border-red-400 shadow-[0_0_20px_rgba(239,68,68,0.8)] animate-pulse" onclick="smashQTERender()">🔥 SMASH TO RENDER! (<span id="qte-smash-count">0</span>/3)</button>
                 </div>
             </div>
         </div>
@@ -13977,6 +14048,14 @@ document.addEventListener('mouseover', (e) => {
             if (state.timeMins >= 1440) {
                 state.timeMins -= 1440;
                 state.day += 1;
+                // Litige/Procès de Diss Track
+                if (state.echoLawsuitDay && state.day === state.echoLawsuitDay) {
+                    const penalty = Math.min(state.money, 3000);
+                    logMoney(-penalty, "Amende violation copyright");
+                    showToast(`⚠️ PROCÈS : L'injection illégale d'ECHO a été détectée ! Amende de ${penalty}$ payée.`, "error");
+                    if (typeof playError === 'function') playError();
+                    state.echoLawsuitDay = null;
+                }
 
                 // Logique de Streak de jours
                 const dayDiff = state.day - (state.lastPlayedDay || 0);
@@ -16504,6 +16583,10 @@ document.addEventListener('mouseover', (e) => {
         }
 
         function closeReview() {
+            if (window.dissTrackTimer) {
+                clearTimeout(window.dissTrackTimer);
+                window.dissTrackTimer = null;
+            }
             const overlay = document.getElementById('review-overlay');
             if (!overlay) return;
 
@@ -16982,8 +17065,35 @@ document.addEventListener('mouseover', (e) => {
         else if (avg >= 4.0) playBleep();
         else playError();
     
-        if (avg >= 7.0) fireConfetti('banger'); // <-- DÉCLENCHEUR ICI
+        if (avg >= 7.0) fireConfetti('banger');
         
+        // NEW: Diss Track QTE Trigger (Flop <= 4/10)
+        if (parseFloat(avg) <= 4.0) {
+            // Trembler la fenêtre de review
+            const reviewOverlay = document.getElementById('review-overlay');
+            if (reviewOverlay) {
+                reviewOverlay.classList.add('screen-shake');
+                setTimeout(() => reviewOverlay.classList.remove('screen-shake'), 1000);
+            }
+            
+            // Son d'alarme/siren
+            playTone(220, 'sawtooth', 0.35, 0.15);
+            setTimeout(() => playTone(330, 'sawtooth', 0.35, 0.15), 180);
+            setTimeout(() => playTone(220, 'sawtooth', 0.35, 0.15), 360);
+            
+            const dissBtn = document.getElementById('review-diss-btn');
+            if (dissBtn) {
+                dissBtn.classList.remove('hidden');
+                dissBtn.style.display = 'block';
+                
+                // Disparaît après 3s si non cliqué
+                window.dissTrackTimer = setTimeout(() => {
+                    dissBtn.classList.add('hidden');
+                    dissBtn.style.display = 'none';
+                    showToast("Trop tard pour répondre. Ton flop est gravé dans le marbre.", "error");
+                }, 3000);
+            }
+        }
 
         if (toastData) {
             showToast(toastData.msg, toastData.type);
@@ -18027,6 +18137,488 @@ function checkEchoAchievements() {
         // Optionnel mais recommandé si jamais un autre bouton HTML l'appelle :
         window.initEchoApp = initEchoApp;
 
+
+// ==========================================
+// DISS TRACK QTE MODE
+// ==========================================
+const qteState = {
+    active: false,
+    startTime: 0,
+    duration: 15000,
+    timeLeft: 15.00,
+    smashCount: 0,
+    hacked: false,
+    echoPrompted: false,
+    pads: { drums: null, melody: null, vocal: null }
+};
+
+let qteAnimationFrame = null;
+
+function getSampleType(sample) {
+    const name = (sample.name || '').toLowerCase();
+    const id = (sample.id || '').toLowerCase();
+    if (name.includes('drum') || name.includes('break') || name.includes('beat') || name.includes('808') || id.includes('amen') || id.includes('funky')) {
+        return 'drums';
+    }
+    if (name.includes('voice') || name.includes('vocal') || name.includes('laugh') || name.includes('chant') || name.includes('brel') || id.includes('thriller') || id.includes('voodoo')) {
+        return 'vocal';
+    }
+    return 'melody';
+}
+
+function getQTECrateItems() {
+    const items = [];
+    
+    // 1. Owned Samples
+    (state.ownedSamples || []).forEach(sampleId => {
+        const s = SAMPLE_CATALOG.find(x => x.id === sampleId);
+        if (s) {
+            items.push({
+                id: s.id,
+                name: s.name,
+                emoji: getSampleType(s) === 'drums' ? '🥁' : (getSampleType(s) === 'vocal' ? '🎤' : '🎹'),
+                type: getSampleType(s),
+                tier: s.tier || 1,
+                genre: s.genre,
+                isSample: true
+            });
+        }
+    });
+
+    // 2. Unlocked Genres
+    DAW_GENRES.forEach(g => {
+        const isUnlocked = (state.stats.tracks || 0) >= g.unlockAt;
+        if (isUnlocked) {
+            items.push({
+                id: `genre_drum_${g.id}`,
+                name: `${g.name} Rhythm`,
+                emoji: '🥁',
+                type: 'drums',
+                tier: 1,
+                genre: g.name,
+                isSample: false
+            });
+            items.push({
+                id: `genre_mel_${g.id}`,
+                name: `${g.name} Lead`,
+                emoji: '🎹',
+                type: 'melody',
+                tier: 1,
+                genre: g.name,
+                isSample: false
+            });
+        }
+    });
+
+    // 3. Default Voices
+    items.push({
+        id: 'voice_m',
+        name: 'Male Vocal',
+        emoji: '🎤',
+        type: 'vocal',
+        tier: 1,
+        genre: 'General',
+        isSample: false
+    });
+    items.push({
+        id: 'voice_f',
+        name: 'Female Vocal',
+        emoji: '🎤',
+        type: 'vocal',
+        tier: 1,
+        genre: 'General',
+        isSample: false
+    });
+    items.push({
+        id: 'voice_instru',
+        name: 'Synth FX',
+        emoji: '🎤',
+        type: 'vocal',
+        tier: 1,
+        genre: 'General',
+        isSample: false
+    });
+    
+    return items;
+}
+
+function startDissTrackQTE() {
+    if (window.dissTrackTimer) {
+        clearTimeout(window.dissTrackTimer);
+        window.dissTrackTimer = null;
+    }
+    
+    const reviewOverlay = document.getElementById('review-overlay');
+    if (reviewOverlay) {
+        reviewOverlay.style.display = 'none';
+        reviewOverlay.classList.remove('pointer-events-auto', 'opacity-100');
+        reviewOverlay.classList.add('pointer-events-none', 'opacity-0');
+    }
+    
+    const qteOverlay = document.getElementById('qte-diss-overlay');
+    if (qteOverlay) {
+        qteOverlay.classList.remove('hidden');
+        qteOverlay.style.display = 'flex';
+        qteOverlay.style.opacity = '1';
+        qteOverlay.style.pointerEvents = 'auto';
+        qteOverlay.style.transform = 'translateY(0)';
+    }
+    
+    qteState.active = true;
+    qteState.smashCount = 0;
+    qteState.hacked = false;
+    qteState.echoPrompted = false;
+    qteState.pads = { drums: null, melody: null, vocal: null };
+    
+    document.getElementById('qte-pad-drums-val').innerText = 'VIDE';
+    document.getElementById('qte-pad-melody-val').innerText = 'VIDE';
+    document.getElementById('qte-pad-vocal-val').innerText = 'VIDE';
+    
+    document.getElementById('qte-pad-drums').className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
+    document.getElementById('qte-pad-melody').className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
+    document.getElementById('qte-pad-vocal').className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
+    
+    document.getElementById('qte-echo-banner').classList.add('hidden');
+    document.getElementById('qte-echo-banner').style.display = 'none';
+    document.getElementById('qte-smash-btn').classList.add('hidden');
+    document.getElementById('qte-smash-count').innerText = '0';
+    
+    populateQTECrate();
+    startQTETimer();
+}
+
+function populateQTECrate() {
+    const grid = document.getElementById('qte-crate-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    
+    const items = getQTECrateItems();
+    items.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'flex flex-col items-center justify-center p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-red-950/20 hover:border-red-500 transition-all text-center gap-1 cursor-pointer';
+        btn.onclick = () => selectQTECrateItem(item);
+        
+        let tierColor = 'text-gray-400';
+        if (item.tier === 2) tierColor = 'text-blue-400';
+        if (item.tier === 3) tierColor = 'text-purple-400';
+        if (item.tier === 4) tierColor = 'text-yellow-400';
+        
+        btn.innerHTML = `
+            <span class="text-xl">${item.emoji}</span>
+            <span class="text-[9px] font-bold text-gray-200 truncate w-full">${item.name}</span>
+            <span class="text-[8px] ${tierColor}">TIER ${item.tier}</span>
+        `;
+        grid.appendChild(btn);
+    });
+}
+
+function selectQTECrateItem(item) {
+    qteState.pads[item.type] = item;
+    
+    const padValEl = document.getElementById(`qte-pad-${item.type}-val`);
+    if (padValEl) {
+        padValEl.innerText = `${item.emoji} ${item.name} (T${item.tier})`;
+        const borderClass = qteState.hacked ? 'border-purple-500 bg-purple-950/20' : 'border-red-500 bg-red-950/20';
+        padValEl.parentElement.className = `flex flex-col items-center justify-center border-2 rounded-xl p-4 cursor-pointer transition-all min-h-[90px] ${borderClass}`;
+    }
+    
+    playTone(150, 'triangle', 0.1, 0.2);
+    playTone(80, 'sine', 0.15, 0.3);
+    
+    const overlay = document.getElementById('qte-diss-overlay');
+    if (overlay) {
+        overlay.classList.add('qte-micro-shake');
+        setTimeout(() => overlay.classList.remove('qte-micro-shake'), 150);
+    }
+    
+    checkQTESmashButton();
+}
+
+function selectQTEPadSlot(type) {
+    if (qteState.pads[type]) {
+        qteState.pads[type] = null;
+        const padValEl = document.getElementById(`qte-pad-${type}-val`);
+        if (padValEl) {
+            padValEl.innerText = 'VIDE';
+            padValEl.parentElement.className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
+        }
+        playTone(100, 'sine', 0.05, 0.1);
+        checkQTESmashButton();
+    }
+}
+
+function triggerQTEEchoHack() {
+    qteState.hacked = true;
+    
+    const types = ['drums', 'melody', 'vocal'];
+    types.forEach(t => {
+        if (!qteState.pads[t]) {
+            const hackItem = {
+                id: `echo_hack_${t}`,
+                name: `👾 VIRAL HACK ${t.toUpperCase()}`,
+                emoji: t === 'drums' ? '🥁' : (t === 'vocal' ? '🎤' : '🎹'),
+                type: t,
+                tier: 4,
+                genre: 'Glitch',
+                isSample: false
+            };
+            qteState.pads[t] = hackItem;
+            const padValEl = document.getElementById(`qte-pad-${t}-val`);
+            if (padValEl) {
+                padValEl.innerText = `${hackItem.emoji} ${hackItem.name} (T4)`;
+                padValEl.parentElement.className = 'flex flex-col items-center justify-center border-2 border-purple-500 bg-purple-950/20 rounded-xl p-4 cursor-pointer transition-all min-h-[90px]';
+            }
+        }
+    });
+
+    playTone(100, 'square', 0.2, 0.2);
+    setTimeout(() => playTone(300, 'sawtooth', 0.1, 0.15), 50);
+    setTimeout(() => playTone(600, 'square', 0.05, 0.1), 100);
+
+    const banner = document.getElementById('qte-echo-banner');
+    if (banner) {
+        banner.classList.add('hidden');
+        banner.style.display = 'none';
+    }
+    
+    checkQTESmashButton();
+}
+
+function checkQTESmashButton() {
+    const btn = document.getElementById('qte-smash-btn');
+    if (!btn) return;
+    
+    if (qteState.timeLeft <= 2.0 && qteState.pads.drums && qteState.pads.melody && qteState.pads.vocal) {
+        btn.classList.remove('hidden');
+        btn.style.display = 'block';
+    } else {
+        btn.classList.add('hidden');
+        btn.style.display = 'none';
+    }
+}
+
+function smashQTERender() {
+    qteState.smashCount++;
+    document.getElementById('qte-smash-count').innerText = qteState.smashCount;
+    playTone(300 + (qteState.smashCount * 100), 'sawtooth', 0.08, 0.15);
+}
+
+function startQTETimer() {
+    qteState.startTime = performance.now();
+    qteState.duration = 15000;
+    
+    function tick(now) {
+        if (!qteState.active) return;
+        
+        const elapsed = now - qteState.startTime;
+        qteState.timeLeft = Math.max(0, (qteState.duration - elapsed) / 1000);
+        
+        const timerDisplay = document.getElementById('qte-timer-display');
+        if (timerDisplay) {
+            timerDisplay.innerText = `${qteState.timeLeft.toFixed(2)}s`;
+            if (qteState.timeLeft <= 5) {
+                timerDisplay.className = 'text-3xl font-bold text-red-500 animate-pulse drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]';
+            }
+        }
+        
+        const heartbeatGlow = document.getElementById('qte-heartbeat-glow');
+        if (heartbeatGlow) {
+            const beatFreq = qteState.timeLeft <= 5.0 ? 0.35 : 1.0;
+            const pulse = 0.15 + 0.15 * Math.abs(Math.sin((now / 1000) * Math.PI * (1 / beatFreq)));
+            heartbeatGlow.style.background = `radial-gradient(circle at center, rgba(239, 68, 68, ${pulse}) 0%, transparent 70%)`;
+        }
+        
+        if (qteState.timeLeft <= 5.0 && !qteState.hacked && !qteState.echoPrompted) {
+            qteState.echoPrompted = true;
+            const echoBanner = document.getElementById('qte-echo-banner');
+            if (echoBanner) {
+                echoBanner.classList.remove('hidden');
+                echoBanner.style.display = 'flex';
+                playTone(440, 'square', 0.25, 0.2);
+            }
+        }
+        
+        if (qteState.timeLeft <= 2.0) {
+            checkQTESmashButton();
+        }
+        
+        if (qteState.timeLeft <= 0) {
+            const padsFilled = qteState.pads.drums && qteState.pads.melody && qteState.pads.vocal;
+            const goodSynergy = checkQTESynergy();
+            const hasHack = qteState.hacked;
+            const enoughSmashes = qteState.smashCount >= 3;
+            const isVictory = padsFilled && (goodSynergy || hasHack) && enoughSmashes;
+            endDissTrackQTE(isVictory);
+        } else {
+            qteAnimationFrame = requestAnimationFrame(tick);
+        }
+    }
+    
+    qteAnimationFrame = requestAnimationFrame(tick);
+}
+
+function checkQTESynergy() {
+    const genres = [
+        qteState.pads.drums ? qteState.pads.drums.genre : '',
+        qteState.pads.melody ? qteState.pads.melody.genre : '',
+        qteState.pads.vocal ? qteState.pads.vocal.genre : ''
+    ].filter(Boolean);
+    
+    const compatibles = [
+        ['Hip-Hop', 'Pop'],
+        ['Hip-Hop', 'UK Drill'],
+        ['Hip-Hop', 'Trap 808'],
+        ['UK Drill', 'Trap 808'],
+        ['UK Drill', 'Phonk'],
+        ['Drum & Bass', 'Synthwave'],
+        ['Synthwave', 'French House'],
+        ['French House', 'Pop'],
+        ['Pop', 'Bossa Lo-Fi'],
+        ['Old School', 'Hip-Hop'],
+        ['Amapiano', 'Afro-Pop'],
+        ['2 Step', 'UK Drill'],
+        ['Plug', 'Trap 808']
+    ];
+    
+    const unique = [...new Set(genres)];
+    if (unique.length <= 1) return true;
+    
+    let hasCompatible = false;
+    for (let i = 0; i < unique.length; i++) {
+        for (let j = i + 1; j < unique.length; j++) {
+            const g1 = unique[i];
+            const g2 = unique[j];
+            
+            const isMatch = compatibles.some(pair => 
+                (pair[0].toLowerCase() === g1.toLowerCase() && pair[1].toLowerCase() === g2.toLowerCase()) ||
+                (pair[1].toLowerCase() === g1.toLowerCase() && pair[0].toLowerCase() === g2.toLowerCase())
+            );
+            if (isMatch) hasCompatible = true;
+        }
+    }
+    
+    return hasCompatible;
+}
+
+function endDissTrackQTE(isVictory) {
+    qteState.active = false;
+    if (qteAnimationFrame) {
+        cancelAnimationFrame(qteAnimationFrame);
+        qteAnimationFrame = null;
+    }
+    
+    const qteOverlay = document.getElementById('qte-diss-overlay');
+    if (!qteOverlay) return;
+    
+    qteOverlay.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease';
+    qteOverlay.style.transform = isVictory ? 'translateY(-120vh)' : 'translateY(120vh)';
+    qteOverlay.style.opacity = '0';
+    qteOverlay.style.pointerEvents = 'none';
+    
+    setTimeout(() => {
+        qteOverlay.classList.add('hidden');
+        qteOverlay.style.display = 'none';
+        applyQTEOutcome(isVictory);
+    }, 800);
+}
+
+function applyQTEOutcome(isVictory) {
+    if (isVictory) {
+        showToast("🔥 BANGER CLAPBACK ! Ta réplique a cartonné.", "success");
+        if (typeof playSuccess === 'function') playSuccess();
+        
+        if (window.pendingReviewData) {
+            window.pendingReviewData.track.score = 8.0;
+            window.pendingReviewData.toast = {
+                msg: "📀 BANGER CLAPBACK ! Le morceau passe à 8.0/10 [CULT CLASSIC] !",
+                type: 'success'
+            };
+            window.pendingReviewData.money = Math.floor(window.pendingReviewData.money * 3.5);
+            window.pendingReviewData.fans = Math.floor(window.pendingReviewData.fans * 4.0);
+        }
+        
+        state.ins = 100;
+        if (typeof updateHype === 'function') updateHype(200);
+        
+        if (qteState.hacked) {
+            state.echoAlignment = Math.max(-100, state.echoAlignment - 20);
+            state.echoLawsuitDay = state.day + Math.floor(Math.random() * 3) + 2;
+            showToast("👾 HACK ILLÉGAL : Risque futur de procès détecté.", "warning");
+        } else {
+            state.rep = Math.max(0, state.rep + 100);
+            state.echoAlignment = Math.min(100, state.echoAlignment + 20);
+            state.echoTrust = Math.min(100, state.echoTrust + 15);
+            showToast("🎛️ PURISTE: Composé sans aide (+100 REP) !", "success");
+        }
+    } else {
+        showToast("💀 CRINGE RESPONSE ! Ta carrière est en miettes.", "error");
+        if (typeof playError === 'function') playError();
+        
+        if (window.pendingReviewData) {
+            window.pendingReviewData.track.score = 1.0;
+            window.pendingReviewData.toast = {
+                msg: "💀 CAREER SUICIDE ! Ton clapback était ultra cringe (1.0/10)...",
+                type: 'error'
+            };
+            window.pendingReviewData.money = 0;
+            window.pendingReviewData.fans = -Math.floor(state.followers * 0.15);
+            window.pendingReviewData.rep = -Math.floor(state.rep * 0.5);
+        }
+        state.ins = 0;
+    }
+    
+    // Re-open review with new values
+    const overlay = document.getElementById('review-overlay');
+    if (overlay) {
+        overlay.style.transition = 'none';
+        overlay.style.transform = 'none';
+        overlay.style.display = 'flex';
+        overlay.style.opacity = '1';
+        overlay.style.pointerEvents = 'auto';
+        overlay.classList.add('pointer-events-auto', 'opacity-100');
+        overlay.classList.remove('pointer-events-none', 'opacity-0');
+        
+        const phaseSuspense = document.getElementById('review-phase-suspense');
+        const phaseResults = document.getElementById('review-phase-results');
+        if (phaseSuspense) phaseSuspense.style.display = 'none';
+        if (phaseResults) phaseResults.style.display = 'flex';
+        
+        const avgEl = document.getElementById('review-average');
+        const finalScore = isVictory ? 8.0 : 1.0;
+        if (avgEl) {
+            avgEl.innerText = `${finalScore.toFixed(1)}/10`;
+            avgEl.className = `text-5xl font-bold font-retro ${isVictory ? 'text-[var(--retro-green)]' : 'text-[var(--retro-red)]'}`;
+        }
+        
+        const reviewList = document.getElementById('review-list');
+        if (reviewList) {
+            reviewList.innerHTML = `
+                <div class="bg-black/60 border border-${isVictory ? 'green-500/30' : 'red-500/30'} rounded-lg p-4 animate-pulse">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[10px] font-retro text-yellow-500">🎤 RAP CLAPBACK</span>
+                        <span class="text-[10px] font-retro text-white">RÉPLIQUE DISS TRACK</span>
+                    </div>
+                    <div class="flex justify-between items-center gap-3">
+                        <p class="text-sm text-gray-300 italic flex-1">
+                            ${isVictory 
+                                ? (qteState.hacked 
+                                    ? '"Ce sample viral injecté en douce a retourné tout TikTok ! Un coup de génie commercial."' 
+                                    : '"Un couplet destructeur posé sans aucune aide, c\'est du pur génie artistique."') 
+                                : '"Mais c\'est quoi cette catastrophe ? Le mec bégaie et se tire une balle dans le pied."'}
+                        </p>
+                        <span class="text-2xl font-bold font-retro flex-shrink-0 ${isVictory ? 'text-[var(--retro-green)]' : 'text-[var(--retro-red)]'}">${finalScore.toFixed(1)}/10</span>
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+
+window.startDissTrackQTE = startDissTrackQTE;
+window.selectQTEPadSlot = selectQTEPadSlot;
+window.selectQTECrateItem = selectQTECrateItem;
+window.triggerQTEEchoHack = triggerQTEEchoHack;
+window.smashQTERender = smashQTERender;
 
 // ==========================================
 // BOOT SEQUENCE (Tout en bas du script)
