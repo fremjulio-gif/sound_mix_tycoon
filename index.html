@@ -18304,21 +18304,35 @@ function calculateMaxRep(rank) {
     return 1000;
 }
 
-let qteGenrePreviewNodes = [];
-let qteGenrePreviewTimeouts = [];
+let currentGenrePreviewNodes = [];
+let currentGenrePreviewTimeouts = [];
+window.currentGenrePreviewNodes = currentGenrePreviewNodes;
+window.currentGenrePreviewTimeouts = currentGenrePreviewTimeouts;
 
 function stopQTEGenrePreview() {
-    if (currentGenrePreviewNodes) {
-        currentGenrePreviewNodes.forEach(node => {
-            try { node.stop(); } catch(e){}
-            try { node.disconnect(); } catch(e){}
-        });
-        currentGenrePreviewNodes = [];
+    try {
+        if (typeof currentGenrePreviewNodes !== 'undefined' && currentGenrePreviewNodes) {
+            if (Array.isArray(currentGenrePreviewNodes)) {
+                currentGenrePreviewNodes.forEach(node => { 
+                    try { node.stop(); } catch(e){} 
+                    try { node.disconnect(); } catch(e){} 
+                });
+            } else if (currentGenrePreviewNodes.stop) {
+                try { currentGenrePreviewNodes.stop(); } catch(e){}
+                try { currentGenrePreviewNodes.disconnect(); } catch(e){}
+            }
+        }
+    } catch (err) {
+        console.warn("Erreur mineure lors de l'arrêt de la prévisualisation audio:", err);
     }
-    if (currentGenrePreviewTimeouts) {
-        currentGenrePreviewTimeouts.forEach(t => clearTimeout(t));
-        currentGenrePreviewTimeouts = [];
-    }
+    currentGenrePreviewNodes = [];
+    
+    try {
+        if (typeof currentGenrePreviewTimeouts !== 'undefined' && currentGenrePreviewTimeouts) {
+            currentGenrePreviewTimeouts.forEach(t => clearTimeout(t));
+        }
+    } catch(errT) {}
+    currentGenrePreviewTimeouts = [];
 }
 
 function playQTEGenrePreview(genreId, duration = 4000) {
@@ -18349,7 +18363,7 @@ function playQTEGenrePreview(genreId, duration = 4000) {
             
             osc.start(startTime);
             osc.stop(startTime + durationTime);
-            qteGenrePreviewNodes.push(osc);
+            currentGenrePreviewNodes.push(osc);
         } catch(e) {}
     }
 
@@ -18425,7 +18439,7 @@ function playQTEGenrePreview(genreId, duration = 4000) {
     const tId = setTimeout(() => {
         stopQTEGenrePreview();
     }, duration);
-    qteGenrePreviewTimeouts.push(tId);
+    currentGenrePreviewTimeouts.push(tId);
 }
 
 function updateToastStack() {
