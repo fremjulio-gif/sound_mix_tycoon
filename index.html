@@ -18357,23 +18357,41 @@ function startDissTrackQTE() {
         instructionText.innerText = QTE_TAGLINES[Math.floor(Math.random() * QTE_TAGLINES.length)];
     }
     
-    document.getElementById('qte-pad-genre-val').innerText = 'VIDE';
-    document.getElementById('qte-pad-voice-val').innerText = 'VIDE';
-    document.getElementById('qte-pad-bpm-val').innerText = 'VIDE';
+    const genreVal = document.getElementById('qte-pad-genre-val');
+    if (genreVal) genreVal.innerText = 'VIDE';
+    const voiceVal = document.getElementById('qte-pad-voice-val');
+    if (voiceVal) voiceVal.innerText = 'VIDE';
+    const bpmVal = document.getElementById('qte-pad-bpm-val');
+    if (bpmVal) bpmVal.innerText = 'VIDE';
     
-    document.getElementById('qte-pad-genre-status').innerText = '🎹 GENRE : ❌ VIDE';
-    document.getElementById('qte-pad-voice-status').innerText = '🎤 VOICE : ❌ VIDE';
-    document.getElementById('qte-pad-bpm-status').innerText = '⏱️ BPM : ❌ VIDE';
+    const genreStatus = document.getElementById('qte-pad-genre-status');
+    if (genreStatus) genreStatus.innerText = '🎹 GENRE : ❌ VIDE';
+    const voiceStatus = document.getElementById('qte-pad-voice-status');
+    if (voiceStatus) voiceStatus.innerText = '🎤 VOICE : ❌ VIDE';
+    const bpmStatus = document.getElementById('qte-pad-bpm-status');
+    if (bpmStatus) bpmStatus.innerText = '⏱️ BPM : ❌ VIDE';
     
-    document.getElementById('qte-pad-genre').className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
-    document.getElementById('qte-pad-voice').className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
-    document.getElementById('qte-pad-bpm').className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
+    const padGenre = document.getElementById('qte-pad-genre');
+    if (padGenre) padGenre.className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
+    const padVoice = document.getElementById('qte-pad-voice');
+    if (padVoice) padVoice.className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
+    const padBpm = document.getElementById('qte-pad-bpm');
+    if (padBpm) padBpm.className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
     
-    document.getElementById('qte-echo-banner').classList.add('hidden');
-    document.getElementById('qte-echo-banner').style.display = 'none';
-    document.getElementById('qte-smash-btn').classList.add('hidden', 'qte-smash-blink');
-    document.getElementById('qte-smash-btn').style.display = 'none';
-    document.getElementById('qte-smash-count').innerText = '0';
+    const echoBanner = document.getElementById('qte-echo-banner');
+    if (echoBanner) {
+        echoBanner.classList.add('hidden');
+        echoBanner.style.display = 'none';
+    }
+    
+    const smashBtn = document.getElementById('qte-smash-btn');
+    if (smashBtn) {
+        smashBtn.classList.add('hidden', 'qte-smash-blink');
+        smashBtn.style.display = 'none';
+    }
+    
+    const smashCount = document.getElementById('qte-smash-count');
+    if (smashCount) smashCount.innerText = '0';
     
     const timerDisplay = document.getElementById('qte-timer-display');
     if (timerDisplay) {
@@ -18396,16 +18414,19 @@ function populateQTEDAWColumns() {
     
     // Genres from DAW_GENRES
     const currentTracks = (state && state.stats && typeof state.stats.tracks === 'number') ? state.stats.tracks : 0;
-    DAW_GENRES.forEach(g => {
-        const isUnlocked = currentTracks >= g.unlockAt;
-        if (isUnlocked) {
-            const btn = document.createElement('button');
-            btn.className = 'w-full text-[8px] font-bold py-1.5 px-1 rounded border border-red-500/30 bg-red-950/20 hover:bg-red-500/40 text-red-200 cursor-pointer transition-all truncate text-center';
-            btn.innerText = g.name;
-            btn.onclick = () => selectQTEGenre(g.id, g.name);
-            genreCol.appendChild(btn);
-        }
-    });
+    if (Array.isArray(window.DAW_GENRES) || Array.isArray(DAW_GENRES)) {
+        const list = window.DAW_GENRES || DAW_GENRES;
+        list.forEach(g => {
+            const isUnlocked = currentTracks >= g.unlockAt;
+            if (isUnlocked) {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-[8px] font-bold py-1.5 px-1 rounded border border-red-500/30 bg-red-950/20 hover:bg-red-500/40 text-red-200 cursor-pointer transition-all truncate text-center';
+                btn.innerText = g.name;
+                btn.onclick = () => selectQTEGenre(g.id, g.name);
+                genreCol.appendChild(btn);
+            }
+        });
+    }
     
     // Voices/Moods
     const voices = ['Male Hype', 'Vocal Chop', 'Dark Voice', 'AI Vocals', 'Fem Hype', 'Ambient Vox'];
@@ -18429,6 +18450,7 @@ function populateQTEDAWColumns() {
 }
 
 function selectQTEGenre(id, name) {
+    if (!qteState || !qteState.pads) return;
     qteState.pads.genre = { id, name };
     
     const padValEl = document.getElementById('qte-pad-genre-val');
@@ -18436,7 +18458,9 @@ function selectQTEGenre(id, name) {
     if (padValEl) {
         padValEl.innerText = name;
         const borderClass = qteState.hacked ? 'border-purple-500 bg-purple-950/20' : 'border-red-500 bg-red-950/20';
-        padValEl.parentElement.className = `flex flex-col items-center justify-center border-2 rounded-xl p-4 cursor-pointer transition-all min-h-[90px] ${borderClass}`;
+        if (padValEl.parentElement) {
+            padValEl.parentElement.className = `flex flex-col items-center justify-center border-2 rounded-xl p-4 cursor-pointer transition-all min-h-[90px] ${borderClass}`;
+        }
     }
     if (statusEl) {
         statusEl.innerText = `🎹 GENRE : ✅ PRÊT`;
@@ -18446,6 +18470,7 @@ function selectQTEGenre(id, name) {
 }
 
 function selectQTEVoice(name) {
+    if (!qteState || !qteState.pads) return;
     qteState.pads.voice = name;
     
     const padValEl = document.getElementById('qte-pad-voice-val');
@@ -18453,7 +18478,9 @@ function selectQTEVoice(name) {
     if (padValEl) {
         padValEl.innerText = name;
         const borderClass = qteState.hacked ? 'border-purple-500 bg-purple-950/20' : 'border-blue-500 bg-blue-950/20';
-        padValEl.parentElement.className = `flex flex-col items-center justify-center border-2 rounded-xl p-4 cursor-pointer transition-all min-h-[90px] ${borderClass}`;
+        if (padValEl.parentElement) {
+            padValEl.parentElement.className = `flex flex-col items-center justify-center border-2 rounded-xl p-4 cursor-pointer transition-all min-h-[90px] ${borderClass}`;
+        }
     }
     if (statusEl) {
         statusEl.innerText = `🎤 VOICE : ✅ PRÊT`;
@@ -18463,6 +18490,7 @@ function selectQTEVoice(name) {
 }
 
 function selectQTEBPM(bpm) {
+    if (!qteState || !qteState.pads) return;
     qteState.pads.bpm = bpm;
     
     const padValEl = document.getElementById('qte-pad-bpm-val');
@@ -18470,7 +18498,9 @@ function selectQTEBPM(bpm) {
     if (padValEl) {
         padValEl.innerText = `${bpm} BPM`;
         const borderClass = qteState.hacked ? 'border-purple-500 bg-purple-950/20' : 'border-yellow-500 bg-yellow-950/20';
-        padValEl.parentElement.className = `flex flex-col items-center justify-center border-2 rounded-xl p-4 cursor-pointer transition-all min-h-[90px] ${borderClass}`;
+        if (padValEl.parentElement) {
+            padValEl.parentElement.className = `flex flex-col items-center justify-center border-2 rounded-xl p-4 cursor-pointer transition-all min-h-[90px] ${borderClass}`;
+        }
     }
     if (statusEl) {
         statusEl.innerText = `⏱️ BPM : ✅ PRÊT`;
@@ -18481,8 +18511,10 @@ function selectQTEBPM(bpm) {
 
 function triggerQTEPadFeedback(type) {
     // Play aggressive percussion synth
-    playTone(120, 'triangle', 0.12, 0.25);
-    playTone(65, 'sine', 0.2, 0.35); // extra punch sub
+    if (typeof playTone === 'function') {
+        playTone(120, 'triangle', 0.12, 0.25);
+        playTone(65, 'sine', 0.2, 0.35); // extra punch sub
+    }
     
     // Visual flash of the overlay background
     const overlay = document.getElementById('qte-diss-overlay');
@@ -18491,8 +18523,11 @@ function triggerQTEPadFeedback(type) {
         overlay.style.backgroundColor = 'rgba(220, 38, 38, 0.25)';
         overlay.classList.add('qte-micro-shake');
         setTimeout(() => {
-            overlay.style.backgroundColor = originalBg;
-            overlay.classList.remove('qte-micro-shake');
+            const overlayCheck = document.getElementById('qte-diss-overlay');
+            if (overlayCheck) {
+                overlayCheck.style.backgroundColor = originalBg;
+                overlayCheck.classList.remove('qte-micro-shake');
+            }
         }, 120);
     }
     
@@ -18509,26 +18544,32 @@ function triggerQTEPadFeedback(type) {
 }
 
 function selectQTEPadSlot(type) {
+    if (!qteState || !qteState.pads) return;
     if (qteState.pads[type]) {
         qteState.pads[type] = null;
         const padValEl = document.getElementById(`qte-pad-${type}-val`);
         const statusEl = document.getElementById(`qte-pad-${type}-status`);
         if (padValEl) {
             padValEl.innerText = 'VIDE';
-            padValEl.parentElement.className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
-            padValEl.parentElement.classList.remove('qte-pad-flash-success', 'qte-pad-flash-success-hack');
+            if (padValEl.parentElement) {
+                padValEl.parentElement.className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
+                padValEl.parentElement.classList.remove('qte-pad-flash-success', 'qte-pad-flash-success-hack');
+            }
         }
         
         const labelMap = { genre: '🎹 GENRE', voice: '🎤 VOICE', bpm: '⏱️ BPM' };
         if (statusEl) {
             statusEl.innerText = `${labelMap[type]} : ❌ VIDE`;
         }
-        playTone(100, 'sine', 0.05, 0.1);
+        if (typeof playTone === 'function') {
+            playTone(100, 'sine', 0.05, 0.1);
+        }
         checkQTESmashButton();
     }
 }
 
 function triggerQTEEchoHack() {
+    if (!qteState) return;
     qteState.hacked = true;
     
     if (!qteState.pads.genre) {
@@ -18541,9 +18582,11 @@ function triggerQTEEchoHack() {
         selectQTEBPM(999);
     }
 
-    playTone(100, 'square', 0.2, 0.2);
-    setTimeout(() => playTone(300, 'sawtooth', 0.1, 0.15), 50);
-    setTimeout(() => playTone(600, 'square', 0.05, 0.1), 100);
+    if (typeof playTone === 'function') {
+        playTone(100, 'square', 0.2, 0.2);
+        setTimeout(() => playTone(300, 'sawtooth', 0.1, 0.15), 50);
+        setTimeout(() => playTone(600, 'square', 0.05, 0.1), 100);
+    }
 
     const banner = document.getElementById('qte-echo-banner');
     if (banner) {
@@ -18555,6 +18598,7 @@ function triggerQTEEchoHack() {
 }
 
 function checkQTESmashButton() {
+    if (!qteState || !qteState.pads) return;
     const btn = document.getElementById('qte-smash-btn');
     if (!btn) return;
     
@@ -18572,23 +18616,33 @@ function checkQTESmashButton() {
 }
 
 function smashQTERender() {
+    if (!qteState) return;
     qteState.smashCount++;
-    document.getElementById('qte-smash-count').innerText = qteState.smashCount;
-    playTone(300 + (qteState.smashCount * 100), 'sawtooth', 0.08, 0.15);
+    const smashCountEl = document.getElementById('qte-smash-count');
+    if (smashCountEl) {
+        smashCountEl.innerText = qteState.smashCount;
+    }
+    if (typeof playTone === 'function') {
+        playTone(300 + (qteState.smashCount * 100), 'sawtooth', 0.08, 0.15);
+    }
     
     const btn = document.getElementById('qte-smash-btn');
     if (btn) {
         btn.classList.add('btn-smash-active');
-        setTimeout(() => btn.classList.remove('btn-smash-active'), 50);
+        setTimeout(() => {
+            const btnCheck = document.getElementById('qte-smash-btn');
+            if (btnCheck) btnCheck.classList.remove('btn-smash-active');
+        }, 50);
     }
 }
 
 function startQTETimer() {
+    if (!qteState) return;
     qteState.startTime = performance.now();
     qteState.duration = 15000;
     
     function tick(now) {
-        if (!qteState.active) return;
+        if (!qteState || !qteState.active) return;
         
         const elapsed = now - qteState.startTime;
         qteState.timeLeft = Math.max(0, (qteState.duration - elapsed) / 1000);
@@ -18618,7 +18672,7 @@ function startQTETimer() {
             if (echoBanner) {
                 echoBanner.classList.remove('hidden');
                 echoBanner.style.display = 'flex';
-                playTone(440, 'square', 0.25, 0.2);
+                if (typeof playTone === 'function') playTone(440, 'square', 0.25, 0.2);
             }
         }
         
@@ -18642,11 +18696,13 @@ function startQTETimer() {
 }
 
 function checkQTESynergy() {
+    if (!qteState || !qteState.pads) return false;
     if (qteState.hacked) return true;
     if (!qteState.pads.genre || !qteState.pads.bpm) return false;
     
     const genreId = qteState.pads.genre.id;
-    const g = DAW_GENRES.find(x => x.id === genreId);
+    const list = window.DAW_GENRES || (typeof DAW_GENRES !== 'undefined' ? DAW_GENRES : []);
+    const g = list.find(x => x.id === genreId);
     if (!g) return false;
     
     const diff = Math.abs(qteState.pads.bpm - g.targetBpm);
@@ -18654,22 +18710,28 @@ function checkQTESynergy() {
 }
 
 function endDissTrackQTE(isVictory) {
-    qteState.active = false;
+    if (qteState) qteState.active = false;
     if (qteAnimationFrame) {
         cancelAnimationFrame(qteAnimationFrame);
         qteAnimationFrame = null;
     }
     
     const qteOverlay = document.getElementById('qte-diss-overlay');
-    if (!qteOverlay) return;
+    if (!qteOverlay) {
+        applyQTEOutcome(isVictory);
+        return;
+    }
     
     qteOverlay.classList.remove('qte-outro-win', 'qte-outro-fail');
     qteOverlay.classList.add(isVictory ? 'qte-outro-win' : 'qte-outro-fail');
     qteOverlay.style.pointerEvents = 'none';
     
     setTimeout(() => {
-        qteOverlay.classList.add('hidden');
-        qteOverlay.style.display = 'none';
+        const qteOverlayCheck = document.getElementById('qte-diss-overlay');
+        if (qteOverlayCheck) {
+            qteOverlayCheck.classList.add('hidden');
+            qteOverlayCheck.style.display = 'none';
+        }
         applyQTEOutcome(isVictory);
     }, 800);
 }
