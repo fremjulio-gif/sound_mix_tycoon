@@ -3000,7 +3000,7 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <button id="review-diss-btn" class="hidden btn-action py-3 px-8 rounded-lg text-xs font-retro tracking-widest bg-red-600 hover:bg-red-700 text-white animate-pulse border border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.8)]" onclick="startDissTrackQTE()">⚡ RESPOND (DISS TRACK)</button>
-                            <button onclick="closeReview()" class="btn-action py-3 px-8 rounded-lg text-xs font-retro tracking-widest">CLOSE</button>
+                            <button onclick="closeReview()" class="btn-action py-3 px-8 rounded-lg text-xs font-retro tracking-widest" style="pointer-events: auto !important; z-index: 9999 !important;">CLOSE</button>
                         </div>
                     </div>
                 </div>
@@ -16663,92 +16663,133 @@ document.addEventListener('mouseover', (e) => {
         }
 
         function closeReview() {
-            if (window.dissTrackTimer) {
-                clearTimeout(window.dissTrackTimer);
-                window.dissTrackTimer = null;
-            }
             const overlay = document.getElementById('review-overlay');
-            if (!overlay) return;
-
-            if (typeof stopQTEGenrePreview === 'function') {
-                stopQTEGenrePreview();
-            }
-
-            const isAfterDissTrack = !!window.isAfterDissTrack;
-            const isVictory = !!window.dissTrackVictory;
-
-            if (isAfterDissTrack) {
-                overlay.classList.remove('qte-outro-win', 'qte-outro-fail');
-                overlay.classList.add(isVictory ? 'qte-outro-win' : 'qte-outro-fail');
-                overlay.style.pointerEvents = 'none';
-            } else {
-                overlay.classList.remove('pointer-events-auto', 'opacity-100');
-                overlay.classList.add('pointer-events-none', 'opacity-0');
-                overlay.style.opacity = '0';
-                overlay.style.pointerEvents = 'none';
-            }
-
-            state.isReviewActive = false; state.isExporting = false; // Désactive l'état de revue et libère l'export
-
-            // Application des récompenses différées
-            if (window.pendingReviewData) {
-                const d = window.pendingReviewData;
-                logMoney(d.money, 'Track Royalties');
-                state.rep = Math.max(0, state.rep + d.rep);
-                logFollower(d.fans);
-                checkAchievement('dans_la_sauce', () => state.followers >= 100000);
-                checkAchievement('first_blood', () => state.stats.tracks >= 1);
-                checkAchievement('productivite_toxique', () => state.stats.consecutiveFlops >= 5);
-                if (d.avgReviewScore) {
-                    checkAchievement('certifie_classique', () => d.avgReviewScore === "10.0");
-                }
-                if (d.money > 0) playCashSound();
-                showToast(d.toast.msg, d.toast.type);
-                
-                // Trigger deferred toasts with a slight delay
-                if (d.extraToasts && d.extraToasts.length > 0) {
-                    d.extraToasts.forEach((t, idx) => {
-                        setTimeout(() => {
-                            showToast(t.msg, t.type, t.onClick, t.priority);
-                        }, 800 * (idx + 1)); // Stagger toasts
-                    });
+            
+            try {
+                if (window.dissTrackTimer) {
+                    clearTimeout(window.dissTrackTimer);
+                    window.dissTrackTimer = null;
                 }
                 
-                updateHUD();
-                saveGame();
-
-                // --- DÉCLENCHEMENT DU LIVE CHAT SYNCHRONISÉ ---
-                if (d.track) {
-                    // 1. Force l'ouverture de l'application SoundNet au premier plan
-                    openApp('app-social');
-                    
-                    // 2. Force l'affichage de l'onglet "Feed" (là où se trouve le chat)
-                    switchSocialTab('feed');
-                    
-                    // 3. Lance le chat avec un tout petit délai pour laisser l'animation de la fenêtre se faire
-                    setTimeout(() => {
-                        startLiveChat(d.track);
-                        const chatSection = document.getElementById('live-chat-section');
-                        if (chatSection) chatSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 400);
+                if (typeof stopQTEGenrePreview === 'function') {
+                    stopQTEGenrePreview();
                 }
-                // Trigger Mono Mix Mini Game: 30% chance if tracks exported > 5
-                if (state.stats.tracks > 5 && Math.random() < 0.30) {
-                    setTimeout(() => {
-                        triggerMonoMixMiniGame();
-                    }, 2000);
-                }
-                window.pendingReviewData = null; // Nettoyage après déclenchement
-            }
 
-            const delay = isAfterDissTrack ? 800 : 500;
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-                overlay.style.display = 'none';
-                overlay.classList.remove('qte-outro-win', 'qte-outro-fail');
+                const isAfterDissTrack = !!window.isAfterDissTrack;
+                const isVictory = !!window.dissTrackVictory;
+
+                if (isAfterDissTrack) {
+                    if (overlay) {
+                        overlay.classList.remove('qte-outro-win', 'qte-outro-fail');
+                        overlay.classList.add(isVictory ? 'qte-outro-win' : 'qte-outro-fail');
+                        overlay.style.pointerEvents = 'none';
+                    }
+                } else {
+                    if (overlay) {
+                        overlay.classList.remove('pointer-events-auto', 'opacity-100');
+                        overlay.classList.add('pointer-events-none', 'opacity-0');
+                        overlay.style.opacity = '0';
+                        overlay.style.pointerEvents = 'none';
+                    }
+                }
+
+                state.isReviewActive = false; 
+                state.isExporting = false;
+
+                // Application des récompenses différées
+                if (window.pendingReviewData) {
+                    const d = window.pendingReviewData;
+                    try {
+                        logMoney(d.money, 'Track Royalties');
+                        state.rep = Math.max(0, state.rep + d.rep);
+                        logFollower(d.fans);
+                        checkAchievement('dans_la_sauce', () => state.followers >= 100000);
+                        checkAchievement('first_blood', () => state.stats.tracks >= 1);
+                        checkAchievement('productivite_toxique', () => state.stats.consecutiveFlops >= 5);
+                        if (d.avgReviewScore) {
+                            checkAchievement('certifie_classique', () => d.avgReviewScore === "10.0");
+                        }
+                        if (d.money > 0) playCashSound();
+                        showToast(d.toast.msg, d.toast.type);
+                        
+                        if (d.extraToasts && d.extraToasts.length > 0) {
+                            d.extraToasts.forEach((t, idx) => {
+                                setTimeout(() => {
+                                    showToast(t.msg, t.type, t.onClick, t.priority);
+                                }, 800 * (idx + 1));
+                            });
+                        }
+                    } catch(errReward) {
+                        console.error("Error applying rewards in closeReview:", errReward);
+                    }
+                    
+                    try {
+                        updateHUD();
+                        saveGame();
+                    } catch(errSave) {
+                        console.error("Error updating HUD/Save in closeReview:", errSave);
+                    }
+
+                    // --- DÉCLENCHEMENT DU LIVE CHAT SYNCHRONISÉ ---
+                    try {
+                        if (d.track) {
+                            openApp('app-social');
+                            switchSocialTab('feed');
+                            setTimeout(() => {
+                                startLiveChat(d.track);
+                                const chatSection = document.getElementById('live-chat-section');
+                                if (chatSection) chatSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 400);
+                        }
+                    } catch(errChat) {
+                        console.error("Error starting chat in closeReview:", errChat);
+                    }
+                    
+                    try {
+                        if (state.stats.tracks > 5 && Math.random() < 0.30) {
+                            setTimeout(() => {
+                                triggerMonoMixMiniGame();
+                            }, 2000);
+                        }
+                    } catch(errMini) {
+                        console.error("Error triggering mini-game in closeReview:", errMini);
+                    }
+                    window.pendingReviewData = null;
+                }
+
+                const delay = isAfterDissTrack ? 800 : 500;
+                setTimeout(() => {
+                    try {
+                        if (overlay) {
+                            overlay.classList.add('hidden');
+                            overlay.style.display = 'none';
+                            overlay.classList.remove('qte-outro-win', 'qte-outro-fail');
+                            overlay.style.pointerEvents = 'auto'; // Réinitialise les pointer-events
+                        }
+                        window.isAfterDissTrack = false;
+                        window.dissTrackVictory = false;
+                    } catch(errHide) {
+                        console.error("Error hiding overlay inside timeout:", errHide);
+                        if (overlay) {
+                            overlay.style.display = 'none';
+                            overlay.style.pointerEvents = 'auto';
+                        }
+                    }
+                }, delay);
+
+            } catch(e) {
+                console.error("Erreur générale fermeture QTE:", e);
+                if (overlay) {
+                    overlay.style.display = 'none';
+                    overlay.classList.add('hidden');
+                    overlay.classList.remove('qte-outro-win', 'qte-outro-fail');
+                    overlay.style.pointerEvents = 'auto';
+                }
+                state.isReviewActive = false;
+                state.isExporting = false;
                 window.isAfterDissTrack = false;
                 window.dissTrackVictory = false;
-            }, delay);
+            }
         }
 
 
@@ -18660,6 +18701,7 @@ function populateQTEDAWColumns() {
             if (isUnlocked) {
                 const btn = document.createElement('button');
                 btn.className = 'w-full text-[8px] font-bold py-1.5 px-1 rounded border border-red-500/30 bg-red-950/20 hover:bg-red-500/40 text-red-200 cursor-pointer transition-all truncate text-center';
+                btn.style.cssText = "pointer-events: auto !important; cursor: pointer !important; z-index: 10;";
                 btn.innerText = g.name;
                 btn.onclick = () => {
                     if (typeof playQTEGenrePreview === 'function') playQTEGenrePreview(g.id, 4000);
@@ -18678,6 +18720,7 @@ function populateQTEDAWColumns() {
     voices.forEach(v => {
         const btn = document.createElement('button');
         btn.className = 'w-full text-[8px] font-bold py-1.5 px-1 rounded border border-blue-500/30 bg-blue-950/20 hover:bg-blue-500/40 text-blue-200 cursor-pointer transition-all truncate text-center';
+        btn.style.cssText = "pointer-events: auto !important; cursor: pointer !important; z-index: 10;";
         btn.innerText = v;
         btn.onclick = () => selectQTEVoice(v);
         voiceCol.appendChild(btn);
@@ -18688,6 +18731,7 @@ function populateQTEDAWColumns() {
     bpms.forEach(bpm => {
         const btn = document.createElement('button');
         btn.className = 'w-full text-[8px] font-mono font-bold py-1.5 px-1 rounded border border-yellow-500/30 bg-yellow-950/20 hover:bg-yellow-500/40 text-yellow-200 cursor-pointer transition-all truncate text-center';
+        btn.style.cssText = "pointer-events: auto !important; cursor: pointer !important; z-index: 10;";
         btn.innerText = `${bpm} BPM`;
         btn.onclick = () => selectQTEBPM(bpm);
         bpmCol.appendChild(btn);
@@ -19118,5 +19162,3 @@ if (reviewOverlay) {
     </script>
         </body>
             </html>
-
-        
