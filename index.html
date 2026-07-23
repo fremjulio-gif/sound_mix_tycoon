@@ -2328,17 +2328,19 @@
         }
         @keyframes qteFlyUp {
             0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-150vh) scale(0.8); opacity: 0; }
+            100% { transform: translateY(-150vh) scale(0.7); opacity: 0; }
         }
         @keyframes qteFallDown {
             0% { transform: translateY(0) rotate(0deg); opacity: 1; }
             100% { transform: translateY(150vh) rotate(15deg); opacity: 0; }
         }
         .qte-outro-win {
-            animation: qteFlyUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+            animation: qteFlyUp 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+            pointer-events: none;
         }
         .qte-outro-fail {
-            animation: qteFallDown 0.8s cubic-bezier(0.6, 0, 0.8, 1) forwards !important;
+            animation: qteFallDown 0.8s cubic-bezier(0.5, 0, 0.75, 0) forwards !important;
+            pointer-events: none;
         }
         @keyframes redPulse {
             from { border-color: rgba(220, 38, 38, 0.4); box-shadow: 0 0 15px rgba(220, 38, 38, 0.2); }
@@ -3011,7 +3013,7 @@
             <div class="relative w-full max-w-2xl flex flex-col gap-6 p-6 rounded-2xl border border-red-500 bg-black/90 shadow-[0_0_30px_rgba(239, 68, 68, 0.3)] max-h-[95vh] overflow-y-auto">
                 <!-- Flashing Action Banner (Micro-Tutorial) -->
                 <div class="w-full bg-red-950/40 border border-red-500 p-2 rounded-lg text-center animate-pulse shrink-0">
-                    <span class="text-[10px] text-red-400 font-bold tracking-wider">👉 SÉLECTIONNE 3 SAMPLES DANS TON CRATE POUR COMPOSER TA DISS TRACK ! 👈</span>
+                    <span id="qte-instruction-text" class="text-[10px] text-red-400 font-bold tracking-wider">⚡ COMPOSE BIEN VITE TA DISSTRACK, T'ES ATTENDU !!</span>
                 </div>
 
                 <div class="flex justify-between items-center border-b border-red-500/30 pb-3">
@@ -3020,26 +3022,42 @@
                 </div>
 
                 <div class="grid grid-cols-3 gap-4 my-2">
-                    <div id="qte-pad-drums" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]" onclick="selectQTEPadSlot('drums')">
-                        <span class="text-2xl mb-1">🥁</span>
-                        <span id="qte-pad-drums-status" class="text-[9px] text-gray-400">🥁 DRUMS : ❌ VIDE</span>
-                        <span id="qte-pad-drums-val" class="text-[10px] text-red-400 font-bold mt-1 text-center truncate w-full">VIDE</span>
-                    </div>
-                    <div id="qte-pad-melody" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]" onclick="selectQTEPadSlot('melody')">
+                    <div id="qte-pad-genre" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]" onclick="selectQTEPadSlot('genre')">
                         <span class="text-2xl mb-1">🎹</span>
-                        <span id="qte-pad-melody-status" class="text-[9px] text-gray-400">🎹 MELODY : ❌ VIDE</span>
-                        <span id="qte-pad-melody-val" class="text-[10px] text-red-400 font-bold mt-1 text-center truncate w-full">VIDE</span>
+                        <span id="qte-pad-genre-status" class="text-[9px] text-gray-400">🎹 GENRE : ❌ VIDE</span>
+                        <span id="qte-pad-genre-val" class="text-[10px] text-red-400 font-bold mt-1 text-center truncate w-full">VIDE</span>
                     </div>
-                    <div id="qte-pad-vocal" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]" onclick="selectQTEPadSlot('vocal')">
+                    <div id="qte-pad-voice" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]" onclick="selectQTEPadSlot('voice')">
                         <span class="text-2xl mb-1">🎤</span>
-                        <span id="qte-pad-vocal-status" class="text-[9px] text-gray-400">🎤 VOCAL : ❌ VIDE</span>
-                        <span id="qte-pad-vocal-val" class="text-[10px] text-red-400 font-bold mt-1 text-center truncate w-full">VIDE</span>
+                        <span id="qte-pad-voice-status" class="text-[9px] text-gray-400">🎤 VOICE : ❌ VIDE</span>
+                        <span id="qte-pad-voice-val" class="text-[10px] text-red-400 font-bold mt-1 text-center truncate w-full">VIDE</span>
+                    </div>
+                    <div id="qte-pad-bpm" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]" onclick="selectQTEPadSlot('bpm')">
+                        <span class="text-2xl mb-1">⏱️</span>
+                        <span id="qte-pad-bpm-status" class="text-[9px] text-gray-400">⏱️ BPM : ❌ VIDE</span>
+                        <span id="qte-pad-bpm-val" class="text-[10px] text-red-400 font-bold mt-1 text-center truncate w-full">VIDE</span>
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-2">
-                    <span class="text-[10px] text-gray-400">TON CRATE DE SAMPLES :</span>
-                    <div id="qte-crate-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2 overflow-y-auto max-h-[160px] p-1 border border-white/5 rounded-lg bg-black/40"></div>
+                <div class="flex flex-col gap-3">
+                    <span class="text-[10px] text-gray-400">RÉGLAGES DAW / ABLESTUDIO :</span>
+                    <div class="grid grid-cols-3 gap-2 h-[180px] overflow-hidden">
+                        <!-- Column 1: Genre -->
+                        <div class="flex flex-col gap-1 border border-red-500/20 rounded-lg p-1.5 bg-black/50 overflow-y-auto">
+                            <span class="text-[8px] font-bold text-red-400 text-center border-b border-red-500/20 pb-1 mb-1">🎹 GENRES</span>
+                            <div id="qte-genre-col" class="flex flex-col gap-1"></div>
+                        </div>
+                        <!-- Column 2: Voix -->
+                        <div class="flex flex-col gap-1 border border-blue-500/20 rounded-lg p-1.5 bg-black/50 overflow-y-auto">
+                            <span class="text-[8px] font-bold text-blue-400 text-center border-b border-blue-500/20 pb-1 mb-1">🎤 VOIX / MOOD</span>
+                            <div id="qte-voice-col" class="flex flex-col gap-1"></div>
+                        </div>
+                        <!-- Column 3: BPM -->
+                        <div class="flex flex-col gap-1 border border-yellow-500/20 rounded-lg p-1.5 bg-black/50 overflow-y-auto">
+                            <span class="text-[8px] font-bold text-yellow-400 text-center border-b border-yellow-500/20 pb-1 mb-1">⏱️ BPM</span>
+                            <div id="qte-bpm-col" class="flex flex-col gap-1"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="qte-echo-banner" class="hidden flex flex-col items-center justify-center gap-2 border border-purple-500 bg-purple-950/40 p-3 rounded-lg text-center echo-glitch">
@@ -18324,19 +18342,32 @@ function startDissTrackQTE() {
     qteState.smashCount = 0;
     qteState.hacked = false;
     qteState.echoPrompted = false;
-    qteState.pads = { drums: null, melody: null, vocal: null };
+    qteState.pads = { genre: null, voice: null, bpm: null };
     
-    document.getElementById('qte-pad-drums-val').innerText = 'VIDE';
-    document.getElementById('qte-pad-melody-val').innerText = 'VIDE';
-    document.getElementById('qte-pad-vocal-val').innerText = 'VIDE';
+    // Dynamic tagline selection
+    const QTE_TAGLINES = [
+        "⚡ COMPOSE BIEN VITE TA DISSTRACK, T'ES ATTENDU !!",
+        "🔥 LE JURY T'ATTEND AU TOURNANT, DÉPOSE-LES !",
+        "⚠️ BAD BUZZ EN COURS ! ESQUIVE LE FLOP EN 15s !",
+        "🎤 SORS LE PLUS GROS CLAPBACK DE TA CARRIÈRE !",
+        "💥 UN MORCEAU, 15 SECONDES, ZÉRO PARDON !"
+    ];
+    const instructionText = document.getElementById('qte-instruction-text');
+    if (instructionText) {
+        instructionText.innerText = QTE_TAGLINES[Math.floor(Math.random() * QTE_TAGLINES.length)];
+    }
     
-    document.getElementById('qte-pad-drums-status').innerText = '🥁 DRUMS : ❌ VIDE';
-    document.getElementById('qte-pad-melody-status').innerText = '🎹 MELODY : ❌ VIDE';
-    document.getElementById('qte-pad-vocal-status').innerText = '🎤 VOCAL : ❌ VIDE';
+    document.getElementById('qte-pad-genre-val').innerText = 'VIDE';
+    document.getElementById('qte-pad-voice-val').innerText = 'VIDE';
+    document.getElementById('qte-pad-bpm-val').innerText = 'VIDE';
     
-    document.getElementById('qte-pad-drums').className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
-    document.getElementById('qte-pad-melody').className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
-    document.getElementById('qte-pad-vocal').className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
+    document.getElementById('qte-pad-genre-status').innerText = '🎹 GENRE : ❌ VIDE';
+    document.getElementById('qte-pad-voice-status').innerText = '🎤 VOICE : ❌ VIDE';
+    document.getElementById('qte-pad-bpm-status').innerText = '⏱️ BPM : ❌ VIDE';
+    
+    document.getElementById('qte-pad-genre').className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
+    document.getElementById('qte-pad-voice').className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
+    document.getElementById('qte-pad-bpm').className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
     
     document.getElementById('qte-echo-banner').classList.add('hidden');
     document.getElementById('qte-echo-banner').style.display = 'none';
@@ -18349,64 +18380,106 @@ function startDissTrackQTE() {
         timerDisplay.className = 'text-3xl font-bold text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]';
     }
     
-    populateQTECrate();
+    populateQTEDAWColumns();
     startQTETimer();
 }
 
-function populateQTECrate() {
-    const grid = document.getElementById('qte-crate-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
+function populateQTEDAWColumns() {
+    const genreCol = document.getElementById('qte-genre-col');
+    const voiceCol = document.getElementById('qte-voice-col');
+    const bpmCol = document.getElementById('qte-bpm-col');
+    if (!genreCol || !voiceCol || !bpmCol) return;
     
-    const items = getQTECrateItems();
-    items.forEach(item => {
-        const btn = document.createElement('button');
-        btn.className = 'flex flex-col items-center justify-center p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-red-950/20 hover:border-red-500 transition-all text-center gap-1 cursor-pointer';
-        btn.onclick = () => selectQTECrateItem(item);
-        
-        let tierColor = 'text-gray-400';
-        if (item.tier === 2) tierColor = 'text-blue-400';
-        if (item.tier === 3) tierColor = 'text-purple-400';
-        if (item.tier === 4) tierColor = 'text-yellow-400';
-        
-        // Category Badge
-        let badge = '';
-        if (item.type === 'drums') {
-            badge = `<span class="text-[8px] bg-red-600/20 text-red-400 border border-red-500/30 px-1 py-0.5 rounded font-bold">DRUMS</span>`;
-        } else if (item.type === 'melody') {
-            badge = `<span class="text-[8px] bg-blue-600/20 text-blue-400 border border-blue-500/30 px-1 py-0.5 rounded font-bold">MELODY</span>`;
-        } else if (item.type === 'vocal') {
-            badge = `<span class="text-[8px] bg-purple-600/20 text-purple-400 border border-purple-500/30 px-1 py-0.5 rounded font-bold">VOCAL</span>`;
+    genreCol.innerHTML = '';
+    voiceCol.innerHTML = '';
+    bpmCol.innerHTML = '';
+    
+    // Genres from DAW_GENRES
+    const currentTracks = (state && state.stats && typeof state.stats.tracks === 'number') ? state.stats.tracks : 0;
+    DAW_GENRES.forEach(g => {
+        const isUnlocked = currentTracks >= g.unlockAt;
+        if (isUnlocked) {
+            const btn = document.createElement('button');
+            btn.className = 'w-full text-[8px] font-bold py-1.5 px-1 rounded border border-red-500/30 bg-red-950/20 hover:bg-red-500/40 text-red-200 cursor-pointer transition-all truncate text-center';
+            btn.innerText = g.name;
+            btn.onclick = () => selectQTEGenre(g.id, g.name);
+            genreCol.appendChild(btn);
         }
-        
-        btn.innerHTML = `
-            <span class="text-xl">${item.emoji}</span>
-            <span class="text-[9px] font-bold text-gray-200 truncate w-full">${item.name}</span>
-            <div class="flex items-center gap-1">
-                ${badge}
-                <span class="text-[8px] ${tierColor}">T${item.tier}</span>
-            </div>
-        `;
-        grid.appendChild(btn);
+    });
+    
+    // Voices/Moods
+    const voices = ['Male Hype', 'Vocal Chop', 'Dark Voice', 'AI Vocals', 'Fem Hype', 'Ambient Vox'];
+    voices.forEach(v => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full text-[8px] font-bold py-1.5 px-1 rounded border border-blue-500/30 bg-blue-950/20 hover:bg-blue-500/40 text-blue-200 cursor-pointer transition-all truncate text-center';
+        btn.innerText = v;
+        btn.onclick = () => selectQTEVoice(v);
+        voiceCol.appendChild(btn);
+    });
+    
+    // BPMs
+    const bpms = [60, 88, 90, 110, 113, 120, 125, 130, 135, 137, 140, 160];
+    bpms.forEach(bpm => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full text-[8px] font-mono font-bold py-1.5 px-1 rounded border border-yellow-500/30 bg-yellow-950/20 hover:bg-yellow-500/40 text-yellow-200 cursor-pointer transition-all truncate text-center';
+        btn.innerText = `${bpm} BPM`;
+        btn.onclick = () => selectQTEBPM(bpm);
+        bpmCol.appendChild(btn);
     });
 }
 
-function selectQTECrateItem(item) {
-    qteState.pads[item.type] = item;
+function selectQTEGenre(id, name) {
+    qteState.pads.genre = { id, name };
     
-    const padValEl = document.getElementById(`qte-pad-${item.type}-val`);
-    const statusEl = document.getElementById(`qte-pad-${item.type}-status`);
+    const padValEl = document.getElementById('qte-pad-genre-val');
+    const statusEl = document.getElementById('qte-pad-genre-status');
     if (padValEl) {
-        padValEl.innerText = `${item.emoji} ${item.name} (T${item.tier})`;
+        padValEl.innerText = name;
         const borderClass = qteState.hacked ? 'border-purple-500 bg-purple-950/20' : 'border-red-500 bg-red-950/20';
         padValEl.parentElement.className = `flex flex-col items-center justify-center border-2 rounded-xl p-4 cursor-pointer transition-all min-h-[90px] ${borderClass}`;
     }
-    
-    const emojiMap = { drums: '🥁', melody: '🎹', vocal: '🎤' };
     if (statusEl) {
-        statusEl.innerText = `${emojiMap[item.type]} ${item.type.toUpperCase()} : ✅ PRÊT`;
+        statusEl.innerText = `🎹 GENRE : ✅ PRÊT`;
     }
     
+    triggerQTEPadFeedback('genre');
+}
+
+function selectQTEVoice(name) {
+    qteState.pads.voice = name;
+    
+    const padValEl = document.getElementById('qte-pad-voice-val');
+    const statusEl = document.getElementById('qte-pad-voice-status');
+    if (padValEl) {
+        padValEl.innerText = name;
+        const borderClass = qteState.hacked ? 'border-purple-500 bg-purple-950/20' : 'border-blue-500 bg-blue-950/20';
+        padValEl.parentElement.className = `flex flex-col items-center justify-center border-2 rounded-xl p-4 cursor-pointer transition-all min-h-[90px] ${borderClass}`;
+    }
+    if (statusEl) {
+        statusEl.innerText = `🎤 VOICE : ✅ PRÊT`;
+    }
+    
+    triggerQTEPadFeedback('voice');
+}
+
+function selectQTEBPM(bpm) {
+    qteState.pads.bpm = bpm;
+    
+    const padValEl = document.getElementById('qte-pad-bpm-val');
+    const statusEl = document.getElementById('qte-pad-bpm-status');
+    if (padValEl) {
+        padValEl.innerText = `${bpm} BPM`;
+        const borderClass = qteState.hacked ? 'border-purple-500 bg-purple-950/20' : 'border-yellow-500 bg-yellow-950/20';
+        padValEl.parentElement.className = `flex flex-col items-center justify-center border-2 rounded-xl p-4 cursor-pointer transition-all min-h-[90px] ${borderClass}`;
+    }
+    if (statusEl) {
+        statusEl.innerText = `⏱️ BPM : ✅ PRÊT`;
+    }
+    
+    triggerQTEPadFeedback('bpm');
+}
+
+function triggerQTEPadFeedback(type) {
     // Play aggressive percussion synth
     playTone(120, 'triangle', 0.12, 0.25);
     playTone(65, 'sine', 0.2, 0.35); // extra punch sub
@@ -18424,7 +18497,7 @@ function selectQTECrateItem(item) {
     }
     
     // Flash slot container green
-    const pad = document.getElementById(`qte-pad-${item.type}`);
+    const pad = document.getElementById(`qte-pad-${type}`);
     if (pad) {
         const flashClass = qteState.hacked ? 'qte-pad-flash-success-hack' : 'qte-pad-flash-success';
         pad.classList.remove('qte-pad-flash-success', 'qte-pad-flash-success-hack');
@@ -18445,9 +18518,10 @@ function selectQTEPadSlot(type) {
             padValEl.parentElement.className = 'flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]';
             padValEl.parentElement.classList.remove('qte-pad-flash-success', 'qte-pad-flash-success-hack');
         }
-        const emojiMap = { drums: '🥁', melody: '🎹', vocal: '🎤' };
+        
+        const labelMap = { genre: '🎹 GENRE', voice: '🎤 VOICE', bpm: '⏱️ BPM' };
         if (statusEl) {
-            statusEl.innerText = `${emojiMap[type]} ${type.toUpperCase()} : ❌ VIDE`;
+            statusEl.innerText = `${labelMap[type]} : ❌ VIDE`;
         }
         playTone(100, 'sine', 0.05, 0.1);
         checkQTESmashButton();
@@ -18457,37 +18531,15 @@ function selectQTEPadSlot(type) {
 function triggerQTEEchoHack() {
     qteState.hacked = true;
     
-    const types = ['drums', 'melody', 'vocal'];
-    const emojiMap = { drums: '🥁', melody: '🎹', vocal: '🎤' };
-    
-    types.forEach(t => {
-        if (!qteState.pads[t]) {
-            const hackItem = {
-                id: `echo_hack_${t}`,
-                name: `👾 VIRAL HACK ${t.toUpperCase()}`,
-                emoji: emojiMap[t],
-                type: t,
-                tier: 4,
-                genre: 'Glitch',
-                isSample: false
-            };
-            qteState.pads[t] = hackItem;
-            const padValEl = document.getElementById(`qte-pad-${t}-val`);
-            const statusEl = document.getElementById(`qte-pad-${t}-status`);
-            if (padValEl) {
-                padValEl.innerText = `${hackItem.emoji} ${hackItem.name} (T4)`;
-                padValEl.parentElement.className = 'flex flex-col items-center justify-center border-2 border-purple-500 bg-purple-950/20 rounded-xl p-4 cursor-pointer transition-all min-h-[90px]';
-                
-                // Flash slot purple
-                padValEl.parentElement.classList.remove('qte-pad-flash-success', 'qte-pad-flash-success-hack');
-                void padValEl.parentElement.offsetWidth;
-                padValEl.parentElement.classList.add('qte-pad-flash-success-hack');
-            }
-            if (statusEl) {
-                statusEl.innerText = `${emojiMap[t]} ${t.toUpperCase()} : ✅ PRÊT`;
-            }
-        }
-    });
+    if (!qteState.pads.genre) {
+        selectQTEGenre('viral_hack_genre', '👾 VIRAL HACK GENRE');
+    }
+    if (!qteState.pads.voice) {
+        selectQTEVoice('👾 VIRAL HACK VOICE');
+    }
+    if (!qteState.pads.bpm) {
+        selectQTEBPM(999);
+    }
 
     playTone(100, 'square', 0.2, 0.2);
     setTimeout(() => playTone(300, 'sawtooth', 0.1, 0.15), 50);
@@ -18506,7 +18558,9 @@ function checkQTESmashButton() {
     const btn = document.getElementById('qte-smash-btn');
     if (!btn) return;
     
-    if (qteState.timeLeft <= 2.0 && qteState.pads.drums && qteState.pads.melody && qteState.pads.vocal) {
+    const padsFilled = qteState.pads.genre && qteState.pads.voice && qteState.pads.bpm;
+    
+    if (qteState.timeLeft <= 2.0 && padsFilled) {
         btn.classList.remove('hidden');
         btn.style.display = 'block';
         btn.classList.add('qte-smash-blink');
@@ -18573,7 +18627,7 @@ function startQTETimer() {
         }
         
         if (qteState.timeLeft <= 0) {
-            const padsFilled = qteState.pads.drums && qteState.pads.melody && qteState.pads.vocal;
+            const padsFilled = qteState.pads.genre && qteState.pads.voice && qteState.pads.bpm;
             const goodSynergy = checkQTESynergy();
             const hasHack = qteState.hacked;
             const enoughSmashes = qteState.smashCount >= 3;
@@ -18588,46 +18642,15 @@ function startQTETimer() {
 }
 
 function checkQTESynergy() {
-    const genres = [
-        qteState.pads.drums ? qteState.pads.drums.genre : '',
-        qteState.pads.melody ? qteState.pads.melody.genre : '',
-        qteState.pads.vocal ? qteState.pads.vocal.genre : ''
-    ].filter(Boolean);
+    if (qteState.hacked) return true;
+    if (!qteState.pads.genre || !qteState.pads.bpm) return false;
     
-    const compatibles = [
-        ['Hip-Hop', 'Pop'],
-        ['Hip-Hop', 'UK Drill'],
-        ['Hip-Hop', 'Trap 808'],
-        ['UK Drill', 'Trap 808'],
-        ['UK Drill', 'Phonk'],
-        ['Drum & Bass', 'Synthwave'],
-        ['Synthwave', 'French House'],
-        ['French House', 'Pop'],
-        ['Pop', 'Bossa Lo-Fi'],
-        ['Old School', 'Hip-Hop'],
-        ['Amapiano', 'Afro-Pop'],
-        ['2 Step', 'UK Drill'],
-        ['Plug', 'Trap 808']
-    ];
+    const genreId = qteState.pads.genre.id;
+    const g = DAW_GENRES.find(x => x.id === genreId);
+    if (!g) return false;
     
-    const unique = [...new Set(genres)];
-    if (unique.length <= 1) return true;
-    
-    let hasCompatible = false;
-    for (let i = 0; i < unique.length; i++) {
-        for (let j = i + 1; j < unique.length; j++) {
-            const g1 = unique[i];
-            const g2 = unique[j];
-            
-            const isMatch = compatibles.some(pair => 
-                (pair[0].toLowerCase() === g1.toLowerCase() && pair[1].toLowerCase() === g2.toLowerCase()) ||
-                (pair[1].toLowerCase() === g1.toLowerCase() && pair[0].toLowerCase() === g2.toLowerCase())
-            );
-            if (isMatch) hasCompatible = true;
-        }
-    }
-    
-    return hasCompatible;
+    const diff = Math.abs(qteState.pads.bpm - g.targetBpm);
+    return diff <= (g.tol || 5);
 }
 
 function endDissTrackQTE(isVictory) {
