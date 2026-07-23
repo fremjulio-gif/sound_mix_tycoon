@@ -16670,8 +16670,8 @@ document.addEventListener('mouseover', (e) => {
             const overlay = document.getElementById('review-overlay');
             if (!overlay) return;
 
-            if (typeof stopGenrePreview === 'function') {
-                stopGenrePreview();
+            if (typeof stopQTEGenrePreview === 'function') {
+                stopQTEGenrePreview();
             }
 
             const isAfterDissTrack = !!window.isAfterDissTrack;
@@ -18263,10 +18263,10 @@ function calculateMaxRep(rank) {
     return 1000;
 }
 
-let currentGenrePreviewNodes = [];
-let currentGenrePreviewTimeouts = [];
+let qteGenrePreviewNodes = [];
+let qteGenrePreviewTimeouts = [];
 
-function stopGenrePreview() {
+function stopQTEGenrePreview() {
     if (currentGenrePreviewNodes) {
         currentGenrePreviewNodes.forEach(node => {
             try { node.stop(); } catch(e){}
@@ -18280,8 +18280,8 @@ function stopGenrePreview() {
     }
 }
 
-function playGenrePreview(genreId, duration = 4000) {
-    stopGenrePreview();
+function playQTEGenrePreview(genreId, duration = 4000) {
+    stopQTEGenrePreview();
     if (!audioCtxUI) initAudio();
     if (!audioCtxUI) return;
     if (audioCtxUI.state === 'suspended') audioCtxUI.resume();
@@ -18308,7 +18308,7 @@ function playGenrePreview(genreId, duration = 4000) {
             
             osc.start(startTime);
             osc.stop(startTime + durationTime);
-            currentGenrePreviewNodes.push(osc);
+            qteGenrePreviewNodes.push(osc);
         } catch(e) {}
     }
 
@@ -18382,9 +18382,9 @@ function playGenrePreview(genreId, duration = 4000) {
     }
 
     const tId = setTimeout(() => {
-        stopGenrePreview();
+        stopQTEGenrePreview();
     }, duration);
-    currentGenrePreviewTimeouts.push(tId);
+    qteGenrePreviewTimeouts.push(tId);
 }
 
 function updateToastStack() {
@@ -18447,8 +18447,8 @@ function updateToastStack() {
 }
 
 window.calculateMaxRep = calculateMaxRep;
-window.playGenrePreview = playGenrePreview;
-window.stopGenrePreview = stopGenrePreview;
+window.playQTEGenrePreview = playQTEGenrePreview;
+window.stopQTEGenrePreview = stopQTEGenrePreview;
 window.updateToastStack = updateToastStack;
 
 // ==========================================
@@ -18662,11 +18662,11 @@ function populateQTEDAWColumns() {
                 btn.className = 'w-full text-[8px] font-bold py-1.5 px-1 rounded border border-red-500/30 bg-red-950/20 hover:bg-red-500/40 text-red-200 cursor-pointer transition-all truncate text-center';
                 btn.innerText = g.name;
                 btn.onclick = () => {
-                    if (typeof playGenrePreview === 'function') playGenrePreview(g.id, 4000);
+                    if (typeof playQTEGenrePreview === 'function') playQTEGenrePreview(g.id, 4000);
                     selectQTEGenre(g.id, g.name);
                 };
                 btn.onmouseenter = () => {
-                    if (typeof playGenrePreview === 'function') playGenrePreview(g.id, 4000);
+                    if (typeof playQTEGenrePreview === 'function') playQTEGenrePreview(g.id, 4000);
                 };
                 genreCol.appendChild(btn);
             }
@@ -19118,3 +19118,5 @@ if (reviewOverlay) {
     </script>
         </body>
             </html>
+
+        
