@@ -10,6 +10,32 @@
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
         <style>
         
+            
+            /* =========================================
+               2D CINEMATIC THEATER & PARALLAX ENGINE
+               ========================================= */
+            #cinematic-theater {
+                will-change: opacity, transform;
+            }
+            .cinematic-bar {
+                will-change: height;
+            }
+            .parallax-layer {
+                will-change: transform;
+                transform-style: preserve-3d;
+                backface-visibility: hidden;
+            }
+            .cinematic-glass-card {
+                background: rgba(12, 12, 22, 0.75);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(129, 140, 248, 0.3);
+            }
+            .cinematic-neon-glow {
+                filter: drop-shadow(0 0 15px var(--accent)) drop-shadow(0 0 35px rgba(56, 189, 248, 0.45));
+            }
+
             /* =========================================
             1. VARIABLES & THEMES
             ========================================= */
@@ -3178,7 +3204,7 @@
             <button id="s-tooltip-buy-btn" class="btn-action w-full py-2 text-xs rounded-lg font-bold shadow-md uppercase tracking-wider" onclick="buyFurnitureDirect(event)" ontouchstart="buyFurnitureDirect(event)">Install</button>
         </div>
 
-                <button id="door-action-btn" class="hidden fixed bottom-24 left-1/2 transform -translate-x-1/2 z-[90] btn-action py-3 px-6 rounded-full text-xs font-retro tracking-widest shadow-[0_0_20px_rgba(129,140,248,0.5)] flex items-center gap-2 pointer-events-auto transition-all duration-300" onclick="openMiniGameMenu()">
+                <button id="door-action-btn" class="hidden fixed bottom-24 left-1/2 transform -translate-x-1/2 z-[90] btn-action py-3 px-6 rounded-full text-xs font-retro tracking-widest shadow-[0_0_20px_rgba(129,140,248,0.5)] flex items-center gap-2 pointer-events-auto" onclick="window.triggerCinematic('escape')">
             <span class="text-lg">🚪</span> SORTIR PRENDRE L'AIR
         </button>
 
@@ -3379,8 +3405,10 @@
             </button>
 
             <div id="pc-top-bar" class="liquid-glass-heavy">
-                <div class="system-controls-group">
-                    <!-- Vide ou autres contrôles futurs -->
+                <div class="system-controls-group flex items-center gap-3">
+                    <button id="btn-take-air-os" class="btn-system flex items-center gap-1.5 px-3 py-1 text-[10px] font-retro uppercase tracking-widest text-[var(--retro-green)] hover:text-white border border-[var(--retro-green)]/30 hover:border-[var(--retro-green)] rounded-lg shadow-[0_0_12px_rgba(52,211,153,0.25)]" onclick="window.triggerCinematic('escape')" title="Prendre l'air (Respiration & Contemplation)">
+                        <span class="text-xs">🌱</span> PRENDRE L'AIR
+                    </button>
                 </div>
             </div>
 
@@ -4470,6 +4498,99 @@
             </div>
         </div>
 
+        <!-- =========================================
+             2D CINEMATIC THEATER (Anime.js V4 Powered)
+             ========================================= -->
+        <div id="cinematic-theater" class="fixed inset-0 pointer-events-none z-[9999999] overflow-hidden opacity-0 select-none">
+            <!-- Cinema Letterbox Bars -->
+            <div id="cinematic-bar-top" class="cinematic-bar absolute top-0 left-0 w-full h-0 bg-black z-40 shadow-[0_10px_35px_rgba(0,0,0,0.95)] border-b border-white/10"></div>
+            <div id="cinematic-bar-bottom" class="cinematic-bar absolute bottom-0 left-0 w-full h-0 bg-black z-40 shadow-[0_-10px_35px_rgba(0,0,0,0.95)] border-t border-white/10"></div>
+
+            <!-- Viewport Container -->
+            <div id="cinematic-viewport" class="absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden">
+                
+                <!-- SCÈNE 1 : "PRENDRE L'AIR" (Escape State / Contemplation & Respiration) -->
+                <div id="cinematic-escape-scene" class="absolute inset-0 w-full h-full hidden overflow-hidden bg-[#030308]">
+                    <!-- Parallax Calque 1 : Ciel profond, lune cybernétique & brume -->
+                    <div id="layer-sky" class="parallax-layer absolute inset-0 w-[120%] h-[120%] -left-[10%] -top-[10%] pointer-events-none" style="background: radial-gradient(circle at 50% 28%, #1e1b4b 0%, #0c0a1f 45%, #030308 100%);">
+                        <div class="absolute top-[16%] left-1/2 -translate-x-1/2 w-64 h-64 rounded-full bg-gradient-to-b from-indigo-400/20 to-purple-600/5 blur-2xl shadow-[0_0_100px_rgba(129,140,248,0.35)]"></div>
+                        <div class="absolute top-[18%] left-1/2 -translate-x-1/2 w-40 h-40 rounded-full border border-indigo-300/30 bg-indigo-100/5 backdrop-blur-xs flex items-center justify-center">
+                            <div class="w-32 h-32 rounded-full border border-white/10"></div>
+                        </div>
+                    </div>
+
+                    <!-- Parallax Calque 2 : Silhouette de la mégalopole lointaine -->
+                    <svg id="layer-city-far" class="parallax-layer absolute bottom-0 left-0 w-[130%] -left-[15%] h-72 pointer-events-none opacity-40" viewBox="0 0 1200 400" preserveAspectRatio="none">
+                        <path d="M0,400 L0,220 L60,220 L60,180 L110,180 L110,250 L180,250 L180,140 L230,140 L230,280 L310,280 L310,110 L370,110 L370,260 L450,260 L450,190 L520,190 L520,300 L610,300 L610,130 L660,130 L660,240 L740,240 L740,160 L820,160 L820,290 L900,290 L900,120 L960,120 L960,260 L1040,260 L1040,170 L1120,170 L1120,400 Z" fill="#0b0a1a" />
+                    </svg>
+
+                    <!-- Parallax Calque 3 : Tours Cyber, Fenêtres Néons et Antennes -->
+                    <svg id="layer-city-mid" class="parallax-layer absolute bottom-0 left-0 w-[120%] -left-[10%] h-96 pointer-events-none opacity-80" viewBox="0 0 1200 500" preserveAspectRatio="none">
+                        <path d="M0,500 L0,300 L90,300 L90,210 L160,210 L160,340 L260,340 L260,170 L340,170 L340,320 L440,320 L440,230 L540,230 L540,360 L650,360 L650,190 L730,190 L730,310 L840,310 L840,150 L930,150 L930,350 L1050,350 L1050,220 L1140,220 L1140,500 Z" fill="#070612" />
+                        <line x1="300" y1="170" x2="300" y2="100" stroke="#818cf8" stroke-width="2" opacity="0.9" />
+                        <circle cx="300" cy="100" r="3" fill="#f43f5e" />
+                        <line x1="885" y1="150" x2="885" y2="80" stroke="#34d399" stroke-width="2" opacity="0.9" />
+                        <circle cx="885" cy="80" r="3" fill="#34d399" />
+                        <!-- Lueur fenêtres -->
+                        <rect x="280" y="220" width="12" height="18" rx="2" fill="#38bdf8" opacity="0.6" />
+                        <rect x="300" y="240" width="12" height="18" rx="2" fill="#fbbf24" opacity="0.5" />
+                        <rect x="700" y="260" width="14" height="20" rx="2" fill="#818cf8" opacity="0.7" />
+                        <rect x="860" y="200" width="12" height="18" rx="2" fill="#34d399" opacity="0.6" />
+                    </svg>
+
+                    <!-- Parallax Calque 4 : Toile de Pluie Interactive Canvas -->
+                    <canvas id="cinematic-rain-canvas" class="parallax-layer absolute inset-0 w-full h-full pointer-events-none z-10 opacity-75"></canvas>
+                    
+                    <!-- Parallax Calque 5 : Balcon du Studio & HUD de Respiration -->
+                    <div id="layer-balcony" class="parallax-layer absolute bottom-0 left-0 w-full z-30 pb-16 pt-8 px-6 md:px-12 flex flex-col justify-end bg-gradient-to-t from-black via-black/85 to-transparent border-t border-white/10 backdrop-blur-xs">
+                        <div class="max-w-4xl mx-auto w-full flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div class="text-center md:text-left">
+                                <div class="flex items-center justify-center md:justify-start gap-3 mb-2">
+                                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-[var(--retro-green)] animate-ping"></span>
+                                    <span class="text-[11px] font-retro uppercase tracking-[0.35em] text-[var(--retro-green)]">PAUSE CONTEMPLATIVE • RESPIRATION</span>
+                                </div>
+                                <h1 class="text-2xl md:text-4xl font-retro text-white tracking-widest uppercase font-bold drop-shadow-[0_0_25px_rgba(255,255,255,0.4)]">
+                                    PRENDRE L'AIR
+                                </h1>
+                                <p id="cinematic-quote" class="text-xs md:text-sm text-gray-400 font-sans tracking-wide mt-1.5 italic max-w-lg">
+                                    "Le silence entre les notes compte tout autant que les notes elles-mêmes."
+                                </p>
+                            </div>
+                            
+                            <button id="btn-close-cinematic" class="btn-action px-8 py-3.5 rounded-full text-xs font-retro tracking-widest flex items-center gap-3 shadow-[0_0_35px_rgba(129,140,248,0.6)] pointer-events-auto hover:scale-105 transition-transform" onclick="window.closeCinematic()">
+                                <span class="text-base">←</span> RETOURNER AU STUDIO
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SCÈNE 2 : "MOMENT CLÉ / RÉCOMPENSE" (Micro-cinématique Sequencer / Piano Roll) -->
+                <div id="cinematic-reward-scene" class="absolute inset-0 w-full h-full hidden overflow-hidden flex items-center justify-center pointer-events-none z-30">
+                    <!-- SVG Tracés Vectoriels Cyber s'auto-dessinant -->
+                    <svg id="cinematic-vector-svg" class="w-[340px] h-[340px] md:w-[460px] md:h-[460px] max-w-[85vw] max-h-[85vh] cinematic-neon-glow" viewBox="0 0 400 400" fill="none">
+                        <circle id="cin-vec-c1" cx="200" cy="200" r="160" stroke="#818cf8" stroke-width="2" stroke-dasharray="1005" stroke-dashoffset="1005" opacity="0.6"/>
+                        <polygon id="cin-vec-poly" points="200,50 340,130 340,290 200,370 60,290 60,130" stroke="#38bdf8" stroke-width="2" stroke-dasharray="980" stroke-dashoffset="980" opacity="0.85"/>
+                        <circle id="cin-vec-c2" cx="200" cy="200" r="95" stroke="#34d399" stroke-width="1.5" stroke-dasharray="600" stroke-dashoffset="600"/>
+                        <line id="cin-vec-l1" x1="40" y1="200" x2="360" y2="200" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="320" stroke-dashoffset="320"/>
+                        <line id="cin-vec-l2" x1="200" y1="40" x2="200" y2="360" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="320" stroke-dashoffset="320"/>
+                    </svg>
+                    
+                    <div id="cinematic-reward-badge" class="absolute flex flex-col items-center justify-center text-center opacity-0 scale-50 px-6 py-4 rounded-3xl cinematic-glass-card">
+                        <div id="cinematic-reward-tag" class="px-4 py-1 rounded-full bg-[var(--accent)]/20 border border-[var(--accent)] text-[var(--accent)] text-[10px] font-retro tracking-[0.3em] uppercase mb-2 shadow-[0_0_15px_rgba(129,140,248,0.4)]">
+                            HARDWARE MODULE ENGAGED
+                        </div>
+                        <h2 id="cinematic-reward-title" class="text-3xl md:text-5xl font-bold font-retro text-white tracking-widest uppercase drop-shadow-[0_0_30px_rgba(255,255,255,0.8)]">
+                            PIANO ROLL
+                        </h2>
+                        <p id="cinematic-reward-subtitle" class="text-xs text-cyan-300 font-retro tracking-widest mt-2 uppercase">
+                            Studio Virtuel & Synthétiseur Connecté
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
             <!-- Achievement Popup (Z-INDEX MAXIMUM) -->
         <div id="achievement-popup" class="fixed top-[-150px] left-1/2 -translate-x-1/2 z-[1000000] w-[90%] max-w-md liquid-glass-heavy border-2 border-[var(--accent)] rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(129,140,248,0.5)] transition-all duration-500 pointer-events-none">
             <div id="achievement-icon" class="text-4xl shrink-0 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">🏆</div>
@@ -4485,6 +4606,14 @@
 </div>
     <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+    import { animate, createTimeline, stagger, spring, waapi } from 'https://cdn.jsdelivr.net/npm/animejs@4.5.0/dist/bundles/anime.esm.min.js';
+    
+    // Exposition globale Anime.js V4
+    window.animate = animate;
+    window.createTimeline = createTimeline;
+    window.spring = spring;
+    window.waapi = waapi;
+    window.stagger = stagger;
     // 🛑 COUPE-CIRCUIT ABSOLU : On bloque tout l'affichage dynamique au lancement
 window.isBooting = true;
 
@@ -8348,15 +8477,23 @@ const DEFAULT_STATE = {
                 showToast("Tu dois d'abord acheter le Synthétiseur dans Studio+ !", "warning");
                 return;
             }
-            MusicSystem.muteForGameplay(0.5); // <-- AJOUT ICI
-            // Cache l'UI de la chambre (bulle d'aide, etc)
+
+            // Déclenchement de la micro-cinématique Anime.js V4
+            if (typeof window.triggerCinematic === 'function') {
+                window.triggerCinematic('reward', {
+                    title: 'PIANO ROLL',
+                    subtitle: 'Synthétiseur Analogique Activé',
+                    tag: 'HARDWARE SEQUENCER'
+                });
+            }
+
+            MusicSystem.muteForGameplay(0.5);
             document.getElementById('room-ui').style.display = 'none'; 
             
             const prWindow = document.getElementById('standalone-pianoroll');
             prWindow.classList.remove('hidden');
             prWindow.style.display = 'flex';
             
-            // Petite latence pour laisser le display:flex s'appliquer avant l'opacité (animation smooth)
             setTimeout(() => {
                 prWindow.style.opacity = '1';
                 prWindow.style.pointerEvents = 'all';
@@ -9602,7 +9739,416 @@ function triggerRankUp(oldRank, newRank) {
             };
         })();
 
-        // ==========================================
+
+        // =========================================================================
+        // 2D CINEMATIC & PROCEDURAL WEB AUDIO ENGINE (Anime.js V4 Powered)
+        // =========================================================================
+
+        class ProceduralAmbientAudio {
+            constructor() {
+                this.ctx = null;
+                this.masterGain = null;
+                this.noiseSource = null;
+                this.noiseFilter = null;
+                this.padOsc1 = null;
+                this.padOsc2 = null;
+                this.padGain = null;
+                this.isPlaying = false;
+            }
+
+            init(audioCtx) {
+                this.ctx = audioCtx;
+                this.masterGain = this.ctx.createGain();
+                this.masterGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+                this.masterGain.connect(this.ctx.destination);
+            }
+
+            start() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.init(new AudioContext());
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume().catch(() => {});
+                }
+                if (this.isPlaying) return;
+                this.isPlaying = true;
+
+                const now = this.ctx.currentTime;
+
+                // 1. Génération de Bruit Rose / Pluie procédurale (Buffer de 2 secondes en boucle)
+                const bufferSize = this.ctx.sampleRate * 2;
+                const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    b0 = 0.99886 * b0 + white * 0.0555179;
+                    b1 = 0.99332 * b1 + white * 0.0750759;
+                    b2 = 0.96900 * b2 + white * 0.1538520;
+                    b3 = 0.86650 * b3 + white * 0.3104856;
+                    b4 = 0.55000 * b4 + white * 0.5329522;
+                    b5 = -0.7616 * b5 - white * 0.0168980;
+                    output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.07;
+                    b6 = white * 0.115926;
+                }
+
+                this.noiseSource = this.ctx.createBufferSource();
+                this.noiseSource.buffer = noiseBuffer;
+                this.noiseSource.loop = true;
+
+                this.noiseFilter = this.ctx.createBiquadFilter();
+                this.noiseFilter.type = 'bandpass';
+                this.noiseFilter.frequency.setValueAtTime(1400, now);
+                this.noiseFilter.Q.setValueAtTime(1.2, now);
+
+                const noiseGain = this.ctx.createGain();
+                noiseGain.gain.setValueAtTime(0.35, now);
+
+                this.noiseSource.connect(this.noiseFilter);
+                this.noiseFilter.connect(noiseGain);
+                noiseGain.connect(this.masterGain);
+
+                // 2. Pad Synth Harmonique (432Hz Racine + Quinte)
+                this.padOsc1 = this.ctx.createOscillator();
+                this.padOsc2 = this.ctx.createOscillator();
+                this.padOsc1.type = 'sine';
+                this.padOsc2.type = 'sine';
+                this.padOsc1.frequency.setValueAtTime(108, now); // A2
+                this.padOsc2.frequency.setValueAtTime(162, now); // E3
+
+                const padFilter = this.ctx.createBiquadFilter();
+                padFilter.type = 'lowpass';
+                padFilter.frequency.setValueAtTime(260, now);
+
+                this.padGain = this.ctx.createGain();
+                this.padGain.gain.setValueAtTime(0.12, now);
+
+                this.padOsc1.connect(padFilter);
+                this.padOsc2.connect(padFilter);
+                padFilter.connect(this.padGain);
+                this.padGain.connect(this.masterGain);
+
+                this.noiseSource.start(now);
+                this.padOsc1.start(now);
+                this.padOsc2.start(now);
+
+                // Fondu d'ouverture doux
+                this.masterGain.gain.cancelScheduledValues(now);
+                this.masterGain.gain.setValueAtTime(0.0001, now);
+                this.masterGain.gain.exponentialRampToValueAtTime(0.65, now + 2.5);
+            }
+
+            stop() {
+                if (!this.isPlaying || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                this.masterGain.gain.cancelScheduledValues(now);
+                this.masterGain.gain.setValueAtTime(Math.max(0.0001, this.masterGain.gain.value), now);
+                this.masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+
+                setTimeout(() => {
+                    try {
+                        if (this.noiseSource) { this.noiseSource.stop(); this.noiseSource.disconnect(); }
+                        if (this.padOsc1) { this.padOsc1.stop(); this.padOsc1.disconnect(); }
+                        if (this.padOsc2) { this.padOsc2.stop(); this.padOsc2.disconnect(); }
+                    } catch(e) {}
+                    this.isPlaying = false;
+                }, 1300);
+            }
+        }
+
+        const ambientAudioEngine = new ProceduralAmbientAudio();
+
+        // --- GESTIONNAIRE DE PLUIE 2D SUR CANVAS ---
+        let rainAnimationId = null;
+        function initCinematicRain() {
+            const canvas = document.getElementById('cinematic-rain-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const drops = [];
+            const dropCount = 110;
+
+            for (let i = 0; i < dropCount; i++) {
+                drops.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    len: Math.random() * 18 + 12,
+                    speed: Math.random() * 10 + 14,
+                    opacity: Math.random() * 0.45 + 0.25
+                });
+            }
+
+            function drawRain() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = 'rgba(186, 230, 253, 0.7)';
+                ctx.lineWidth = 1.2;
+                ctx.lineCap = 'round';
+
+                for (let d of drops) {
+                    ctx.beginPath();
+                    ctx.globalAlpha = d.opacity;
+                    ctx.moveTo(d.x, d.y);
+                    ctx.lineTo(d.x - 2, d.y + d.len);
+                    ctx.stroke();
+
+                    d.y += d.speed;
+                    d.x -= 1.2;
+
+                    if (d.y > canvas.height) {
+                        d.y = -20;
+                        d.x = Math.random() * (canvas.width + 100);
+                    }
+                }
+
+                rainAnimationId = requestAnimationFrame(drawRain);
+            }
+
+            if (rainAnimationId) cancelAnimationFrame(rainAnimationId);
+            drawRain();
+        }
+
+        function stopCinematicRain() {
+            if (rainAnimationId) {
+                cancelAnimationFrame(rainAnimationId);
+                rainAnimationId = null;
+            }
+        }
+
+        // --- GESTIONNAIRE DE PARALLAXE SOURIS / GYROSCOPE ---
+        let isCinematicParallaxActive = false;
+        let targetParallaxX = 0;
+        let targetParallaxY = 0;
+        let currentParallaxX = 0;
+        let currentParallaxY = 0;
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isCinematicParallaxActive) return;
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            targetParallaxX = (e.clientX - centerX) / centerX;
+            targetParallaxY = (e.clientY - centerY) / centerY;
+        }, { passive: true });
+
+        function updateParallaxLoop() {
+            if (!isCinematicParallaxActive) return;
+
+            currentParallaxX += (targetParallaxX - currentParallaxX) * 0.08;
+            currentParallaxY += (targetParallaxY - currentParallaxY) * 0.08;
+
+            const sky = document.getElementById('layer-sky');
+            const cityFar = document.getElementById('layer-city-far');
+            const cityMid = document.getElementById('layer-city-mid');
+            const balcony = document.getElementById('layer-balcony');
+
+            if (sky) sky.style.transform = `translate3d(${currentParallaxX * -12}px, ${currentParallaxY * -6}px, 0)`;
+            if (cityFar) cityFar.style.transform = `translate3d(${currentParallaxX * -28}px, ${currentParallaxY * -12}px, 0)`;
+            if (cityMid) cityMid.style.transform = `translate3d(${currentParallaxX * -55}px, ${currentParallaxY * -20}px, 0)`;
+            if (balcony) balcony.style.transform = `translate3d(${currentParallaxX * 18}px, ${currentParallaxY * 8}px, 0)`;
+
+            requestAnimationFrame(updateParallaxLoop);
+        }
+
+        // --- CITATIONS INSPIRANTES POUR L'ESCAPE ---
+        const ESCAPE_QUOTES = [
+            "\"Le silence entre les notes compte tout autant que les notes elles-mêmes.\" — Miles Davis",
+            "\"Prendre du recul, c'est donner à ton beat l'espace pour respirer.\"",
+            "\"L'inspiration frappe souvent quand la machine s'éteint et que l'esprit s'évade.\"",
+            "\"Chaque goutte de pluie a son propre BPM. Écoute le rythme du monde.\"",
+            "\"Les plus grands bangers naissent après une bouffée d'air frais.\""
+        ];
+
+        let currentActiveCinematicMode = null;
+        let previousUIState = { roomVisible: false, pcVisible: false, prVisible: false };
+
+        // --- CONTRÔLEUR PRINCIPAL DES CINÉMATIQUES ---
+        window.triggerCinematic = function(mode = 'escape', options = {}) {
+            const theater = document.getElementById('cinematic-theater');
+            const barTop = document.getElementById('cinematic-bar-top');
+            const barBottom = document.getElementById('cinematic-bar-bottom');
+            const escapeScene = document.getElementById('cinematic-escape-scene');
+            const rewardScene = document.getElementById('cinematic-reward-scene');
+
+            if (!theater) return;
+            currentActiveCinematicMode = mode;
+
+            // Sauvegarde de l'état UI précédent
+            const roomUI = document.getElementById('room-ui');
+            const pcUI = document.getElementById('pc-ui-layer');
+            const prUI = document.getElementById('standalone-pianoroll');
+
+            previousUIState.roomVisible = roomUI && roomUI.style.display !== 'none';
+            previousUIState.pcVisible = pcUI && pcUI.style.display === 'flex';
+            previousUIState.prVisible = prUI && !prUI.classList.contains('hidden');
+
+            // 1. Activation du conteneur Cinéma
+            theater.classList.remove('pointer-events-none');
+            theater.classList.add('pointer-events-auto');
+            theater.style.opacity = '1';
+
+            if (mode === 'escape') {
+                if (escapeScene) escapeScene.classList.remove('hidden');
+                if (rewardScene) rewardScene.classList.add('hidden');
+
+                // Citation aléatoire
+                const quoteEl = document.getElementById('cinematic-quote');
+                if (quoteEl) {
+                    quoteEl.innerText = ESCAPE_QUOTES[Math.floor(Math.random() * ESCAPE_QUOTES.length)];
+                }
+
+                // Anime.js V4 : Fermeture élastique des Bandes Noires Cinéma (Letterbox 12vh)
+                animate(barTop, {
+                    height: ['0px', '12vh'],
+                    duration: 800,
+                    ease: spring({ bounce: 0.35 })
+                });
+                animate(barBottom, {
+                    height: ['0px', '12vh'],
+                    duration: 800,
+                    ease: spring({ bounce: 0.35 })
+                });
+
+                // Anime.js V4 (waapi engine) : Fondu et flou cinématographique d'ouverture
+                waapi.animate(escapeScene, {
+                    opacity: [0, 1],
+                    duration: 900,
+                    ease: 'outExpo'
+                });
+
+                // Démarrage Parallaxe et Pluie
+                isCinematicParallaxActive = true;
+                initCinematicRain();
+                updateParallaxLoop();
+
+                // WEB AUDIO API : Filtre passe-bas étouffé sur la musique du studio + Lancement de l'ambiance apaisante
+                if (typeof MusicSystem !== 'undefined' && MusicSystem.setLowPassFrequency) {
+                    MusicSystem.setLowPassFrequency(350, 2.0);
+                }
+                ambientAudioEngine.start();
+
+                // Gain d'inspiration pour avoir pris l'air
+                if (typeof state !== 'undefined') {
+                    state.inspi = Math.min(100, (Number(state.inspi) || 0) + 20);
+                    if (typeof updateHUD === 'function') updateHUD();
+                }
+
+            } else if (mode === 'reward') {
+                if (rewardScene) rewardScene.classList.remove('hidden');
+                if (escapeScene) escapeScene.classList.add('hidden');
+
+                const title = options.title || 'MODULE ACTIVÉ';
+                const subtitle = options.subtitle || 'Mode Performance Prêt';
+                const tag = options.tag || 'SYSTEM UPGRADE';
+
+                const titleEl = document.getElementById('cinematic-reward-title');
+                const subEl = document.getElementById('cinematic-reward-subtitle');
+                const tagEl = document.getElementById('cinematic-reward-tag');
+                const badge = document.getElementById('cinematic-reward-badge');
+
+                if (titleEl) titleEl.innerText = title;
+                if (subEl) subEl.innerText = subtitle;
+                if (tagEl) tagEl.innerText = tag;
+
+                // Letterbox flash bars (8vh)
+                animate(barTop, {
+                    height: ['0px', '9vh'],
+                    duration: 500,
+                    ease: spring({ bounce: 0.4 })
+                });
+                animate(barBottom, {
+                    height: ['0px', '9vh'],
+                    duration: 500,
+                    ease: spring({ bounce: 0.4 })
+                });
+
+                // Auto-tracé des lignes vectorielles Anime.js V4 (strokeDashoffset)
+                animate('#cin-vec-c1', { strokeDashoffset: [1005, 0], duration: 800, ease: 'outExpo' });
+                animate('#cin-vec-poly', { strokeDashoffset: [980, 0], duration: 900, ease: 'outExpo' });
+                animate('#cin-vec-c2', { strokeDashoffset: [600, 0], duration: 700, ease: 'outExpo' });
+                animate('#cin-vec-l1', { strokeDashoffset: [320, 0], duration: 600, ease: 'outExpo' });
+                animate('#cin-vec-l2', { strokeDashoffset: [320, 0], duration: 600, ease: 'outExpo' });
+
+                // Badge élastique au centre
+                animate(badge, {
+                    scale: [0.4, 1.0],
+                    opacity: [0, 1],
+                    duration: 700,
+                    ease: spring({ bounce: 0.45 })
+                });
+
+                // Son Sci-Fi Impact / Synth Riser
+                try {
+                    playTone(180, 'sine', 0.25, 0.08);
+                    setTimeout(() => playTone(60, 'triangle', 0.4, 0.12), 120);
+                } catch(e) {}
+
+                // Auto-fermeture de la micro-cinématique après 1.4s
+                setTimeout(() => {
+                    window.closeCinematic(() => {
+                        if (typeof options.onComplete === 'function') options.onComplete();
+                    });
+                }, 1400);
+            }
+        };
+
+        window.closeCinematic = function(callback) {
+            const theater = document.getElementById('cinematic-theater');
+            const barTop = document.getElementById('cinematic-bar-top');
+            const barBottom = document.getElementById('cinematic-bar-bottom');
+            const escapeScene = document.getElementById('cinematic-escape-scene');
+            const rewardScene = document.getElementById('cinematic-reward-scene');
+
+            if (!theater) return;
+
+            isCinematicParallaxActive = false;
+            stopCinematicRain();
+            ambientAudioEngine.stop();
+
+            // WEB AUDIO API : Rétablissement limpide des hautes fréquences
+            if (typeof MusicSystem !== 'undefined' && MusicSystem.setLowPassFrequency) {
+                MusicSystem.setLowPassFrequency(20000, 1.4);
+            }
+
+            // Anime.js V4 : Retrait élastique des bandes noires
+            animate(barTop, {
+                height: '0px',
+                duration: 600,
+                ease: 'outExpo'
+            });
+            animate(barBottom, {
+                height: '0px',
+                duration: 600,
+                ease: 'outExpo'
+            });
+
+            // Fondu de sortie de la scène
+            waapi.animate(theater, {
+                opacity: 0,
+                duration: 600,
+                ease: 'outExpo',
+                onComplete: () => {
+                    theater.classList.remove('pointer-events-auto');
+                    theater.classList.add('pointer-events-none');
+                    if (escapeScene) escapeScene.classList.add('hidden');
+                    if (rewardScene) rewardScene.classList.add('hidden');
+                    currentActiveCinematicMode = null;
+
+                    if (typeof callback === 'function') callback();
+                }
+            });
+        };
+
+        // Raccourci Échap pour fermer la cinématique à tout moment
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && currentActiveCinematicMode) {
+                window.closeCinematic();
+            }
+        });
+
+                // ==========================================
         // 7. AUDIO
         // ==========================================
         let audioCtxUI = null;
@@ -19193,6 +19739,13 @@ if (reviewOverlay) {
                 secretBuffer.push(e.key.toLowerCase());
                 if (secretBuffer.length > SECRET_CODE.length) secretBuffer.shift();
                 if (secretBuffer.join('') === SECRET_CODE.join('')) {
+                    if (typeof window.triggerCinematic === 'function') {
+                        window.triggerCinematic('reward', {
+                            title: 'BOUNCE MASTER',
+                            subtitle: 'Easter Egg Débloqué (+500$)',
+                            tag: 'SECRET REWARD'
+                        });
+                    }
                     showToast("🎉 Code secret activé. +500$ pour le fun.", "success");
                     logMoney(500, "Easter Egg");
                     if(typeof playSuccess === 'function') playSuccess();
