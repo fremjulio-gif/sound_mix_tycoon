@@ -4502,15 +4502,15 @@
              2D CINEMATIC THEATER (Anime.js V4 Powered)
              ========================================= -->
         <div id="cinematic-theater" class="fixed inset-0 pointer-events-none z-[9999999] overflow-hidden opacity-0 select-none">
-            <!-- Cinema Letterbox Bars -->
-            <div id="cinematic-bar-top" class="cinematic-bar absolute top-0 left-0 w-full h-0 bg-black z-40 shadow-[0_10px_35px_rgba(0,0,0,0.95)] border-b border-white/10"></div>
-            <div id="cinematic-bar-bottom" class="cinematic-bar absolute bottom-0 left-0 w-full h-0 bg-black z-40 shadow-[0_-10px_35px_rgba(0,0,0,0.95)] border-t border-white/10"></div>
+            <!-- Cinema Letterbox Bars (Pointer-events-none to prevent blocking clicks) -->
+            <div id="cinematic-bar-top" class="cinematic-bar absolute top-0 left-0 w-full h-0 bg-black z-30 pointer-events-none shadow-[0_10px_35px_rgba(0,0,0,0.95)] border-b border-white/10"></div>
+            <div id="cinematic-bar-bottom" class="cinematic-bar absolute bottom-0 left-0 w-full h-0 bg-black z-30 pointer-events-none shadow-[0_-10px_35px_rgba(0,0,0,0.95)] border-t border-white/10"></div>
 
             <!-- Viewport Container -->
-            <div id="cinematic-viewport" class="absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden">
+            <div id="cinematic-viewport" class="absolute inset-0 w-full h-full pointer-events-none flex items-center justify-center overflow-hidden">
                 
                 <!-- SCÈNE 1 : "PRENDRE L'AIR" (Escape State / Contemplation & Respiration) -->
-                <div id="cinematic-escape-scene" class="absolute inset-0 w-full h-full hidden overflow-hidden bg-[#030308]">
+                <div id="cinematic-escape-scene" class="absolute inset-0 w-full h-full hidden overflow-hidden pointer-events-none bg-[#030308]">
                     <!-- Parallax Calque 1 : Ciel profond, lune cybernétique & brume -->
                     <div id="layer-sky" class="parallax-layer absolute inset-0 w-[120%] h-[120%] -left-[10%] -top-[10%] pointer-events-none" style="background: radial-gradient(circle at 50% 28%, #1e1b4b 0%, #0c0a1f 45%, #030308 100%);">
                         <div class="absolute top-[16%] left-1/2 -translate-x-1/2 w-64 h-64 rounded-full bg-gradient-to-b from-indigo-400/20 to-purple-600/5 blur-2xl shadow-[0_0_100px_rgba(129,140,248,0.35)]"></div>
@@ -4538,36 +4538,34 @@
                         <rect x="860" y="200" width="12" height="18" rx="2" fill="#34d399" opacity="0.6" />
                     </svg>
 
-                    <!-- Parallax Calque 4 : Toile de Pluie Interactive Canvas -->
+                    <!-- Parallax Calque 4 : Toile de Pluie Interactive Canvas (Pointer-events-none) -->
                     <canvas id="cinematic-rain-canvas" class="parallax-layer absolute inset-0 w-full h-full pointer-events-none z-10 opacity-75"></canvas>
                     
-                    <!-- Parallax Calque 5 : Balcon du Studio & HUD de Respiration -->
-                    <div id="layer-balcony" class="parallax-layer absolute bottom-0 left-0 w-full z-30 pb-16 pt-8 px-6 md:px-12 flex flex-col justify-end bg-gradient-to-t from-black via-black/85 to-transparent border-t border-white/10 backdrop-blur-xs">
-                        <div class="max-w-4xl mx-auto w-full flex flex-col md:flex-row items-center justify-between gap-6">
-                            <div class="text-center md:text-left">
-                                <div class="flex items-center justify-center md:justify-start gap-3 mb-2">
-                                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-[var(--retro-green)] animate-ping"></span>
-                                    <span class="text-[11px] font-retro uppercase tracking-[0.35em] text-[var(--retro-green)]">PAUSE CONTEMPLATIVE • RESPIRATION</span>
-                                </div>
-                                <h1 class="text-2xl md:text-4xl font-retro text-white tracking-widest uppercase font-bold drop-shadow-[0_0_25px_rgba(255,255,255,0.4)]">
-                                    PRENDRE L'AIR
-                                </h1>
-                                <p id="cinematic-quote" class="text-xs md:text-sm text-gray-400 font-sans tracking-wide mt-1.5 italic max-w-lg">
-                                    "Le silence entre les notes compte tout autant que les notes elles-mêmes."
-                                </p>
+                    <!-- HUD Interactif Central Haut-Contraste (z-50 et pointer-events-auto stricts) -->
+                    <div id="cinematic-escape-hud" class="absolute bottom-[14vh] left-1/2 -translate-x-1/2 w-[92%] max-w-2xl z-50 pointer-events-auto p-6 md:p-8 rounded-3xl bg-black/85 backdrop-blur-2xl border border-white/20 shadow-[0_25px_70px_rgba(0,0,0,0.95)] flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div class="text-center md:text-left">
+                            <div class="flex items-center justify-center md:justify-start gap-2.5 mb-2">
+                                <span class="inline-block w-2.5 h-2.5 rounded-full bg-[var(--retro-green)] animate-ping"></span>
+                                <span class="text-[11px] font-retro uppercase tracking-[0.35em] text-[var(--retro-green)] font-bold">PAUSE CONTEMPLATIVE • RESPIRATION</span>
                             </div>
-                            
-                            <button id="btn-close-cinematic" class="btn-action px-8 py-3.5 rounded-full text-xs font-retro tracking-widest flex items-center gap-3 shadow-[0_0_35px_rgba(129,140,248,0.6)] pointer-events-auto hover:scale-105 transition-transform" onclick="window.closeCinematic()">
-                                <span class="text-base">←</span> RETOURNER AU STUDIO
-                            </button>
+                            <h1 class="text-2xl md:text-3xl font-retro text-white tracking-widest uppercase font-bold drop-shadow-[0_0_25px_rgba(255,255,255,0.6)]">
+                                PRENDRE L'AIR
+                            </h1>
+                            <p id="cinematic-quote" class="text-xs md:text-sm text-gray-200 font-sans tracking-wide mt-2 italic leading-relaxed">
+                                "Le silence entre les notes compte tout autant que les notes elles-mêmes."
+                            </p>
                         </div>
+                        
+                        <button id="btn-close-cinematic" class="btn-action shrink-0 px-8 py-3.5 rounded-full text-xs font-retro tracking-widest flex items-center gap-3 shadow-[0_0_35px_rgba(129,140,248,0.7)] pointer-events-auto cursor-pointer hover:scale-105 transition-transform active:scale-95 z-50" onclick="window.closeCinematic()">
+                            <span class="text-base">←</span> RETOUR AU STUDIO
+                        </button>
                     </div>
                 </div>
 
                 <!-- SCÈNE 2 : "MOMENT CLÉ / RÉCOMPENSE" (Micro-cinématique Sequencer / Piano Roll) -->
                 <div id="cinematic-reward-scene" class="absolute inset-0 w-full h-full hidden overflow-hidden flex items-center justify-center pointer-events-none z-30">
                     <!-- SVG Tracés Vectoriels Cyber s'auto-dessinant -->
-                    <svg id="cinematic-vector-svg" class="w-[340px] h-[340px] md:w-[460px] md:h-[460px] max-w-[85vw] max-h-[85vh] cinematic-neon-glow" viewBox="0 0 400 400" fill="none">
+                    <svg id="cinematic-vector-svg" class="w-[340px] h-[340px] md:w-[460px] md:h-[460px] max-w-[85vw] max-h-[85vh] cinematic-neon-glow pointer-events-none" viewBox="0 0 400 400" fill="none">
                         <circle id="cin-vec-c1" cx="200" cy="200" r="160" stroke="#818cf8" stroke-width="2" stroke-dasharray="1005" stroke-dashoffset="1005" opacity="0.6"/>
                         <polygon id="cin-vec-poly" points="200,50 340,130 340,290 200,370 60,290 60,130" stroke="#38bdf8" stroke-width="2" stroke-dasharray="980" stroke-dashoffset="980" opacity="0.85"/>
                         <circle id="cin-vec-c2" cx="200" cy="200" r="95" stroke="#34d399" stroke-width="1.5" stroke-dasharray="600" stroke-dashoffset="600"/>
@@ -4575,7 +4573,7 @@
                         <line id="cin-vec-l2" x1="200" y1="40" x2="200" y2="360" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="320" stroke-dashoffset="320"/>
                     </svg>
                     
-                    <div id="cinematic-reward-badge" class="absolute flex flex-col items-center justify-center text-center opacity-0 scale-50 px-6 py-4 rounded-3xl cinematic-glass-card">
+                    <div id="cinematic-reward-badge" class="absolute flex flex-col items-center justify-center text-center opacity-0 scale-50 px-6 py-4 rounded-3xl cinematic-glass-card pointer-events-none">
                         <div id="cinematic-reward-tag" class="px-4 py-1 rounded-full bg-[var(--accent)]/20 border border-[var(--accent)] text-[var(--accent)] text-[10px] font-retro tracking-[0.3em] uppercase mb-2 shadow-[0_0_15px_rgba(129,140,248,0.4)]">
                             HARDWARE MODULE ENGAGED
                         </div>
@@ -4817,6 +4815,11 @@ const DEFAULT_STATE = {
             root.style.setProperty('--bg-color-3', t.vars[2]);
             root.style.setProperty('--bg-color-4', t.vars[3]);
             playBleep();
+
+            // Chance de micro-cinématique avatar au changement de thème
+            if (typeof window.triggerRandomCinematic === 'function' && Math.random() < 0.45) {
+                window.triggerRandomCinematic();
+            }
 
             updateThemeColors();
         }
@@ -9776,7 +9779,7 @@ function triggerRankUp(oldRank, newRank) {
 
                 const now = this.ctx.currentTime;
 
-                // 1. Génération de Bruit Rose / Pluie procédurale (Buffer de 2 secondes en boucle)
+                // 1. Génération de Bruit Rose / Pluie procédurale très douce (Buffer de 2 secondes en boucle)
                 const bufferSize = this.ctx.sampleRate * 2;
                 const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 const output = noiseBuffer.getChannelData(0);
@@ -9789,7 +9792,7 @@ function triggerRankUp(oldRank, newRank) {
                     b3 = 0.86650 * b3 + white * 0.3104856;
                     b4 = 0.55000 * b4 + white * 0.5329522;
                     b5 = -0.7616 * b5 - white * 0.0168980;
-                    output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.07;
+                    output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.02; // Atténuation initiale
                     b6 = white * 0.115926;
                 }
 
@@ -9799,17 +9802,18 @@ function triggerRankUp(oldRank, newRank) {
 
                 this.noiseFilter = this.ctx.createBiquadFilter();
                 this.noiseFilter.type = 'bandpass';
-                this.noiseFilter.frequency.setValueAtTime(1400, now);
-                this.noiseFilter.Q.setValueAtTime(1.2, now);
+                this.noiseFilter.frequency.setValueAtTime(1200, now);
+                this.noiseFilter.Q.setValueAtTime(1.0, now);
 
                 const noiseGain = this.ctx.createGain();
-                noiseGain.gain.setValueAtTime(0.35, now);
+                // FIX AUDIO : Volume très doux et feutré (0.02 max)
+                noiseGain.gain.setValueAtTime(0.02, now);
 
                 this.noiseSource.connect(this.noiseFilter);
                 this.noiseFilter.connect(noiseGain);
                 noiseGain.connect(this.masterGain);
 
-                // 2. Pad Synth Harmonique (432Hz Racine + Quinte)
+                // 2. Pad Synth Harmonique Apaisant (432Hz Racine + Quinte)
                 this.padOsc1 = this.ctx.createOscillator();
                 this.padOsc2 = this.ctx.createOscillator();
                 this.padOsc1.type = 'sine';
@@ -9819,10 +9823,11 @@ function triggerRankUp(oldRank, newRank) {
 
                 const padFilter = this.ctx.createBiquadFilter();
                 padFilter.type = 'lowpass';
-                padFilter.frequency.setValueAtTime(260, now);
+                padFilter.frequency.setValueAtTime(220, now);
 
                 this.padGain = this.ctx.createGain();
-                this.padGain.gain.setValueAtTime(0.12, now);
+                // FIX AUDIO : Pad subtil à 0.015 max
+                this.padGain.gain.setValueAtTime(0.015, now);
 
                 this.padOsc1.connect(padFilter);
                 this.padOsc2.connect(padFilter);
@@ -9833,10 +9838,10 @@ function triggerRankUp(oldRank, newRank) {
                 this.padOsc1.start(now);
                 this.padOsc2.start(now);
 
-                // Fondu d'ouverture doux
+                // Fondu d'ouverture très progressif et apaisant (fade-in linéaire sur 1.8s vers 0.025)
                 this.masterGain.gain.cancelScheduledValues(now);
                 this.masterGain.gain.setValueAtTime(0.0001, now);
-                this.masterGain.gain.exponentialRampToValueAtTime(0.65, now + 2.5);
+                this.masterGain.gain.linearRampToValueAtTime(0.025, now + 1.8);
             }
 
             stop() {
@@ -9844,7 +9849,8 @@ function triggerRankUp(oldRank, newRank) {
                 const now = this.ctx.currentTime;
                 this.masterGain.gain.cancelScheduledValues(now);
                 this.masterGain.gain.setValueAtTime(Math.max(0.0001, this.masterGain.gain.value), now);
-                this.masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+                // Fondu de fermeture doux sur 1.5s
+                this.masterGain.gain.linearRampToValueAtTime(0.0001, now + 1.5);
 
                 setTimeout(() => {
                     try {
@@ -9853,7 +9859,7 @@ function triggerRankUp(oldRank, newRank) {
                         if (this.padOsc2) { this.padOsc2.stop(); this.padOsc2.disconnect(); }
                     } catch(e) {}
                     this.isPlaying = false;
-                }, 1300);
+                }, 1600);
             }
         }
 
@@ -9942,12 +9948,10 @@ function triggerRankUp(oldRank, newRank) {
             const sky = document.getElementById('layer-sky');
             const cityFar = document.getElementById('layer-city-far');
             const cityMid = document.getElementById('layer-city-mid');
-            const balcony = document.getElementById('layer-balcony');
 
             if (sky) sky.style.transform = `translate3d(${currentParallaxX * -12}px, ${currentParallaxY * -6}px, 0)`;
             if (cityFar) cityFar.style.transform = `translate3d(${currentParallaxX * -28}px, ${currentParallaxY * -12}px, 0)`;
             if (cityMid) cityMid.style.transform = `translate3d(${currentParallaxX * -55}px, ${currentParallaxY * -20}px, 0)`;
-            if (balcony) balcony.style.transform = `translate3d(${currentParallaxX * 18}px, ${currentParallaxY * 8}px, 0)`;
 
             requestAnimationFrame(updateParallaxLoop);
         }
@@ -10147,6 +10151,217 @@ function triggerRankUp(oldRank, newRank) {
                 window.closeCinematic();
             }
         });
+
+        // =========================================================================
+        // FEATURE : MICRO-CINÉMATIQUES ALÉATOIRES AVEC L'AVATAR DU JOUEUR (Anime.js V4)
+        // =========================================================================
+
+        function getActivePlayerAvatar() {
+            try {
+                const idx = (typeof state !== 'undefined' && state && state.activeCharacter !== undefined) ? state.activeCharacter : 0;
+                if (typeof avatars !== 'undefined' && Array.isArray(avatars) && avatars[idx] && avatars[idx].img) {
+                    return { id: avatars[idx].id || 'Beatmaker', img: avatars[idx].img, index: idx };
+                }
+                if (typeof generateAvatarImage === 'function') {
+                    return { id: 'Beatmaker', img: generateAvatarImage(idx), index: idx };
+                }
+            } catch(e) {}
+            return { id: 'Beatmaker', img: '', index: 0 };
+        }
+
+        let isMicroCinematicRunning = false;
+
+        window.triggerRandomCinematic = function(forcedType = null) {
+            // Empêche le chevauchement de micro-cinématiques
+            if (isMicroCinematicRunning || currentActiveCinematicMode === 'escape') return;
+
+            const avatarData = getActivePlayerAvatar();
+            if (!avatarData || !avatarData.img) return;
+
+            isMicroCinematicRunning = true;
+
+            const types = ['glitch_holo', 'neon_radar', 'beat_burst', 'lofi_vinyl'];
+            const chosenType = forcedType || types[Math.floor(Math.random() * types.length)];
+
+            // Conteneur dynamique injecté
+            const container = document.createElement('div');
+            container.className = 'avatar-micro-cinematic fixed inset-0 pointer-events-none z-[999999] overflow-hidden flex items-end justify-center select-none';
+            document.body.appendChild(container);
+
+            if (chosenType === 'glitch_holo') {
+                // 1. Glitch Cyber & Scanlines (Coin bas-droit)
+                container.innerHTML = `
+                    <div id="amc-card" class="absolute bottom-8 right-8 flex items-center gap-4 p-4 rounded-2xl bg-black/80 backdrop-blur-xl border border-cyan-400/40 shadow-[0_0_40px_rgba(56,189,248,0.4)] opacity-0 translate-x-32">
+                        <div class="relative w-16 h-16 rounded-xl overflow-hidden border border-cyan-400 shadow-[0_0_15px_rgba(56,189,248,0.6)]">
+                            <img src="${avatarData.img}" class="w-full h-full object-cover scale-[1.5]" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-cyan-500/20 to-transparent pointer-events-none"></div>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                                <span class="text-[9px] font-retro uppercase tracking-[0.25em] text-cyan-400">FLOW STATE ACTIVE</span>
+                            </div>
+                            <h4 class="text-sm font-retro font-bold text-white tracking-widest uppercase mt-0.5">${avatarData.id}</h4>
+                            <p class="text-[10px] text-gray-300 font-sans tracking-wide">Sync Holographique • Focus x1.5</p>
+                        </div>
+                    </div>
+                `;
+
+                try { playTone(880, 'sine', 0.1, 0.04); setTimeout(() => playTone(1320, 'sine', 0.15, 0.03), 80); } catch(e) {}
+
+                const card = container.querySelector('#amc-card');
+                animate(card, {
+                    translateX: [100, 0],
+                    scale: [0.85, 1],
+                    opacity: [0, 1],
+                    duration: 600,
+                    ease: spring({ bounce: 0.5 }),
+                    onComplete: () => {
+                        setTimeout(() => {
+                            animate(card, {
+                                translateX: [0, 120],
+                                opacity: [1, 0],
+                                duration: 500,
+                                ease: 'outExpo',
+                                onComplete: () => { container.remove(); isMicroCinematicRunning = false; }
+                            });
+                        }, 1600);
+                    }
+                });
+
+            } else if (chosenType === 'neon_radar') {
+                // 2. Radar Sweep & Boost d'Inspiration (Coin bas-gauche)
+                container.innerHTML = `
+                    <div id="amc-card" class="absolute bottom-8 left-8 flex items-center gap-4 p-4 rounded-2xl bg-black/80 backdrop-blur-xl border border-emerald-400/40 shadow-[0_0_40px_rgba(52,211,153,0.4)] opacity-0 -translate-x-32">
+                        <div class="relative w-16 h-16 rounded-xl overflow-hidden border border-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.6)]">
+                            <img src="${avatarData.img}" class="w-full h-full object-cover scale-[1.5]" />
+                            <div class="absolute inset-0 border-2 border-emerald-400/50 rounded-xl animate-ping"></div>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                <span class="text-[9px] font-retro uppercase tracking-[0.25em] text-emerald-400">+5 INSPi BOOST</span>
+                            </div>
+                            <h4 class="text-sm font-retro font-bold text-white tracking-widest uppercase mt-0.5">${avatarData.id}</h4>
+                            <p class="text-[10px] text-gray-300 font-sans tracking-wide">Détection d'une onde créative !</p>
+                        </div>
+                    </div>
+                `;
+
+                try { playTone(523, 'triangle', 0.12, 0.04); setTimeout(() => playTone(1046, 'sine', 0.2, 0.03), 100); } catch(e) {}
+                
+                // Boost discret d'inspiration
+                if (typeof state !== 'undefined') {
+                    state.inspi = Math.min(100, (Number(state.inspi) || 0) + 5);
+                    if (typeof updateHUD === 'function') updateHUD();
+                }
+
+                const card = container.querySelector('#amc-card');
+                animate(card, {
+                    translateX: [-100, 0],
+                    scale: [0.85, 1],
+                    opacity: [0, 1],
+                    duration: 600,
+                    ease: spring({ bounce: 0.55 }),
+                    onComplete: () => {
+                        setTimeout(() => {
+                            animate(card, {
+                                translateX: [0, -120],
+                                opacity: [1, 0],
+                                duration: 500,
+                                ease: 'outExpo',
+                                onComplete: () => { container.remove(); isMicroCinematicRunning = false; }
+                            });
+                        }, 1800);
+                    }
+                });
+
+            } else if (chosenType === 'beat_burst') {
+                // 3. Sub-Bass Burst & Onde de Choc (Centre Bas)
+                container.innerHTML = `
+                    <div id="amc-card" class="mb-14 flex flex-col items-center p-5 rounded-3xl bg-black/85 backdrop-blur-2xl border border-[var(--accent)] shadow-[0_0_50px_rgba(129,140,248,0.5)] opacity-0 translate-y-24">
+                        <div class="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-[var(--accent)] shadow-[0_0_25px_var(--accent)] mb-3">
+                            <img src="${avatarData.img}" class="w-full h-full object-cover scale-[1.6]" />
+                        </div>
+                        <span class="text-[9px] font-retro uppercase tracking-[0.3em] text-[var(--accent)] font-bold">BPM LOCKED • SONIC SURGE</span>
+                        <h3 class="text-base font-retro font-bold text-white tracking-widest uppercase mt-0.5">${avatarData.id}</h3>
+                    </div>
+                `;
+
+                try { playTone(150, 'sine', 0.2, 0.08); setTimeout(() => playTone(45, 'triangle', 0.35, 0.1), 80); } catch(e) {}
+
+                const card = container.querySelector('#amc-card');
+                animate(card, {
+                    translateY: [60, 0],
+                    scale: [0.6, 1.05, 1.0],
+                    opacity: [0, 1],
+                    duration: 650,
+                    ease: spring({ mass: 1, stiffness: 160, damping: 14 }),
+                    onComplete: () => {
+                        setTimeout(() => {
+                            animate(card, {
+                                translateY: [0, 60],
+                                scale: [1, 0.8],
+                                opacity: [1, 0],
+                                duration: 450,
+                                ease: 'outExpo',
+                                onComplete: () => { container.remove(); isMicroCinematicRunning = false; }
+                            });
+                        }, 1700);
+                    }
+                });
+
+            } else if (chosenType === 'lofi_vinyl') {
+                // 4. Lo-Fi Aura & Disque Vinyle Doré
+                container.innerHTML = `
+                    <div id="amc-card" class="absolute bottom-8 right-8 flex items-center gap-4 p-4 rounded-2xl bg-black/80 backdrop-blur-xl border border-amber-400/40 shadow-[0_0_40px_rgba(251,191,36,0.4)] opacity-0 translate-y-24">
+                        <div class="relative w-16 h-16 rounded-xl overflow-hidden border border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.6)]">
+                            <img src="${avatarData.img}" class="w-full h-full object-cover scale-[1.5]" />
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-amber-400 text-xs animate-spin-slow">💿</span>
+                                <span class="text-[9px] font-retro uppercase tracking-[0.25em] text-amber-400">VINYL VIBE • CHILL</span>
+                            </div>
+                            <h4 class="text-sm font-retro font-bold text-white tracking-widest uppercase mt-0.5">${avatarData.id}</h4>
+                            <p class="text-[10px] text-gray-300 font-sans tracking-wide">Session Beatmaking Apaisée</p>
+                        </div>
+                    </div>
+                `;
+
+                try { playTone(440, 'sine', 0.15, 0.04); setTimeout(() => playTone(660, 'sine', 0.15, 0.03), 120); } catch(e) {}
+
+                const card = container.querySelector('#amc-card');
+                animate(card, {
+                    translateY: [60, 0],
+                    scale: [0.8, 1],
+                    opacity: [0, 1],
+                    duration: 650,
+                    ease: spring({ bounce: 0.4 }),
+                    onComplete: () => {
+                        setTimeout(() => {
+                            animate(card, {
+                                translateY: [0, 50],
+                                opacity: [1, 0],
+                                duration: 500,
+                                ease: 'outExpo',
+                                onComplete: () => { container.remove(); isMicroCinematicRunning = false; }
+                            });
+                        }, 1800);
+                    }
+                });
+            }
+        };
+
+        // --- DÉCLENCHEUR PÉRIODIQUE NATUREL (Toutes les 70-90s si joueur actif) ---
+        setInterval(() => {
+            if (typeof state !== 'undefined' && !state.isSleeping && !state.isEventActive && currentActiveCinematicMode !== 'escape') {
+                if (Math.random() < 0.4) {
+                    window.triggerRandomCinematic();
+                }
+            }
+        }, 75000);
+
 
                 // ==========================================
         // 7. AUDIO
