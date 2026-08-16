@@ -4790,14 +4790,21 @@ const DEFAULT_STATE = {
         camera.position.set(20, 20, 20);
         camera.lookAt(0, 0, 0);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // Correctif 1 : Activer le support de la transparence
-        // Optimisation Mobile : Pixel ratio à 1 et BasicShadowMap
-        const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio, 2);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+        // Optimisation Mobile : Bridage dynamique du Pixel Ratio à 1.2 max pour 60 FPS constants
+        const dpr = isMobile ? Math.min(window.devicePixelRatio, 1.2) : Math.min(window.devicePixelRatio, 2);
         renderer.setPixelRatio(dpr);
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowMap.type = isMobile ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
+
+        // --- MCP THREE.JS DEVTOOLS GLOBAL BRIDGE EXPOSURE ---
+        window.__THREE__ = THREE;
+        window.__THREE_SCENE__ = scene;
+        window.__THREE_CAMERA__ = camera;
+        window.__THREE_RENDERER__ = renderer;
+        window.__THREE_DEVTOOLS__ = { scene, camera, renderer, THREE };
 
         const listener = new THREE.AudioListener();
         camera.add(listener);
@@ -4899,10 +4906,11 @@ const DEFAULT_STATE = {
         scene.add(lightTarget);
         ceilingLight.target = lightTarget;
 
-        // 5. Optionnel : Pour que le spot crée aussi de belles ombres douces
+        // 5. Optionnel : Pour que le spot crée aussi de belles ombres douces (optimisé mobile)
         ceilingLight.castShadow = true;
-        ceilingLight.shadow.mapSize.width = 1024;
-        ceilingLight.shadow.mapSize.height = 1024;
+        const spotShadowSize = isMobile ? 512 : 1024;
+        ceilingLight.shadow.mapSize.width = spotShadowSize;
+        ceilingLight.shadow.mapSize.height = spotShadowSize;
         ceilingLight.shadow.bias = -0.001;
 
         scene.add(ceilingLight);
@@ -6778,21 +6786,28 @@ const DEFAULT_STATE = {
 
                     obj.traverse(child => {
                         if (child.isMesh) {
+                            // Sauvegarde sécurisée du matériau initial solide
                             if (!child.userData.originalMaterial) {
                                 child.userData.originalMaterial = child.material;
                             }
                             if (isOwned) {
+                                // Rétablissement du matériau solide d'origine
                                 child.material = child.userData.originalMaterial;
                                 if (child.material) {
-                                    // FIX: Forcer la mise à jour du matériau en bloc solide 
-                                    // (corrige le bug de la TV qui reste transparente)
                                     child.material.wireframe = false;
                                     child.material.transparent = false;
                                     child.material.opacity = 1.0;
+                                    child.material.depthWrite = true;
                                     child.material.needsUpdate = true;
                                 }
                             } else {
-                                child.material = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                                // Silhouette mystique non achetée
+                                if (!child.userData.mysticMaterial) {
+                                    child.userData.mysticMaterial = baseMysticMaterial.clone();
+                                    child.userData.mysticMaterial.userData = { targetOpacity: 0.9 };
+                                }
+                                child.material = child.userData.mysticMaterial;
+                                window.activeMysticMaterials.push(child.userData.mysticMaterial);
                             }
                         } else if (child.isLine || child.isLineSegments) {
                             if (child.userData.originalVisible === undefined) {
@@ -6842,10 +6857,7 @@ const DEFAULT_STATE = {
             return;
         }
 
-        if (typeof isMobile !== 'undefined' && isMobile) {
-            frameCounter++;
-            if (frameCounter % 2 !== 0) return;
-        }
+        // Optimisé : maintien des 60 FPS fluides sans saut artificiel de frame
 
         // Reprise de ta variable time locale
         time += 0.02;
@@ -7177,8 +7189,8 @@ const DEFAULT_STATE = {
                     }
                 }
 
-                // --- PARTICULES DE SUEUR SÉCURISÉES ---
-                if (safeEnergy < 10 && Math.random() < 0.20) {
+                // --- PARTICULES DE SUEUR OPTIMISÉES (Pool de mémoire fixe) ---
+                if (safeEnergy < 10 && Math.random() < 0.15) {
                     if (!window.fatigueParticles) window.fatigueParticles = [];
                     
                     if (!window._sweatMat) {
@@ -7189,29 +7201,25 @@ const DEFAULT_STATE = {
                         window._sweatBotGeo = new THREE.SphereGeometry(0.02, 6, 6);
                     }
                     
-                    const sweatGroup = new THREE.Group();
-                    const top = new THREE.Mesh(window._sweatTopGeo, window._sweatMat);
-                    top.position.y = 0.025;
-                    const bottom = new THREE.Mesh(window._sweatBotGeo, window._sweatMat);
-                    sweatGroup.add(top, bottom);
+                    if (window.fatigueParticles.length < 15) {
+                        const sweatGroup = new THREE.Group();
+                        const top = new THREE.Mesh(window._sweatTopGeo, window._sweatMat);
+                        top.position.y = 0.025;
+                        const bottom = new THREE.Mesh(window._sweatBotGeo, window._sweatMat);
+                        sweatGroup.add(top, bottom);
 
-                    sweatGroup.position.copy(currentRoomAvatar.position);
-                    sweatGroup.position.y += 2.1;
-                    sweatGroup.position.x += (Math.random() - 0.5) * 0.5;
-                    sweatGroup.position.z += (Math.random() - 0.5) * 0.5;
-                    
-                    if (typeof scene !== 'undefined' && scene) scene.add(sweatGroup);
+                        sweatGroup.position.copy(currentRoomAvatar.position);
+                        sweatGroup.position.y += 2.1;
+                        sweatGroup.position.x += (Math.random() - 0.5) * 0.5;
+                        sweatGroup.position.z += (Math.random() - 0.5) * 0.5;
+                        
+                        if (typeof scene !== 'undefined' && scene) scene.add(sweatGroup);
 
-                    window.fatigueParticles.push({
-                        mesh: sweatGroup, life: 1.0, decay: 0.015 + Math.random() * 0.01,
-                        velY: -0.01, gravity: -0.003, wobbleSpeed: 5 + Math.random() * 5,
-                        wobbleInt: 0.005 + Math.random() * 0.005, seed: Math.random() * 100
-                    });
-                    if (window.fatigueParticles.length > 20) {
-                        const oldest = window.fatigueParticles.shift();
-                        if (oldest && oldest.mesh) {
-                            if (typeof scene !== 'undefined' && scene) scene.remove(oldest.mesh);
-                        }
+                        window.fatigueParticles.push({
+                            mesh: sweatGroup, life: 1.0, decay: 0.018 + Math.random() * 0.01,
+                            velY: -0.01, gravity: -0.003, wobbleSpeed: 5 + Math.random() * 5,
+                            wobbleInt: 0.005 + Math.random() * 0.005, seed: Math.random() * 100
+                        });
                     }
                 }
             }
@@ -7523,21 +7531,32 @@ const DEFAULT_STATE = {
             }
         }
 
-        // --- EFFET DE DISTORSION VISUELLE ---
-        if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar && typeof scene !== 'undefined' && (currentState.isSleeping || currentState.isSitting) && Math.random() < 0.25) {
+        // --- EFFET DE DISTORSION VISUELLE (Optimisé sans fuite de mémoire) ---
+        if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar && typeof scene !== 'undefined' && (currentState.isSleeping || currentState.isSitting) && Math.random() < 0.08) {
             if (!window.timeRipples) window.timeRipples = [];
             
-            // On récupère les géométries en toute sécurité selon ce qui existe dans ton index.html
-            const rGeo = typeof rippleGeoShared !== 'undefined' ? rippleGeoShared : (typeof rippleGeo !== 'undefined' ? rippleGeo : null);
-            const rMat = typeof rippleMatShared !== 'undefined' ? rippleMatShared.clone() : (typeof rippleMat !== 'undefined' ? rippleMat.clone() : null);
+            if (!window._sharedRippleGeo) {
+                window._sharedRippleGeo = new THREE.TorusGeometry(0.3, 0.015, 8, 24);
+            }
+            if (!window._sharedRippleMat) {
+                window._sharedRippleMat = new THREE.MeshBasicMaterial({ 
+                    color: 0x818cf8, transparent: true, opacity: 0.6, depthWrite: false 
+                });
+            }
             
-            if (rGeo && rMat) {
-                const ripple = new THREE.Mesh(rGeo, rMat);
+            if (window.timeRipples.length < 8) {
+                const ripple = new THREE.Mesh(window._sharedRippleGeo, window._sharedRippleMat.clone());
                 const p = currentRoomAvatar.position;
                 ripple.position.set(p.x, p.y + 0.5, p.z);
                 ripple.rotation.x = Math.PI / 2;
                 scene.add(ripple);
-                window.timeRipples.push({ mesh: ripple, life: 1.0, growth: 0.1 });
+                window.timeRipples.push({ 
+                    mesh: ripple, 
+                    life: 1.0, 
+                    scaleSpeed: 0.03,
+                    driftSpeed: 0.008,
+                    rotZ: 0.01
+                });
             }
         }
 
@@ -7572,12 +7591,11 @@ const DEFAULT_STATE = {
             for (let i = window.timeRipples.length - 1; i >= 0; i--) {
                 const r = window.timeRipples[i];
                 
-                // Disparition beaucoup plus lente pour un effet fluide
-                r.life -= 0.012; 
+                r.life -= 0.015; 
                 
                 // 1. L'anneau s'élargit
                 r.mesh.scale.x += r.scaleSpeed;
-                r.mesh.scale.y += r.scaleSpeed; // Sur un Torus tourné, l'axe Y gère l'expansion à plat
+                r.mesh.scale.y += r.scaleSpeed;
                 
                 // 2. L'anneau flotte vers le haut
                 r.mesh.position.y += r.driftSpeed;
@@ -7585,15 +7603,14 @@ const DEFAULT_STATE = {
                 // 3. L'anneau tourne subtilement
                 r.mesh.rotation.z += r.rotZ;
 
-                // 4. Easing dynamique : reste visible un peu, puis fade-out en douceur (courbe quadratique)
+                // 4. Easing d'opacité dynamique
                 if (r.mesh.material) {
                     r.mesh.material.opacity = Math.max(0, Math.pow(r.life, 2) * 0.6);
                 }
                 
-                // Nettoyage propre de la mémoire
+                // Nettoyage propre
                 if (r.life <= 0) {
                     if (typeof scene !== 'undefined') scene.remove(r.mesh);
-                    if (r.mesh.geometry) r.mesh.geometry.dispose();
                     if (r.mesh.material) r.mesh.material.dispose();
                     window.timeRipples.splice(i, 1);
                 }
@@ -7629,7 +7646,8 @@ const DEFAULT_STATE = {
             // Création d'un point d'ancrage 3D strictement au-dessus de l'avatar
             // En augmentant ce décalage en 3D, l'écart visuel en 2D s'agrandit naturellement avec le zoom (perspective)
             const headOffset = (currentRoomAvatar.scale.y || 1.6) * 1.7; // Ancrage bien au-dessus du crâne
-            const avatarWorldPos = new THREE.Vector3(
+            window._v3avatarWorldPos = window._v3avatarWorldPos || new THREE.Vector3();
+            const avatarWorldPos = window._v3avatarWorldPos.set(
                 currentRoomAvatar.position.x,
                 currentRoomAvatar.position.y + headOffset,
                 currentRoomAvatar.position.z
@@ -8004,36 +8022,35 @@ const DEFAULT_STATE = {
                                 lastHoveredSilhouetteGroup = group;
                             }
 
-                            const pos3D = new THREE.Vector3();
-                            const box = new THREE.Box3().setFromObject(group);
-                            box.getCenter(pos3D);
+                            window._v3TooltipCenter = window._v3TooltipCenter || new THREE.Vector3();
+                            window._box3Tooltip = window._box3Tooltip || new THREE.Box3();
                             
-                            const distToCam = camera.position.distanceTo(pos3D);
-                            let scaleValue = 35 / distToCam;
-                            scaleValue = Math.max(0.4, Math.min(1.5, scaleValue));
+                            window._box3Tooltip.setFromObject(group);
+                            window._box3Tooltip.getCenter(window._v3TooltipCenter);
+                            
+                            const distToCam = camera.position.distanceTo(window._v3TooltipCenter);
+                            const scaleValue = Math.max(0.6, Math.min(1.2, 32 / distToCam));
 
-                            pos3D.y += (box.max.y - box.min.y) * 0.4 + 0.3;
-                            pos3D.project(camera);
+                            window._v3TooltipCenter.y += (window._box3Tooltip.max.y - window._box3Tooltip.min.y) * 0.4 + 0.3;
+                            
+                            window._v3TooltipProj = window._v3TooltipProj || new THREE.Vector3();
+                            window._v3TooltipProj.copy(window._v3TooltipCenter).project(camera);
 
                             const widthHalf = rect.width / 2;
                             const heightHalf = rect.height / 2;
                             
                             if (tooltipEl) {
-                                let screenX = (pos3D.x * widthHalf) + widthHalf + rect.left;
-                                let screenY = -(pos3D.y * heightHalf) + heightHalf + rect.top;
+                                let screenX = (window._v3TooltipProj.x * widthHalf) + widthHalf + rect.left;
+                                let screenY = -(window._v3TooltipProj.y * heightHalf) + heightHalf + rect.top;
                                 const tw = tooltipEl.offsetWidth || 280;
                                 const th = tooltipEl.offsetHeight || 120;
-                                const margin = 15;
+                                const margin = 16;
 
-                                if (screenX - (tw / 2) < margin) {
-                                    screenX = (tw / 2) + margin;
-                                } else if (screenX + (tw / 2) > window.innerWidth - margin) {
-                                    screenX = window.innerWidth - (tw / 2) - margin;
-                                }
+                                const halfWidthScaled = (tw * scaleValue) / 2;
+                                const heightScaled = th * scaleValue;
 
-                                if (screenY - th < margin) {
-                                    screenY = th + margin;
-                                }
+                                screenX = Math.max(halfWidthScaled + margin, Math.min(window.innerWidth - halfWidthScaled - margin, screenX));
+                                screenY = Math.max(heightScaled + margin + 15, Math.min(window.innerHeight - margin, screenY));
 
                                 tooltipEl.style.left = `${screenX}px`;
                                 tooltipEl.style.top = `${screenY}px`;
@@ -8144,42 +8161,43 @@ const DEFAULT_STATE = {
                                 lastHoveredSilhouetteGroup = group;
                             }
 
-                            // Project 3D position to 2D screen coordinates
-                            const pos3D = new THREE.Vector3();
-                            const box = new THREE.Box3().setFromObject(group);
-                            box.getCenter(pos3D);
+                            // Project 3D position to 2D screen coordinates (sans réallocation Vector3/Box3)
+                            window._v3TooltipCenter = window._v3TooltipCenter || new THREE.Vector3();
+                            window._box3Tooltip = window._box3Tooltip || new THREE.Box3();
                             
-                            // Calcul de la distance et de l'échelle dynamique
-                            const distToCam = camera.position.distanceTo(pos3D);
-                            let scaleValue = 35 / distToCam;
-                            scaleValue = Math.max(0.4, Math.min(1.5, scaleValue));
+                            window._box3Tooltip.setFromObject(group);
+                            window._box3Tooltip.getCenter(window._v3TooltipCenter);
+                            
+                            // Calcul adaptatif de l'échelle selon la distance réelle caméra-objet
+                            const distToCam = camera.position.distanceTo(window._v3TooltipCenter);
+                            const scaleValue = Math.max(0.6, Math.min(1.2, 32 / distToCam));
 
-                            pos3D.y += (box.max.y - box.min.y) * 0.4 + 0.3;
-                            pos3D.project(camera);
+                            window._v3TooltipCenter.y += (window._box3Tooltip.max.y - window._box3Tooltip.min.y) * 0.4 + 0.3;
+                            
+                            // Projection sur le plan caméra
+                            window._v3TooltipProj = window._v3TooltipProj || new THREE.Vector3();
+                            window._v3TooltipProj.copy(window._v3TooltipCenter).project(camera);
 
                             const widthHalf = rect.width / 2;
                             const heightHalf = rect.height / 2;
                             
                             if (tooltipEl) {
-                                // Utilise "let" au lieu de "const" pour pouvoir les réajuster
-                                let screenX = (pos3D.x * widthHalf) + widthHalf + rect.left;
-                                let screenY = -(pos3D.y * heightHalf) + heightHalf + rect.top;
-                                // --- NOUVEAU : ANTI-DÉBORDEMENT POUR LES OBJETS AUX EXTRÉMITÉS (Ex: Guitare) ---
+                                let screenX = (window._v3TooltipProj.x * widthHalf) + widthHalf + rect.left;
+                                let screenY = -(window._v3TooltipProj.y * heightHalf) + heightHalf + rect.top;
+                                
+                                // --- CLAMPING RIGOUREUX ANTI-DÉBORDEMENT (Spécial Guitare Murale & Extrémités) ---
                                 const tw = tooltipEl.offsetWidth || 280;
                                 const th = tooltipEl.offsetHeight || 120;
-                                const margin = 15;
+                                const margin = 16;
+                                
+                                const halfWidthScaled = (tw * scaleValue) / 2;
+                                const heightScaled = th * scaleValue;
 
-                                // Contrainte X : le CSS décale de -50%, on bloque donc par rapport à la moitié du tooltip
-                                if (screenX - (tw / 2) < margin) {
-                                    screenX = (tw / 2) + margin;
-                                } else if (screenX + (tw / 2) > window.innerWidth - margin) {
-                                    screenX = window.innerWidth - (tw / 2) - margin;
-                                }
-
-                                // Contrainte Y : le CSS décale de -100% avec un margin-top de -30px
-                                if (screenY - th - 30 < margin) {
-                                    screenY = th + 30 + margin; 
-                                }
+                                // Clamping X strict : garde l'élément intégralement dans la fenêtre
+                                screenX = Math.max(halfWidthScaled + margin, Math.min(window.innerWidth - halfWidthScaled - margin, screenX));
+                                
+                                // Clamping Y strict : empêche le tooltip de sortir par le haut ou le bas
+                                screenY = Math.max(heightScaled + margin + 15, Math.min(window.innerHeight - margin, screenY));
 
                                 document.getElementById('s-tooltip-name').innerText = item.name;
                                 document.getElementById('s-tooltip-category').innerText = item.category.toUpperCase();
