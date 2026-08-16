@@ -4804,7 +4804,15 @@ const DEFAULT_STATE = {
         window.__THREE_SCENE__ = scene;
         window.__THREE_CAMERA__ = camera;
         window.__THREE_RENDERER__ = renderer;
-        window.__THREE_DEVTOOLS__ = { scene, camera, renderer, THREE };
+        try {
+            if (typeof window.__THREE_DEVTOOLS__ === 'undefined' || !window.__THREE_DEVTOOLS__.dispatchEvent) {
+                window.__THREE_DEVTOOLS__ = new EventTarget();
+            }
+            window.__THREE_DEVTOOLS__.scene = scene;
+            window.__THREE_DEVTOOLS__.camera = camera;
+            window.__THREE_DEVTOOLS__.renderer = renderer;
+            window.__THREE_DEVTOOLS__.THREE = THREE;
+        } catch(e) {}
 
         const listener = new THREE.AudioListener();
         camera.add(listener);
