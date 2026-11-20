@@ -9918,9 +9918,11 @@ const DEFAULT_STATE = {
                     map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.015,
                     color: '#2d4563', roughness: 0.90
                 });
+                const noOpBedRaycast = () => {};
                 const organicDuvet = new THREE.Mesh(duvetGeo, organicDuvetMat);
                 organicDuvet.position.set(0, 0.43, 0.44);
                 organicDuvet.castShadow = true; organicDuvet.receiveShadow = true; organicDuvet.name = 'bed_mesh';
+                organicDuvet.raycast = noOpBedRaycast;
                 bedTier2PlusGroup.add(organicDuvet);
 
                 // 5. Rebord de drap blanc cassé plissé rabattu en haut de la couette
@@ -9935,6 +9937,7 @@ const DEFAULT_STATE = {
                 cuffGeo.computeVertexNormals();
                 const sheetCuff = new THREE.Mesh(cuffGeo, mattressRealMat);
                 sheetCuff.position.set(0, 0.59, -0.96); sheetCuff.rotation.x = 0.04; sheetCuff.castShadow = true; sheetCuff.receiveShadow = true; sheetCuff.name = 'bed_mesh';
+                sheetCuff.raycast = noOpBedRaycast;
                 bedTier2PlusGroup.add(sheetCuff);
 
                 // 6. 2 Grands Oreillers de couchage bombés + 2 Vrais Coussins Déco Carrés-Bombés adossés proprement devant
@@ -9955,6 +9958,7 @@ const DEFAULT_STATE = {
                     pMesh.position.set(px, py, pz);
                     pMesh.rotation.set(rx, ry, rz);
                     pMesh.castShadow = true; pMesh.receiveShadow = true; pMesh.name = 'bed_mesh';
+                    pMesh.raycast = noOpBedRaycast;
                     bedTier2PlusGroup.add(pMesh);
                 }
                 function buildSquareCushion(w, h, d, px, py, pz, rx, ry, rz, mat) {
@@ -9977,6 +9981,7 @@ const DEFAULT_STATE = {
                     cMesh.position.set(px, py, pz);
                     cMesh.rotation.set(rx, ry, rz);
                     cMesh.castShadow = true; cMesh.receiveShadow = true; cMesh.name = 'bed_mesh';
+                    cMesh.raycast = noOpBedRaycast;
                     bedTier3OnlyGroup.add(cMesh);
                 }
                 const sleepPillowMat = new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#f6f3ec', roughness: 0.91 });
@@ -10022,7 +10027,17 @@ const DEFAULT_STATE = {
                 const plaidMat = new THREE.MeshStandardMaterial({ map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.018, color: '#ad6d4b', roughness: 0.95 });
                 const plaid = new THREE.Mesh(plaidGeo, plaidMat);
                 plaid.position.set(0, 0, plaidCenterZ); plaid.castShadow = true; plaid.receiveShadow = true; plaid.name = 'bed_mesh';
+                plaid.raycast = noOpBedRaycast;
                 bedTier3OnlyGroup.add(plaid);
+                if (typeof realMattress !== 'undefined') realMattress.raycast = noOpBedRaycast;
+                // Hitbox low-poly (12 triangles) dédiée au raycast FPS du lit pour éviter de tester 15 000 triangles de draps!
+                const bedHitbox = new THREE.Mesh(
+                    new THREE.BoxGeometry(2.54, 0.95, 4.22),
+                    new THREE.MeshBasicMaterial({ visible: false })
+                );
+                bedHitbox.position.set(0, 0.34, 0);
+                bedHitbox.name = 'bed_mesh';
+                bedGroup.add(bedHitbox);
                 bedGroup.add(bedTier2PlusGroup);
                 bedGroup.add(bedTier3OnlyGroup);
             } catch(e) { console.warn('Organic bed build fallback:', e); }
@@ -10992,6 +11007,7 @@ const DEFAULT_STATE = {
             t1MatGeo.computeVertexNormals();
             const t1Mattress = tagBed1(new THREE.Mesh(t1MatGeo, new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#9e978b', roughness: 0.95 })));
             t1Mattress.position.set(0, 0.06, 0.05);
+            t1Mattress.raycast = () => {};
             bedTier1Group.add(t1Mattress);
             // Vieille couverture froissée posée en travers
             const t1BlanketGeo = new THREE.BoxGeometry(2.20, 0.09, 2.42, 18, 2, 18);
@@ -11003,11 +11019,13 @@ const DEFAULT_STATE = {
             t1BlanketGeo.computeVertexNormals();
             const t1Blanket = tagBed1(new THREE.Mesh(t1BlanketGeo, new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#39423a', roughness: 0.96 })));
             t1Blanket.position.set(-0.04, 0.20, 0.62); t1Blanket.rotation.y = 0.06;
+            t1Blanket.raycast = () => {};
             bedTier1Group.add(t1Blanket);
             // 1 seul vieil oreiller un peu plat & fripé
             const t1PilGeo = new THREE.SphereGeometry(0.38, 16, 12); t1PilGeo.scale(1.25, 0.24, 0.72);
             const t1Pillow = tagBed1(new THREE.Mesh(t1PilGeo, new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#bfb7a8', roughness: 0.95 })));
             t1Pillow.position.set(-0.22, 0.25, -1.42); t1Pillow.rotation.set(0.18, 0.22, 0.04);
+            t1Pillow.raycast = () => {};
             bedTier1Group.add(t1Pillow);
             bedGroup.add(bedTier1Group);
 
@@ -12305,6 +12323,12 @@ const DEFAULT_STATE = {
                 sofaGroup, sideTableGroup, rugGroup, tvGroup, rackGroup,
                 acousticGroupL, acousticGroupR, synthGroup, guitarGroup, doorGroup
             ].filter(Boolean);
+            // Groupes interactifs de la chambre uniquement (exclut archGroup/extérieur/murs/sol pour un raycast FPS 20x plus léger!)
+            window.bedroomRaycastRoots = [
+                deskGroup, bedGroup, crateGroup, doorGroup,
+                sofaGroup, sideTableGroup, rugGroup, tvGroup, rackGroup,
+                acousticGroupL, acousticGroupR, synthGroup, guitarGroup
+            ].filter(Boolean);
             window._proStudioExteriorRef = exteriorGroup;
             window.activeStudioLocation = 'bedroom';
 
@@ -12425,11 +12449,7 @@ const DEFAULT_STATE = {
 
             window.syncStudioSwitchButtons = function() {
                 const st = typeof state !== 'undefined' ? state : null;
-                let unlocked = Boolean(st && st.studioUnlocked);
-                if (!unlocked && st && typeof calculateLevelData === 'function') {
-                    const lv = calculateLevelData(true);
-                    if (lv && lv.avg >= 80) unlocked = true;
-                }
+                const unlocked = Boolean(st && st.studioUnlocked);
                 const isPro = window.activeStudioLocation === 'pro_studio';
                 const hudBtn = document.getElementById('btn-switch-studio-room');
                 const hudLbl = document.getElementById('btn-switch-studio-label');
@@ -12569,15 +12589,18 @@ const DEFAULT_STATE = {
              // 7. NOUVEAU : Bac de disquaire (x: 3.0 à 4.6, z: -0.1 à 1.1)
             if (x > 3.0 - r && x < 4.6 + r && z > -0.1 - r && z < 1.1 + r) return true;
             
-            // 7. Dynamic collision objects (three.js hitboxes)
+            // 7. Dynamic collision objects (three.js hitboxes avec AABB mis en cache pour 0 lag CPU!)
             try {
                 const avatarRadius = 0.28; // radius used for XZ overlap checks
                 const colliders = window.collisionObjects || [];
                 for (let i = 0; i < colliders.length; i++) {
                     const obj = colliders[i];
-                    if (!obj) continue;
-                    // compute world AABB
-                    const box = new THREE.Box3().setFromObject(obj);
+                    if (!obj || !obj.visible) continue;
+                    obj.userData = obj.userData || {};
+                    if (!obj.userData._cachedCollisionBox) {
+                        obj.userData._cachedCollisionBox = new THREE.Box3().setFromObject(obj);
+                    }
+                    const box = obj.userData._cachedCollisionBox;
                     if (!box) continue;
                     const minX = box.min.x - avatarRadius;
                     const maxX = box.max.x + avatarRadius;
@@ -13228,13 +13251,13 @@ const DEFAULT_STATE = {
             });
         }
 
-        // --- INDICATEUR VISUEL D'ACHAT (Pulsation pour les objets non possédés achetables) ---
+        // --- INDICATEUR VISUEL D'ACHAT (Pulsation pour les objets non possédés achetables, cadencé à 15 Hz en Chambre uniquement) ---
         try {
-            if (typeof state !== 'undefined' && state && typeof FURNITURE_CATALOG !== 'undefined' && Array.isArray(FURNITURE_CATALOG)) {
+            if (window.activeStudioLocation !== 'pro_studio' && (frameCounter++ % 4) === 0 && typeof state !== 'undefined' && state && typeof FURNITURE_CATALOG !== 'undefined' && Array.isArray(FURNITURE_CATALOG)) {
                 const pulsationTime = Date.now() * 0.002;
                 FURNITURE_CATALOG.forEach(item => {
                     const obj = getFurniture3DObject(item.sceneObject);
-                    if (obj) {
+                    if (obj && obj.visible) {
                         const isOwned = state.ownedFurniture && state.ownedFurniture.includes(item.id);
                         if (!isOwned) {
                             const scaledPrice = typeof getScaledPrice === 'function' ? getScaledPrice(item.price) : item.price;
@@ -14097,8 +14120,19 @@ const DEFAULT_STATE = {
                 const hlColor = typeof HIGHLIGHT_LINE_COLOR !== 'undefined' ? HIGHLIGHT_LINE_COLOR : new THREE.Color(0xffffff);
                 const defColor = typeof DEFAULT_LINE_COLOR !== 'undefined' ? DEFAULT_LINE_COLOR : new THREE.Color(0x000000);
 
+                const isProLocNow = (window.activeStudioLocation === 'pro_studio');
                 highlightItems.forEach(item => {
-                    if (!item || !item.mesh) return;
+                    if (!item || !item.mesh || !item.mesh.visible) return;
+                    if (item.isProStudio === undefined) {
+                        let p = item.mesh.parent;
+                        let inPro = false;
+                        while (p) {
+                            if (p === window.proStudioGroup) { inPro = true; break; }
+                            p = p.parent;
+                        }
+                        item.isProStudio = inPro;
+                    }
+                    if (item.isProStudio !== isProLocNow) return;
                     
                     item.mesh.getWorldPosition(targetPos);
                     const dist = Math.hypot(targetPos.x - avatarPos.x, targetPos.z - avatarPos.z);
@@ -15125,13 +15159,20 @@ const DEFAULT_STATE = {
             return foundTarget;
         }
 
+        function getActiveFpsRaycastTargets() {
+            if (window.activeStudioLocation === 'pro_studio') {
+                return window.proStudioGroup ? [window.proStudioGroup] : scene.children;
+            }
+            return (window.bedroomRaycastRoots && window.bedroomRaycastRoots.length) ? window.bedroomRaycastRoots : scene.children;
+        }
+
         // Direct Tap-to-Interact sur Mobile / Tactile (permet de toucher directement un objet 3D à l'écran!)
         window.tryDirectTapInteraction = function(clientX, clientY) {
             if (!window.isFpsRoomActive()) return false;
             fpsTapVec.x = (clientX / window.innerWidth) * 2 - 1;
             fpsTapVec.y = -(clientY / window.innerHeight) * 2 + 1;
             fpsRaycaster.setFromCamera(fpsTapVec, camera);
-            const hits = fpsRaycaster.intersectObjects(scene.children, true).filter(hit => {
+            const hits = fpsRaycaster.intersectObjects(getActiveFpsRaycastTargets(), true).filter(hit => {
                 if (!hit.object.isMesh || !hit.object.visible) return false;
                 if (hit.distance > 9.0) return false;
                 let curr = hit.object.parent;
@@ -15287,7 +15328,7 @@ const DEFAULT_STATE = {
             }
 
             fpsRaycaster.setFromCamera(fpsCenterVec, camera);
-            const hits = fpsRaycaster.intersectObjects(scene.children, true).filter(hit => {
+            const hits = fpsRaycaster.intersectObjects(getActiveFpsRaycastTargets(), true).filter(hit => {
                 if (!hit.object.isMesh || !hit.object.visible) return false;
                 if (hit.distance > 6.5) return false;
                 let curr = hit.object.parent;
@@ -15900,19 +15941,22 @@ function calculateLevelData(isSilentInit = false) {
         if (typeof window.getTargetRoomTier === 'function' && typeof window.applyRoomEvolutionTier === 'function') {
             const targetTier = window.getTargetRoomTier(state);
             const prevTier = Number(state.roomTier) || 1;
+            const isProActive = (window.activeStudioLocation === 'pro_studio');
             if (isSilentInit || window.isBooting) {
                 state.roomTier = Math.max(prevTier, targetTier);
-                if (window.currentRoomVisualTier !== state.roomTier) {
+                if (!isProActive && window.currentRoomVisualTier !== state.roomTier) {
                     window.applyRoomEvolutionTier(state.roomTier, false);
                 }
             } else if (targetTier > prevTier) {
                 state.roomTier = targetTier;
                 if (typeof saveGame === 'function') saveGame();
-                window.applyRoomEvolutionTier(targetTier, true);
+                if (!isProActive) window.applyRoomEvolutionTier(targetTier, true);
             }
             // Déblocage du VRAI STUDIO PRO (42e Étage) dès 80 % de Global Mastery!
+            let studioJustUnlocked = false;
             if (avgMastery >= 80 && !state.studioUnlocked) {
                 state.studioUnlocked = true;
+                studioJustUnlocked = true;
                 if (typeof saveGame === 'function') saveGame();
                 if (!isSilentInit && !window.isBooting) {
                     const banner = document.getElementById('room-evolution-banner');
@@ -15924,7 +15968,9 @@ function calculateLevelData(isSilentInit = false) {
                     if (typeof showToast === 'function') showToast('🏢 Penthouse Studio Pro (42e Étage) débloqué ! Appuie sur [L] ou passe par la porte.', 'success');
                 }
             }
-            if (typeof window.syncStudioSwitchButtons === 'function') window.syncStudioSwitchButtons();
+            if ((studioJustUnlocked || !isSilentInit) && typeof window.syncStudioSwitchButtons === 'function') {
+                window.syncStudioSwitchButtons();
+            }
         }
     } catch(e) {}
 
@@ -24931,9 +24977,13 @@ document.addEventListener('mouseover', (e) => {
         }
 
         function getScaledPrice(basePrice) {
-            const levelData = typeof calculateLevelData === 'function' ? calculateLevelData(true) : null;
-            const level = levelData ? levelData.level : 1;
-            return Math.floor(basePrice * (1 + (level - 1) * 0.15));
+            const now = performance.now();
+            if (!window._scaledPriceLevelTs || (now - window._scaledPriceLevelTs) > 250) {
+                const levelData = typeof calculateLevelData === 'function' ? calculateLevelData(true) : null;
+                window._scaledPriceLevel = levelData ? levelData.level : 1;
+                window._scaledPriceLevelTs = now;
+            }
+            return Math.floor(basePrice * (1 + ((window._scaledPriceLevel || 1) - 1) * 0.15));
         }
 
         function buyFurniture(id) {
