@@ -2788,6 +2788,43 @@
         }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
 
+        /* === ROOM EVOLUTION TRANSITION OVERLAY === */
+        #room-evolution-veil {
+            position: fixed;
+            inset: 0;
+            z-index: 9500;
+            background: radial-gradient(circle at center, rgba(245, 158, 11, 0.14) 0%, rgba(5, 6, 10, 0.96) 72%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        #room-evolution-veil.active {
+            opacity: 1;
+        }
+        #room-evolution-banner {
+            position: fixed;
+            top: 86px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-18px);
+            z-index: 9600;
+            opacity: 0;
+            pointer-events: none;
+            padding: 14px 26px;
+            border-radius: 16px;
+            background: rgba(8, 10, 16, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.65), 0 0 32px rgba(245, 158, 11, 0.18);
+            text-align: center;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        #room-evolution-banner.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
         @keyframes text-glitch {
         0% { transform: translate(0); text-shadow: none; }
         20% { transform: translate(-1px, 1px); text-shadow: 1px 0px 0px var(--retro-red); }
@@ -4173,6 +4210,22 @@
                     <label for="login-username" class="block text-[10px] font-mono text-slate-300/80 mb-1.5 uppercase tracking-[0.24em]">Nom d'Artiste</label>
                     <input type="text" id="login-username" autocomplete="off" class="w-full cinema-input rounded-xl px-4 py-3 text-sm tracking-wide placeholder:text-slate-500" placeholder="Entre ton blase de producteur...">
                     <div id="login-recent-profiles" class="flex flex-wrap gap-1.5 mt-2 hidden"></div>
+                    <!-- Profils Dev pré-calibrés pour inspecter instantanément les 3 paliers de chambre -->
+                    <div id="login-dev-presets" class="flex flex-wrap items-center gap-1.5 mt-2 pt-2 border-t border-white/10">
+                        <span class="text-[9px] font-mono uppercase tracking-[0.2em] text-slate-500 mr-1">DEV :</span>
+                        <button type="button" data-dev-preset="DEV_T1" class="cinema-profile-chip !border-amber-500/35 !bg-amber-500/10 hover:!bg-amber-500/20">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                            <span>DEV_T1</span><span class="text-[9px] text-amber-300/80 font-mono">Niv.1</span>
+                        </button>
+                        <button type="button" data-dev-preset="DEV_T2" class="cinema-profile-chip !border-sky-500/35 !bg-sky-500/10 hover:!bg-sky-500/20">
+                            <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                            <span>DEV_T2</span><span class="text-[9px] text-sky-300/80 font-mono">Niv.2</span>
+                        </button>
+                        <button type="button" data-dev-preset="DEV_T3" class="cinema-profile-chip !border-emerald-500/35 !bg-emerald-500/10 hover:!bg-emerald-500/20">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                            <span>DEV_T3</span><span class="text-[9px] text-emerald-300/80 font-mono">Niv.3</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Sélection Avatar Compacte -->
@@ -5381,6 +5434,12 @@
         </div>
 
         <div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[10000000] pointer-events-none w-[calc(100vw-32px)] md:w-80" style="z-index: 10000000 !important;"></div>
+        <div id="room-evolution-veil"></div>
+        <div id="room-evolution-banner">
+            <div id="room-evo-eyebrow" class="text-[10px] font-mono uppercase tracking-[0.28em] text-amber-400 mb-1">ÉVOLUTION DU STUDIO</div>
+            <div id="room-evo-title" class="text-base sm:text-lg font-semibold tracking-[0.12em] text-white uppercase">NIVEAU 2 · HOME-STUDIO RÉNOVÉ</div>
+            <div id="room-evo-sub" class="text-[11px] text-slate-300/85 mt-0.5">Murs repeints, espace rangé &amp; premier traitement acoustique</div>
+        </div>
 
         <div id="studio-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-1000 splash-bg overflow-hidden">
             <div class="cinema-grain-overlay"></div>
@@ -5878,7 +5937,7 @@ const DEFAULT_STATE = {
         renderer.setPixelRatio(dpr);
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = isMobile ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
+        renderer.shadowMap.type = isMobile ? THREE.BasicShadowMap : THREE.PCFShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.18;
         if ('outputColorSpace' in renderer && THREE.SRGBColorSpace) {
@@ -5988,15 +6047,15 @@ const DEFAULT_STATE = {
         const shadowSize = isMobile ? 512 : 2048;
         dirLight.shadow.mapSize.width = shadowSize;
         dirLight.shadow.mapSize.height = shadowSize;
-        dirLight.shadow.bias = -0.0005;
+        dirLight.shadow.bias = -0.0002;
         dirLight.shadow.camera.near = 1;
         dirLight.shadow.camera.far = 32;
         dirLight.shadow.camera.left = -7.5;
         dirLight.shadow.camera.right = 7.5;
         dirLight.shadow.camera.top = 6.5;
         dirLight.shadow.camera.bottom = -6.5;
-        dirLight.shadow.radius = 4.0;
-        dirLight.shadow.normalBias = 0.025;
+        dirLight.shadow.radius = 4.5;
+        dirLight.shadow.normalBias = 0.012;
         const dirTarget = new THREE.Object3D();
         dirTarget.position.set(-1.6, -0.5, -0.8);
         scene.add(dirTarget);
@@ -6019,7 +6078,7 @@ const DEFAULT_STATE = {
         scene.add(lightTarget);
         ceilingLight.target = lightTarget;
 
-        ceilingLight.castShadow = true;
+        ceilingLight.castShadow = false; // Évite les doubles ombres croisées/incohérentes sur les murs et le plafond
         const spotShadowSize = isMobile ? 512 : 1024;
         ceilingLight.shadow.mapSize.width = spotShadowSize;
         ceilingLight.shadow.mapSize.height = spotShadowSize;
@@ -6060,21 +6119,21 @@ const DEFAULT_STATE = {
 
         const wallMat = new THREE.MeshStandardMaterial({ color: '#b9bec8', roughness: 0.9 });
         
-        // Mur Gauche
+        // Mur Gauche (Nord) — reçoit la lumière PBR & AO, sans ombres portées dures
         const wallLeftGeo = new THREE.BoxGeometry(10, 5, 0.01);
         const wallLeft = new THREE.Mesh(wallLeftGeo, wallMat);
         wallLeft.position.set(0, 1.5, -5); 
-        wallLeft.receiveShadow = true;
+        wallLeft.receiveShadow = false;
         const wallLeftEdges = new THREE.EdgesGeometry(wallLeftGeo);
         const wallLeftLines = new THREE.LineSegments(wallLeftEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
         wallLeft.add(wallLeftLines);
         scene.add(wallLeft);
 
-        // Mur Droit
+        // Mur Droit (Ouest)
         const wallRightGeo = new THREE.BoxGeometry(0.01, 5, 10);
         const wallRight = new THREE.Mesh(wallRightGeo, wallMat);
         wallRight.position.set(-5, 1.5, 0); 
-        wallRight.receiveShadow = true;
+        wallRight.receiveShadow = false;
         const wallRightEdges = new THREE.EdgesGeometry(wallRightGeo);
         const wallRightLines = new THREE.LineSegments(wallRightEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 }));
         wallRight.add(wallRightLines);
@@ -7785,93 +7844,156 @@ const DEFAULT_STATE = {
                 return { map: configureTex(diffC, rx, ry, true), bumpMap: configureTex(bumpC, rx, ry, false) };
             }
 
-            // 6. ÉCRAN PC ABLESTUDIO DAW VIVANT (Playhead animé + VU-mètres temps réel)
+            // 6. ÉCRAN PC ABLESTUDIO DAW VIVANT ÉVOLUTIF PAR PALIER (Tier 1 Lite -> Tier 2 Studio -> Tier 3 Pro Mastering + FFT!)
             function createAbleOsScreenTexture() {
                 const w = 512, h = 320;
-                const baseC = document.createElement('canvas'); baseC.width = w; baseC.height = h;
-                const bCtx = baseC.getContext('2d');
-                const bg = bCtx.createLinearGradient(0, 0, w, h);
-                bg.addColorStop(0, '#0b1020'); bg.addColorStop(0.5, '#12172c'); bg.addColorStop(1, '#090d18');
-                bCtx.fillStyle = bg; bCtx.fillRect(0, 0, w, h);
+                function buildTierBase(tier) {
+                    const c = document.createElement('canvas'); c.width = w; c.height = h;
+                    const ctx = c.getContext('2d');
+                    if (tier === 1) {
+                        // TIER 1 : Vieux DAW gris basique 2 pistes (débutant)
+                        ctx.fillStyle = '#181a1c'; ctx.fillRect(0, 0, w, h);
+                        ctx.fillStyle = '#26292e'; ctx.fillRect(0, 0, w, 24);
+                        ctx.fillStyle = '#9ca3af'; ctx.font = 'bold 11px monospace';
+                        ctx.fillText('ABLE_OS LITE v0.4 // FREE TRIAL', 12, 16);
+                        ctx.fillStyle = '#101214'; ctx.fillRect(18, 40, w - 68, h - 84);
+                        ctx.strokeStyle = '#3f444c'; ctx.lineWidth = 2; ctx.strokeRect(18, 40, w - 68, h - 84);
+                        const cols1 = ['#6b7280', '#4ade80'];
+                        const labels1 = ['DRUMS', 'SAMPLE'];
+                        for (let t = 0; t < 2; t++) {
+                            const ty = 64 + t * 76;
+                            ctx.fillStyle = 'rgba(255,255,255,0.03)'; ctx.fillRect(26, ty, w - 84, 54);
+                            ctx.fillStyle = cols1[t]; ctx.fillRect(26, ty, 6, 54);
+                            ctx.font = 'bold 10px monospace'; ctx.fillText(labels1[t], 38, ty + 14);
+                            for (let cl = 0; cl < 2; cl++) {
+                                const cx = 48 + cl * 165;
+                                ctx.fillStyle = cols1[t] + '28'; ctx.fillRect(cx, ty + 18, 138, 28);
+                                ctx.strokeStyle = cols1[t]; ctx.lineWidth = 1; ctx.strokeRect(cx, ty + 18, 138, 28);
+                                ctx.fillStyle = cols1[t];
+                                for (let bx = cx + 6; bx < cx + 132; bx += 6) {
+                                    const bh = 4 + Math.abs(Math.sin(bx * 0.18 + t)) * 16;
+                                    ctx.fillRect(bx, ty + 32 - bh / 2, 3, bh);
+                                }
+                            }
+                        }
+                        ctx.fillStyle = '#0c0d0f'; ctx.fillRect(w - 42, 40, 24, h - 84);
+                        ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(18, h - 30, w - 36, 18);
+                        ctx.fillStyle = '#9ca3af'; ctx.font = '10px monospace'; ctx.fillText('CPU 84%  •  BUFFER 512  •  MONO OUT', 28, h - 18);
+                        return c;
+                    }
+                    const isPro = (tier >= 3);
+                    const bg = ctx.createLinearGradient(0, 0, w, h);
+                    bg.addColorStop(0, isPro ? '#090e1c' : '#0f1422');
+                    bg.addColorStop(0.5, isPro ? '#11182d' : '#161c2e');
+                    bg.addColorStop(1, '#080c16');
+                    ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
 
-                bCtx.fillStyle = 'rgba(0,0,0,0.68)'; bCtx.fillRect(0, 0, w, 24);
-                bCtx.fillStyle = '#818cf8'; bCtx.font = 'bold 11px monospace'; bCtx.fillText('ABLE_OS // ABLESTUDIO PRO', 12, 16);
+                    ctx.fillStyle = 'rgba(0,0,0,0.72)'; ctx.fillRect(0, 0, w, 24);
+                    ctx.fillStyle = isPro ? '#f59e0b' : '#818cf8'; ctx.font = 'bold 11px monospace';
+                    ctx.fillText(isPro ? 'ABLE_OS PRO // MASTERING SUITE' : 'ABLE_OS STUDIO // v2.4', 12, 16);
 
-                bCtx.fillStyle = '#111422'; bCtx.fillRect(18, 36, w - 68, h - 72);
-                bCtx.strokeStyle = 'rgba(129,140,248,0.45)'; bCtx.lineWidth = 2; bCtx.strokeRect(18, 36, w - 68, h - 72);
+                    const arrH = isPro ? (h - 114) : (h - 72);
+                    ctx.fillStyle = '#0e121f'; ctx.fillRect(18, 34, w - 68, arrH);
+                    ctx.strokeStyle = isPro ? 'rgba(245,158,11,0.42)' : 'rgba(129,140,248,0.45)';
+                    ctx.lineWidth = 1.5; ctx.strokeRect(18, 34, w - 68, arrH);
 
-                const trackColors = ['#818cf8', '#38bdf8', '#34d399', '#f472b6', '#fbbf24'];
-                for (let t = 0; t < 5; t++) {
-                    const ty = 52 + t * 38;
-                    bCtx.fillStyle = 'rgba(255,255,255,0.04)'; bCtx.fillRect(26, ty, w - 84, 30);
-                    bCtx.fillStyle = trackColors[t]; bCtx.fillRect(26, ty, 6, 30);
-                    for (let cl = 0; cl < 3; cl++) {
-                        const cx = 42 + cl * 128 + (t % 2) * 14;
-                        const cw = 104;
-                        bCtx.fillStyle = trackColors[t] + '33'; bCtx.fillRect(cx, ty + 3, cw, 24);
-                        bCtx.strokeStyle = trackColors[t]; bCtx.lineWidth = 1; bCtx.strokeRect(cx, ty + 3, cw, 24);
-                        bCtx.fillStyle = trackColors[t];
-                        for (let bx = cx + 4; bx < cx + cw - 4; bx += 4) {
-                            const bh = 4 + Math.abs(Math.sin(bx * 0.25 + t)) * 16;
-                            bCtx.fillRect(bx, ty + 15 - bh / 2, 2, bh);
+                    const trackColors = isPro
+                        ? ['#818cf8', '#38bdf8', '#34d399', '#f472b6', '#fbbf24', '#fb7185']
+                        : ['#818cf8', '#38bdf8', '#34d399', '#f472b6', '#fbbf24'];
+                    const rowStep = isPro ? 32 : 38;
+                    const rowH = isPro ? 24 : 30;
+                    for (let t = 0; t < trackColors.length; t++) {
+                        const ty = 44 + t * rowStep;
+                        ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fillRect(26, ty, w - 84, rowH);
+                        ctx.fillStyle = trackColors[t]; ctx.fillRect(26, ty, 5, rowH);
+                        for (let cl = 0; cl < 3; cl++) {
+                            const cx = 40 + cl * 128 + (t % 2) * 14;
+                            const cw = 104;
+                            ctx.fillStyle = trackColors[t] + '33'; ctx.fillRect(cx, ty + 2, cw, rowH - 4);
+                            ctx.strokeStyle = trackColors[t]; ctx.lineWidth = 1; ctx.strokeRect(cx, ty + 2, cw, rowH - 4);
+                            ctx.fillStyle = trackColors[t];
+                            for (let bx = cx + 4; bx < cx + cw - 4; bx += 4) {
+                                const bh = 3 + Math.abs(Math.sin(bx * 0.25 + t)) * (rowH - 10);
+                                ctx.fillRect(bx, ty + rowH / 2 - bh / 2, 2, bh);
+                            }
                         }
                     }
-                }
-                // Master VU Housing on right
-                bCtx.fillStyle = '#090b12'; bCtx.fillRect(w - 42, 36, 26, h - 72);
-                bCtx.strokeStyle = 'rgba(255,255,255,0.12)'; bCtx.strokeRect(w - 42, 36, 26, h - 72);
+                    // Master VU Housing on right
+                    ctx.fillStyle = '#090b12'; ctx.fillRect(w - 42, 34, 26, arrH);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.strokeRect(w - 42, 34, 26, arrH);
 
-                // Bottom Dock
-                bCtx.fillStyle = 'rgba(255,255,255,0.08)'; bCtx.fillRect(150, h - 26, 212, 18);
-                for (let i = 0; i < 5; i++) {
-                    bCtx.fillStyle = trackColors[i]; bCtx.fillRect(164 + i * 38, h - 23, 22, 12);
+                    // Zone Analyseur Spectral FFT en bas pour Tier 3 Pro!
+                    if (isPro) {
+                        ctx.fillStyle = '#080b14'; ctx.fillRect(18, h - 72, w - 34, 42);
+                        ctx.strokeStyle = 'rgba(56,189,248,0.28)'; ctx.strokeRect(18, h - 72, w - 34, 42);
+                    }
+                    // Bottom Dock
+                    ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(150, h - 24, 212, 16);
+                    for (let i = 0; i < 5; i++) {
+                        ctx.fillStyle = trackColors[i]; ctx.fillRect(164 + i * 38, h - 21, 22, 10);
+                    }
+                    return c;
                 }
 
+                window._pcTierBases = { 1: buildTierBase(1), 2: buildTierBase(2), 3: buildTierBase(3) };
                 const liveC = document.createElement('canvas'); liveC.width = w; liveC.height = h;
                 const liveCtx = liveC.getContext('2d');
-                liveCtx.drawImage(baseC, 0, 0);
+                liveCtx.drawImage(window._pcTierBases[1], 0, 0);
                 const liveTex = configureTex(liveC, 1, 1, true);
 
-                window._pcLiveBase = baseC;
                 window._pcLiveCtx = liveCtx;
                 window._pcLiveTex = liveTex;
                 window._pcLiveLastTs = 0;
                 window.updateLivePcScreen = function(tSec) {
                     const now = performance.now();
-                    if (now - window._pcLiveLastTs < 65) return; // ~15 FPS, 0 overhead
+                    if (now - window._pcLiveLastTs < 65) return;
                     window._pcLiveLastTs = now;
+                    const tier = window.currentRoomVisualTier || 1;
+                    const baseImg = window._pcTierBases[tier] || window._pcTierBases[3];
                     const ctx = window._pcLiveCtx;
-                    ctx.drawImage(window._pcLiveBase, 0, 0);
+                    ctx.drawImage(baseImg, 0, 0);
 
-                    // Clock & REC blink
                     const recOn = Math.floor(tSec * 2) % 2 === 0;
-                    const sysT = document.getElementById('sys-time')?.textContent || '12:00';
-                    ctx.fillStyle = recOn ? '#34d399' : '#10b981';
+                    const sysT = window._loginPreviewClockStr || document.getElementById('sys-time')?.textContent || '12:00';
+                    ctx.fillStyle = tier === 1 ? '#9ca3af' : (recOn ? '#34d399' : '#10b981');
                     ctx.font = 'bold 11px monospace';
-                    ctx.fillText(`128 BPM • ${sysT}`, w - 132, 16);
+                    ctx.fillText(tier === 1 ? `92 BPM • ${sysT}` : `128 BPM • ${sysT}`, w - 132, 16);
 
-                    // Scrolling Red Playhead
+                    const arrH = tier >= 3 ? (h - 114) : (tier === 1 ? (h - 84) : (h - 72));
+                    const arrTop = tier === 1 ? 42 : 36;
                     const minX = 34, maxX = w - 58;
-                    const playX = minX + ((tSec * 52) % (maxX - minX));
-                    ctx.fillStyle = '#f43f5e';
-                    ctx.fillRect(playX, 38, 2.5, h - 76);
-                    ctx.fillStyle = 'rgba(244,63,94,0.22)';
-                    ctx.fillRect(playX - 5, 38, 12, h - 76);
+                    const playX = minX + ((tSec * (tier === 1 ? 34 : 52)) % (maxX - minX));
+                    ctx.fillStyle = tier === 1 ? '#eab308' : '#f43f5e';
+                    ctx.fillRect(playX, arrTop, 2.5, arrH - 4);
+                    ctx.fillStyle = tier === 1 ? 'rgba(234,179,8,0.18)' : 'rgba(244,63,94,0.22)';
+                    ctx.fillRect(playX - 5, arrTop, 12, arrH - 4);
 
                     // Stereo Bouncing Master VU-Meters
-                    const vuH = h - 84;
-                    const lvL = 0.32 + 0.52 * Math.abs(Math.sin(tSec * 5.2) * Math.cos(tSec * 2.1));
-                    const lvR = 0.28 + 0.56 * Math.abs(Math.sin(tSec * 5.6 + 0.6) * Math.cos(tSec * 1.9));
+                    const vuH = arrH - 12;
+                    const lvL = 0.28 + 0.54 * Math.abs(Math.sin(tSec * 5.2) * Math.cos(tSec * 2.1));
+                    const lvR = 0.25 + 0.56 * Math.abs(Math.sin(tSec * 5.6 + 0.6) * Math.cos(tSec * 1.9));
                     [lvL, lvR].forEach((lv, ch) => {
                         const x0 = w - 38 + ch * 10;
-                        const segs = 18;
+                        const segs = tier === 1 ? 12 : 16;
                         const lit = Math.floor(lv * segs);
                         for (let s = 0; s < lit; s++) {
-                            const sy = (h - 44) - (s + 1) * (vuH / segs);
-                            ctx.fillStyle = s > 14 ? '#f43f5e' : (s > 10 ? '#fbbf24' : '#34d399');
+                            const sy = (arrTop + arrH - 6) - (s + 1) * (vuH / segs);
+                            ctx.fillStyle = s > segs - 3 ? '#f43f5e' : (s > segs - 6 ? '#fbbf24' : '#34d399');
                             ctx.fillRect(x0, sy, 7, (vuH / segs) - 2);
                         }
                     });
+
+                    // Analyseur Spectral FFT 20 bandes animé en bas (Tier 3 Pro uniquement!)
+                    if (tier >= 3) {
+                        const bars = 22;
+                        for (let b = 0; b < bars; b++) {
+                            const amp = 0.18 + 0.78 * Math.abs(Math.sin(tSec * 4.4 + b * 0.55) * Math.cos(tSec * 2.3 - b * 0.28));
+                            const bh = Math.max(4, amp * 32);
+                            const bx = 26 + b * 21;
+                            ctx.fillStyle = b < 6 ? '#818cf8' : (b < 15 ? '#38bdf8' : '#f59e0b');
+                            ctx.fillRect(bx, h - 34 - bh, 14, bh);
+                        }
+                    }
                     window._pcLiveTex.needsUpdate = true;
                 };
 
@@ -8219,7 +8341,7 @@ const DEFAULT_STATE = {
 
             // --- MUR SUD (Z = +5) : TASSEAUX BOIS + DISQUES D'OR + APPLIQUES MURALES ---
             const wallSouth = new THREE.Mesh(new THREE.BoxGeometry(10, 5, 0.16), wallMat);
-            wallSouth.position.set(0, 1.5, 5.05); wallSouth.receiveShadow = true;
+            wallSouth.position.set(0, 1.5, 5.05); wallSouth.receiveShadow = false;
             archGroup.add(wallSouth);
 
             const slatBackMat = new THREE.MeshStandardMaterial({ color: '#181a20', roughness: 0.95 });
@@ -8295,17 +8417,18 @@ const DEFAULT_STATE = {
             });
 
             // --- MUR EST (X = +5) : BAIE VITRÉE PANORAMIQUE + RIDEAUX LIN + BALCON ---
+            // castShadow=false sur les pans du mur Est pour éviter la découpe diagonale artificielle sur le mur Nord
             const eastPierN = new THREE.Mesh(new THREE.BoxGeometry(0.24, 5, 3.6), wallMat);
-            eastPierN.position.set(5.06, 1.5, -3.2); eastPierN.receiveShadow = true; eastPierN.castShadow = true;
+            eastPierN.position.set(5.06, 1.5, -3.2); eastPierN.receiveShadow = true; eastPierN.castShadow = false;
             archGroup.add(eastPierN);
             const eastPierS = new THREE.Mesh(new THREE.BoxGeometry(0.24, 5, 1.4), wallMat);
-            eastPierS.position.set(5.06, 1.5, 4.3); eastPierS.receiveShadow = true; eastPierS.castShadow = true;
+            eastPierS.position.set(5.06, 1.5, 4.3); eastPierS.receiveShadow = true; eastPierS.castShadow = false;
             archGroup.add(eastPierS);
             const eastSillWall = new THREE.Mesh(new THREE.BoxGeometry(0.24, 1.05, 5.0), wallMat);
-            eastSillWall.position.set(5.06, -0.475, 1.1); eastSillWall.receiveShadow = true; eastSillWall.castShadow = true;
+            eastSillWall.position.set(5.06, -0.475, 1.1); eastSillWall.receiveShadow = true; eastSillWall.castShadow = false;
             archGroup.add(eastSillWall);
             const eastLintel = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.65, 5.0), wallMat);
-            eastLintel.position.set(5.06, 3.675, 1.1); eastLintel.receiveShadow = true; eastLintel.castShadow = true;
+            eastLintel.position.set(5.06, 3.675, 1.1); eastLintel.receiveShadow = true; eastLintel.castShadow = false;
             archGroup.add(eastLintel);
 
             const aluFrameMat = new THREE.MeshStandardMaterial({ color: '#171920', roughness: 0.28, metalness: 0.85, envMapIntensity: 1.1 });
@@ -8315,16 +8438,17 @@ const DEFAULT_STATE = {
             winTopBar.position.set(5.04, 3.32, 1.1); archGroup.add(winTopBar);
             [-1.38, 0.28, 1.95, 3.58].forEach(mz => {
                 const mullion = new THREE.Mesh(new THREE.BoxGeometry(0.16, 3.28, 0.075), aluFrameMat);
-                mullion.position.set(5.04, 1.69, mz); mullion.castShadow = true;
+                mullion.position.set(5.04, 1.69, mz); mullion.castShadow = false;
                 archGroup.add(mullion);
             });
             const transom = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.055, 5.0), aluFrameMat);
-            transom.position.set(5.04, 2.65, 1.1); transom.castShadow = true;
+            transom.position.set(5.04, 2.65, 1.1); transom.castShadow = false;
             archGroup.add(transom);
 
-            // Tringle + Rideaux en lin drapé de chaque côté de la fenêtre
+            // Tringle + Rideaux en lin drapé de chaque côté de la fenêtre (Tier 2+)
+            const curtainsGroup = new THREE.Group();
             const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 5.6, 12), aluFrameMat);
-            rod.rotation.x = Math.PI / 2; rod.position.set(4.84, 3.52, 1.1); archGroup.add(rod);
+            rod.rotation.x = Math.PI / 2; rod.position.set(4.84, 3.52, 1.1); curtainsGroup.add(rod);
             const curtainMat = new THREE.MeshStandardMaterial({
                 map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.015,
                 color: '#e6e0d5', roughness: 0.92, side: THREE.DoubleSide
@@ -8337,10 +8461,11 @@ const DEFAULT_STATE = {
                     fold.position.set(baseX, 1.25, cz + (cz < 0 ? f * 0.13 : -f * 0.13));
                     fold.userData = { baseX: baseX, phase: f * 0.9 + (cz > 0 ? 2.1 : 0) };
                     fold.castShadow = false; fold.receiveShadow = true;
-                    archGroup.add(fold);
+                    curtainsGroup.add(fold);
                     window.curtainFolds.push(fold);
                 }
             });
+            archGroup.add(curtainsGroup);
 
             // Double vitrage réaliste + Couche Pluie GLSL dynamique (Inspiration basse / Soirs pluvieux)
             const glassMat = new THREE.MeshStandardMaterial({
@@ -8407,19 +8532,8 @@ const DEFAULT_STATE = {
             rainPane.position.set(5.01, 1.69, 1.1); rainPane.rotation.y = -Math.PI / 2;
             archGroup.add(rainPane);
 
-            // 2 Faisceaux volumétriques très doux entrant par la baie vitrée (sans particules flottantes)
-            const beamMat = new THREE.MeshBasicMaterial({
-                map: beamTex, color: '#fff3db', transparent: true, opacity: 0.085,
-                blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
-            });
-            window.sunbeamMat = beamMat;
-            [0.2, 2.0].forEach(bz => {
-                const beam = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 4.8), beamMat);
-                beam.position.set(3.2, 0.95, bz);
-                beam.rotation.y = Math.PI / 2;
-                beam.rotation.z = -0.58;
-                archGroup.add(beam);
-            });
+            // Faisceaux plats artificiels supprimés : éclairage naturel PBR pur (windowBounceLight + dirLight douce)
+            window.sunbeamMat = null;
             window.sunDustPoints = null;
 
             // --- BALCON ARCHITECTURAL EXTÉRIEUR + VASTE MÉTROPOLE 3D ULTRA-RÉALISTE ---
@@ -8720,7 +8834,7 @@ const DEFAULT_STATE = {
             });
             const ceilingMesh = new THREE.Mesh(new THREE.PlaneGeometry(10.2, 10.2), ceilingMat);
             ceilingMesh.position.set(0, 4.0, 0); ceilingMesh.rotation.x = Math.PI / 2;
-            ceilingMesh.receiveShadow = true; ceilingMesh.castShadow = false;
+            ceilingMesh.receiveShadow = false; ceilingMesh.castShadow = false;
             archGroup.add(ceilingMesh);
 
             // 2 Nuages Acoustiques Studio Pro (Cadre noyer + feutre anthracite + lattes bois + 4 câbles acier vers le plafond)
@@ -8734,6 +8848,7 @@ const DEFAULT_STATE = {
             const cableMat = new THREE.MeshStandardMaterial({ color: '#9ca3af', roughness: 0.32, metalness: 0.85 });
             const cloudLedMat = new THREE.MeshStandardMaterial({ color: '#fff5e0', emissive: '#ffcf91', emissiveIntensity: 0.65 });
 
+            const acousticCloudsGroup = new THREE.Group();
             const acousticCloudsSpec = [
                 { x: -2.15, z: -2.65, w: 2.85, d: 1.55 }, // Au-dessus du bureau de mixage
                 { x: -1.95, z:  1.65, w: 2.40, d: 1.45 }  // Au-dessus du coin écoute canapé (loin du rail de spots!)
@@ -8741,9 +8856,9 @@ const DEFAULT_STATE = {
             acousticCloudsSpec.forEach(spec => {
                 const cg = new THREE.Group();
                 cg.position.set(spec.x, 3.72, spec.z);
-                // Panneau absorbant central
+                // Panneau absorbant central (ne projette pas de gros bloc d'ombre noire au sol)
                 const core = new THREE.Mesh(new THREE.BoxGeometry(spec.w, 0.075, spec.d), cloudFabricMat);
-                core.castShadow = true; core.receiveShadow = true; cg.add(core);
+                core.castShadow = false; core.receiveShadow = false; cg.add(core);
                 // Cadre menuisé en noyer sur les 4 bords
                 const rimF = new THREE.Mesh(new THREE.BoxGeometry(spec.w + 0.08, 0.088, 0.045), cloudWoodMat);
                 rimF.position.set(0, 0, spec.d / 2 + 0.02);
@@ -8774,8 +8889,9 @@ const DEFAULT_STATE = {
                     anchor.position.set(kx, 0.275, kz);
                     cg.add(anchor);
                 });
-                archGroup.add(cg);
+                acousticCloudsGroup.add(cg);
             });
+            archGroup.add(acousticCloudsGroup);
 
             // Rail de Spots Architecturaux Noir Mat au Plafond (Zone Centre-Est, 100% dégagé des nuages!)
             const trackGroup = new THREE.Group();
@@ -8821,15 +8937,17 @@ const DEFAULT_STATE = {
                 });
             }
 
-            // 0. Pads d'isolation acoustique inclinés sous les 2 enceintes + Accents clavier custom
+            // 0. Pads d'isolation acoustique inclinés sous les 2 enceintes (Tier 3) + Accents clavier custom
+            const isoPadsTier3Group = new THREE.Group();
             const isoPadMat = new THREE.MeshStandardMaterial({ color: '#16181e', roughness: 0.94 });
             [-1.7, 1.7].forEach((sx, idx) => {
                 const pad = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.06, 0.56), isoPadMat);
                 pad.position.set(sx, 0.76, -0.4);
                 pad.rotation.y = idx === 0 ? 0.35 : -0.35;
                 pad.receiveShadow = true; pad.name = 'speaker_mesh';
-                deskGroup.add(pad);
+                isoPadsTier3Group.add(pad);
             });
+            deskGroup.add(isoPadsTier3Group);
             // Touches d'accent studio sur le clavier mécanique (ESC orange + ENTER indigo + sous-lueur douce)
             const escCap = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.036, 0.085), new THREE.MeshStandardMaterial({ color: '#f97316', roughness: 0.4 }));
             escCap.position.set(-0.68, 0.036, -0.18); escCap.name = 'pc_mesh'; kbdBase.add(escCap);
@@ -9029,7 +9147,9 @@ const DEFAULT_STATE = {
             }
             addTubeCable(deskGroup, [[-1.5, 0.85, -0.62], [-1.42, 0.77, -0.35], [-1.24, 0.77, -0.05]]);
             addTubeCable(deskGroup, [[1.5, 0.85, -0.62], [0.65, 0.77, -0.78], [-0.45, 0.77, -0.68], [-1.02, 0.77, -0.05]]);
-            addTubeCable(deskGroup, [[-1.25, 1.18, 0.60], [-1.52, 1.24, 0.52], [-1.82, 1.02, 0.45], [-1.96, 0.76, 0.35], [-1.92, 0.76, -0.75]], 0.009);
+            const micXlrCableGroup = new THREE.Group();
+            addTubeCable(micXlrCableGroup, [[-1.25, 1.18, 0.60], [-1.52, 1.24, 0.52], [-1.82, 1.02, 0.45], [-1.96, 0.76, 0.35], [-1.92, 0.76, -0.75]], 0.009);
+            deskGroup.add(micXlrCableGroup);
             const stripGroup = new THREE.Group();
             stripGroup.position.set(-2.2, -0.965, -4.35);
             const stripBody = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.06, 0.13), new THREE.MeshStandardMaterial({ color: '#1b1d24', roughness: 0.6 }));
@@ -9184,7 +9304,9 @@ const DEFAULT_STATE = {
             });
             archGroup.add(chairGroup);
 
-            // 6B. LIT ULTRA-RÉALISTE (Menuiserie Noyer + Tête Capitonnée + Matelas Biseauté + Couette Matelassée + 4 Coussins + Plaid à Franges)
+            // 6B. LIT ULTRA-RÉALISTE (Groupé par paliers : Tier 2 propre + Tier 3 luxe complet)
+            const bedTier2PlusGroup = new THREE.Group();
+            const bedTier3OnlyGroup = new THREE.Group();
             try {
                 if (typeof frame !== 'undefined') frame.visible = false;
                 if (typeof mattress !== 'undefined') mattress.visible = false;
@@ -9211,9 +9333,9 @@ const DEFAULT_STATE = {
                     const bLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.032, 0.24, 14), bedWoodMat);
                     bLeg.position.set(lx, -0.08, lz);
                     bLeg.castShadow = true; bLeg.receiveShadow = true; bLeg.name = 'bed_mesh';
-                    bedGroup.add(bLeg);
+                    bedTier3OnlyGroup.add(bLeg);
                 });
-                // Rails périmétriques en noyer massif
+                // Rails périmétriques en noyer massif (Tier 3)
                 const railL = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.22, 4.18), bedWoodMat);
                 railL.position.set(-1.19, 0.11, 0); railL.castShadow = true; railL.receiveShadow = true; railL.name = 'bed_mesh';
                 const railR = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.22, 4.18), bedWoodMat);
@@ -9224,7 +9346,7 @@ const DEFAULT_STATE = {
                 railHead.position.set(0, 0.11, -2.04); railHead.name = 'bed_mesh';
                 const bedBaseBox = new THREE.Mesh(new THREE.BoxGeometry(2.28, 0.16, 3.96), headboardFabricMat);
                 bedBaseBox.position.set(0, 0.10, 0); bedBaseBox.name = 'bed_mesh';
-                bedGroup.add(railL, railR, railFoot, railHead, bedBaseBox);
+                bedTier3OnlyGroup.add(railL, railR, railFoot, railHead, bedBaseBox);
 
                 // 2. Tête de lit capitonnée verticale (Channel-Tufted Headboard) dans un cadre en noyer
                 const hbGroup = new THREE.Group();
@@ -9246,7 +9368,7 @@ const DEFAULT_STATE = {
                     tuft.castShadow = true; tuft.receiveShadow = true; tuft.name = 'bed_mesh';
                     hbGroup.add(tuft);
                 }
-                bedGroup.add(hbGroup);
+                bedTier3OnlyGroup.add(hbGroup);
 
                 // 3. Matelas épais à coins arrondis (calibré pour ne jamais percer la couette au pied!)
                 const mShape = new THREE.Shape();
@@ -9263,7 +9385,7 @@ const DEFAULT_STATE = {
                 const realMattress = new THREE.Mesh(realMattressGeo, mattressRealMat);
                 realMattress.position.set(0, 0.40, -0.14);
                 realMattress.castShadow = true; realMattress.receiveShadow = true; realMattress.name = 'bed_mesh';
-                bedGroup.add(realMattress);
+                bedTier2PlusGroup.add(realMattress);
 
                 // 4. Couette drapée haute-résolution avec retombée naturelle souple et plis matelassés
                 const duvetGeo = new THREE.BoxGeometry(2.46, 0.36, 3.18, 28, 6, 32);
@@ -9296,7 +9418,7 @@ const DEFAULT_STATE = {
                 const organicDuvet = new THREE.Mesh(duvetGeo, organicDuvetMat);
                 organicDuvet.position.set(0, 0.43, 0.44);
                 organicDuvet.castShadow = true; organicDuvet.receiveShadow = true; organicDuvet.name = 'bed_mesh';
-                bedGroup.add(organicDuvet);
+                bedTier2PlusGroup.add(organicDuvet);
 
                 // 5. Rebord de drap blanc cassé plissé rabattu en haut de la couette
                 const cuffGeo = new THREE.BoxGeometry(2.42, 0.075, 0.44, 24, 2, 8);
@@ -9310,7 +9432,7 @@ const DEFAULT_STATE = {
                 cuffGeo.computeVertexNormals();
                 const sheetCuff = new THREE.Mesh(cuffGeo, mattressRealMat);
                 sheetCuff.position.set(0, 0.59, -0.96); sheetCuff.rotation.x = 0.04; sheetCuff.castShadow = true; sheetCuff.receiveShadow = true; sheetCuff.name = 'bed_mesh';
-                bedGroup.add(sheetCuff);
+                bedTier2PlusGroup.add(sheetCuff);
 
                 // 6. 2 Grands Oreillers de couchage bombés + 2 Vrais Coussins Déco Carrés-Bombés adossés proprement devant
                 function buildSculptedPillow(sx, sy, sz, px, py, pz, rx, ry, rz, mat) {
@@ -9330,7 +9452,7 @@ const DEFAULT_STATE = {
                     pMesh.position.set(px, py, pz);
                     pMesh.rotation.set(rx, ry, rz);
                     pMesh.castShadow = true; pMesh.receiveShadow = true; pMesh.name = 'bed_mesh';
-                    bedGroup.add(pMesh);
+                    bedTier2PlusGroup.add(pMesh);
                 }
                 function buildSquareCushion(w, h, d, px, py, pz, rx, ry, rz, mat) {
                     const cGeo = new THREE.BoxGeometry(w, h, d, 12, 12, 6);
@@ -9352,7 +9474,7 @@ const DEFAULT_STATE = {
                     cMesh.position.set(px, py, pz);
                     cMesh.rotation.set(rx, ry, rz);
                     cMesh.castShadow = true; cMesh.receiveShadow = true; cMesh.name = 'bed_mesh';
-                    bedGroup.add(cMesh);
+                    bedTier3OnlyGroup.add(cMesh);
                 }
                 const sleepPillowMat = new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#f6f3ec', roughness: 0.91 });
                 const accentPillowMat1 = new THREE.MeshStandardMaterial({ map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.014, color: '#d6c3ab', roughness: 0.93 });
@@ -9397,7 +9519,9 @@ const DEFAULT_STATE = {
                 const plaidMat = new THREE.MeshStandardMaterial({ map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.018, color: '#ad6d4b', roughness: 0.95 });
                 const plaid = new THREE.Mesh(plaidGeo, plaidMat);
                 plaid.position.set(0, 0, plaidCenterZ); plaid.castShadow = true; plaid.receiveShadow = true; plaid.name = 'bed_mesh';
-                bedGroup.add(plaid);
+                bedTier3OnlyGroup.add(plaid);
+                bedGroup.add(bedTier2PlusGroup);
+                bedGroup.add(bedTier3OnlyGroup);
             } catch(e) { console.warn('Organic bed build fallback:', e); }
 
             // 6C. AMBIENT OCCLUSION ARCHITECTURAL (4 ANGLES VERTICAUX + PLAFOND + FENÊTRE)
@@ -9425,7 +9549,8 @@ const DEFAULT_STATE = {
                 strip.position.set(c.x, 1.5, c.z); strip.rotation.y = c.ry;
                 archGroup.add(strip);
             });
-            // Jonction Plafond / Murs + Corniches fines architecturales (Y = 3.94)
+            // Jonction Plafond / Murs + Corniches fines architecturales (Y = 3.94, Tier 2+)
+            const cornicesGroup = new THREE.Group();
             const corniceMat = new THREE.MeshStandardMaterial({ color: '#f0ece4', roughness: 0.72 });
             [
                 { x: 0, z: -4.95, w: 10, d: 0.09, ry: 0 },
@@ -9434,11 +9559,12 @@ const DEFAULT_STATE = {
                 { x:  4.95, z: 0, w: 0.09, d: 10, ry: -Math.PI / 2 }
             ].forEach(m => {
                 const cornice = new THREE.Mesh(new THREE.BoxGeometry(m.w, 0.11, m.d), corniceMat);
-                cornice.position.set(m.x, 3.945, m.z); archGroup.add(cornice);
+                cornice.position.set(m.x, 3.945, m.z); cornicesGroup.add(cornice);
                 const cAo = new THREE.Mesh(new THREE.PlaneGeometry(10, 0.45), ceilAoMat);
                 cAo.position.set(m.x === 0 ? 0 : (m.x > 0 ? 4.96 : -4.96), 3.68, m.z === 0 ? 0 : (m.z > 0 ? 4.96 : -4.96));
                 cAo.rotation.y = m.ry; archGroup.add(cAo);
             });
+            archGroup.add(cornicesGroup);
 
             // 6D. RADIATEUR DESIGN SOUS LA BAIE VITRÉE (Acier blanc mat + Tuyaux cuivre + Vanne thermostatique)
             const radGroup = new THREE.Group();
@@ -9786,11 +9912,12 @@ const DEFAULT_STATE = {
                     foot.add(sw);
                 }
 
-                archGroup.add(sn);
-                addContactAO(x, -0.996, z, 0.28, 0.44, 0.42);
+                sneakersTier3Group.add(sn);
             }
+            const sneakersTier3Group = new THREE.Group();
             buildRealisticSneaker(-4.20, 3.54, 0.42, -1);
             buildRealisticSneaker(-3.93, 3.70, 0.08, 1);
+            archGroup.add(sneakersTier3Group);
 
             // 6G. BAC À DISQUES VINYLES DE PRODUCTEUR ULTRA-RÉALISTE (Meuble Noyer ajouré sur pieds acier + 12 pochettes illustrées + disques noirs!)
             try {
@@ -9909,12 +10036,14 @@ const DEFAULT_STATE = {
                 }
 
                 crateGroup.add(standGroup);
+                window._crateStandTier3 = standGroup;
                 if (typeof vinylsContainer !== 'undefined') {
                     vinylsContainer.position.set(0, 0.23, 0.02);
                 }
             } catch(e) { console.warn('Realistic vinyl crate build fallback:', e); }
 
-            // 3 Vinyles illustrés en vrac appuyés naturellement contre le côté du bac à disques (+ 1 disque noir qui glisse hors de sa pochette)
+            // 3 Vinyles illustrés en vrac appuyés naturellement contre le côté du bac à disques (Tier 3)
+            const looseVinylsTier3Group = new THREE.Group();
             const looseEdgeMat = new THREE.MeshStandardMaterial({ color: '#e5dfd3', roughness: 0.85 });
             const looseBackMat = new THREE.MeshStandardMaterial({ color: '#1b1d24', roughness: 0.72 });
             const looseDiscMat = new THREE.MeshStandardMaterial({ color: '#0c0d11', roughness: 0.16, metalness: 0.42 });
@@ -9945,8 +10074,9 @@ const DEFAULT_STATE = {
                     outLbl.position.set(0.11, 0.07, 0.002);
                     vSleeve.add(outDisc, outLbl);
                 }
-                archGroup.add(vSleeve);
+                looseVinylsTier3Group.add(vSleeve);
             }
+            archGroup.add(looseVinylsTier3Group);
 
             // 7. Plante Botanique (Monstera / Ficus) en Pot Terracotta (feuilles animées par la brise!)
             const plantGroup = new THREE.Group();
@@ -10032,6 +10162,803 @@ const DEFAULT_STATE = {
                     }, 340);
                 };
             } catch(e) { console.warn('Door pivot setup fallback:', e); }
+
+
+            // =========================================================================
+            // SYSTÈME D'ÉVOLUTION VISUELLE DE LA CHAMBRE (TIERS 1 -> 2 -> 3)
+            // Tier 1 (0–24% Mastery & Rang 1) : Chambre Galère / Underground sombre & sale
+            // Tier 2 (25–54% Mastery ou Rang 2) : Home-Studio Rénové (propre & rangé)
+            // Tier 3 (55%+ Mastery ou Rang 3)   : Chambre Architecte Clean V4 (prête pour Studio Pro à 80%)
+            // =========================================================================
+
+            // A. Textures Grunge Procédurales (Tier 1 : murs tachés/fissurés, vieux sol usé, plafond béton brut, bureau rayé)
+            function createGrungeWallTextures() {
+                const w = 512, h = 512;
+                const diffC = document.createElement('canvas'); diffC.width = w; diffC.height = h;
+                const dCtx = diffC.getContext('2d');
+                const bumpC = document.createElement('canvas'); bumpC.width = w; bumpC.height = h;
+                const bCtx = bumpC.getContext('2d');
+
+                dCtx.fillStyle = '#8b857b'; dCtx.fillRect(0, 0, w, h);
+                bCtx.fillStyle = '#808080'; bCtx.fillRect(0, 0, w, h);
+
+                // Taches d'humidité et salissures en haut et en bas du mur
+                const topStain = dCtx.createLinearGradient(0, 0, 0, h * 0.34);
+                topStain.addColorStop(0, 'rgba(34,28,22,0.44)'); topStain.addColorStop(1, 'rgba(34,28,22,0)');
+                dCtx.fillStyle = topStain; dCtx.fillRect(0, 0, w, h * 0.34);
+
+                const botStain = dCtx.createLinearGradient(0, h * 0.65, 0, h);
+                botStain.addColorStop(0, 'rgba(26,22,18,0)'); botStain.addColorStop(1, 'rgba(26,22,18,0.48)');
+                dCtx.fillStyle = botStain; dCtx.fillRect(0, h * 0.65, w, h * 0.35);
+
+                // Auréoles de plâtre vieilli & zones écaillées
+                for (let c = 0; c < 48; c++) {
+                    const cx = Math.random() * w, cy = Math.random() * h, rad = 22 + Math.random() * 68;
+                    const g = dCtx.createRadialGradient(cx, cy, 2, cx, cy, rad);
+                    g.addColorStop(0, c % 3 === 0 ? 'rgba(42,36,28,0.22)' : 'rgba(155,146,132,0.12)');
+                    g.addColorStop(1, 'rgba(0,0,0,0)');
+                    dCtx.fillStyle = g; dCtx.fillRect(0, 0, w, h);
+                    bCtx.fillStyle = c % 2 === 0 ? 'rgba(92,92,92,0.28)' : 'rgba(154,154,154,0.22)';
+                    bCtx.beginPath(); bCtx.arc(cx, cy, rad * 0.45, 0, Math.PI * 2); bCtx.fill();
+                }
+                // Fissures fines dans le plâtre / béton
+                dCtx.strokeStyle = 'rgba(28,24,20,0.52)'; bCtx.strokeStyle = '#383838';
+                for (let f = 0; f < 9; f++) {
+                    let fx = Math.random() * w, fy = Math.random() * h;
+                    dCtx.lineWidth = 1.0 + Math.random() * 1.1; bCtx.lineWidth = 2.0;
+                    dCtx.beginPath(); dCtx.moveTo(fx, fy);
+                    bCtx.beginPath(); bCtx.moveTo(fx, fy);
+                    for (let s = 0; s < 10; s++) {
+                        fx += (Math.random() - 0.5) * 32;
+                        fy += (Math.random() - 0.3) * 28;
+                        dCtx.lineTo(fx, fy); bCtx.lineTo(fx, fy);
+                    }
+                    dCtx.stroke(); bCtx.stroke();
+                }
+                // Grain brut poussiéreux
+                for (let i = 0; i < 8000; i++) {
+                    const x = Math.random() * w, y = Math.random() * h, sz = 1 + Math.random() * 2.2;
+                    dCtx.fillStyle = Math.random() > 0.5 ? 'rgba(22,18,14,0.08)' : 'rgba(210,200,185,0.05)';
+                    dCtx.fillRect(x, y, sz, sz);
+                    const bv = 98 + Math.floor(Math.random() * 58);
+                    bCtx.fillStyle = `rgb(${bv},${bv},${bv})`; bCtx.fillRect(x, y, sz, sz);
+                }
+                return {
+                    map: configureTex(diffC, 2.5, 1, true),
+                    normalMap: heightCanvasToNormalMap(bumpC, 2.8, 2.5, 1)
+                };
+            }
+
+            function createWornFloorTextures() {
+                const w = 512, h = 512;
+                const diffC = document.createElement('canvas'); diffC.width = w; diffC.height = h;
+                const dCtx = diffC.getContext('2d');
+                const bumpC = document.createElement('canvas'); bumpC.width = w; bumpC.height = h;
+                const bCtx = bumpC.getContext('2d');
+
+                dCtx.fillStyle = '#5c4d3e'; dCtx.fillRect(0, 0, w, h);
+                bCtx.fillStyle = '#808080'; bCtx.fillRect(0, 0, w, h);
+
+                const rows = 8, rh = h / rows;
+                for (let r = 0; r < rows; r++) {
+                    const y = r * rh;
+                    const offset = (r % 2) * 140;
+                    for (let c = -1; c < 3; c++) {
+                        const x = c * 256 + offset;
+                        const shade = 74 + Math.floor(Math.random() * 24);
+                        dCtx.fillStyle = `rgb(${shade + 14}, ${shade + 2}, ${shade - 10})`;
+                        dCtx.fillRect(x + 2, y + 2, 252, rh - 4);
+                        // Rayures et traces de pas sombres
+                        for (let g = 0; g < 12; g++) {
+                            dCtx.fillStyle = 'rgba(24,18,12,0.22)';
+                            dCtx.fillRect(x + Math.random() * 220, y + 4 + Math.random() * (rh - 8), 22 + Math.random() * 48, 1.5);
+                        }
+                        dCtx.strokeStyle = 'rgba(14,10,6,0.72)'; dCtx.lineWidth = 3;
+                        dCtx.strokeRect(x + 1, y + 1, 254, rh - 2);
+                        bCtx.strokeStyle = '#303030'; bCtx.lineWidth = 3;
+                        bCtx.strokeRect(x + 1, y + 1, 254, rh - 2);
+                    }
+                }
+                // Taches sombres / usure au sol
+                for (let s = 0; s < 35; s++) {
+                    const sx = Math.random() * w, sy = Math.random() * h, sr = 18 + Math.random() * 44;
+                    const g = dCtx.createRadialGradient(sx, sy, 2, sx, sy, sr);
+                    g.addColorStop(0, 'rgba(18,14,10,0.26)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+                    dCtx.fillStyle = g; dCtx.fillRect(0, 0, w, h);
+                }
+                return {
+                    map: configureTex(diffC, 3.2, 3.2, true),
+                    normalMap: heightCanvasToNormalMap(bumpC, 3.2, 3.2, 3.2)
+                };
+            }
+
+            function createGrungeDeskTextures() {
+                const w = 512, h = 512;
+                const diffC = document.createElement('canvas'); diffC.width = w; diffC.height = h;
+                const dCtx = diffC.getContext('2d');
+                dCtx.fillStyle = '#62564a'; dCtx.fillRect(0, 0, w, h);
+                for (let i = 0; i < 4000; i++) {
+                    dCtx.fillStyle = Math.random() > 0.5 ? 'rgba(28,22,18,0.14)' : 'rgba(148,136,120,0.10)';
+                    dCtx.fillRect(Math.random() * w, Math.random() * h, 2 + Math.random() * 6, 1.5);
+                }
+                // Marque de tasse de café + rayures sur le vieux plateau
+                dCtx.strokeStyle = 'rgba(42,24,12,0.45)'; dCtx.lineWidth = 4;
+                dCtx.beginPath(); dCtx.arc(135, 310, 26, 0, Math.PI * 2); dCtx.stroke();
+                dCtx.strokeStyle = 'rgba(20,16,12,0.38)'; dCtx.lineWidth = 1.5;
+                for (let sc = 0; sc < 14; sc++) {
+                    const sx = Math.random() * w, sy = Math.random() * h;
+                    dCtx.beginPath(); dCtx.moveTo(sx, sy); dCtx.lineTo(sx + (Math.random() - 0.5) * 90, sy + (Math.random() - 0.5) * 35); dCtx.stroke();
+                }
+                return { map: configureTex(diffC, 2, 1, true) };
+            }
+
+            const grungeWallTex = createGrungeWallTextures();
+            const wornFloorTex = createWornFloorTextures();
+            const grungeDeskTex = createGrungeDeskTextures();
+            const cleanTier2WallTex = createWallPlasterTextures('#dad6ce', true, 2.5, 1);
+
+            // B. GROUPE TIER 1 : CHAMBRE GALÈRE / UNDERGROUND (0-24% Mastery & Rang 1)
+            const roomTier1Group = new THREE.Group();
+            roomTier1Group.visible = false;
+
+            const rawPalletMat = new THREE.MeshStandardMaterial({ color: '#78634a', roughness: 0.94 });
+            const oldMetalMat = new THREE.MeshStandardMaterial({ color: '#3b3e45', roughness: 0.65, metalness: 0.6 });
+            const rustyCastIronMat = new THREE.MeshStandardMaterial({ color: '#524f4a', roughness: 0.85, metalness: 0.45 });
+            const kraftMat = new THREE.MeshStandardMaterial({ color: '#9c7b56', roughness: 0.92 });
+            const tapeMat = new THREE.MeshStandardMaterial({ color: '#b59d78', roughness: 0.55 });
+
+            // 0A. FENÊTRE ÉVOLUTIVE TIER 1 : Vitre poussiéreuse + Vieux store vénitien à lamelles à moitié descendu!
+            const dustWinC = document.createElement('canvas'); dustWinC.width = 256; dustWinC.height = 256;
+            const dwCtx = dustWinC.getContext('2d');
+            dwCtx.clearRect(0, 0, 256, 256);
+            const dwGrad = dwCtx.createRadialGradient(128, 128, 30, 128, 128, 175);
+            dwGrad.addColorStop(0, 'rgba(130,122,110,0.06)');
+            dwGrad.addColorStop(0.75, 'rgba(98,90,78,0.22)');
+            dwGrad.addColorStop(1, 'rgba(65,58,48,0.42)');
+            dwCtx.fillStyle = dwGrad; dwCtx.fillRect(0, 0, 256, 256);
+            for (let di = 0; di < 1400; di++) {
+                dwCtx.fillStyle = Math.random() > 0.5 ? 'rgba(170,160,145,0.16)' : 'rgba(60,55,48,0.12)';
+                dwCtx.fillRect(Math.random() * 256, Math.random() * 256, 1.5 + Math.random() * 2, 1.5 + Math.random() * 2);
+            }
+            const windowDustPane = new THREE.Mesh(
+                new THREE.PlaneGeometry(4.94, 3.20),
+                new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(dustWinC), transparent: true, opacity: 0.78, depthWrite: false, side: THREE.DoubleSide })
+            );
+            windowDustPane.position.set(5.02, 1.69, 1.1); windowDustPane.rotation.y = -Math.PI / 2;
+            roomTier1Group.add(windowDustPane);
+
+            // Store vénitien gris usé à 12 lamelles couvrant la moitié haute de la baie vitrée
+            const venetianGroup = new THREE.Group();
+            const slatMat = new THREE.MeshStandardMaterial({ color: '#8f8c85', roughness: 0.65, metalness: 0.25 });
+            for (let sl = 0; sl < 12; sl++) {
+                const slat = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.014, 4.94), slatMat);
+                slat.position.set(4.88, 3.16 - sl * 0.115, 1.1);
+                slat.rotation.z = 0.22 + (sl === 11 ? 0.08 : 0);
+                slat.rotation.x = sl === 11 ? 0.015 : 0; // Dernière lamelle légèrement de travers!
+                slat.castShadow = false;
+                venetianGroup.add(slat);
+            }
+            [-0.4, 2.6].forEach(cz => {
+                const stringCord = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 1.45, 5), tapeMat);
+                stringCord.position.set(4.88, 2.52, cz);
+                venetianGroup.add(stringCord);
+            });
+            roomTier1Group.add(venetianGroup);
+
+            // 0B. SETUP BUREAU ÉVOLUTIF TIER 1 (Petites enceintes PC basiques, vieux moniteur épais, micro trépied plastique, casque posé, dongle USB, gobelet carton, vieux tel)
+            const deskTier1Group = new THREE.Group();
+            deskTier1Group.visible = false;
+
+            // Dos épais de vieux moniteur (entoure pcFrame réduit en Tier 1)
+            const oldMonitorBack = new THREE.Mesh(new THREE.BoxGeometry(1.12, 0.78, 0.16), new THREE.MeshStandardMaterial({ color: '#3b3e45', roughness: 0.75 }));
+            oldMonitorBack.position.set(0, 1.25, -0.64); oldMonitorBack.castShadow = true; oldMonitorBack.name = 'pc_mesh';
+            deskTier1Group.add(oldMonitorBack);
+
+            // 2 Petites enceintes PC multimédia basiques (interactives speaker_mesh)
+            const cheapSpkMat = new THREE.MeshStandardMaterial({ color: '#2b2d34', roughness: 0.72 });
+            const cheapGrillMat = new THREE.MeshStandardMaterial({ color: '#17181d', roughness: 0.92 });
+            [-1.32, 1.32].forEach((sx, si) => {
+                const sg = new THREE.Group();
+                sg.position.set(sx, 0.89, -0.32); sg.rotation.y = si === 0 ? 0.24 : -0.24;
+                const sb = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.30, 0.22), cheapSpkMat);
+                sb.castShadow = true; sg.add(sb);
+                const sgr = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.22, 0.015), cheapGrillMat);
+                sgr.position.set(0, 0.02, 0.11); sg.add(sgr);
+                if (si === 1) {
+                    const pLed = new THREE.Mesh(new THREE.BoxGeometry(0.016, 0.016, 0.01), new THREE.MeshBasicMaterial({ color: '#22c55e' }));
+                    pLed.position.set(0.06, -0.11, 0.112); sg.add(pLed);
+                }
+                tagInteractable(sg, 'speaker_mesh');
+                deskTier1Group.add(sg);
+            });
+
+            // Petit micro PC sur trépied de table basique (interactif desk_mic_mesh!)
+            const micT1 = new THREE.Group();
+            micT1.position.set(-1.55, 0.75, 0.15); micT1.rotation.y = 0.4;
+            const m1Base = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.095, 0.02, 14), cheapSpkMat);
+            m1Base.position.y = 0.01; micT1.add(m1Base);
+            const m1Stem = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.012, 0.22, 8), cheapSpkMat);
+            m1Stem.position.set(0, 0.12, 0); m1Stem.rotation.x = 0.25; micT1.add(m1Stem);
+            const m1Head = new THREE.Mesh(new THREE.SphereGeometry(0.036, 12, 10), cheapGrillMat);
+            m1Head.position.set(0, 0.23, 0.04); micT1.add(m1Head);
+            tagInteractable(micT1, 'desk_mic_mesh');
+            deskTier1Group.add(micT1);
+
+            // Vieux casque filaire posé à plat sur le bureau (interactif desk_headphones_mesh!)
+            const hpT1 = new THREE.Group();
+            hpT1.position.set(1.48, 0.785, 0.26); hpT1.rotation.set(Math.PI / 2, 0, -0.55);
+            const h1Band = new THREE.Mesh(new THREE.TorusGeometry(0.145, 0.018, 10, 22, Math.PI), cheapSpkMat);
+            hpT1.add(h1Band);
+            [-0.14, 0.14].forEach(hx => {
+                const c = new THREE.Mesh(new THREE.CylinderGeometry(0.058, 0.058, 0.036, 16), cheapGrillMat);
+                c.rotation.z = Math.PI / 2; c.position.set(hx, -0.02, 0); hpT1.add(c);
+            });
+            tagInteractable(hpT1, 'desk_headphones_mesh');
+            deskTier1Group.add(hpT1);
+
+            // Petit boîtier audio USB basique 1-bouton (interactif desk_interface_mesh!)
+            const ifaceT1 = new THREE.Group();
+            ifaceT1.position.set(-0.98, 0.77, 0.05); ifaceT1.rotation.y = 0.12;
+            const i1Box = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.045, 0.16), cheapSpkMat);
+            i1Box.castShadow = true; ifaceT1.add(i1Box);
+            const i1Knob = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.025, 14), oldMetalMat);
+            i1Knob.position.set(0.06, 0.03, 0); ifaceT1.add(i1Knob);
+            const i1Led = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.01, 0.01), new THREE.MeshBasicMaterial({ color: '#22c55e' }));
+            i1Led.position.set(-0.06, 0.025, 0.06); ifaceT1.add(i1Led);
+            tagInteractable(ifaceT1, 'desk_interface_mesh');
+            deskTier1Group.add(ifaceT1);
+
+            // Gobelet carton à emporter avec couvercle plastique (interactif desk_mug_mesh!)
+            const cupT1 = new THREE.Group();
+            cupT1.position.set(-1.55, 0.83, 0.48);
+            const c1Body = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.046, 0.155, 18), new THREE.MeshStandardMaterial({ color: '#c4a482', roughness: 0.9 }));
+            c1Body.castShadow = true; cupT1.add(c1Body);
+            const c1Sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.059, 0.052, 0.06, 18), new THREE.MeshStandardMaterial({ color: '#7a5c42', roughness: 0.95 }));
+            cupT1.add(c1Sleeve);
+            const c1Lid = new THREE.Mesh(new THREE.CylinderGeometry(0.066, 0.065, 0.022, 18), new THREE.MeshStandardMaterial({ color: '#eceae4', roughness: 0.5 }));
+            c1Lid.position.y = 0.082; cupT1.add(c1Lid);
+            tagInteractable(cupT1, 'desk_mug_mesh');
+            deskTier1Group.add(cupT1);
+
+            // Vieux smartphone épais usé (interactif desk_phone_mesh!)
+            const phoneT1 = new THREE.Group();
+            phoneT1.position.set(0.92, 0.768, 0.62); phoneT1.rotation.y = -0.45;
+            const p1Body = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.022, 0.25), cheapSpkMat);
+            p1Body.castShadow = true; phoneT1.add(p1Body);
+            const p1Scr = new THREE.Mesh(new THREE.PlaneGeometry(0.11, 0.19), phoneScreenMat);
+            p1Scr.rotation.x = -Math.PI / 2; p1Scr.position.set(0, 0.012, 0); phoneT1.add(p1Scr);
+            tagInteractable(phoneT1, 'desk_phone_mesh');
+            deskTier1Group.add(phoneT1);
+
+            deskGroup.add(deskTier1Group);
+
+            // 1. Plafond Tier 1 : Vieille réglette néon industrielle suspendue (micro-flicker!) + ampoule nue près du lit
+            const t1NeonGroup = new THREE.Group();
+            t1NeonGroup.position.set(-0.6, 3.64, -1.1);
+            const neonHousing = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.065, 0.14), oldMetalMat);
+            t1NeonGroup.add(neonHousing);
+            const t1NeonMat = new THREE.MeshStandardMaterial({
+                color: '#dff2ff', emissive: '#bfe4ff', emissiveIntensity: 1.55, roughness: 0.25
+            });
+            window.tier1NeonMat = t1NeonMat;
+            const neonTube = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 1.52, 12), t1NeonMat);
+            neonTube.rotation.z = Math.PI / 2; neonTube.position.y = -0.045;
+            t1NeonGroup.add(neonTube);
+            [-0.65, 0.65].forEach(nx => {
+                const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.38, 6), oldMetalMat);
+                chain.position.set(nx, 0.19, 0); t1NeonGroup.add(chain);
+            });
+            roomTier1Group.add(t1NeonGroup);
+
+            // Ampoule nue sur fil noir pendant près du coin lit
+            const bareCord = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.72, 6), new THREE.MeshStandardMaterial({ color: '#141518', roughness: 0.9 }));
+            bareCord.position.set(2.35, 3.64, -2.5);
+            const bareSocket = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.024, 0.06, 10), oldMetalMat);
+            bareSocket.position.set(2.35, 3.27, -2.5);
+            const bareBulb = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 10), new THREE.MeshStandardMaterial({ color: '#fff3c4', emissive: '#ffbf66', emissiveIntensity: 1.4, roughness: 0.2 }));
+            bareBulb.position.set(2.35, 3.21, -2.5);
+            roomTier1Group.add(bareCord, bareSocket, bareBulb);
+
+            // 2. Lit Galère Tier 1 (Matelas fatigué posé sur palettes en bois brut au sol!) dans bedGroup
+            const bedTier1Group = new THREE.Group();
+            bedTier1Group.visible = false;
+            const tagBed1 = (m) => { m.name = 'bed_mesh'; m.castShadow = true; m.receiveShadow = true; return m; };
+            // 2 palettes bois brut posées au sol (y = -0.20 dans bedGroup = sol)
+            [-0.95, 0.95].forEach(pz => {
+                for (let s = 0; s < 5; s++) {
+                    const plank = tagBed1(new THREE.Mesh(new THREE.BoxGeometry(2.36, 0.032, 0.24), rawPalletMat));
+                    plank.position.set(0, -0.075, pz - 0.72 + s * 0.36);
+                    bedTier1Group.add(plank);
+                }
+                [-1.05, 0, 1.05].forEach(bx => {
+                    const block = tagBed1(new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.11, 1.78), rawPalletMat));
+                    block.position.set(bx, -0.145, pz);
+                    bedTier1Group.add(block);
+                });
+            });
+            // Vieux matelas légèrement affaissé & froissé
+            const t1MatGeo = new THREE.BoxGeometry(2.16, 0.24, 3.74, 16, 3, 20);
+            const t1MPos = t1MatGeo.attributes.position;
+            for (let i = 0; i < t1MPos.count; i++) {
+                const vx = t1MPos.getX(i), vy = t1MPos.getY(i), vz = t1MPos.getZ(i);
+                if (vy > 0) {
+                    const sag = Math.exp(-(vx * vx * 0.6 + vz * vz * 0.25)) * -0.045;
+                    t1MPos.setY(i, vy + sag + Math.sin(vx * 3.5 + vz * 2.2) * 0.012);
+                }
+            }
+            t1MatGeo.computeVertexNormals();
+            const t1Mattress = tagBed1(new THREE.Mesh(t1MatGeo, new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#9e978b', roughness: 0.95 })));
+            t1Mattress.position.set(0, 0.06, 0.05);
+            bedTier1Group.add(t1Mattress);
+            // Vieille couverture froissée posée en travers
+            const t1BlanketGeo = new THREE.BoxGeometry(2.20, 0.09, 2.42, 18, 2, 18);
+            const t1BPos = t1BlanketGeo.attributes.position;
+            for (let i = 0; i < t1BPos.count; i++) {
+                const vx = t1BPos.getX(i), vy = t1BPos.getY(i), vz = t1BPos.getZ(i);
+                t1BPos.setY(i, vy + Math.sin(vx * 3.2 - vz * 2.4) * 0.025 + Math.cos(vx * 5.0 + vz * 3.1) * 0.012);
+            }
+            t1BlanketGeo.computeVertexNormals();
+            const t1Blanket = tagBed1(new THREE.Mesh(t1BlanketGeo, new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#39423a', roughness: 0.96 })));
+            t1Blanket.position.set(-0.04, 0.20, 0.62); t1Blanket.rotation.y = 0.06;
+            bedTier1Group.add(t1Blanket);
+            // 1 seul vieil oreiller un peu plat & fripé
+            const t1PilGeo = new THREE.SphereGeometry(0.38, 16, 12); t1PilGeo.scale(1.25, 0.24, 0.72);
+            const t1Pillow = tagBed1(new THREE.Mesh(t1PilGeo, new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#bfb7a8', roughness: 0.95 })));
+            t1Pillow.position.set(-0.22, 0.25, -1.42); t1Pillow.rotation.set(0.18, 0.22, 0.04);
+            bedTier1Group.add(t1Pillow);
+            bedGroup.add(bedTier1Group);
+
+            // 3. Vieille chaise pliante métallique (Tier 1 — échelle adulte réaliste assortie au bureau)
+            const chairTier1Group = new THREE.Group();
+            chairTier1Group.position.set(-1.32, -1.0, -2.02);
+            chairTier1Group.rotation.y = 0.62;
+            const foldSeatMat = new THREE.MeshStandardMaterial({ color: '#2b2d33', roughness: 0.78 });
+            const fSeat = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.055, 0.72), foldSeatMat);
+            fSeat.position.set(0, 0.72, 0); fSeat.castShadow = true; fSeat.receiveShadow = true; chairTier1Group.add(fSeat);
+            const fBack = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.34, 0.055), foldSeatMat);
+            fBack.position.set(0, 1.32, 0.34); fBack.rotation.x = 0.14; fBack.castShadow = true; chairTier1Group.add(fBack);
+            [-0.35, 0.35].forEach(lx => {
+                const postB = new THREE.Mesh(new THREE.CylinderGeometry(0.020, 0.020, 1.48, 8), oldMetalMat);
+                postB.position.set(lx, 0.73, 0.16); postB.rotation.x = 0.20; postB.castShadow = true; chairTier1Group.add(postB);
+                const postF = new THREE.Mesh(new THREE.CylinderGeometry(0.020, 0.020, 0.90, 8), oldMetalMat);
+                postF.position.set(lx, 0.42, -0.10); postF.rotation.x = -0.34; postF.castShadow = true; chairTier1Group.add(postF);
+            });
+            const fCrossBar = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.70, 8), oldMetalMat);
+            fCrossBar.rotation.z = Math.PI / 2; fCrossBar.position.set(0, 0.30, 0.16); chairTier1Group.add(fCrossBar);
+            roomTier1Group.add(chairTier1Group);
+
+            // 4. Vieille cagette brute vinyles (Tier 1) dans crateGroup
+            const crateTier1Group = new THREE.Group();
+            crateTier1Group.visible = false;
+            const tagC1 = (m) => { m.name = 'achievements_board_mesh'; m.castShadow = true; m.receiveShadow = true; return m; };
+            const t1CrateMat = new THREE.MeshStandardMaterial({ color: '#45484f', roughness: 0.88 });
+            const c1Base = tagC1(new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.04, 0.58), t1CrateMat));
+            c1Base.position.y = 0.02; crateTier1Group.add(c1Base);
+            [-0.36, 0.36].forEach(cx => {
+                const s = tagC1(new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.38, 0.58), t1CrateMat));
+                s.position.set(cx, 0.21, 0); crateTier1Group.add(s);
+            });
+            [-0.27, 0.27].forEach(cz => {
+                const s = tagC1(new THREE.Mesh(new THREE.BoxGeometry(0.74, cz < 0 ? 0.38 : 0.26, 0.035), t1CrateMat));
+                s.position.set(0, cz < 0 ? 0.21 : 0.15, cz); crateTier1Group.add(s);
+            });
+            for (let k = 0; k < 4; k++) {
+                const oldLp = tagC1(new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.52, 0.014), new THREE.MeshStandardMaterial({ color: ['#5c493b', '#38444d', '#6e3b3b', '#4d4a38'][k], roughness: 0.85 })));
+                oldLp.position.set((k - 1.5) * 0.03, 0.31, -0.18 + k * 0.055);
+                oldLp.rotation.x = -0.22;
+                crateTier1Group.add(oldLp);
+            }
+            crateGroup.add(crateTier1Group);
+
+            // 5. Cartons de déménagement empilés + Boîte à pizza + Canettes + Posters scotchés + Tag + Caisse chevet + Vieux radiateur + Store
+            function buildCardboardBox(w, h, d, x, y, z, rotY, labelText) {
+                const bg = new THREE.Group();
+                bg.position.set(x, y, z); bg.rotation.y = rotY;
+                const c = document.createElement('canvas'); c.width = 256; c.height = 128;
+                const ctx = c.getContext('2d');
+                ctx.fillStyle = '#9e7d57'; ctx.fillRect(0, 0, 256, 128);
+                ctx.fillStyle = 'rgba(40,26,14,0.12)';
+                for (let i = 0; i < 600; i++) ctx.fillRect(Math.random() * 256, Math.random() * 128, 3, 2);
+                ctx.fillStyle = '#241b12'; ctx.font = 'bold 26px monospace'; ctx.textAlign = 'center';
+                ctx.fillText(labelText, 128, 72);
+                const lblMat = new THREE.MeshStandardMaterial({ map: configureTex(c, 1, 1, true), roughness: 0.92 });
+                const box = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), [kraftMat, kraftMat, kraftMat, kraftMat, lblMat, kraftMat]);
+                box.castShadow = true; box.receiveShadow = true; bg.add(box);
+                const tape = new THREE.Mesh(new THREE.BoxGeometry(w + 0.01, 0.01, 0.07), tapeMat);
+                tape.position.y = h / 2 + 0.002; bg.add(tape);
+                roomTier1Group.add(bg);
+            }
+            buildCardboardBox(0.58, 0.46, 0.50,  0.42, -0.77, -4.28,  0.12, 'CÂBLES');
+            buildCardboardBox(0.46, 0.36, 0.42,  0.44, -0.36, -4.24, -0.18, 'SAMPLES');
+            buildCardboardBox(0.70, 0.50, 0.58,  2.10, -0.75,  3.85, -0.35, 'FRAGILE');
+
+            // Boîte à pizza entrouverte sur le sol près du bureau + 3 canettes energy drink
+            const pizzaBox = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.048, 0.46), new THREE.MeshStandardMaterial({ color: '#d8cbb8', roughness: 0.9 }));
+            pizzaBox.position.set(0.35, -0.975, -2.55); pizzaBox.rotation.y = 0.42; pizzaBox.castShadow = true;
+            const pizzaLid = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.01, 0.46), new THREE.MeshStandardMaterial({ color: '#c8b8a2', roughness: 0.9 }));
+            pizzaLid.position.set(0.35, -0.935, -2.58); pizzaLid.rotation.set(-0.22, 0.42, 0.06);
+            roomTier1Group.add(pizzaBox, pizzaLid);
+
+            [
+                { x: 0.12, y: -0.935, z: -2.28, col: '#16a34a', fallen: false },
+                { x: 0.24, y: -0.975, z: -2.18, col: '#dc2626', fallen: true },
+                { x: -0.82, y: -0.935, z: -2.92, col: '#2563eb', fallen: false }
+            ].forEach(can => {
+                const cm = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.125, 12), new THREE.MeshStandardMaterial({ color: can.col, roughness: 0.3, metalness: 0.65 }));
+                cm.position.set(can.x, can.y, can.z);
+                if (can.fallen) { cm.rotation.z = Math.PI / 2; cm.rotation.y = 0.7; }
+                cm.castShadow = true; roomTier1Group.add(cm);
+            });
+
+            // 3 Posters / Flyers Underground scotchés légèrement de travers sur les murs
+            function buildWallPoster(x, y, z, ry, rz, title, sub, bgHex, accentHex) {
+                const pg = new THREE.Group(); pg.position.set(x, y, z); pg.rotation.set(0, ry, rz);
+                const c = document.createElement('canvas'); c.width = 256; c.height = 340;
+                const ctx = c.getContext('2d');
+                ctx.fillStyle = bgHex; ctx.fillRect(0, 0, 256, 340);
+                ctx.fillStyle = accentHex; ctx.fillRect(16, 18, 224, 160);
+                ctx.fillStyle = '#0e0f14'; ctx.beginPath(); ctx.arc(128, 98, 54, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = bgHex; ctx.beginPath(); ctx.arc(128, 98, 16, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#f5f2eb'; ctx.font = 'bold 28px monospace'; ctx.textAlign = 'center';
+                ctx.fillText(title, 128, 232);
+                ctx.fillStyle = 'rgba(245,242,235,0.65)'; ctx.font = '16px monospace';
+                ctx.fillText(sub, 128, 272);
+                const poster = new THREE.Mesh(new THREE.PlaneGeometry(0.68, 0.90), new THREE.MeshStandardMaterial({ map: configureTex(c, 1, 1, true), roughness: 0.85 }));
+                pg.add(poster);
+                // 2 morceaux de scotch gris en haut
+                [-0.28, 0.28].forEach((tx, ti) => {
+                    const tp = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 0.045), tapeMat);
+                    tp.position.set(tx, 0.43, 0.004); tp.rotation.z = ti === 0 ? 0.55 : -0.55;
+                    pg.add(tp);
+                });
+                roomTier1Group.add(pg);
+            }
+            buildWallPoster(1.25, 2.30, -4.97, 0, -0.07, 'RAW BEATS', 'PARIS UNDERGROUND 93', '#1c1917', '#b91c1c');
+            buildWallPoster(2.12, 2.02, -4.97, 0,  0.09, 'MPC TAPE', 'SIDE A · 92 BPM', '#18181b', '#d97706');
+            buildWallPoster(-4.97, 2.05, -0.85, Math.PI / 2, 0.06, 'OPEN MIC', 'FREESTYLE NIGHT', '#172554', '#eab308');
+
+            // Vieille caisse retournée en table de chevet de fortune + vieille lampe cabossée
+            const t1Nightstand = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.48, 0.46), rawPalletMat);
+            t1Nightstand.position.set(2.22, -0.76, -4.55); t1Nightstand.castShadow = true;
+            const t1LampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.10, 0.04, 10), oldMetalMat);
+            t1LampBase.position.set(2.22, -0.50, -4.55);
+            const t1LampStem = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.26, 8), oldMetalMat);
+            t1LampStem.position.set(2.22, -0.36, -4.55); t1LampStem.rotation.z = 0.12;
+            const t1LampShade = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.14, 12, 1, true), oldMetalMat);
+            t1LampShade.position.set(2.25, -0.24, -4.55); t1LampShade.rotation.z = -0.35;
+            roomTier1Group.add(t1Nightstand, t1LampBase, t1LampStem, t1LampShade);
+
+            // Vieux radiateur en fonte gris usé sous la fenêtre + vieux store vénitien légèrement de travers
+            const oldRad = new THREE.Group();
+            oldRad.position.set(4.80, -0.52, 2.05);
+            for (let ri = 0; ri < 9; ri++) {
+                const fin = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.58, 0.09), rustyCastIronMat);
+                fin.position.set(0, 0, -0.72 + ri * 0.18); fin.castShadow = true; oldRad.add(fin);
+            }
+            roomTier1Group.add(oldRad);
+            const blindBox = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.14, 5.02), new THREE.MeshStandardMaterial({ color: '#7a7872', roughness: 0.75 }));
+            blindBox.position.set(4.88, 3.26, 1.1); blindBox.rotation.x = 0.018;
+            roomTier1Group.add(blindBox);
+
+            // Vieux sac de sport posé près de la porte (Tier 1)
+            const duffel = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.62, 12), new THREE.MeshStandardMaterial({ color: '#292d34', roughness: 0.92 }));
+            duffel.rotation.z = Math.PI / 2; duffel.rotation.y = 0.35; duffel.position.set(-4.15, -0.84, 3.62); duffel.castShadow = true;
+            roomTier1Group.add(duffel);
+
+            archGroup.add(roomTier1Group);
+
+            // C. GROUPE TIER 2 : HOME-STUDIO RÉNOVÉ (25–54% Mastery ou Rang 2)
+            const roomTier2Group = new THREE.Group();
+            roomTier2Group.visible = false;
+
+            // 1. Plafond Tier 2 : Plafonnier moderne sobre + 1er panneau acoustique simple au-dessus du bureau
+            const t2FixtureRim = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.34, 0.06, 24), aluFrameMat);
+            t2FixtureRim.position.set(1.05, 3.96, -0.55);
+            const t2FixtureMat = new THREE.MeshStandardMaterial({ color: '#fff9ed', emissive: '#ffeed2', emissiveIntensity: 1.75, roughness: 0.25 });
+            window.tier2FixtureMat = t2FixtureMat;
+            const t2FixtureDisc = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.03, 24), t2FixtureMat);
+            t2FixtureDisc.position.set(1.05, 3.935, -0.55);
+            const t2Cloud = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.08, 1.4), new THREE.MeshStandardMaterial({ color: '#2b2e37', roughness: 0.92 }));
+            t2Cloud.position.set(-2.15, 3.76, -2.65); t2Cloud.castShadow = false;
+            [-1.05, 1.05].forEach(wx => [-0.55, 0.55].forEach(wz => {
+                const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.24, 6), cableMat);
+                wire.position.set(-2.15 + wx, 3.88, -2.65 + wz); roomTier2Group.add(wire);
+            }));
+            roomTier2Group.add(t2FixtureRim, t2FixtureDisc, t2Cloud);
+
+            // 2. Chaise de bureau noire simple (Tier 2 — échelle adulte réaliste assortie au bureau, sans appui-tête ni chromes)
+            const chairTier2Group = new THREE.Group();
+            chairTier2Group.position.set(-1.28, -1.0, -2.02); chairTier2Group.rotation.y = 0.55;
+            const t2ChairMat = new THREE.MeshStandardMaterial({ color: '#20232b', roughness: 0.72 });
+            const t2Stem = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.046, 0.62, 12), aluFrameMat);
+            t2Stem.position.y = 0.38; t2Stem.castShadow = true; chairTier2Group.add(t2Stem);
+            for (let b = 0; b < 5; b++) {
+                const a = (b / 5) * Math.PI * 2;
+                const leg = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.045, 0.44), aluFrameMat);
+                leg.position.set(Math.sin(a) * 0.22, 0.095, Math.cos(a) * 0.22); leg.rotation.y = a; leg.castShadow = true; chairTier2Group.add(leg);
+                const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.036, 0.04, 12), t2ChairMat);
+                wheel.rotation.z = Math.PI / 2; wheel.rotation.y = a;
+                wheel.position.set(Math.sin(a) * 0.42, 0.036, Math.cos(a) * 0.42); chairTier2Group.add(wheel);
+            }
+            const t2Seat = new THREE.Mesh(new THREE.BoxGeometry(0.84, 0.11, 0.76), t2ChairMat);
+            t2Seat.position.set(0, 0.72, 0); t2Seat.castShadow = true; t2Seat.receiveShadow = true; chairTier2Group.add(t2Seat);
+            const t2Spine = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.46, 0.05), aluFrameMat);
+            t2Spine.position.set(0, 0.90, 0.37); t2Spine.rotation.x = 0.08; chairTier2Group.add(t2Spine);
+            const t2Back = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.72, 0.09), t2ChairMat);
+            t2Back.position.set(0, 1.24, 0.37); t2Back.rotation.x = 0.08; t2Back.castShadow = true; chairTier2Group.add(t2Back);
+            roomTier2Group.add(chairTier2Group);
+
+            // 3. Cadre de lit minimaliste simple (Tier 2) dans bedGroup (associé au matelas/couette/2 oreillers propres de bedTier2PlusGroup)
+            const bedTier2FrameGroup = new THREE.Group();
+            bedTier2FrameGroup.visible = false;
+            const t2BedFrameMat = new THREE.MeshStandardMaterial({ color: '#262830', roughness: 0.7 });
+            const t2BedBase = new THREE.Mesh(new THREE.BoxGeometry(2.38, 0.24, 4.10), t2BedFrameMat);
+            t2BedBase.position.set(0, 0.08, 0); t2BedBase.castShadow = true; t2BedBase.receiveShadow = true; t2BedBase.name = 'bed_mesh';
+            bedTier2FrameGroup.add(t2BedBase);
+            bedGroup.add(bedTier2FrameGroup);
+
+            // 4. Bac vinyle bois simple au sol (Tier 2) dans crateGroup
+            const crateTier2Group = new THREE.Group();
+            crateTier2Group.visible = false;
+            const tagC2 = (m) => { m.name = 'achievements_board_mesh'; m.castShadow = true; m.receiveShadow = true; return m; };
+            const t2WoodMat = new THREE.MeshStandardMaterial({ map: walnutTex.map, color: '#9c7856', roughness: 0.58 });
+            const c2Base = tagC2(new THREE.Mesh(new THREE.BoxGeometry(0.84, 0.05, 0.62), t2WoodMat));
+            c2Base.position.y = 0.025; crateTier2Group.add(c2Base);
+            [-0.40, 0.40].forEach(cx => {
+                const s = tagC2(new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.44, 0.62), t2WoodMat));
+                s.position.set(cx, 0.24, 0); crateTier2Group.add(s);
+            });
+            const c2Back = tagC2(new THREE.Mesh(new THREE.BoxGeometry(0.80, 0.44, 0.04), t2WoodMat));
+            c2Back.position.set(0, 0.24, -0.29); crateTier2Group.add(c2Back);
+            const c2Front = tagC2(new THREE.Mesh(new THREE.BoxGeometry(0.80, 0.22, 0.04), t2WoodMat));
+            c2Front.position.set(0, 0.13, 0.29); crateTier2Group.add(c2Front);
+            for (let k = 0; k < 7; k++) {
+                const tex = (typeof window.createVinylCoverTexture === 'function') ? window.createVinylCoverTexture('tier2_lp_' + k, 256) : null;
+                const lp = tagC2(new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.014), new THREE.MeshStandardMaterial({ map: tex || null, color: tex ? '#ffffff' : '#64748b', roughness: 0.5 })));
+                lp.position.set(((k * 19) % 7 - 3) * 0.012, 0.34, -0.21 + k * 0.045);
+                lp.rotation.x = -0.18;
+                crateTier2Group.add(lp);
+            }
+            crateGroup.add(crateTier2Group);
+
+            // 1 seul carton propre rangé discrètement dans le coin (en cours d'installation Tier 2)
+            const t2TidyBox = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.36, 0.44), new THREE.MeshStandardMaterial({ color: '#8f7458', roughness: 0.85 }));
+            t2TidyBox.position.set(-4.42, -0.82, 4.32); t2TidyBox.rotation.y = 0.08; t2TidyBox.castShadow = true;
+            roomTier2Group.add(t2TidyBox);
+
+            // 5. Mur de souvenirs Tier 2 : 2 belles affiches encadrées sous verre en cadre noir mat (galerie indé propre!)
+            function buildFramedWallArt(x, y, z, ry, title, sub, accentHex) {
+                const fg = new THREE.Group(); fg.position.set(x, y, z); fg.rotation.y = ry;
+                const fFrame = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.98, 0.035), aluFrameMat);
+                fFrame.castShadow = false; fg.add(fFrame);
+                const c = document.createElement('canvas'); c.width = 256; c.height = 340;
+                const ctx = c.getContext('2d');
+                ctx.fillStyle = '#f4f0e8'; ctx.fillRect(0, 0, 256, 340);
+                ctx.fillStyle = '#181a20'; ctx.fillRect(24, 24, 208, 224);
+                ctx.fillStyle = accentHex; ctx.beginPath(); ctx.arc(128, 136, 68, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#181a20'; ctx.beginPath(); ctx.arc(128, 136, 20, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#181a20'; ctx.font = 'bold 20px Outfit, sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText(title, 128, 286);
+                ctx.fillStyle = '#6b7280'; ctx.font = '13px monospace';
+                ctx.fillText(sub, 128, 310);
+                const art = new THREE.Mesh(new THREE.PlaneGeometry(0.68, 0.90), new THREE.MeshStandardMaterial({ map: configureTex(c, 1, 1, true), roughness: 0.22 }));
+                art.position.z = 0.019; fg.add(art);
+                roomTier2Group.add(fg);
+            }
+            buildFramedWallArt(1.42, 2.38, -4.96, 0, 'STUDIO SESSIONS', 'PARIS · VOL. II', '#d97706');
+            buildFramedWallArt(-4.96, 2.12, -0.85, Math.PI / 2, 'ANALOG WAVES', 'LIMITED PRESSING', '#2563eb');
+
+            // 6. Setup Bureau Tier 2 : Micro condensateur sur pied droit métallique + Casque studio posé proprement sur le bureau
+            const deskTier2Group = new THREE.Group();
+            deskTier2Group.visible = false;
+            const micT2 = new THREE.Group();
+            micT2.position.set(-1.62, 0.75, 0.20);
+            const m2Base = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.10, 0.022, 18), aluFrameMat);
+            m2Base.position.y = 0.011; m2Base.castShadow = true; micT2.add(m2Base);
+            const m2Rod = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.014, 0.28, 12), ifaceSilverMat);
+            m2Rod.position.y = 0.16; micT2.add(m2Rod);
+            const m2Body = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.032, 0.17, 16), new THREE.MeshStandardMaterial({ color: '#1b1d24', roughness: 0.35, metalness: 0.75 }));
+            m2Body.position.y = 0.34; m2Body.castShadow = true; micT2.add(m2Body);
+            const m2Grille = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.034, 0.075, 16), new THREE.MeshStandardMaterial({ color: '#94a3b8', roughness: 0.35, metalness: 0.85 }));
+            m2Grille.position.y = 0.44; micT2.add(m2Grille);
+            tagInteractable(micT2, 'desk_mic_mesh');
+            deskTier2Group.add(micT2);
+
+            const hpT2 = new THREE.Group();
+            hpT2.position.set(1.62, 0.79, 0.24); hpT2.rotation.set(Math.PI / 2, 0, -0.35);
+            const h2Band = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.020, 12, 24, Math.PI), hpLeatherMat);
+            hpT2.add(h2Band);
+            [-0.145, 0.145].forEach(hx => {
+                const c = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.065, 0.04, 20), hpCupMat);
+                c.rotation.z = Math.PI / 2; c.position.set(hx, -0.02, 0); c.castShadow = true; hpT2.add(c);
+            });
+            tagInteractable(hpT2, 'desk_headphones_mesh');
+            deskTier2Group.add(hpT2);
+
+            deskGroup.add(deskTier2Group);
+
+            archGroup.add(roomTier2Group);
+
+            // D. CONTRÔLEUR CENTRAL D'ÉVOLUTION DE LA CHAMBRE (TIERS 1 -> 2 -> 3)
+            window._tier3FixtureMat = fixtureDiffuserMat;
+            window.currentRoomVisualTier = 3;
+            window.roomTierLightMult = 1.0;
+
+            window.getTargetRoomTier = function(s) {
+                const st = s || (typeof state !== 'undefined' ? state : null);
+                if (!st) return 1;
+                const money = Number(st.money) || 0;
+                const rep = Number(st.rep) || 0;
+                const followers = Number(st.followers) || 0;
+                const tracks = Number(st.stats?.tracks) || 0;
+                const moneyScore = Math.min(100, Math.log10(money + 1) * 25);
+                const repScore = Math.min(100, (rep / 100) * 100);
+                const follScore = Math.min(100, (followers / 50000) * 100);
+                const trackScore = Math.min(100, (tracks / 10) * 100);
+                const avgMastery = (moneyScore + repScore + follScore + trackScore) / 4;
+                let rankId = 1;
+                if (typeof getRankContext === 'function') {
+                    const rc = getRankContext(st);
+                    if (rc && rc.currentRank) rankId = rc.currentRank.id;
+                }
+                if (avgMastery >= 55 || rankId >= 3) return 3;
+                if (avgMastery >= 25 || rankId >= 2) return 2;
+                return 1;
+            };
+
+            function applyRoomTierImmediate(tier) {
+                const t = Math.max(1, Math.min(3, parseInt(tier, 10) || 1));
+                window.currentRoomVisualTier = t;
+
+                // 1. Surfaces architecturales (Sol, Murs, Plafond, Plateau Bureau)
+                if (t === 1) {
+                    floorMat.map = wornFloorTex.map; floorMat.normalMap = wornFloorTex.normalMap; floorMat.normalScale.set(0.9, 0.9);
+                    floorMat.roughnessMap = null; floorMat.color.set('#b8a894'); floorMat.roughness = 0.84; floorMat.envMapIntensity = 0.28;
+                    wallMat.map = grungeWallTex.map; wallMat.normalMap = grungeWallTex.normalMap; wallMat.normalScale.set(0.75, 0.75);
+                    wallMat.color.set('#b8b2a6'); wallMat.roughness = 0.96;
+                    ceilingMat.map = grungeWallTex.map; ceilingMat.color.set('#8f8a80'); ceilingMat.emissive.set('#141311'); ceilingMat.emissiveIntensity = 0.25;
+                    deskTopMat.map = grungeDeskTex.map; deskTopMat.normalMap = null; deskTopMat.color.set('#a89b8e'); deskTopMat.roughness = 0.78;
+                    window.roomTierLightMult = 0.78;
+                    window.ceilingFixtureMat = window.tier1NeonMat;
+                } else if (t === 2) {
+                    floorMat.map = oakTex.map; floorMat.normalMap = oakTex.normalMap; floorMat.normalScale.set(0.7, 0.7);
+                    floorMat.roughnessMap = oakTex.roughnessMap; floorMat.color.set('#e2d2be'); floorMat.roughness = 0.58; floorMat.envMapIntensity = 0.50;
+                    wallMat.map = cleanTier2WallTex.map; wallMat.normalMap = cleanTier2WallTex.normalMap; wallMat.normalScale.set(0.36, 0.36);
+                    wallMat.color.set('#e6e2da'); wallMat.roughness = 0.90;
+                    ceilingMat.map = ceilTex.map; ceilingMat.color.set('#ebe8e2'); ceilingMat.emissive.set('#22201d'); ceilingMat.emissiveIntensity = 0.34;
+                    deskTopMat.map = walnutTex.map; deskTopMat.normalMap = walnutTex.normalMap; deskTopMat.normalScale.set(0.45, 0.45);
+                    deskTopMat.color.set('#c4a486'); deskTopMat.roughness = 0.48;
+                    window.roomTierLightMult = 0.93;
+                    window.ceilingFixtureMat = window.tier2FixtureMat;
+                } else {
+                    floorMat.map = oakTex.map; floorMat.normalMap = oakTex.normalMap; floorMat.normalScale.set(0.85, 0.85);
+                    floorMat.roughnessMap = oakTex.roughnessMap; floorMat.color.set('#ffffff'); floorMat.roughness = 0.42; floorMat.envMapIntensity = 0.72;
+                    wallMat.map = wallTex.map; wallMat.normalMap = wallTex.normalMap; wallMat.normalScale.set(0.42, 0.42);
+                    wallMat.color.set('#f5f1ea'); wallMat.roughness = 0.88;
+                    ceilingMat.map = ceilTex.map; ceilingMat.color.set('#f8f6f2'); ceilingMat.emissive.set('#2c2b28'); ceilingMat.emissiveIntensity = 0.42;
+                    deskTopMat.map = walnutTex.map; deskTopMat.normalMap = walnutTex.normalMap; deskTopMat.normalScale.set(0.65, 0.65);
+                    deskTopMat.color.set('#dfb998'); deskTopMat.roughness = 0.34;
+                    window.roomTierLightMult = 1.0;
+                    window.ceilingFixtureMat = window._tier3FixtureMat;
+                }
+                floorMat.needsUpdate = true; wallMat.needsUpdate = true; ceilingMat.needsUpdate = true; deskTopMat.needsUpdate = true;
+
+                // 2. Visibilité par paliers (Tier 1 / Tier 2 / Tier 3)
+                roomTier1Group.visible = (t === 1);
+                bedTier1Group.visible = (t === 1);
+                crateTier1Group.visible = (t === 1);
+                deskTier1Group.visible = (t === 1);
+
+                roomTier2Group.visible = (t === 2);
+                bedTier2FrameGroup.visible = (t === 2);
+                crateTier2Group.visible = (t === 2);
+                deskTier2Group.visible = (t === 2);
+
+                // Montée en gamme du Setup Bureau (Écran, Enceintes, Interface, Micro, Casque, Lifestyle)
+                if (typeof pcFrame !== 'undefined') {
+                    if (t === 1) {
+                        pcFrame.scale.set(0.76, 0.88, 1.8);
+                        pcFrameMat.color.set('#3f424a'); pcFrameMat.roughness = 0.72; pcFrameMat.metalness = 0.15;
+                    } else if (t === 2) {
+                        pcFrame.scale.set(0.95, 0.96, 1.0);
+                        pcFrameMat.color.set('#1c1f26'); pcFrameMat.roughness = 0.35; pcFrameMat.metalness = 0.55;
+                    } else {
+                        pcFrame.scale.set(1.06, 1.02, 1.0);
+                        pcFrameMat.color.set('#14171d'); pcFrameMat.roughness = 0.22; pcFrameMat.metalness = 0.78;
+                    }
+                    pcFrameMat.needsUpdate = true;
+                }
+                if (typeof speakerL !== 'undefined') speakerL.visible = (t >= 2);
+                if (typeof speakerR !== 'undefined') speakerR.visible = (t >= 2);
+                isoPadsTier3Group.visible = (t >= 3);
+                ifaceGroup.visible = (t >= 2);
+                micBaseGroup.visible = (t >= 3);
+                if (typeof micXlrCableGroup !== 'undefined') micXlrCableGroup.visible = (t >= 3);
+                hpStandGroup.visible = (t >= 3);
+                mugGroup.visible = (t >= 2);
+                mugCoaster.visible = (t >= 3);
+                phoneGroup.visible = (t >= 2);
+                deskMatMesh.visible = (t >= 2);
+                if (typeof kbdGlowStrip !== 'undefined') kbdGlowStrip.visible = (t >= 3);
+                if (typeof escCap !== 'undefined') escCap.visible = (t >= 3);
+                if (typeof entCap !== 'undefined') entCap.visible = (t >= 3);
+
+                // Tier 2+ (masqué en Tier 1, visible en Tier 2 & 3)
+                cornicesGroup.visible = (t >= 2);
+                curtainsGroup.visible = (t >= 2);
+                plantGroup.visible = (t >= 2);
+                nsGroup.visible = (t >= 2);
+                bedTier2PlusGroup.visible = (t >= 2);
+                nbGroup.visible = (t >= 2);
+
+                // Tier 3 uniquement (finition Architecte V4)
+                acousticCloudsGroup.visible = (t >= 3);
+                trackGroup.visible = (t >= 3);
+                wallClockGroup.visible = (t >= 3);
+                chairGroup.visible = (t >= 3);
+                bedTier3OnlyGroup.visible = (t >= 3);
+                radGroup.visible = (t >= 3);
+                sneakersTier3Group.visible = (t >= 3);
+                looseVinylsTier3Group.visible = (t >= 3);
+                if (window._crateStandTier3) window._crateStandTier3.visible = (t >= 3);
+                if (typeof vinylsContainer !== 'undefined') {
+                    vinylsContainer.position.set(0, t === 3 ? 0.23 : 0.08, t === 3 ? 0.02 : -0.02);
+                }
+                // Force le rafraîchissement immédiat de l'écran PC 3D et des hologrammes Studio+ progressifs
+                window._pcLiveLastTs = 0;
+                if (typeof window.updateLivePcScreen === 'function') window.updateLivePcScreen(performance.now() * 0.001);
+                if (typeof syncFurniture3DVisibility === 'function') {
+                    try { syncFurniture3DVisibility(); } catch(e) {}
+                }
+            }
+
+            window.applyRoomEvolutionTier = function(newTier, withTransition = false) {
+                const target = Math.max(1, Math.min(3, parseInt(newTier, 10) || 1));
+                if (!withTransition) {
+                    applyRoomTierImmediate(target);
+                    return;
+                }
+                if (window._roomEvoInProgress) return;
+                window._roomEvoInProgress = true;
+
+                const veil = document.getElementById('room-evolution-veil');
+                const banner = document.getElementById('room-evolution-banner');
+                const titleEl = document.getElementById('room-evo-title');
+                const subEl = document.getElementById('room-evo-sub');
+
+                const tierMeta = {
+                    2: { title: 'NIVEAU 2 · HOME-STUDIO RÉNOVÉ', sub: 'Murs repeints, chambre rangée & premier traitement acoustique' },
+                    3: { title: 'NIVEAU 3 · STUDIO ARCHITECTE CLEAN', sub: 'Finition pro complète — Prochain cap : Vrai Studio Pro à 80 % Mastery' }
+                };
+                if (titleEl && tierMeta[target]) titleEl.textContent = tierMeta[target].title;
+                if (subEl && tierMeta[target]) subEl.textContent = tierMeta[target].sub;
+
+                // Accord synthé ascendant chaleureux
+                try {
+                    [523.25, 659.25, 783.99, 987.77].forEach((freq, idx) => {
+                        setTimeout(() => { if (typeof playTone === 'function') playTone(freq, 'triangle', 0.35, 0.045); }, idx * 95);
+                    });
+                } catch(e) {}
+
+                if (veil) veil.classList.add('active');
+                setTimeout(() => {
+                    applyRoomTierImmediate(target);
+                    if (veil) veil.classList.remove('active');
+                    if (banner) banner.classList.add('visible');
+                    setTimeout(() => {
+                        if (banner) banner.classList.remove('visible');
+                        window._roomEvoInProgress = false;
+                    }, 4200);
+                }, 380);
+            };
+
+            // Helper pratique pour tester / prévisualiser un palier instantanément
+            window.setRoomTierPreview = function(t, animate = false) {
+                window.applyRoomEvolutionTier(t, animate);
+            };
+
+            // Applique le Niveau 1 par défaut au démarrage avant détection de sauvegarde
+            applyRoomTierImmediate(1);
 
             scene.add(archGroup);
 
@@ -10411,11 +11338,20 @@ const DEFAULT_STATE = {
             if (typeof FURNITURE_CATALOG === 'undefined') return;
             window.activeMysticMaterials = [];
             
+            const activeRoomTier = window.currentRoomVisualTier || 1;
+            const playerCash = (typeof state !== 'undefined' && state) ? (Number(state.money) || 0) : 0;
+
             FURNITURE_CATALOG.forEach(item => {
                 const obj = getFurniture3DObject(item.sceneObject);
                 if (obj) {
                     const isOwned = state && state.ownedFurniture && state.ownedFurniture.includes(item.id);
-                    obj.visible = true;
+                    // Apparition progressive des hologrammes :
+                    // Niv. 1 -> meubles Acte 1 (tapis, table, canapé) ; Niv. 2 -> Acte 1-2 (+ TV, Rack) ; Niv. 3 -> tout le catalogue!
+                    // Toujours visible si déjà acheté ou si le joueur a déjà les fonds requis.
+                    const maxHoloAct = activeRoomTier >= 3 ? 4 : (activeRoomTier === 2 ? 2 : 1);
+                    const isHoloAllowed = isOwned || (item.tier <= maxHoloAct) || (playerCash >= item.price);
+                    obj.visible = isHoloAllowed;
+                    if (!isHoloAllowed) return;
 
                     obj.traverse(child => {
                         if (child.isMesh) {
@@ -10449,8 +11385,10 @@ const DEFAULT_STATE = {
                                 // Projection Hologramme Néon + Contours Filaires Lumineux (0 ombre noire!)
                                 if (!child.userData.mysticMaterial) {
                                     child.userData.mysticMaterial = baseMysticMaterial.clone();
-                                    child.userData.mysticMaterial.userData = { targetOpacity: item.sceneObject === 'rugGroup' ? 0.065 : 0.095 };
-                                    if (item.sceneObject === 'rugGroup') {
+                                    const isRugObj = (item.sceneObject === 'rugMesh' || item.sceneObject === 'rugGroup');
+                                    const baseHoloOp = activeRoomTier === 1 ? 0.060 : 0.092;
+                                    child.userData.mysticMaterial.userData = { targetOpacity: isRugObj ? 0.055 : baseHoloOp };
+                                    if (isRugObj) {
                                         // Évite tout Z-fighting avec le parquet sur le tapis plat non acheté
                                         child.userData.mysticMaterial.side = THREE.FrontSide;
                                         child.userData.mysticMaterial.polygonOffset = true;
@@ -10542,15 +11480,15 @@ const DEFAULT_STATE = {
                 const isNight = (pHour >= 21 || pHour < 6);
                 const isGolden = (pHour >= 17 && pHour < 21);
 
-                // Lumière & ciel synchronisés avec la sauvegarde ou le bouton Ambiance
+                // Lumière & ciel synchronisés avec la sauvegarde ou le bouton Ambiance (zéro ombre solaire la nuit!)
                 let zenHex = '#2e63a8', horHex = '#c4dff5', sunColHex = '#fff8e6', farHex = '#8ea9c7', sunHex = '#fff5e4';
-                let sunInt = 2.15, bounceInt = 5.6, hemiInt = 1.04, nightF = 0.0, cityGlow = 0.12, sunY = 0.68;
+                let sunInt = 1.65, bounceInt = 4.6, hemiInt = 0.98, nightF = 0.0, cityGlow = 0.12, sunY = 0.68;
                 if (isNight) {
                     zenHex = '#091124'; horHex = '#1c2842'; sunColHex = '#c8dcff'; farHex = '#19243b'; sunHex = '#8fb0f5';
-                    sunInt = 0.60; bounceInt = 2.1; hemiInt = 0.54; nightF = 1.0; cityGlow = 1.15; sunY = 0.72;
+                    sunInt = 0.05; bounceInt = 1.6; hemiInt = 0.52; nightF = 1.0; cityGlow = 1.15; sunY = 0.72;
                 } else if (isGolden) {
                     zenHex = '#2c3563'; horHex = '#eb956a'; sunColHex = '#ffc48a'; farHex = '#75667a'; sunHex = '#ffae73';
-                    sunInt = 1.75; bounceInt = 4.4; hemiInt = 0.86; nightF = 0.35; cityGlow = 0.68; sunY = 0.38;
+                    sunInt = 1.32; bounceInt = 3.8; hemiInt = 0.84; nightF = 0.35; cityGlow = 0.68; sunY = 0.38;
                 }
                 if (pRain > 0.3) {
                     zenHex = isNight ? '#0a0f1c' : '#3a4659';
@@ -10581,13 +11519,18 @@ const DEFAULT_STATE = {
                     dirLight.intensity += (sunInt - dirLight.intensity) * 0.08;
                     if (pHour >= 6 && pHour <= 20) {
                         const df = (pHour - 6) / 14;
-                        dirLight.position.set(13.5, 3.2 + Math.sin(df * Math.PI) * 7.2, 5.4 - df * 10.6);
+                        dirLight.position.set(7.8, 9.5 + Math.sin(df * Math.PI) * 3.5, 2.8 - df * 5.6);
                     } else {
-                        dirLight.position.set(13.0, 8.2, 1.8);
+                        dirLight.position.set(7.8, 10.5, 1.0);
                     }
                 }
                 if (window.windowBounceLight) window.windowBounceLight.intensity += (bounceInt - window.windowBounceLight.intensity) * 0.08;
-                if (typeof hemiLight !== 'undefined') hemiLight.intensity += (hemiInt - hemiLight.intensity) * 0.08;
+                const loginTierMult = window.roomTierLightMult || 1.0;
+                if (typeof hemiLight !== 'undefined') hemiLight.intensity += (hemiInt * loginTierMult - hemiLight.intensity) * 0.08;
+                if (window.currentRoomVisualTier === 1 && window.tier1NeonMat) {
+                    const fl = (Math.sin(time * 29.0) * Math.sin(time * 7.3) > 0.92) ? 0.62 : 1.48;
+                    window.tier1NeonMat.emissiveIntensity = fl;
+                }
                 if (window.bedsideLight) window.bedsideLight.intensity += ((isNight ? 3.2 : 0.45) - window.bedsideLight.intensity) * 0.08;
                 if (window.deskHaloLight) window.deskHaloLight.intensity += ((isNight ? 2.4 : 0.7) - window.deskHaloLight.intensity) * 0.08;
                 if (window.windowRainUniforms) {
@@ -10595,7 +11538,7 @@ const DEFAULT_STATE = {
                     window.windowRainUniforms.uRainIntensity.value += (pRain - window.windowRainUniforms.uRainIntensity.value) * 0.06;
                 }
                 if (window.sunbeamMat) window.sunbeamMat.opacity = (isNight || pRain > 0.3) ? 0.015 : 0.085;
-                if (typeof window.update3DPCScreen === 'function') window.update3DPCScreen(time);
+                if (typeof window.updateLivePcScreen === 'function') window.updateLivePcScreen(time);
                 if (typeof window.updateWallClock3D === 'function') window.updateWallClock3D(window._loginPreviewClockStr);
                 if (window.coffeeSteamPuffs) {
                     window.coffeeSteamPuffs.forEach(sp => {
@@ -10619,10 +11562,10 @@ const DEFAULT_STATE = {
                         if (lf && lf.userData) lf.rotation.x = lf.userData.baseRx + Math.sin(time * 0.9 + lf.userData.phase) * 0.022;
                     }
                 }
-                // Porte du studio légèrement entrouverte (invitation à entrer)
+                // Porte fermée proprement en login (le rai de lumière n'apparaît que lors d'une vraie sortie)
                 if (window.doorPivot) {
-                    window.doorPivot.rotation.y += (0.20 - window.doorPivot.rotation.y) * 0.06;
-                    if (window.doorLightRayMat) window.doorLightRayMat.opacity = 0.34;
+                    window.doorPivot.rotation.y += (0 - window.doorPivot.rotation.y) * 0.08;
+                    if (window.doorLightRayMat) window.doorLightRayMat.opacity = 0;
                 }
 
                 // Caméra cinématique lente + micro-parallaxe souris cadrant le studio (bureau + lit + baie vitrée à droite du panneau)
@@ -11175,34 +12118,34 @@ const DEFAULT_STATE = {
                     const isLampDark = window.pixarLamp && window.pixarLamp.userData && window.pixarLamp.userData.isOn;
 
                     let zenHex = '#091124', horHex = '#1c2842', sunColHex = '#c8dcff', farHex = '#19243b';
-                    let sunHex = '#8fb0f5', sunInt = 0.65, bounceHex = '#6a8cd9', bounceInt = 2.2, hemiInt = 0.55;
-                    let cityGlow = 1.15, nightFactor = 1.0, beamOp = 0.025, sunY = 0.72;
+                    let sunHex = '#8fb0f5', sunInt = 0.05, bounceHex = '#6a8cd9', bounceInt = 1.65, hemiInt = 0.54;
+                    let cityGlow = 1.15, nightFactor = 1.0, beamOp = 0.0, sunY = 0.72;
 
                     if (hour >= 6 && hour < 8.5) {
                         // Aube claire & dorée
                         zenHex = '#3a588a'; horHex = '#f5c299'; sunColHex = '#ffdca8'; farHex = '#9ba1b3';
-                        sunHex = '#ffd2a1'; sunInt = 1.85; bounceHex = '#ffdfb8'; bounceInt = 4.8; hemiInt = 0.92;
-                        cityGlow = 0.42; nightFactor = 0.12; beamOp = 0.11; sunY = 0.46;
+                        sunHex = '#ffd2a1'; sunInt = 1.38; bounceHex = '#ffdfb8'; bounceInt = 4.2; hemiInt = 0.88;
+                        cityGlow = 0.42; nightFactor = 0.12; beamOp = 0.0; sunY = 0.46;
                     } else if (hour >= 8.5 && hour < 17) {
-                        // Journée lumineuse naturelle
+                        // Journée lumineuse naturelle (ombres douces, zéro découpe dure)
                         zenHex = '#2e63a8'; horHex = '#c4dff5'; sunColHex = '#fff8e6'; farHex = '#8ea9c7';
-                        sunHex = '#fff7ea'; sunInt = 2.25; bounceHex = '#e6f0ff'; bounceInt = 6.0; hemiInt = 1.08;
-                        cityGlow = 0.08; nightFactor = 0.0; beamOp = 0.13; sunY = 0.70;
+                        sunHex = '#fff7ea'; sunInt = 1.68; bounceHex = '#e6f0ff'; bounceInt = 5.0; hemiInt = 1.02;
+                        cityGlow = 0.08; nightFactor = 0.0; beamOp = 0.0; sunY = 0.70;
                     } else if (hour >= 17 && hour < 20.5) {
                         // Golden Hour / Coucher de soleil cinématique
                         zenHex = '#2c3563'; horHex = '#eb956a'; sunColHex = '#ffc48a'; farHex = '#75667a';
-                        sunHex = '#ffae73'; sunInt = 1.75; bounceHex = '#ffc194'; bounceInt = 4.4; hemiInt = 0.84;
-                        cityGlow = 0.65; nightFactor = 0.35; beamOp = 0.12; sunY = 0.38;
+                        sunHex = '#ffae73'; sunInt = 1.30; bounceHex = '#ffc194'; bounceInt = 3.8; hemiInt = 0.82;
+                        cityGlow = 0.65; nightFactor = 0.35; beamOp = 0.0; sunY = 0.38;
                     }
 
-                    // --- COURSE RÉELLE DU SOLEIL SELON L'HEURE (Ombres glissantes sur le parquet!) ---
+                    // --- COURSE DOUCE ET LOGIQUE DU SOLEIL (Ombres courtes et douces au sol depuis la baie Est-Haut) ---
                     if (hour >= 6 && hour <= 20) {
                         const dayFrac = (hour - 6) / 14; // 0 = 06h00, 0.5 = 13h00, 1 = 20h00
-                        const sunElevY = 3.2 + Math.sin(dayFrac * Math.PI) * 7.2;
-                        const sunAzZ = 5.4 - dayFrac * 10.6; // Glisse du Sud-Est (+5.4) vers Nord-Est (-5.2)
-                        dirLight.position.set(13.5, sunElevY, sunAzZ);
+                        const sunElevY = 9.5 + Math.sin(dayFrac * Math.PI) * 3.5;
+                        const sunAzZ = 2.8 - dayFrac * 5.6;
+                        dirLight.position.set(7.8, sunElevY, sunAzZ);
                     } else {
-                        dirLight.position.set(13.0, 8.2, 1.8);
+                        dirLight.position.set(7.8, 10.5, 1.0);
                     }
 
                     // --- ADAPTATION AUTOMATIQUE DE L'ŒIL (EYE ADAPTATION) ---
@@ -11303,13 +12246,20 @@ const DEFAULT_STATE = {
                         const nightCeil = isNightSession ? 22 : 42;
                         dirLight.color.lerp(window._tmpSunCol ? window._tmpSunCol.set(sunHex) : (window._tmpSunCol = new THREE.Color(sunHex)), 0.04);
                         dirLight.intensity += ((sunInt * stormDim + window._lightningFlash * 2.2) - dirLight.intensity) * 0.06;
-                        hemiLight.intensity += ((hemiInt * stormDim) - hemiLight.intensity) * 0.04;
+                        const tMult = window.roomTierLightMult || 1.0;
+                        hemiLight.intensity += ((hemiInt * stormDim * tMult) - hemiLight.intensity) * 0.04;
                         ceilingLight.intensity += (nightCeil - ceilingLight.intensity) * 0.03;
                         if (window.windowBounceLight) {
                             window.windowBounceLight.color.lerp(window._tmpBncCol ? window._tmpBncCol.set(bounceHex) : (window._tmpBncCol = new THREE.Color(bounceHex)), 0.04);
                             window.windowBounceLight.intensity += ((bounceInt * stormDim + window._lightningFlash * 4.5) - window.windowBounceLight.intensity) * 0.06;
                         }
-                        if (window.ceilingFixtureMat) window.ceilingFixtureMat.emissiveIntensity = isNightSession ? 1.1 : 2.0;
+                        if (window.ceilingFixtureMat) {
+                            let fixInt = isNightSession ? 1.1 : 1.9;
+                            if (window.currentRoomVisualTier === 1) {
+                                fixInt = (Math.sin(time * 31.0) * Math.sin(time * 6.7) > 0.93) ? 0.55 : 1.45;
+                            }
+                            window.ceilingFixtureMat.emissiveIntensity = fixInt;
+                        }
                     } else {
                         if (window.windowBounceLight) window.windowBounceLight.intensity += ((0.8 + window._lightningFlash * 3.0) - window.windowBounceLight.intensity) * 0.06;
                         if (window.ceilingFixtureMat) window.ceilingFixtureMat.emissiveIntensity = 0.12;
@@ -13360,6 +14310,24 @@ function calculateLevelData(isSilentInit = false) {
             missingTracks: Math.max(0, nextRank.minTracks - (state?.stats?.tracks || 0)),
         };
     }
+
+    // === ÉVOLUTION VISUELLE INSTANTANÉE DE LA CHAMBRE (TIERS 1 -> 2 -> 3) ===
+    try {
+        if (typeof window.getTargetRoomTier === 'function' && typeof window.applyRoomEvolutionTier === 'function') {
+            const targetTier = window.getTargetRoomTier(state);
+            const prevTier = Number(state.roomTier) || 1;
+            if (isSilentInit || window.isBooting) {
+                state.roomTier = Math.max(prevTier, targetTier);
+                if (window.currentRoomVisualTier !== state.roomTier) {
+                    window.applyRoomEvolutionTier(state.roomTier, false);
+                }
+            } else if (targetTier > prevTier) {
+                state.roomTier = targetTier;
+                if (typeof saveGame === 'function') saveGame();
+                window.applyRoomEvolutionTier(targetTier, true);
+            }
+        }
+    } catch(e) {}
 
     return {
         level,
@@ -17222,6 +18190,40 @@ document.addEventListener('mouseover', (e) => {
                 return found.slice(0, 3);
             }
 
+            // === PROFILS DEV PRÉ-CALIBRÉS (ACCÈS DIRECT TIERS 1, 2 & 3) ===
+            window.DEV_PRESET_PROFILES = {
+                DEV_T1: {
+                    username: 'DEV_T1', activeCharacter: 0, day: 1, timeMins: 570,
+                    money: 150, rep: 5, followers: 12, energy: 92, inspi: 85, hype: 30,
+                    roomTier: 1, ownedFurniture: [],
+                    stats: { tracks: 0, bangers: 0, flops: 0, totalEarned: 150 }
+                },
+                DEV_T2: {
+                    username: 'DEV_T2', activeCharacter: 1, day: 14, timeMins: 690,
+                    money: 2800, rep: 32, followers: 6500, energy: 90, inspi: 88, hype: 62,
+                    roomTier: 2, ownedFurniture: ['rug', 'sofa', 'table'],
+                    stats: { tracks: 3, bangers: 2, flops: 0, totalEarned: 6400 }
+                },
+                DEV_T3: {
+                    username: 'DEV_T3', activeCharacter: 2, day: 35, timeMins: 960,
+                    money: 25000, rep: 78, followers: 28000, energy: 95, inspi: 92, hype: 84,
+                    roomTier: 3, ownedFurniture: ['rug', 'sofa', 'table', 'tv', 'rack_lamp', 'led_panel_l', 'led_panel_r', 'synth', 'guitar'],
+                    stats: { tracks: 8, bangers: 6, flops: 1, totalEarned: 62000 }
+                }
+            };
+
+            document.querySelectorAll('[data-dev-preset]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const key = btn.getAttribute('data-dev-preset');
+                    const input = document.getElementById('login-username');
+                    if (input && key) {
+                        input.value = key;
+                        avatarChanged = false;
+                        window.refreshLoginSessionPreview(false);
+                    }
+                });
+            });
+
             window.refreshLoginSessionPreview = function(autoFillLast = false) {
                 const input = document.getElementById('login-username');
                 const errEl = document.getElementById('login-error');
@@ -17255,7 +18257,10 @@ document.addEventListener('mouseover', (e) => {
 
                 const alias = input ? input.value.trim() : '';
                 let parsedSave = null;
-                if (alias) {
+                const devPreset = alias ? window.DEV_PRESET_PROFILES[alias.toUpperCase()] : null;
+                if (devPreset) {
+                    parsedSave = devPreset;
+                } else if (alias) {
                     try {
                         const raw = SafeStorage.get(getSaveKey(alias)) || SafeStorage.get('smt_save_' + alias);
                         if (raw && raw !== 'undefined' && raw !== 'null') parsedSave = JSON.parse(raw);
@@ -17272,6 +18277,10 @@ document.addEventListener('mouseover', (e) => {
                 let autoHour = 9.2, autoRain = 0.0, autoClock = '08:00', autoWeather = 'MATIN CLAIR', autoDay = 1;
 
                 if (parsedSave) {
+                    if (typeof window.getTargetRoomTier === 'function' && typeof window.applyRoomEvolutionTier === 'function') {
+                        const saveTier = Math.max(Number(parsedSave.roomTier) || 1, window.getTargetRoomTier(parsedSave));
+                        window.applyRoomEvolutionTier(saveTier, false);
+                    }
                     const day = parsedSave.day || 1;
                     const tMins = typeof parsedSave.timeMins === 'number' ? parsedSave.timeMins : 480;
                     const clk = formatClockFromMins(tMins);
@@ -17303,6 +18312,7 @@ document.addEventListener('mouseover', (e) => {
                         if (avEl) avEl.classList.add('selected');
                     }
                 } else {
+                    if (typeof window.applyRoomEvolutionTier === 'function') window.applyRoomEvolutionTier(1, false);
                     if (sDot) { sDot.className = 'w-2 h-2 rounded-full bg-amber-400 shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.75)]'; }
                     if (sTitle) { sTitle.textContent = 'NOUVELLE CARRIÈRE'; sTitle.className = 'text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 truncate'; }
                     if (sSub) sSub.textContent = 'Jour 1 · 08:00 · Studio de départ';
@@ -18759,10 +19769,15 @@ document.addEventListener('mouseover', (e) => {
 
             try {
                 let savedData = null;
-                try {
-                    savedData = SafeStorage.get(getSaveKey(username)) || SafeStorage.get('smt_save_' + username);
-                } catch(e) {
-                    console.warn("Storage access failed:", e);
+                const devPresetObj = window.DEV_PRESET_PROFILES ? window.DEV_PRESET_PROFILES[username.toUpperCase()] : null;
+                if (devPresetObj) {
+                    savedData = JSON.stringify(devPresetObj);
+                } else {
+                    try {
+                        savedData = SafeStorage.get(getSaveKey(username)) || SafeStorage.get('smt_save_' + username);
+                    } catch(e) {
+                        console.warn("Storage access failed:", e);
+                    }
                 }
 
                 if (savedData && savedData !== "undefined" && savedData !== "null") {
@@ -18860,6 +19875,11 @@ document.addEventListener('mouseover', (e) => {
             spawnRoomAvatar(state.activeCharacter);
             recalculateActivePerks();
             syncFurniture3DVisibility();
+            if (typeof window.getTargetRoomTier === 'function' && typeof window.applyRoomEvolutionTier === 'function') {
+                const initTier = Math.max(Number(state.roomTier) || 1, window.getTargetRoomTier(state));
+                state.roomTier = initTier;
+                window.applyRoomEvolutionTier(initTier, false);
+            }
             if (typeof window.updateVinylCrate === 'function') window.updateVinylCrate();
 
             saveGame();
