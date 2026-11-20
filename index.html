@@ -6111,6 +6111,7 @@ const DEFAULT_STATE = {
                 'digging_initiation': { unlocked: false, rewardClaimed: false, name: "Digging Initiation", icon: "⛏️", description: "Faire l'acquisition de ton tout premier sample." }
             }
         };
+        var state = JSON.parse(JSON.stringify(DEFAULT_STATE));
 
         const SAMPLE_CATALOG = [
             { id: 's_amen', name: 'Amen Break', tier: 1, genre: 'Drum & Bass', bonus: 1, risque: 0.15, price: 100, reqRep: 5, ref: 'The Winstons - Amen, Brother', desc: 'Le break de batterie légendaire. Très stable.' },
@@ -8859,14 +8860,15 @@ const DEFAULT_STATE = {
                 archGroup.add(recFrame);
                 window.careerWallDiscs.push({ mat: dMat, label: labelCenter.material, tier: idx, plaqueCtx: plCtx, plaqueTex: plTex });
             });
-            window.syncCareerWallDiscs = function() {
-                if (!window.careerWallDiscs || typeof state === 'undefined' || !state) return;
-                const tracks = Array.isArray(state.trackList)
-                    ? state.trackList.slice().sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0))
+            window.syncCareerWallDiscs = function(overrideState) {
+                const st = overrideState || (typeof state !== 'undefined' ? state : null);
+                if (!window.careerWallDiscs || !st) return;
+                const tracks = Array.isArray(st.trackList)
+                    ? st.trackList.slice().sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0))
                     : [];
                 const hits = tracks.filter(t => (Number(t.score) || 0) >= 7).length;
-                const rep = Number(state.rep) || 0;
-                const artistName = state.username || 'ARTISTE';
+                const rep = Number(st.rep) || 0;
+                const artistName = st.username || 'ARTISTE';
                 const tiers = [
                     { unlocked: tracks.length >= 1 || hits >= 1 || rep >= 25,  cert: "DISQUE D'ARGENT",  color: '#cbd5e1', metal: 0.92, rough: 0.20, label: '#38bdf8' },
                     { unlocked: tracks.length >= 2 || hits >= 2 || rep >= 70,  cert: "DISQUE D'OR",      color: '#facc15', metal: 0.95, rough: 0.18, label: '#f59e0b' },
@@ -18898,7 +18900,7 @@ document.addEventListener('mouseover', (e) => {
         ne_me_quitte_pas: { category: 'music', target: 1, unit: 'sample', secret: true, reward: { followers: 5000, rep: 150 } },
         digging_initiation: { category: 'studio', progressPath: 'ownedSamples.length', target: 1, unit: 'sample', reward: { money: 200, rep: 5 } }
     };
-        let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        state = JSON.parse(JSON.stringify(DEFAULT_STATE));
         normalizeAchievementState();
 
         let easterEgg3AM = false;
@@ -20038,13 +20040,13 @@ document.addEventListener('mouseover', (e) => {
             });
 
             // --- INVITÉS / ARTISTES 3D SIGNÉS SUR LE LABEL DANS LE STUDIO PRO ---
-            window.syncProStudioGuests3D = function() {
+            window.syncProStudioGuests3D = function(overrideState) {
                 const grp = window.proStudioGuestsGroup;
                 if (!grp || typeof createAvatarGroup !== 'function') return;
                 while (grp.children.length > 0) grp.remove(grp.children[0]);
                 window.proStudioGuestActors = [];
 
-                const st = typeof state !== 'undefined' ? state : null;
+                const st = overrideState || (typeof state !== 'undefined' ? state : null);
                 const signedIds = (st && Array.isArray(st.signedArtists)) ? st.signedArtists : [];
                 const slots = [
                     { x: 2.35, y: -1.0, z: 3.35, yaw: -2.45 }, // Salon VIP près du Sofa Cuir
@@ -20530,8 +20532,11 @@ document.addEventListener('mouseover', (e) => {
                 let autoHour = 9.2, autoRain = 0.0, autoClock = '08:00', autoWeather = 'MATIN CLAIR', autoDay = 1;
 
                 if (parsedSave) {
+                    if (typeof window.syncCareerWallDiscs === 'function') window.syncCareerWallDiscs(parsedSave);
+                    if (typeof window.syncProStudioGuests3D === 'function') window.syncProStudioGuests3D(parsedSave);
                     if (parsedSave.activeLocation === 'pro_studio' && typeof window.applyStudioLocation === 'function') {
                         window.applyStudioLocation('pro_studio');
+                        if (typeof window.syncProStudioGuests3D === 'function') window.syncProStudioGuests3D(parsedSave);
                     } else {
                         if (typeof window.applyStudioLocation === 'function') window.applyStudioLocation('bedroom');
                         if (typeof window.getTargetRoomTier === 'function' && typeof window.applyRoomEvolutionTier === 'function') {
