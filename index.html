@@ -5817,7 +5817,7 @@ const DEFAULT_STATE = {
         const bodyGeo = new THREE.BoxGeometry(0.55, 0.82, 0.52);
         const body = new THREE.Mesh(bodyGeo, speakerMat);
         body.castShadow = true;
-        body.name = 'pc_mesh';
+        body.name = 'speaker_mesh';
         const bodyEdges = new THREE.EdgesGeometry(bodyGeo);
         body.add(new THREE.LineSegments(bodyEdges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3 })));
         spkGroup.add(body);
@@ -5826,7 +5826,7 @@ const DEFAULT_STATE = {
         const faceGeo = new THREE.BoxGeometry(0.52, 0.79, 0.04);
         const face = new THREE.Mesh(faceGeo, speakerFrontMat);
         face.position.set(0, 0, 0.28);
-        face.name = 'pc_mesh';
+        face.name = 'speaker_mesh';
         spkGroup.add(face);
 
         // Woofer (grand haut-parleur bas)
@@ -8417,72 +8417,196 @@ const DEFAULT_STATE = {
             window.ceilingFixtureMat = fixtureDiffuserMat;
 
             // =========================================================================
-            // HERO PRO STUDIO PROPS (DESK MAT, INTERFACE AUDIO, MICRO BRAS, PLANTE, LAMPE)
+            // HYPER-REALISTIC & INTERACTIVE STUDIO DESK OBJECTS
+            // (Interface Audio, Micro Condensateur, Casque sur Support, Mug Café, Smartphone, Pads)
             // =========================================================================
+            function tagInteractable(group, meshName) {
+                group.traverse(ch => {
+                    if (ch.isMesh) ch.name = meshName;
+                });
+            }
+
+            // 0. Pads d'isolation acoustique inclinés sous les 2 enceintes + Accents clavier custom
+            const isoPadMat = new THREE.MeshStandardMaterial({ color: '#16181e', roughness: 0.94 });
+            [-1.7, 1.7].forEach((sx, idx) => {
+                const pad = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.06, 0.56), isoPadMat);
+                pad.position.set(sx, 0.76, -0.4);
+                pad.rotation.y = idx === 0 ? 0.35 : -0.35;
+                pad.receiveShadow = true; pad.name = 'speaker_mesh';
+                deskGroup.add(pad);
+            });
+            // Touches d'accent studio sur le clavier mécanique (ESC orange + ENTER indigo + sous-lueur douce)
+            const escCap = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.036, 0.085), new THREE.MeshStandardMaterial({ color: '#f97316', roughness: 0.4 }));
+            escCap.position.set(-0.68, 0.036, -0.18); escCap.name = 'pc_mesh'; kbdBase.add(escCap);
+            const entCap = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.036, 0.085), new THREE.MeshStandardMaterial({ color: '#6366f1', roughness: 0.4 }));
+            entCap.position.set(0.62, 0.036, 0.0); entCap.name = 'pc_mesh'; kbdBase.add(entCap);
+            const kbdGlowStrip = new THREE.Mesh(new THREE.BoxGeometry(1.56, 0.01, 0.012), new THREE.MeshBasicMaterial({ color: '#818cf8' }));
+            kbdGlowStrip.position.set(0, -0.02, 0.302); kbdBase.add(kbdGlowStrip);
+
             // 1. Tapis de bureau en feutre gris anthracite surpiqué
             const deskMatMesh = new THREE.Mesh(
-                new THREE.BoxGeometry(2.75, 0.012, 0.95),
-                new THREE.MeshStandardMaterial({ map: rugTex.map, color: '#252830', roughness: 0.92 })
+                new THREE.BoxGeometry(2.82, 0.012, 0.98),
+                new THREE.MeshStandardMaterial({ map: rugTex.map, color: '#22252d', roughness: 0.92 })
             );
-            deskMatMesh.position.set(0.18, 0.756, 0.36); deskMatMesh.receiveShadow = true;
+            deskMatMesh.position.set(0.16, 0.756, 0.36); deskMatMesh.receiveShadow = true;
             deskGroup.add(deskMatMesh);
 
-            // 2. Interface Audio Studio (Style Apollo / Focusrite) avec anneaux LED
+            // 2. INTERFACE AUDIO PRO (Apollo / Focusrite) — INTERACTIVE [E] (Gain Knob + Monitoring Modes)
             const ifaceGroup = new THREE.Group();
             ifaceGroup.position.set(-1.12, 0.79, 0.12);
             ifaceGroup.rotation.y = 0.18;
-            const ifaceBody = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.08, 0.32), new THREE.MeshStandardMaterial({ color: '#222630', roughness: 0.26, metalness: 0.85 }));
-            ifaceBody.castShadow = true; ifaceGroup.add(ifaceBody);
-            const ifaceFront = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.068, 0.015), new THREE.MeshStandardMaterial({ color: '#111318', roughness: 0.2, metalness: 0.5 }));
-            ifaceFront.position.set(0, 0, 0.158); ifaceGroup.add(ifaceFront);
-            const bigKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.035, 0.03, 18), new THREE.MeshStandardMaterial({ color: '#cbd5e1', roughness: 0.22, metalness: 0.92 }));
-            bigKnob.rotation.x = Math.PI / 2; bigKnob.position.set(0.14, 0, 0.172); ifaceGroup.add(bigKnob);
-            [-0.16, -0.04].forEach((gx, gi) => {
-                const halo = new THREE.Mesh(new THREE.TorusGeometry(0.022, 0.004, 8, 18), new THREE.MeshBasicMaterial({ color: gi === 0 ? '#34d399' : '#fbbf24' }));
-                halo.position.set(gx, 0.005, 0.168); ifaceGroup.add(halo);
+            const ifaceMetalMat = new THREE.MeshStandardMaterial({ color: '#262b36', roughness: 0.24, metalness: 0.88, envMapIntensity: 1.25 });
+            const ifaceFaceMat = new THREE.MeshStandardMaterial({ color: '#0d0f14', roughness: 0.18, metalness: 0.55 });
+            const ifaceSilverMat = new THREE.MeshStandardMaterial({ color: '#d4dbe6', roughness: 0.2, metalness: 0.94, envMapIntensity: 1.4 });
+            const ifaceBody = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.082, 0.34), ifaceMetalMat);
+            ifaceBody.castShadow = true; ifaceBody.receiveShadow = true; ifaceGroup.add(ifaceBody);
+            const ifaceTopBevel = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.014, 0.30), new THREE.MeshStandardMaterial({ color: '#1b1f28', roughness: 0.32, metalness: 0.78 }));
+            ifaceTopBevel.position.set(0, 0.044, -0.01); ifaceGroup.add(ifaceTopBevel);
+            const ifaceFront = new THREE.Mesh(new THREE.BoxGeometry(0.53, 0.068, 0.016), ifaceFaceMat);
+            ifaceFront.position.set(0, 0, 0.166); ifaceGroup.add(ifaceFront);
+
+            // 2 entrées Combo XLR/TRS Neutrik détaillées + anneaux de gain LED dynamiques
+            window.ifaceHaloMats = [];
+            [-0.18, -0.06].forEach((gx, gi) => {
+                const jackRing = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.012, 16), aluFrameMat);
+                jackRing.rotation.x = Math.PI / 2; jackRing.position.set(gx, -0.004, 0.174); ifaceGroup.add(jackRing);
+                const jackHole = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.014, 12), new THREE.MeshBasicMaterial({ color: '#050507' }));
+                jackHole.rotation.x = Math.PI / 2; jackHole.position.set(gx, -0.004, 0.175); ifaceGroup.add(jackHole);
+                const hMat = new THREE.MeshBasicMaterial({ color: gi === 0 ? '#34d399' : '#34d399' });
+                const halo = new THREE.Mesh(new THREE.TorusGeometry(0.025, 0.0045, 8, 20), hMat);
+                halo.position.set(gx, -0.004, 0.178); ifaceGroup.add(halo);
+                window.ifaceHaloMats.push(hMat);
             });
+            // Bouton 48V Phantom Power LED rouge
+            const led48v = new THREE.Mesh(new THREE.BoxGeometry(0.024, 0.014, 0.01), new THREE.MeshBasicMaterial({ color: '#ef4444' }));
+            led48v.position.set(0.045, 0.014, 0.174); ifaceGroup.add(led48v);
+            // Barre LED VU-mètre miniature sur la face avant
+            window.ifaceMeterLeds = [];
+            for (let m = 0; m < 5; m++) {
+                const lm = new THREE.MeshBasicMaterial({ color: m === 4 ? '#f43f5e' : (m === 3 ? '#fbbf24' : '#34d399') });
+                const ledSeg = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.008, 0.006), lm);
+                ledSeg.position.set(0.01 + m * 0.016, -0.018, 0.175); ifaceGroup.add(ledSeg);
+                window.ifaceMeterLeds.push(ledSeg);
+            }
+            // Gros potentiomètre rotatif principal en aluminium moleté + encoche blanche
+            const ifaceKnobPivot = new THREE.Group();
+            ifaceKnobPivot.position.set(0.165, 0, 0.18);
+            const bigKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.038, 0.034, 24), ifaceSilverMat);
+            bigKnob.rotation.x = Math.PI / 2; ifaceKnobPivot.add(bigKnob);
+            const knobNotch = new THREE.Mesh(new THREE.BoxGeometry(0.006, 0.022, 0.006), new THREE.MeshBasicMaterial({ color: '#ffffff' }));
+            knobNotch.position.set(0, 0.016, 0.018); ifaceKnobPivot.add(knobNotch);
+            ifaceGroup.add(ifaceKnobPivot);
+
+            tagInteractable(ifaceGroup, 'desk_interface_mesh');
             deskGroup.add(ifaceGroup);
+            window.deskInterfaceState = { mode: 0, knobPivot: ifaceKnobPivot, targetAngle: -0.6, currentAngle: -0.6 };
 
-            // 3. Microphone Studio à Condensateur sur Bras Articulé + Filtre Anti-Pop
-            const micGroup = new THREE.Group();
-            micGroup.position.set(-1.95, 0.75, 0.45);
-            const clamp = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.08, 0.09), aluFrameMat);
-            micGroup.add(clamp);
-            const arm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.65, 10), aluFrameMat);
-            arm1.position.set(0.14, 0.30, 0); arm1.rotation.z = -0.42; micGroup.add(arm1);
-            const arm2 = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.58, 10), aluFrameMat);
-            arm2.position.set(0.46, 0.54, 0.08); arm2.rotation.z = -1.25; arm2.rotation.y = -0.25; micGroup.add(arm2);
-            const micBody = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.034, 0.21, 16), new THREE.MeshStandardMaterial({ color: '#1b1e26', roughness: 0.3, metalness: 0.82 }));
-            micBody.position.set(0.72, 0.52, 0.16); micBody.rotation.z = 0.22; micGroup.add(micBody);
-            const micMeshHead = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.038, 0.08, 16), new THREE.MeshStandardMaterial({ color: '#94a3b8', roughness: 0.35, metalness: 0.9 }));
-            micMeshHead.position.set(0.70, 0.65, 0.16); micMeshHead.rotation.z = 0.22; micGroup.add(micMeshHead);
-            const popRing = new THREE.Mesh(new THREE.TorusGeometry(0.085, 0.008, 8, 24), aluFrameMat);
-            popRing.position.set(0.78, 0.63, 0.25); popRing.rotation.y = -0.4; micGroup.add(popRing);
-            const popScreen = new THREE.Mesh(new THREE.CircleGeometry(0.082, 20), new THREE.MeshStandardMaterial({ color: '#111114', transparent: true, opacity: 0.65, side: THREE.DoubleSide }));
-            popScreen.position.set(0.78, 0.63, 0.25); popScreen.rotation.y = -0.4; micGroup.add(popScreen);
-            deskGroup.add(micGroup);
+            // 3. MICROPHONE STUDIO À CONDENSATEUR SUR BRAS ARTICULÉ À RESSORTS — INTERACTIF [E] (Mic Check)
+            const micBaseGroup = new THREE.Group();
+            micBaseGroup.position.set(-1.96, 0.75, 0.46);
+            const clamp = new THREE.Mesh(new THREE.BoxGeometry(0.095, 0.085, 0.095), aluFrameMat);
+            clamp.castShadow = true; micBaseGroup.add(clamp);
 
-            // 4. Casque Audio Studio posé sur le bureau
-            const hpGroup = new THREE.Group();
-            hpGroup.position.set(1.62, 0.78, 0.08);
-            hpGroup.rotation.y = -0.55;
-            const hpMat = new THREE.MeshStandardMaterial({ color: '#18181b', roughness: 0.32, metalness: 0.6 });
-            const hpPadMat = new THREE.MeshStandardMaterial({ color: '#0f1117', roughness: 0.72 });
-            const hpBand = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.018, 10, 22, Math.PI), hpMat);
-            hpBand.rotation.x = Math.PI / 2; hpGroup.add(hpBand);
-            [-0.16, 0.16].forEach(hx => {
-                const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.072, 0.072, 0.055, 18), hpPadMat);
-                cup.rotation.z = Math.PI / 2; cup.position.set(hx, 0, 0.02); hpGroup.add(cup);
+            const micArmPivot = new THREE.Group();
+            micArmPivot.position.set(0, 0.04, 0);
+            // Bras ciseaux double barre + vis d'articulation
+            [-0.018, 0.018].forEach(ox => {
+                const bar1 = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.64, 10), aluFrameMat);
+                bar1.position.set(0.14 + ox, 0.28, 0); bar1.rotation.z = -0.42; micArmPivot.add(bar1);
             });
-            deskGroup.add(hpGroup);
+            const elbowJoint = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, 0.05, 14), ifaceSilverMat);
+            elbowJoint.rotation.x = Math.PI / 2; elbowJoint.position.set(0.28, 0.56, 0.02); micArmPivot.add(elbowJoint);
+            const bar2 = new THREE.Mesh(new THREE.CylinderGeometry(0.013, 0.013, 0.56, 10), aluFrameMat);
+            bar2.position.set(0.50, 0.50, 0.09); bar2.rotation.z = -1.32; bar2.rotation.y = -0.26; micArmPivot.add(bar2);
 
-            // 5. Mug céramique mat + café + VAPEUR CHAUDE ANIMÉE
-            const mugMat = new THREE.MeshStandardMaterial({ color: '#f1ede6', roughness: 0.24, metalness: 0.04 });
-            const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.058, 0.14, 18), mugMat);
-            mug.position.set(-1.55, 0.82, 0.48); mug.castShadow = true;
-            const coffeeTop = new THREE.Mesh(new THREE.CircleGeometry(0.056, 16), new THREE.MeshStandardMaterial({ color: '#2b160c', roughness: 0.12 }));
-            coffeeTop.rotation.x = -Math.PI / 2; coffeeTop.position.set(0, 0.055, 0); mug.add(coffeeTop);
-            deskGroup.add(mug);
+            // Suspension Araignée (Shock Mount) + Corps Condensateur + Capsule Dorée visible
+            const micHeadGroup = new THREE.Group();
+            micHeadGroup.position.set(0.74, 0.49, 0.16);
+            micHeadGroup.rotation.z = 0.20;
+            const shockRingTop = new THREE.Mesh(new THREE.TorusGeometry(0.056, 0.006, 8, 22), aluFrameMat);
+            shockRingTop.rotation.x = Math.PI / 2; shockRingTop.position.set(0, 0.02, 0); micHeadGroup.add(shockRingTop);
+            const shockRingBot = new THREE.Mesh(new THREE.TorusGeometry(0.056, 0.006, 8, 22), aluFrameMat);
+            shockRingBot.rotation.x = Math.PI / 2; shockRingBot.position.set(0, -0.05, 0); micHeadGroup.add(shockRingBot);
+            const micBody = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.033, 0.21, 18), new THREE.MeshStandardMaterial({ color: '#181b22', roughness: 0.28, metalness: 0.84 }));
+            micBody.castShadow = true; micHeadGroup.add(micBody);
+            // Anneau LED ON-AIR sur le micro
+            const micLedMat = new THREE.MeshBasicMaterial({ color: '#34d399' });
+            const micRingLed = new THREE.Mesh(new THREE.TorusGeometry(0.037, 0.0045, 8, 20), micLedMat);
+            micRingLed.rotation.x = Math.PI / 2; micRingLed.position.set(0, 0.088, 0); micHeadGroup.add(micRingLed);
+            // Grille acoustique + capsule laiton interne
+            const goldCapsule = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 0.055, 16), new THREE.MeshStandardMaterial({ color: '#eab308', roughness: 0.22, metalness: 0.95 }));
+            goldCapsule.position.set(0, 0.135, 0); micHeadGroup.add(goldCapsule);
+            const micGrille = new THREE.Mesh(new THREE.CylinderGeometry(0.039, 0.037, 0.095, 18), new THREE.MeshStandardMaterial({ color: '#94a3b8', roughness: 0.35, metalness: 0.88, wireframe: true }));
+            micGrille.position.set(0, 0.142, 0); micHeadGroup.add(micGrille);
+            const micCapTop = new THREE.Mesh(new THREE.SphereGeometry(0.038, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#64748b', roughness: 0.32, metalness: 0.9 }));
+            micCapTop.position.set(0, 0.188, 0); micHeadGroup.add(micCapTop);
+            // Filtre Anti-Pop double nylon
+            const popRing = new THREE.Mesh(new THREE.TorusGeometry(0.088, 0.008, 8, 24), aluFrameMat);
+            popRing.position.set(0.07, 0.13, 0.11); popRing.rotation.y = -0.42; micHeadGroup.add(popRing);
+            const popScreen = new THREE.Mesh(new THREE.CircleGeometry(0.084, 22), new THREE.MeshStandardMaterial({ color: '#0d0e12', transparent: true, opacity: 0.62, side: THREE.DoubleSide }));
+            popScreen.position.set(0.07, 0.13, 0.11); popScreen.rotation.y = -0.42; micHeadGroup.add(popScreen);
+            micArmPivot.add(micHeadGroup);
+            micBaseGroup.add(micArmPivot);
+
+            tagInteractable(micBaseGroup, 'desk_mic_mesh');
+            deskGroup.add(micBaseGroup);
+            window.deskMicState = { pivot: micArmPivot, ledMat: micLedMat, targetYaw: 0, currentYaw: 0, activeUntil: 0, lastBoostMins: -999 };
+
+            // 4. CASQUE STUDIO SUR SUPPORT ALUMINIUM — INTERACTIF [E] (Mettre / Poser le casque)
+            const hpStandGroup = new THREE.Group();
+            hpStandGroup.position.set(1.66, 0.75, 0.24);
+            hpStandGroup.rotation.y = -0.45;
+            // Socle & potence aluminium brossé
+            const standBase = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.12, 0.018, 24), ifaceMetalMat);
+            standBase.position.set(0, 0.01, 0); standBase.castShadow = true; hpStandGroup.add(standBase);
+            const standPole = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.014, 0.38, 12), ifaceSilverMat);
+            standPole.position.set(0, 0.20, -0.02); hpStandGroup.add(standPole);
+            const standRest = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.018, 0.055), new THREE.MeshStandardMaterial({ color: '#1b1d24', roughness: 0.6 }));
+            standRest.position.set(0, 0.39, -0.02); hpStandGroup.add(standRest);
+
+            // Casque Studio Détaillé posé sur le support (se soulève / disparaît quand on le porte!)
+            const hpWearable = new THREE.Group();
+            hpWearable.position.set(0, 0.22, -0.02);
+            const hpLeatherMat = new THREE.MeshStandardMaterial({ map: leatherTex.map, color: '#272932', roughness: 0.48 });
+            const hpCupMat = new THREE.MeshStandardMaterial({ color: '#181b22', roughness: 0.26, metalness: 0.62 });
+            const hpVelourMat = new THREE.MeshStandardMaterial({ color: '#111216', roughness: 0.92 });
+            const hpBand = new THREE.Mesh(new THREE.TorusGeometry(0.155, 0.022, 12, 26, Math.PI), hpLeatherMat);
+            hpBand.position.set(0, 0.02, 0); hpWearable.add(hpBand);
+            [-0.145, 0.145].forEach(hx => {
+                const yoke = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.09, 8), ifaceSilverMat);
+                yoke.position.set(hx, -0.01, 0); hpWearable.add(yoke);
+                const cupOuter = new THREE.Mesh(new THREE.CylinderGeometry(0.072, 0.068, 0.042, 22), hpCupMat);
+                cupOuter.rotation.z = Math.PI / 2; cupOuter.position.set(hx, -0.065, 0); cupOuter.castShadow = true; hpWearable.add(cupOuter);
+                const ringAccent = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.005, 8, 22), ifaceSilverMat);
+                ringAccent.rotation.y = Math.PI / 2; ringAccent.position.set(hx + (hx > 0 ? 0.022 : -0.022), -0.065, 0); hpWearable.add(ringAccent);
+                const pad = new THREE.Mesh(new THREE.TorusGeometry(0.056, 0.022, 10, 22), hpVelourMat);
+                pad.rotation.y = Math.PI / 2; pad.position.set(hx + (hx > 0 ? -0.024 : 0.024), -0.065, 0); hpWearable.add(pad);
+            });
+            hpStandGroup.add(hpWearable);
+            tagInteractable(hpStandGroup, 'desk_headphones_mesh');
+            deskGroup.add(hpStandGroup);
+            window.deskHeadphonesState = { mesh: hpWearable, worn: false, animProgress: 0 };
+
+            // 5. MUG ESPRESSO CÉRAMIQUE AVEC ANSE + SOUS-VERRE + VAPEUR — INTERACTIF [E] (Boire un café!)
+            const mugCoaster = new THREE.Mesh(new THREE.CylinderGeometry(0.088, 0.092, 0.01, 22), new THREE.MeshStandardMaterial({ map: walnutTex.map, color: '#9c724d', roughness: 0.55 }));
+            mugCoaster.position.set(-1.55, 0.755, 0.48); mugCoaster.receiveShadow = true; mugCoaster.name = 'desk_mug_mesh';
+            deskGroup.add(mugCoaster);
+
+            const mugGroup = new THREE.Group();
+            mugGroup.position.set(-1.55, 0.83, 0.48);
+            const mugMat = new THREE.MeshStandardMaterial({ color: '#f2eee7', roughness: 0.22, metalness: 0.04 });
+            const mugOuter = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.058, 0.14, 22), mugMat);
+            mugOuter.castShadow = true; mugGroup.add(mugOuter);
+            const mugInner = new THREE.Mesh(new THREE.CylinderGeometry(0.057, 0.054, 0.03, 20), new THREE.MeshStandardMaterial({ color: '#dcd5ca', roughness: 0.35 }));
+            mugInner.position.set(0, 0.056, 0); mugGroup.add(mugInner);
+            // Anse courbée réaliste
+            const mugHandle = new THREE.Mesh(new THREE.TorusGeometry(0.042, 0.01, 10, 18, Math.PI * 1.15), mugMat);
+            mugHandle.position.set(-0.06, 0, 0); mugHandle.rotation.z = Math.PI * 0.42; mugGroup.add(mugHandle);
+            const coffeeTop = new THREE.Mesh(new THREE.CircleGeometry(0.055, 18), new THREE.MeshStandardMaterial({ color: '#331a0d', roughness: 0.12 }));
+            coffeeTop.rotation.x = -Math.PI / 2; coffeeTop.position.set(0, 0.058, 0); mugGroup.add(coffeeTop);
+            tagInteractable(mugGroup, 'desk_mug_mesh');
+            deskGroup.add(mugGroup);
+            window.deskMugState = { group: mugGroup, coffeeTop: coffeeTop, sipsLeft: 3, sipAnim: 0, lastSipMins: -999 };
 
             const steamC = document.createElement('canvas'); steamC.width = 64; steamC.height = 64;
             const sCtx = steamC.getContext('2d');
@@ -8508,13 +8632,9 @@ const DEFAULT_STATE = {
                 mesh.castShadow = false;
                 parent.add(mesh);
             }
-            // Câble Enceinte Gauche -> Interface Audio
             addTubeCable(deskGroup, [[-1.5, 0.85, -0.62], [-1.42, 0.77, -0.35], [-1.24, 0.77, -0.05]]);
-            // Câble Enceinte Droite -> Interface Audio (passe derrière le pied d'écran)
             addTubeCable(deskGroup, [[1.5, 0.85, -0.62], [0.65, 0.77, -0.78], [-0.45, 0.77, -0.68], [-1.02, 0.77, -0.05]]);
-            // Câble XLR Micro le long du bras articulé vers l'arrière du bureau
             addTubeCable(deskGroup, [[-1.25, 1.18, 0.60], [-1.52, 1.24, 0.52], [-1.82, 1.02, 0.45], [-1.96, 0.76, 0.35], [-1.92, 0.76, -0.75]], 0.009);
-            // Multiprise au sol sous le bureau + Voyant rouge + Cordons d'alim
             const stripGroup = new THREE.Group();
             stripGroup.position.set(-2.2, -0.965, -4.35);
             const stripBody = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.06, 0.13), new THREE.MeshStandardMaterial({ color: '#1b1d24', roughness: 0.6 }));
@@ -8540,26 +8660,27 @@ const DEFAULT_STATE = {
             const postIt2 = new THREE.Mesh(new THREE.PlaneGeometry(0.10, 0.10), createPostIt('CUT\n200 Hz!', '#fbcfe8'));
             postIt2.position.set(0.56, -0.35, 0.028); postIt2.rotation.z = -0.09; pcFrame.add(postIt2);
 
-            // 5D. SMARTPHONE 3D SUR LE BUREAU (S'allume & vibre sur DM SoundNet / Brand Deal!)
+            // 5D. SMARTPHONE 3D SUR LE BUREAU — INTERACTIF [E] (Ouvre directement SoundNet / DMs!)
             const phoneGroup = new THREE.Group();
             phoneGroup.position.set(0.92, 0.768, 0.62);
             phoneGroup.rotation.y = -0.32;
-            const phoneBody = new THREE.Mesh(new THREE.BoxGeometry(0.125, 0.014, 0.24), new THREE.MeshStandardMaterial({ color: '#181a20', roughness: 0.25, metalness: 0.85 }));
+            const phoneBody = new THREE.Mesh(new THREE.BoxGeometry(0.132, 0.014, 0.252), new THREE.MeshStandardMaterial({ color: '#1b1e26', roughness: 0.22, metalness: 0.88 }));
             phoneBody.castShadow = true; phoneGroup.add(phoneBody);
             const phoneC = document.createElement('canvas'); phoneC.width = 128; phoneC.height = 256;
             const pCtx = phoneC.getContext('2d');
             pCtx.fillStyle = '#090b12'; pCtx.fillRect(0, 0, 128, 256);
-            pCtx.fillStyle = '#1e293b'; pCtx.fillRect(10, 68, 108, 66);
+            pCtx.fillStyle = '#1e293b'; pCtx.fillRect(10, 68, 108, 72);
             pCtx.fillStyle = '#f472b6'; pCtx.font = 'bold 12px monospace'; pCtx.fillText('SOUNDNET', 22, 92);
-            pCtx.fillStyle = '#ffffff'; pCtx.font = '11px sans-serif'; pCtx.fillText('New DM / Deal', 22, 114);
+            pCtx.fillStyle = '#ffffff'; pCtx.font = '11px sans-serif'; pCtx.fillText('Messages & Deals', 16, 114);
             const phoneTex = configureTex(phoneC, 1, 1, true);
             const phoneScreenMat = new THREE.MeshStandardMaterial({
                 color: '#111827', map: phoneTex, emissive: '#38bdf8', emissiveMap: phoneTex,
-                emissiveIntensity: 0.04, roughness: 0.12, metalness: 0.2
+                emissiveIntensity: 0.14, roughness: 0.12, metalness: 0.2
             });
-            const phoneScreen = new THREE.Mesh(new THREE.PlaneGeometry(0.112, 0.222), phoneScreenMat);
+            const phoneScreen = new THREE.Mesh(new THREE.PlaneGeometry(0.118, 0.234), phoneScreenMat);
             phoneScreen.rotation.x = -Math.PI / 2; phoneScreen.position.set(0, 0.008, 0);
             phoneGroup.add(phoneScreen);
+            tagInteractable(phoneGroup, 'desk_phone_mesh');
             deskGroup.add(phoneGroup);
             window.deskPhoneGroup = phoneGroup;
             window.deskPhoneScreenMat = phoneScreenMat;
@@ -8873,14 +8994,15 @@ const DEFAULT_STATE = {
         const INTERACTION_DIST = 2; 
         const HIGHLIGHT_LINE_COLOR = new THREE.Color('#ffffff');
         const DEFAULT_LINE_COLOR = new THREE.Color(0x000000); 
-        const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp', 'speaker_mesh', 'achievements_board_mesh', 'door_mesh']; // Ajout de 'speaker_mesh' et 'door_mesh'
+        const interactableNames = ['pc_mesh', 'synth_mesh', 'bed_mesh', 'sofa_mesh', 'interactiveLamp', 'speaker_mesh', 'achievements_board_mesh', 'door_mesh', 'desk_mug_mesh', 'desk_phone_mesh', 'desk_interface_mesh', 'desk_mic_mesh', 'desk_headphones_mesh'];
         const highlightItems = [];
 
         function initProximityHighlight() {
+            const skipHighlightClone = ['desk_mug_mesh', 'desk_phone_mesh', 'desk_interface_mesh', 'desk_mic_mesh', 'desk_headphones_mesh'];
             scene.traverse(child => {
-                if (child.isMesh && interactableNames.includes(child.name)) {
+                if (child.isMesh && interactableNames.includes(child.name) && !skipHighlightClone.includes(child.name)) {
                     
-                    if (child.material) {
+                    if (child.material && child.material.isMeshStandardMaterial) {
                         child.material = child.material.clone();
                         
                         // On sauvegarde l'intensité d'origine (vital pour l'écran PC qui brille déjà)
@@ -9692,6 +9814,7 @@ const DEFAULT_STATE = {
             // =========================================================
             // --- 5. CAMÉRA FIRST-PERSON POV, TRANSITIONS & CYCLE JOUR/NUIT ---
             // =========================================================
+            if (typeof window.enforceFpsModalPriority === 'function') window.enforceFpsModalPriority();
             if (typeof camera !== 'undefined' && window.fps) {
                 const fps = window.fps;
 
@@ -9860,6 +9983,42 @@ const DEFAULT_STATE = {
                             if (pl.position.z < -50) pl.position.z = 48;
                             pl.visible = (nightFactor > 0.25);
                         });
+                    }
+
+                    // --- ANIMATIONS DES OBJETS INTERACTIFS DU BUREAU ---
+                    if (window.deskInterfaceState) {
+                        const ifs = window.deskInterfaceState;
+                        ifs.currentAngle += (ifs.targetAngle - ifs.currentAngle) * 0.16;
+                        if (ifs.knobPivot) ifs.knobPivot.rotation.z = -ifs.currentAngle;
+                        if (window.ifaceMeterLeds) {
+                            const lv = 1 + Math.floor((0.5 + 0.5 * Math.sin(time * 6.5) * Math.cos(time * 2.4)) * 4.9);
+                            window.ifaceMeterLeds.forEach((led, idx) => { led.visible = idx < lv; });
+                        }
+                    }
+                    if (window.deskMicState) {
+                        const mc = window.deskMicState;
+                        mc.currentYaw += (mc.targetYaw - mc.currentYaw) * 0.12;
+                        if (mc.pivot) mc.pivot.rotation.y = mc.currentYaw;
+                        if (mc.ledMat) {
+                            const isHot = performance.now() < mc.activeUntil;
+                            mc.ledMat.color.set(isHot ? '#f43f5e' : '#34d399');
+                        }
+                    }
+                    if (window.deskMugState) {
+                        const ms = window.deskMugState;
+                        if (ms.sipAnim > 0.005) {
+                            ms.sipAnim = Math.max(0, ms.sipAnim - 0.025);
+                            const arc = Math.sin(ms.sipAnim * Math.PI);
+                            ms.group.position.set(-1.55 + arc * 0.22, 0.83 + arc * 0.28, 0.48 + arc * 0.28);
+                            ms.group.rotation.z = -arc * 0.45;
+                        } else {
+                            ms.group.position.set(-1.55, 0.83, 0.48);
+                            ms.group.rotation.z = 0;
+                        }
+                        if (ms.coffeeTop) {
+                            ms.coffeeTop.visible = ms.sipsLeft > 0;
+                            ms.coffeeTop.position.y = 0.015 + (ms.sipsLeft / 3) * 0.043;
+                        }
                     }
 
                     // --- MICRO-ANIMATION DE LA PORTE DU STUDIO ---
@@ -10901,31 +11060,75 @@ const DEFAULT_STATE = {
             interactiveLamp: { title: 'Lampe Studio Pixar', sub: 'Mode Ambiance / Néons Acoustiques' },
             speaker_mesh: { title: 'Enceintes Monitoring', sub: 'Paramètres Audio & Mix' },
             achievements_board_mesh: { title: 'Bac à Vinyles & Succès', sub: 'Collection & Progression' },
-            door_mesh: { title: 'Porte du Studio', sub: 'Activités extérieures & Sorties' }
+            door_mesh: { title: 'Porte du Studio', sub: 'Activités extérieures & Sorties' },
+            desk_mug_mesh: { title: 'Boire une gorgée de café', sub: 'Espresso chaud (+6% NRJ, +4% INSPI)' },
+            desk_phone_mesh: { title: 'Consulter le Smartphone', sub: 'Ouvrir SoundNet (DMs & Brand Deals)' },
+            desk_interface_mesh: { title: 'Interface Audio Studio', sub: 'Changer le mode de monitoring (Gain)' },
+            desk_mic_mesh: { title: 'Microphone Condensateur', sub: 'Mic Check — Test vocal (+3% INSPI)' },
+            desk_headphones_mesh: { title: 'Casque Studio Monitoring', sub: 'Mettre / Poser sur le support' }
         };
+
+        const FPS_BLOCKING_OVERLAY_IDS = [
+            'event-overlay',
+            'review-overlay',
+            'qte-diss-overlay',
+            'minigames-menu-overlay',
+            'audio-settings-overlay',
+            'achievements-overlay',
+            'standalone-pianoroll'
+        ];
 
         window.isFpsRoomActive = function() {
             const roomUi = document.getElementById('room-ui');
             const pcUi = document.getElementById('pc-ui-layer');
             const loginUi = document.getElementById('login-screen');
-            const prUi = document.getElementById('standalone-pianoroll');
-            const settingsUi = document.getElementById('audio-settings-overlay');
-            const achUi = document.getElementById('achievements-overlay');
-            const mgUi = document.getElementById('minigames-menu-overlay');
-            const qteUi = document.getElementById('qte-disstrack-overlay');
+            const sleepUi = document.getElementById('sleep-overlay');
             const theater = document.getElementById('cinematic-theater');
 
             if (!roomUi || roomUi.style.display !== 'flex') return false;
             if (loginUi && loginUi.style.display !== 'none') return false;
             if (pcUi && pcUi.style.display === 'flex') return false;
-            if (prUi && !prUi.classList.contains('hidden')) return false;
-            if (settingsUi && !settingsUi.classList.contains('hidden')) return false;
-            if (achUi && !achUi.classList.contains('hidden')) return false;
-            if (mgUi && !mgUi.classList.contains('hidden')) return false;
-            if (qteUi && !qteUi.classList.contains('hidden')) return false;
+            if (sleepUi && sleepUi.classList.contains('active')) return false;
             if (theater && theater.classList.contains('pointer-events-auto')) return false;
+
+            // Priorité absolue aux événements aléatoires, reviews, QTE et modales
+            if (typeof state !== 'undefined' && state && (state.isEventActive || state.isReviewing || state.isSleeping)) {
+                return false;
+            }
+            for (let i = 0; i < FPS_BLOCKING_OVERLAY_IDS.length; i++) {
+                const el = document.getElementById(FPS_BLOCKING_OVERLAY_IDS[i]);
+                if (el && !el.classList.contains('hidden') && el.style.display !== 'none') {
+                    return false;
+                }
+            }
             return true;
         };
+
+        // Garde automatique : dès qu'un event ou modal apparaît, libère IMMÉDIATEMENT la souris (zéro besoin d'appuyer sur Échap!)
+        window.enforceFpsModalPriority = function() {
+            if (!window.isFpsRoomActive()) {
+                if (document.pointerLockElement) {
+                    window.exitFpsPointerLock();
+                }
+                if (window.kbdState) {
+                    window.kbdState.up = false;
+                    window.kbdState.down = false;
+                    window.kbdState.left = false;
+                    window.kbdState.right = false;
+                }
+            }
+        };
+
+        // MutationObserver temps réel sur tous les overlays bloquants pour une réactivité instantanée (<1ms)
+        try {
+            const modalObserver = new MutationObserver(() => {
+                window.enforceFpsModalPriority();
+            });
+            FPS_BLOCKING_OVERLAY_IDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) modalObserver.observe(el, { attributes: true, attributeFilter: ['class', 'style'] });
+            });
+        } catch(e) {}
 
         window.requestFpsPointerLock = function() {
             if (isMobile || !window.isFpsRoomActive()) return;
@@ -11139,8 +11342,21 @@ const DEFAULT_STATE = {
                 if (interactableNames.includes(hit.object.name) && hit.distance <= 4.6) {
                     const objName = hit.object.name;
                     const meta = FPS_INTERACT_LABELS[objName] || { title: 'Interagir', sub: '' };
+                    let title = meta.title;
                     let sub = meta.sub;
                     let canUse = true;
+                    if (objName === 'desk_headphones_mesh' && window.deskHeadphonesState) {
+                        title = window.deskHeadphonesState.worn ? 'Poser le Casque Studio' : 'Mettre le Casque Studio';
+                        sub = window.deskHeadphonesState.worn ? 'Reposer sur le support aluminium' : 'Activer l’écoute de précision';
+                    } else if (objName === 'desk_mug_mesh' && window.deskMugState) {
+                        sub = window.deskMugState.sipsLeft > 0
+                            ? `Espresso chaud (+6% NRJ, +4% INSPI) • ${window.deskMugState.sipsLeft}/3`
+                            : 'Mug vide (se remplit après une nuit de sommeil)';
+                        if (window.deskMugState.sipsLeft <= 0) canUse = false;
+                    } else if (objName === 'desk_interface_mesh' && window.deskInterfaceState) {
+                        const mNames = ['CLEAN STUDIO', 'WARM LO-FI', 'CLUB SUB CHECK'];
+                        sub = `Actuel : ${mNames[window.deskInterfaceState.mode || 0]} • Clic/E pour basculer`;
+                    }
                     if (objName === 'bed_mesh' && state && state.energy >= 50) {
                         sub = 'Pas assez fatigué (< 50% NRJ requis)';
                         canUse = false;
@@ -11156,7 +11372,7 @@ const DEFAULT_STATE = {
                         objName: objName,
                         mesh: hit.object,
                         canUse: canUse,
-                        title: meta.title,
+                        title: title,
                         sub: sub
                     };
                     break;
@@ -11246,6 +11462,91 @@ const DEFAULT_STATE = {
             else if (objName === 'speaker_mesh') {
                 window.exitFpsPointerLock();
                 openAudioSettings();
+            }
+            else if (objName === 'desk_mug_mesh') {
+                const ms = window.deskMugState;
+                const nowM = typeof getTotalMins === 'function' ? getTotalMins() : 0;
+                if (ms) {
+                    if (ms.sipsLeft <= 0) {
+                        showToast("☕ Ton mug est vide ! Dors une nuit pour te refaire un espresso.", "info");
+                        playTone(220, 'sine', 0.08, 0.04);
+                    } else if (nowM - ms.lastSipMins < 120) {
+                        ms.sipAnim = 1.0;
+                        showToast("☕ Petite gorgée fraîcheur (déjà caféiné récemment).", "info");
+                        playTone(460, 'sine', 0.08, 0.04);
+                    } else {
+                        ms.sipsLeft--;
+                        ms.lastSipMins = nowM;
+                        ms.sipAnim = 1.0;
+                        state.energy = Math.min(100, (Number(state.energy) || 0) + 6);
+                        state.inspi = Math.min(100, (Number(state.inspi) || 0) + 4);
+                        if (typeof updateHUD === 'function') updateHUD();
+                        playTone(520, 'sine', 0.09, 0.05); setTimeout(() => playTone(680, 'sine', 0.1, 0.04), 90);
+                        showToast(`☕ Espresso savouré (+6% NRJ, +4% INSPI) • ${ms.sipsLeft} gorgée(s) restante(s)`, "success");
+                    }
+                }
+            }
+            else if (objName === 'desk_phone_mesh') {
+                window.deskPhoneAlertUntil = 0;
+                const hasUnread = state && Array.isArray(state.dms) && state.dms.some(d => !d.resolved);
+                playTone(720, 'sine', 0.07, 0.04);
+                // Ouvre AbleOS directement sur SoundNet (DMs si non lus, sinon Feed/Deals)
+                if (typeof window.exitFpsPointerLock === 'function') window.exitFpsPointerLock();
+                document.getElementById('room-ui').style.display = 'none';
+                document.getElementById('pc-ui-layer').style.display = 'flex';
+                document.body.classList.add('os-active');
+                if (typeof updateTaskbar === 'function') updateTaskbar();
+                openApp('app-social');
+                if (typeof switchSocialTab === 'function') switchSocialTab(hasUnread ? 'dms' : 'feed');
+            }
+            else if (objName === 'desk_interface_mesh') {
+                const ifs = window.deskInterfaceState;
+                if (ifs) {
+                    ifs.mode = (ifs.mode + 1) % 3;
+                    const modes = [
+                        { name: 'CLEAN STUDIO', angle: -0.6, color: '#34d399', freq: 20000 },
+                        { name: 'WARM LO-FI MONITOR', angle: 0.45, color: '#fbbf24', freq: 2600 },
+                        { name: 'CLUB SUB CHECK', angle: 1.45, color: '#818cf8', freq: 900 }
+                    ];
+                    const cur = modes[ifs.mode];
+                    ifs.targetAngle = cur.angle;
+                    if (window.ifaceHaloMats) window.ifaceHaloMats.forEach(m => m.color.set(cur.color));
+                    if (typeof MusicSystem !== 'undefined' && MusicSystem.setLowPassFrequency) {
+                        MusicSystem.setLowPassFrequency(cur.freq, 0.45);
+                    }
+                    playTone(340 + ifs.mode * 120, 'triangle', 0.06, 0.05);
+                    showToast(`🎛️ Interface Audio : ${cur.name}`, "info");
+                }
+            }
+            else if (objName === 'desk_mic_mesh') {
+                const mc = window.deskMicState;
+                const nowM = typeof getTotalMins === 'function' ? getTotalMins() : 0;
+                if (mc) {
+                    mc.activeUntil = performance.now() + 2600;
+                    mc.targetYaw = 0.28;
+                    setTimeout(() => { if (window.deskMicState) window.deskMicState.targetYaw = 0; }, 2200);
+                    playTone(440, 'sine', 0.07, 0.05); setTimeout(() => playTone(660, 'sine', 0.11, 0.04), 110);
+                    if (nowM - mc.lastBoostMins >= 120) {
+                        mc.lastBoostMins = nowM;
+                        state.inspi = Math.min(100, (Number(state.inspi) || 0) + 3);
+                        if (typeof updateHUD === 'function') updateHUD();
+                        showToast("🎙️ Mic Check — 1, 2... Signal propre (-6 dB) ! (+3% INSPI)", "success");
+                    } else {
+                        showToast("🎙️ Mic Check — Signal condensateur OK (-6 dB).", "info");
+                    }
+                }
+            }
+            else if (objName === 'desk_headphones_mesh') {
+                const hps = window.deskHeadphonesState;
+                if (hps) {
+                    hps.worn = !hps.worn;
+                    if (hps.mesh) hps.mesh.visible = !hps.worn;
+                    if (typeof MusicSystem !== 'undefined' && MusicSystem.setLowPassFrequency) {
+                        MusicSystem.setLowPassFrequency(hps.worn ? 20000 : 14000, 0.4);
+                    }
+                    playTone(hps.worn ? 580 : 320, 'sine', 0.09, 0.05);
+                    showToast(hps.worn ? "🎧 Casque Studio chaussé — Écoute de précision." : "🎧 Casque Studio reposé sur son support.", "info");
+                }
             }
         };
 
@@ -16425,6 +16726,7 @@ document.addEventListener('mouseover', (e) => {
                 const lids = document.getElementById('fps-eyelids');
                 if (lids) lids.classList.remove('closed');
                 if (window.fps) { window.fps.yaw = 0.65; window.fps.pitch = -0.04; }
+                if (window.deskMugState) { window.deskMugState.sipsLeft = 3; }
                 state.stats.awakeDays = 0; // Reset du compteur "Vrai Rat de Studio"
                     MusicSystem.crossfadeTo('room', 3.0); // <-- AJOUT ICI (Fondu de retour de 2s)
                 document.getElementById('sleep-overlay').classList.remove('active');
@@ -20550,6 +20852,7 @@ document.addEventListener('mouseover', (e) => {
         
         function triggerRandomEvent(forcedType) {
             state.isEventActive = true; 
+            if (typeof window.enforceFpsModalPriority === 'function') window.enforceFpsModalPriority();
             const overlay = document.getElementById('event-overlay');
             const title = document.getElementById('event-title');
             const desc = document.getElementById('event-desc');
@@ -22356,6 +22659,7 @@ function getQTECrateItems() {
 }
 
 function startDissTrackQTE() {
+    if (typeof window.enforceFpsModalPriority === 'function') window.enforceFpsModalPriority();
     if (window.dissTrackTimer) {
         clearTimeout(window.dissTrackTimer);
         window.dissTrackTimer = null;
