@@ -2825,6 +2825,73 @@
             transform: translateX(-50%) translateY(0);
         }
 
+        /* === ELEVATOR CINEMATIC TRANSITION (42F PENTHOUSE STUDIO <-> APARTMENT) === */
+        #elevator-transition-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9800;
+            pointer-events: none;
+            display: none;
+            overflow: hidden;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        #elevator-transition-overlay.active {
+            display: block;
+            pointer-events: auto;
+        }
+        .elev-door {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 50.5%;
+            background:
+                linear-gradient(90deg, #101218 0%, #1c202a 24%, #272c38 48%, #181b24 78%, #0c0e14 100%);
+            transition: transform 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.75);
+        }
+        .elev-door.left {
+            left: 0;
+            border-right: 2px solid rgba(245, 158, 11, 0.28);
+            transform: translateX(-102%);
+        }
+        .elev-door.right {
+            right: 0;
+            border-left: 2px solid rgba(245, 158, 11, 0.28);
+            transform: translateX(102%);
+        }
+        #elevator-transition-overlay.closed .elev-door.left,
+        #elevator-transition-overlay.closed .elev-door.right {
+            transform: translateX(0);
+        }
+        #elev-panel-hud {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.94);
+            z-index: 10;
+            opacity: 0;
+            padding: 26px 44px;
+            border-radius: 18px;
+            background: rgba(6, 7, 11, 0.92);
+            border: 1px solid rgba(245, 158, 11, 0.38);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(245, 158, 11, 0.14);
+            text-align: center;
+            transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        #elevator-transition-overlay.closed #elev-panel-hud {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        #elev-floor-num {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 56px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: 0.12em;
+            color: #fbbf24;
+            text-shadow: 0 0 26px rgba(245, 158, 11, 0.65);
+        }
+
         @keyframes text-glitch {
         0% { transform: translate(0); text-shadow: none; }
         20% { transform: translate(-1px, 1px); text-shadow: 1px 0px 0px var(--retro-red); }
@@ -4033,6 +4100,10 @@
                         <span class="font-bold text-white text-[11px]">🚶 Aller traîner en ville</span>
                         <span class="text-[10px] text-blue-400">-5% NRJ | Gratuit</span>
                     </button>
+                    <button id="door-elevator-btn" class="hidden w-full py-3.5 rounded-lg flex justify-between items-center px-4 bg-gradient-to-r from-amber-500/20 to-purple-500/20 border border-amber-400/50 hover:border-amber-300 transition-all cursor-pointer" onclick="closeMiniGameMenu(); window.travelToStudioLocation && window.travelToStudioLocation();">
+                        <span id="door-elevator-label" class="font-bold text-amber-200 text-[11px] tracking-wide">🏢 Prendre l'ascenseur → Studio Pro (42e Étage)</span>
+                        <span class="text-[9px] font-mono uppercase tracking-widest text-amber-300 px-2 py-0.5 rounded bg-black/50">80% MASTERY</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -4077,6 +4148,10 @@
                 <button onclick="window.triggerCinematic('escape')" class="mt-1 w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-400/50 text-[9px] font-retro tracking-widest text-emerald-300 uppercase cursor-pointer transition-colors">
                     <span>🌱 PRENDRE L'AIR</span>
                     <span class="text-[9px] px-1.5 py-0.5 rounded bg-black/50 text-white/75 border border-white/15">F</span>
+                </button>
+                <button id="btn-switch-studio-room" onclick="window.travelToStudioLocation && window.travelToStudioLocation()" class="hidden mt-1 w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/30 border border-amber-400/45 text-[9px] font-retro tracking-widest text-amber-200 uppercase cursor-pointer transition-colors">
+                    <span id="btn-switch-studio-label">🏢 STUDIO PRO 42e</span>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-black/50 text-amber-300 border border-amber-400/30">L</span>
                 </button>
             </div>
 
@@ -4224,6 +4299,10 @@
                         <button type="button" data-dev-preset="DEV_T3" class="cinema-profile-chip !border-emerald-500/35 !bg-emerald-500/10 hover:!bg-emerald-500/20">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                             <span>DEV_T3</span><span class="text-[9px] text-emerald-300/80 font-mono">Niv.3</span>
+                        </button>
+                        <button type="button" data-dev-preset="DEV_STUDIO" class="cinema-profile-chip !border-purple-400/45 !bg-purple-500/15 hover:!bg-purple-500/25">
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                            <span>DEV_STUDIO</span><span class="text-[9px] text-purple-200 font-mono">42e Pro</span>
                         </button>
                     </div>
                 </div>
@@ -5435,6 +5514,16 @@
 
         <div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[10000000] pointer-events-none w-[calc(100vw-32px)] md:w-80" style="z-index: 10000000 !important;"></div>
         <div id="room-evolution-veil"></div>
+        <div id="elevator-transition-overlay">
+            <div class="elev-door left"></div>
+            <div class="elev-door right"></div>
+            <div id="elev-panel-hud">
+                <div class="text-[10px] font-mono uppercase tracking-[0.32em] text-slate-400 mb-2">ASCENSEUR PRIVATIF · ACCÈS BADGE</div>
+                <div id="elev-floor-num">4e</div>
+                <div id="elev-dest-title" class="text-sm font-semibold tracking-[0.22em] text-white uppercase mt-3">STUDIO PRO · 42e ÉTAGE</div>
+                <div id="elev-dest-sub" class="text-[11px] text-amber-300/80 font-mono mt-1">ARRIVÉE EN COURS…</div>
+            </div>
+        </div>
         <div id="room-evolution-banner">
             <div id="room-evo-eyebrow" class="text-[10px] font-mono uppercase tracking-[0.28em] text-amber-400 mb-1">ÉVOLUTION DU STUDIO</div>
             <div id="room-evo-title" class="text-base sm:text-lg font-semibold tracking-[0.12em] text-white uppercase">NIVEAU 2 · HOME-STUDIO RÉNOVÉ</div>
@@ -5640,6 +5729,7 @@ const DEFAULT_STATE = {
             ownedSamples: [], clearedSamples: [], activeSample: null,
             history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
             isExporting: false, isSleeping: false, isEventActive: false,
+            roomTier: 1, studioUnlocked: false, activeLocation: 'bedroom',
             isSitting: false,
             isReviewActive: false, // Ajout de l'état pour les revues
             lastRankId: 1, // Nouveau : ID de la dernière ligue atteinte
@@ -5994,9 +6084,10 @@ const DEFAULT_STATE = {
         window.kbdState = { up: false, down: false, left: false, right: false };
 
         window.addEventListener('keydown', (e) => {
-            // Sécurité : On ignore le clavier si on est sur l'OS du PC ou si on tape du texte
+            // Sécurité : On ignore le clavier uniquement si on tape dans un champ hors de la pièce FPS active
             if (document.getElementById('pc-ui-layer').style.display === 'flex') return;
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            const inFpsRoom = typeof window.isFpsRoomActive === 'function' && window.isFpsRoomActive();
+            if ((e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') && !inFpsRoom) return;
 
             const k = e.key.toLowerCase();
             if (k === 'z' || k === 'w' || e.key === 'ArrowUp') window.kbdState.up = true;
@@ -8659,7 +8750,8 @@ const DEFAULT_STATE = {
             // Dôme 360° complet : aucune coupure ni bord vide même collé à la vitre en regardant à 89° sur les côtés !
             const skyDome = new THREE.Mesh(new THREE.SphereGeometry(148, 32, 20), skyShaderMat);
             skyDome.position.set(8, 0, 1.1);
-            exteriorGroup.add(skyDome);
+            scene.add(skyDome);
+            window.skyDomeMesh = skyDome;
 
             // Sol urbain / Grille d'avenues illuminées 5 étages sous le balcon (visible si on regarde vers le bas)
             const streetC = document.createElement('canvas'); streetC.width = 512; streetC.height = 512;
@@ -10959,6 +11051,803 @@ const DEFAULT_STATE = {
 
             // Applique le Niveau 1 par défaut au démarrage avant détection de sauvegarde
             applyRoomTierImmediate(1);
+            // =========================================================================
+            // NIVEAU 4 : VRAI STUDIO PRO PENTHOUSE — 42E ÉTAGE (MIKE DEAN × PARIS/LA)
+            // Spacieux 16×12m, hauteur 5.2m, Console SSL 3D + Double Écran, Mur de Synthés
+            // Analogiques, Cabine Vocale Vitrée ON AIR, Lounge VIP, Platine Vinyle, Bar Espresso,
+            // Baie Vitrée d'Angle 42e Étage + Couloir Ascenseur derrière la porte!
+            // =========================================================================
+            const proStudioGroup = new THREE.Group();
+            proStudioGroup.name = 'ProStudio42F';
+            proStudioGroup.visible = false;
+
+            const psWalnutMat = new THREE.MeshStandardMaterial({
+                map: walnutTex.map, normalMap: walnutTex.normalMap, normalScale: new THREE.Vector2(0.65, 0.65),
+                color: '#b88b63', roughness: 0.36, metalness: 0.05
+            });
+            const psDarkWoodMat = new THREE.MeshStandardMaterial({
+                map: walnutTex.map, normalMap: walnutTex.normalMap, normalScale: new THREE.Vector2(0.6, 0.6),
+                color: '#5b3f2b', roughness: 0.38, metalness: 0.06
+            });
+            const psConcreteMat = new THREE.MeshStandardMaterial({
+                map: wallTex.map, normalMap: wallTex.normalMap, normalScale: new THREE.Vector2(0.35, 0.35),
+                color: '#d6d3cd', roughness: 0.86, metalness: 0.02
+            });
+            const psDarkAcousticMat = new THREE.MeshStandardMaterial({
+                map: curtainTex.map, color: '#1e212a', roughness: 0.94
+            });
+            const psSteelMat = new THREE.MeshStandardMaterial({ color: '#181a20', roughness: 0.28, metalness: 0.86, envMapIntensity: 1.2 });
+            const psChromeMat = new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.16, metalness: 0.95, envMapIntensity: 1.5 });
+            const psBrassMat = new THREE.MeshStandardMaterial({ color: '#d4af37', roughness: 0.26, metalness: 0.88 });
+            const psLeatherMat = new THREE.MeshStandardMaterial({
+                map: leatherTex.map, normalMap: leatherTex.normalMap, normalScale: new THREE.Vector2(0.6, 0.6),
+                color: '#6e4731', roughness: 0.40, metalness: 0.05
+            });
+            const psDarkLeatherMat = new THREE.MeshStandardMaterial({
+                map: leatherTex.map, normalMap: leatherTex.normalMap, normalScale: new THREE.Vector2(0.5, 0.5),
+                color: '#1b1d24', roughness: 0.42, metalness: 0.06
+            });
+            const psMarbleMat = new THREE.MeshStandardMaterial({ color: '#1a1c22', roughness: 0.14, metalness: 0.12, envMapIntensity: 1.2 });
+            const psAmberLedMat = new THREE.MeshStandardMaterial({ color: '#fff3d6', emissive: '#f59e0b', emissiveIntensity: 1.45, roughness: 0.2 });
+
+            // 1. SOL PARQUET CHÊNE FUMÉ XXL (16×12m, y = -1.0) + TAPIS ACOUSTIQUE LOUNGE VIP
+            const psFloorMat = new THREE.MeshStandardMaterial({
+                map: oakTex.map, normalMap: oakTex.normalMap, normalScale: new THREE.Vector2(0.85, 0.85),
+                roughnessMap: oakTex.roughnessMap, color: '#9c8266', roughness: 0.36, metalness: 0.05, envMapIntensity: 0.78
+            });
+            const psFloor = new THREE.Mesh(new THREE.PlaneGeometry(16.2, 12.2), psFloorMat);
+            psFloor.rotation.x = -Math.PI / 2; psFloor.position.set(0, -1.0, 0); psFloor.receiveShadow = true;
+            proStudioGroup.add(psFloor);
+
+            const psRug = new THREE.Mesh(new THREE.BoxGeometry(5.6, 0.022, 4.4), new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#272a34', roughness: 0.96 }));
+            psRug.position.set(-4.0, -0.988, 2.3); psRug.receiveShadow = true;
+            proStudioGroup.add(psRug);
+
+            // 2. PLAFOND PENTHOUSE HAUT (y = +4.2, soit 5.2m de hauteur libre!) + GRANDS NUAGES EN LATTES NOYER + RAILS SPOTS
+            const psCeil = new THREE.Mesh(new THREE.PlaneGeometry(16.4, 12.4), new THREE.MeshStandardMaterial({
+                map: ceilTex.map, color: '#f3f0ea', emissive: '#262420', emissiveIntensity: 0.38, roughness: 0.94
+            }));
+            psCeil.rotation.x = Math.PI / 2; psCeil.position.set(0, 4.2, 0);
+            proStudioGroup.add(psCeil);
+
+            // 2 Grands Nuages Acoustiques Suspendus en Noyer & Feutre Anthracite
+            [
+                { x: -0.2, z: -2.5, w: 5.2, d: 2.2 }, // Grand nuage maître au-dessus de la console SSL
+                { x: -3.9, z:  2.2, w: 4.0, d: 2.0 }  // Nuage au-dessus du Lounge VIP
+            ].forEach(sp => {
+                const cg = new THREE.Group(); cg.position.set(sp.x, 3.84, sp.z);
+                const body = new THREE.Mesh(new THREE.BoxGeometry(sp.w, 0.09, sp.d), psDarkAcousticMat); cg.add(body);
+                const rF = new THREE.Mesh(new THREE.BoxGeometry(sp.w + 0.1, 0.105, 0.05), psWalnutMat); rF.position.z = sp.d / 2 + 0.025;
+                const rB = rF.clone(); rB.position.z = -sp.d / 2 - 0.025;
+                const rL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.105, sp.d + 0.1), psWalnutMat); rL.position.x = -sp.w / 2 - 0.025;
+                const rR = rL.clone(); rR.position.x = sp.w / 2 + 0.025;
+                cg.add(rF, rB, rL, rR);
+                const slatN = Math.floor(sp.w / 0.28);
+                for (let s = 0; s < slatN; s++) {
+                    const sx = -sp.w / 2 + 0.16 + s * ((sp.w - 0.32) / Math.max(1, slatN - 1));
+                    const sl = new THREE.Mesh(new THREE.BoxGeometry(0.042, 0.022, sp.d - 0.10), psWalnutMat);
+                    sl.position.set(sx, -0.054, 0); cg.add(sl);
+                }
+                const hw = sp.w / 2 - 0.2, hd = sp.d / 2 - 0.2;
+                [[-hw, -hd], [hw, -hd], [-hw, hd], [hw, hd]].forEach(([kx, kz]) => {
+                    const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.36, 6), psChromeMat);
+                    wire.position.set(kx, 0.18, kz); cg.add(wire);
+                });
+                proStudioGroup.add(cg);
+            });
+
+            // 2 Rails de Spots Architecturaux Noir & Laiton au Plafond (dégagés des nuages)
+            const psSpotLensMat = new THREE.MeshStandardMaterial({ color: '#fffaf0', emissive: '#ffedd2', emissiveIntensity: 1.85, roughness: 0.2 });
+            [ { x: 3.4, z: -0.2, len: 5.4 }, { x: -1.4, z: 0.4, len: 4.2 } ].forEach(tr => {
+                const bar = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.04, tr.len), psSteelMat);
+                bar.position.set(tr.x, 4.16, tr.z); proStudioGroup.add(bar);
+                for (let i = -1; i <= 1; i++) {
+                    const sh = new THREE.Group(); sh.position.set(tr.x, 4.04, tr.z + i * (tr.len * 0.36));
+                    sh.rotation.z = tr.x > 0 ? 0.28 : -0.22;
+                    const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.062, 0.14, 16), psSteelMat); sh.add(cyl);
+                    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.056, 0.006, 8, 16), psBrassMat);
+                    ring.rotation.x = Math.PI / 2; ring.position.y = -0.068; sh.add(ring);
+                    const lens = new THREE.Mesh(new THREE.CircleGeometry(0.050, 14), psSpotLensMat);
+                    lens.rotation.x = Math.PI / 2; lens.position.y = -0.067; sh.add(lens);
+                    proStudioGroup.add(sh);
+                }
+            });
+
+            // 3. MURS ARCHITECTURAUX + DIFFUSEURS QRD BOIS + MONITEURS MAIN ENCASTRÉS + BAIES VITRÉES 180° 42E ÉTAGE
+            // Mur Nord (z = -6.0)
+            const psWallN = new THREE.Mesh(new THREE.BoxGeometry(16.2, 5.2, 0.16), psConcreteMat);
+            psWallN.position.set(0, 1.6, -6.08); proStudioGroup.add(psWallN);
+            // Tasseaux bois noyer acoustiques derrière la console SSL + bandeau LED indirect ambre
+            const psSlatBack = new THREE.Mesh(new THREE.BoxGeometry(7.2, 4.7, 0.05), psDarkAcousticMat);
+            psSlatBack.position.set(-0.6, 1.55, -5.96); proStudioGroup.add(psSlatBack);
+            for (let sx = -4.05; sx <= 2.85; sx += 0.20) {
+                const slat = new THREE.Mesh(new THREE.BoxGeometry(0.085, 4.65, 0.07), psWalnutMat);
+                slat.position.set(sx, 1.55, -5.92); proStudioGroup.add(slat);
+            }
+            const psLedStripN = new THREE.Mesh(new THREE.BoxGeometry(7.2, 0.035, 0.04), psAmberLedMat);
+            psLedStripN.position.set(-0.6, 3.92, -5.92); proStudioGroup.add(psLedStripN);
+
+            // 2 Diffuseurs Quadratiques QRD en bois sculpté au centre du Mur Nord (vrai détail studio mastering!)
+            [-0.95, 0.45].forEach(qx => {
+                const qrd = new THREE.Group(); qrd.position.set(qx, 2.35, -5.88);
+                const qFrame = new THREE.Mesh(new THREE.BoxGeometry(1.18, 1.28, 0.12), psDarkWoodMat); qrd.add(qFrame);
+                for (let col = 0; col < 7; col++) {
+                    for (let row = 0; row < 5; row++) {
+                        const depth = 0.04 + ((col * 3 + row * 5) % 7) * 0.022;
+                        const cell = new THREE.Mesh(new THREE.BoxGeometry(0.145, 0.22, depth), psWalnutMat);
+                        cell.position.set(-0.48 + col * 0.16, -0.46 + row * 0.23, 0.04 + depth * 0.5);
+                        qrd.add(cell);
+                    }
+                }
+                proStudioGroup.add(qrd);
+            });
+
+            // 2 Énormes Moniteurs Main Flush-Mounted (Augspurger / Genelec Master) encastrés Mur Nord
+            [-3.05, 1.95].forEach((mx, mi) => {
+                const mg = new THREE.Group(); mg.position.set(mx, 2.25, -5.78); mg.rotation.y = mi === 0 ? 0.22 : -0.22;
+                const cab = new THREE.Mesh(new THREE.BoxGeometry(1.08, 1.48, 0.48), psSteelMat); mg.add(cab);
+                const bezel = new THREE.Mesh(new THREE.BoxGeometry(0.98, 1.38, 0.04), psDarkWoodMat); bezel.position.z = 0.24; mg.add(bezel);
+                // Double Woofer 15" + Pavillon Tweeter bois
+                [-0.36, 0.08].forEach(wy => {
+                    const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.03, 24), psChromeMat);
+                    ring.rotation.x = Math.PI / 2; ring.position.set(0, wy, 0.265); mg.add(ring);
+                    const cone = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.21, 0.05, 24), psDarkAcousticMat);
+                    cone.rotation.x = Math.PI / 2; cone.position.set(0, wy, 0.27); mg.add(cone);
+                });
+                const horn = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.26, 0.08), psWalnutMat);
+                horn.position.set(0, 0.46, 0.26); mg.add(horn);
+                const hornHole = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.14, 0.09), new THREE.MeshBasicMaterial({ color: '#090a0e' }));
+                hornHole.position.set(0, 0.46, 0.265); mg.add(hornHole);
+                tagInteractable(mg, 'speaker_mesh');
+                proStudioGroup.add(mg);
+            });
+
+            // Mur Ouest (x = -8.0) avec découpe pour la porte + Couloir d'ascenseur 3D derrière la porte!
+            const psWallWN = new THREE.Mesh(new THREE.BoxGeometry(0.16, 5.2, 9.2), psConcreteMat);
+            psWallWN.position.set(-8.08, 1.6, -1.4); proStudioGroup.add(psWallWN);
+            const psWallWS = new THREE.Mesh(new THREE.BoxGeometry(0.16, 5.2, 1.2), psConcreteMat);
+            psWallWS.position.set(-8.08, 1.6, 5.4); proStudioGroup.add(psWallWS);
+            const psWallWTop = new THREE.Mesh(new THREE.BoxGeometry(0.16, 2.0, 1.6), psConcreteMat);
+            psWallWTop.position.set(-8.08, 3.2, 4.0); proStudioGroup.add(psWallWTop);
+
+            // Porte d'accès Penthouse + Couloir & Doubles Portes Ascenseur 3D visibles dès qu'on l'ouvre!
+            const psDoorFrame = new THREE.Mesh(new THREE.BoxGeometry(0.24, 3.22, 1.66), psSteelMat);
+            psDoorFrame.position.set(-8.02, 0.61, 4.0); proStudioGroup.add(psDoorFrame);
+            const psDoorPivot = new THREE.Group();
+            psDoorPivot.position.set(-7.96, -1.0, 4.78);
+            const psDoorLeaf = new THREE.Mesh(new THREE.BoxGeometry(0.10, 3.16, 1.54), psDarkWoodMat);
+            psDoorLeaf.position.set(0, 1.58, -0.77); psDoorLeaf.name = 'door_mesh'; psDoorPivot.add(psDoorLeaf);
+            const psDoorHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.42, 10), psBrassMat);
+            psDoorHandle.position.set(0.08, 1.45, -1.36); psDoorHandle.name = 'door_mesh'; psDoorPivot.add(psDoorHandle);
+            proStudioGroup.add(psDoorPivot);
+            window.proStudioDoorPivot = psDoorPivot;
+
+            // Panneau lumineux "42e ÉTAGE · STUDIO" au-dessus de la porte
+            const floorSignC = document.createElement('canvas'); floorSignC.width = 256; floorSignC.height = 64;
+            const fsCtx = floorSignC.getContext('2d');
+            fsCtx.fillStyle = '#0d0f14'; fsCtx.fillRect(0, 0, 256, 64);
+            fsCtx.strokeStyle = '#d4af37'; fsCtx.lineWidth = 3; fsCtx.strokeRect(4, 4, 248, 56);
+            fsCtx.fillStyle = '#fbbf24'; fsCtx.font = 'bold 26px monospace'; fsCtx.textAlign = 'center'; fsCtx.textBaseline = 'middle';
+            fsCtx.fillText('42e ÉTAGE · STUDIO', 128, 34);
+            const psFloorSign = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.24, 0.92), [
+                new THREE.MeshStandardMaterial({ map: configureTex(floorSignC, 1, 1, true), emissive: '#f59e0b', emissiveIntensity: 0.45 }),
+                psSteelMat, psSteelMat, psSteelMat, psSteelMat, psSteelMat
+            ]);
+            psFloorSign.position.set(-7.96, 2.48, 4.0); proStudioGroup.add(psFloorSign);
+
+            // Couloir d'ascenseur 3D derrière la porte (x = -8.1 -> -11.2, z = 4.0)
+            const hallFloor = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 2.4), psMarbleMat);
+            hallFloor.rotation.x = -Math.PI / 2; hallFloor.position.set(-9.6, -1.0, 4.0); proStudioGroup.add(hallFloor);
+            const hallCeil = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 2.4), psConcreteMat);
+            hallCeil.rotation.x = Math.PI / 2; hallCeil.position.set(-9.6, 2.4, 4.0); proStudioGroup.add(hallCeil);
+            const hallWallL = new THREE.Mesh(new THREE.BoxGeometry(3.2, 3.4, 0.1), psConcreteMat);
+            hallWallL.position.set(-9.6, 0.7, 2.8); proStudioGroup.add(hallWallL);
+            const hallWallR = hallWallL.clone(); hallWallR.position.z = 5.2; proStudioGroup.add(hallWallR);
+            const hallElevDoor = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.8, 1.7), psChromeMat);
+            hallElevDoor.position.set(-11.15, 0.4, 4.0); proStudioGroup.add(hallElevDoor);
+            const hallLightBar = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.04, 0.14), psAmberLedMat);
+            hallLightBar.position.set(-9.6, 2.36, 4.0); proStudioGroup.add(hallLightBar);
+
+            // Mur Sud-Ouest (z = +6.0, x = -8.0 .. -0.4) — Mur Galerie Disques d'Or/Platine
+            const psWallSW = new THREE.Mesh(new THREE.BoxGeometry(7.8, 5.2, 0.16), psConcreteMat);
+            psWallSW.position.set(-4.2, 1.6, 6.08); proStudioGroup.add(psWallSW);
+
+            // IMMENSES BAIES VITRÉES PANORAMIQUES D'ANGLE DU SOL AU PLAFOND (Est x = +8.0 + Sud-Est z = +6.0)
+            const psGlassMat = new THREE.MeshStandardMaterial({
+                color: '#d8ebff', transparent: true, opacity: 0.07, roughness: 0.04, metalness: 0.7, depthWrite: false, side: THREE.DoubleSide
+            });
+            // Vitre Est complète (12m de large × 5m de haut!)
+            const psGlassE = new THREE.Mesh(new THREE.PlaneGeometry(12.0, 5.0), psGlassMat);
+            psGlassE.position.set(8.02, 1.5, 0); psGlassE.rotation.y = -Math.PI / 2; proStudioGroup.add(psGlassE);
+            // Vitre Sud-Est (8.4m de large × 5m de haut!)
+            const psGlassSE = new THREE.Mesh(new THREE.PlaneGeometry(8.4, 5.0), psGlassMat);
+            psGlassSE.position.set(3.8, 1.5, 6.02); psGlassSE.rotation.y = Math.PI; proStudioGroup.add(psGlassSE);
+
+            // Meneaux fins en acier noir mat (zéro castShadow pour une vue 100% pure!)
+            [-5.95, -3.0, 0.0, 3.0, 5.95].forEach(mz => {
+                const m = new THREE.Mesh(new THREE.BoxGeometry(0.10, 5.2, 0.08), psSteelMat);
+                m.position.set(8.0, 1.6, mz); proStudioGroup.add(m);
+            });
+            [-0.3, 2.5, 5.2, 8.0].forEach(mx => {
+                const m = new THREE.Mesh(new THREE.BoxGeometry(0.08, 5.2, 0.10), psSteelMat);
+                m.position.set(mx, 1.6, 6.0); proStudioGroup.add(m);
+            });
+            // Plinthes basses & linteaux acier des baies vitrées
+            const psBarEBot = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.16, 12.1), psSteelMat);
+            psBarEBot.position.set(8.0, -0.92, 0); proStudioGroup.add(psBarEBot);
+            const psBarETop = psBarEBot.clone(); psBarETop.position.y = 4.12; proStudioGroup.add(psBarETop);
+            const psBarSBot = new THREE.Mesh(new THREE.BoxGeometry(8.4, 0.16, 0.14), psSteelMat);
+            psBarSBot.position.set(3.8, -0.92, 6.0); proStudioGroup.add(psBarSBot);
+            const psBarSTop = psBarSBot.clone(); psBarSTop.position.y = 4.12; proStudioGroup.add(psBarSTop);
+
+            // 4. GRANDE CONSOLE ANALOGIQUE SSL / NEVE 3D + DOUBLE ÉCRAN ULTRAWIDE + RACKS OUTBOARD (x = -0.2, z = -2.65)
+            const sslGroup = new THREE.Group();
+            sslGroup.position.set(-0.2, -1.0, -2.65);
+
+            // Pieds architecturaux massifs en noyer + acier
+            [-2.05, 2.05].forEach(lx => {
+                const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.92, 1.38), psDarkWoodMat);
+                leg.position.set(lx, 0.46, 0); leg.castShadow = true; leg.receiveShadow = true; sslGroup.add(leg);
+            });
+            const consoleBody = new THREE.Mesh(new THREE.BoxGeometry(4.30, 0.24, 1.46), psSteelMat);
+            consoleBody.position.set(0, 0.92, 0); consoleBody.castShadow = true; consoleBody.receiveShadow = true; sslGroup.add(consoleBody);
+
+            // Flancs latéraux galbés en noyer massif + Repose-poignets cuir capitonné
+            [-2.18, 2.18].forEach(cx => {
+                const cheek = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.48, 1.56), psWalnutMat);
+                cheek.position.set(cx, 1.06, -0.02); cheek.castShadow = true; sslGroup.add(cheek);
+            });
+            const armrest = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 4.26, 14), psDarkLeatherMat);
+            armrest.rotation.z = Math.PI / 2; armrest.position.set(0, 1.04, 0.72); sslGroup.add(armrest);
+
+            // Surface Console SSL Haute-Résolution (24 tranches faders + EQ colorés SSL 4000G!)
+            const sslC = document.createElement('canvas'); sslC.width = 1024; sslC.height = 512;
+            const sslCtx = sslC.getContext('2d');
+            sslCtx.fillStyle = '#242730'; sslCtx.fillRect(0, 0, 1024, 512);
+            for (let ch = 0; ch < 24; ch++) {
+                const x = 14 + ch * 41.5;
+                sslCtx.fillStyle = ch >= 11 && ch <= 12 ? '#181b22' : '#2c303a';
+                sslCtx.fillRect(x, 12, 37, 488);
+                // Potards EQ colorés (rouge, vert, bleu, jaune)
+                const knobCols = ['#ef4444', '#22c55e', '#38bdf8', '#eab308', '#a855f7', '#e2e8f0'];
+                for (let kr = 0; kr < 6; kr++) {
+                    sslCtx.fillStyle = knobCols[kr];
+                    sslCtx.beginPath(); sslCtx.arc(x + 18, 42 + kr * 42, 8, 0, Math.PI * 2); sslCtx.fill();
+                    sslCtx.fillStyle = '#0b0c10'; sslCtx.fillRect(x + 17, 35 + kr * 42, 2, 7);
+                }
+                // Fader track + bouton lumineux solo/mute
+                sslCtx.fillStyle = '#0d0f14'; sslCtx.fillRect(x + 15, 315, 6, 165);
+                sslCtx.fillStyle = ch % 3 === 0 ? '#f59e0b' : '#22c55e'; sslCtx.fillRect(x + 8, 292, 10, 8);
+                sslCtx.fillStyle = '#e2e8f0';
+                const fY = 340 + ((ch * 37) % 95);
+                sslCtx.fillRect(x + 7, fY, 22, 14);
+            }
+            const sslDeck = new THREE.Mesh(
+                new THREE.PlaneGeometry(4.20, 1.18),
+                new THREE.MeshStandardMaterial({ map: configureTex(sslC, 1, 1, true), roughness: 0.45, metalness: 0.35 })
+            );
+            sslDeck.rotation.x = -Math.PI / 2 + 0.14;
+            sslDeck.position.set(0, 1.12, 0.08);
+            sslGroup.add(sslDeck);
+
+            // Pont de VU-Mètres Analogiques Rétroéclairés Ambre (Animé en temps réel!)
+            const meterBridge = new THREE.Mesh(new THREE.BoxGeometry(4.28, 0.32, 0.34), psSteelMat);
+            meterBridge.position.set(0, 1.28, -0.58); meterBridge.castShadow = true; sslGroup.add(meterBridge);
+            const vuC = document.createElement('canvas'); vuC.width = 1024; vuC.height = 128;
+            const vuCtx = vuC.getContext('2d');
+            const vuTex = configureTex(vuC, 1, 1, true);
+            const vuPanel = new THREE.Mesh(
+                new THREE.PlaneGeometry(4.14, 0.24),
+                new THREE.MeshStandardMaterial({ map: vuTex, emissive: '#ffbf5e', emissiveMap: vuTex, emissiveIntensity: 0.95, roughness: 0.2 })
+            );
+            vuPanel.position.set(0, 1.29, -0.408); vuPanel.rotation.x = -0.14;
+            sslGroup.add(vuPanel);
+            window._proVuCtx = vuCtx; window._proVuTex = vuTex; window._proVuLastTs = 0;
+
+            // Double Écran Ultrawide Pro (Partage la texture live DAW Mastering!)
+            const psMonStand = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.42, 0.12), psSteelMat);
+            psMonStand.position.set(0, 1.56, -0.68); sslGroup.add(psMonStand);
+            [-0.78, 0.78].forEach((mx, mi) => {
+                const mg = new THREE.Group();
+                mg.position.set(mx, 1.92, -0.60); mg.rotation.y = mi === 0 ? 0.14 : -0.14;
+                const fr = new THREE.Mesh(new THREE.BoxGeometry(1.48, 0.78, 0.045), psSteelMat); fr.castShadow = true; mg.add(fr);
+                const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.42, 0.72), pcScreenMat);
+                scr.position.z = 0.025; mg.add(scr);
+                tagInteractable(mg, 'pc_mesh');
+                sslGroup.add(mg);
+            });
+
+            // 2 Moniteurs Nearfield iconiques (Yamaha NS-10 à cône blanc!) posés sur le meter bridge
+            [-1.78, 1.78].forEach((nx, ni) => {
+                const nsg = new THREE.Group(); nsg.position.set(nx, 1.62, -0.58); nsg.rotation.y = ni === 0 ? 0.24 : -0.24;
+                const box = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.34, 0.34), psSteelMat); box.castShadow = true; nsg.add(box);
+                const whiteCone = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.11, 0.025, 20), new THREE.MeshStandardMaterial({ color: '#f8f6f0', roughness: 0.75 }));
+                whiteCone.rotation.x = Math.PI / 2; whiteCone.position.set(-0.08 * (ni === 0 ? -1 : 1), 0, 0.172); nsg.add(whiteCone);
+                const tw = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.042, 0.02, 16), psChromeMat);
+                tw.rotation.x = Math.PI / 2; tw.position.set(0.11 * (ni === 0 ? -1 : 1), 0.04, 0.172); nsg.add(tw);
+                tagInteractable(nsg, 'speaker_mesh');
+                sslGroup.add(nsg);
+            });
+
+            // 2 Racks Outboard Latéraux Inclinés (Compresseurs 1176 / LA-2A / Pultec — interactifs desk_interface_mesh!)
+            [-2.78, 2.78].forEach((rx, ri) => {
+                const rg = new THREE.Group(); rg.position.set(rx, 0, -0.05); rg.rotation.y = ri === 0 ? 0.38 : -0.38;
+                const rCab = new THREE.Mesh(new THREE.BoxGeometry(0.84, 1.18, 0.82), psDarkWoodMat);
+                rCab.position.y = 0.59; rCab.castShadow = true; rCab.receiveShadow = true; rg.add(rCab);
+                for (let u = 0; u < 5; u++) {
+                    const plate = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.18, 0.04), u % 2 === 0 ? psSteelMat : new THREE.MeshStandardMaterial({ color: '#2b3242', roughness: 0.35, metalness: 0.75 }));
+                    plate.position.set(0, 0.22 + u * 0.20, 0.40); rg.add(plate);
+                    const led = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.02, 0.02), new THREE.MeshBasicMaterial({ color: u === 0 ? '#f43f5e' : (u % 2 === 0 ? '#34d399' : '#fbbf24') }));
+                    led.position.set(-0.28, 0.22 + u * 0.20, 0.425); rg.add(led);
+                    for (let k = 0; k < 4; k++) {
+                        const kn = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.026, 0.03, 12), psChromeMat);
+                        kn.rotation.x = Math.PI / 2; kn.position.set(-0.08 + k * 0.12, 0.22 + u * 0.20, 0.43); rg.add(kn);
+                    }
+                }
+                tagInteractable(rg, 'desk_interface_mesh');
+                sslGroup.add(rg);
+            });
+
+            // Objets interactifs sur le rack droit de la console (Casque Pro, Smartphone, Mug Espresso)
+            const psPhone = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.016, 0.25), psSteelMat);
+            psPhone.position.set(2.58, 1.19, 0.14); psPhone.rotation.y = -0.35; psPhone.name = 'desk_phone_mesh'; sslGroup.add(psPhone);
+            const psHpStand = hpStandGroup.clone();
+            psHpStand.visible = true;
+            psHpStand.position.set(2.92, 1.18, -0.18); psHpStand.rotation.y = -0.6;
+            tagInteractable(psHpStand, 'desk_headphones_mesh'); sslGroup.add(psHpStand);
+
+            // Fauteuil de Producteur Ergonomique Luxe devant la Console SSL
+            const psChair = chairGroup.clone();
+            psChair.visible = true;
+            psChair.position.set(-0.1, 0, 1.35); psChair.rotation.y = 0.15;
+            sslGroup.add(psChair);
+
+            tagInteractable(consoleBody, 'pc_mesh');
+            proStudioGroup.add(sslGroup);
+
+            // 5. CABINE VOCALE VITRÉE « VOCAL BOOTH » (Coin Nord-Est x = +5.3, z = -3.6) + PANNEAU ON AIR ROUGE!
+            const boothGroup = new THREE.Group();
+            boothGroup.position.set(5.3, -1.0, -3.6);
+            const boothCarpet = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.03, 4.2), psDarkAcousticMat);
+            boothCarpet.position.y = 0.015; boothCarpet.receiveShadow = true; boothGroup.add(boothCarpet);
+            // Cloisons vitrées double vitrage (face Ouest & face Sud)
+            const boothWallW = new THREE.Mesh(new THREE.BoxGeometry(0.12, 4.2, 4.2), psGlassMat);
+            boothWallW.position.set(-2.2, 2.1, 0); boothGroup.add(boothWallW);
+            const boothWallS = new THREE.Mesh(new THREE.BoxGeometry(4.4, 4.2, 0.12), psGlassMat);
+            boothWallS.position.set(0, 2.1, 2.1); boothGroup.add(boothWallS);
+            // Cadre acier noir de la cabine + base acoustique basse
+            const bBaseW = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.85, 4.25), psDarkAcousticMat);
+            bBaseW.position.set(-2.2, 0.425, 0); boothGroup.add(bBaseW);
+            const bBaseS = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.85, 0.16), psDarkAcousticMat);
+            bBaseS.position.set(0.9, 0.425, 2.1); boothGroup.add(bBaseS);
+            [[-2.2, -2.1], [-2.2, 2.1], [-0.4, 2.1], [2.2, 2.1]].forEach(([px, pz]) => {
+                const post = new THREE.Mesh(new THREE.BoxGeometry(0.12, 4.2, 0.12), psSteelMat);
+                post.position.set(px, 2.1, pz); boothGroup.add(post);
+            });
+            const bTopW = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 4.25), psSteelMat);
+            bTopW.position.set(-2.2, 4.15, 0); boothGroup.add(bTopW);
+            const bTopS = new THREE.Mesh(new THREE.BoxGeometry(4.45, 0.14, 0.14), psSteelMat);
+            bTopS.position.set(0, 4.15, 2.1); boothGroup.add(bTopS);
+
+            // Panneau Lumineux "ON AIR" au-dessus de la vitre de la cabine vocale!
+            const onAirC = document.createElement('canvas'); onAirC.width = 256; onAirC.height = 80;
+            const oaCtx = onAirC.getContext('2d');
+            oaCtx.fillStyle = '#18080a'; oaCtx.fillRect(0, 0, 256, 80);
+            oaCtx.strokeStyle = '#ef4444'; oaCtx.lineWidth = 4; oaCtx.strokeRect(6, 6, 244, 68);
+            oaCtx.fillStyle = '#ff3b4e'; oaCtx.font = 'bold 42px Outfit, sans-serif'; oaCtx.textAlign = 'center'; oaCtx.textBaseline = 'middle';
+            oaCtx.fillText('ON AIR', 128, 42);
+            const onAirMat = new THREE.MeshStandardMaterial({
+                map: configureTex(onAirC, 1, 1, true), emissive: '#ef4444', emissiveIntensity: 0.45, roughness: 0.2
+            });
+            window.proStudioOnAirMat = onAirMat;
+            const onAirBox = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.26, 0.82), [psSteelMat, onAirMat, psSteelMat, psSteelMat, psSteelMat, psSteelMat]);
+            onAirBox.position.set(-2.26, 3.65, 0.0); boothGroup.add(onAirBox);
+
+            // Micro Neumann U87 sur grande perche studio + Pupitre à paroles (interactif desk_mic_mesh!)
+            const u87Group = new THREE.Group(); u87Group.position.set(-0.2, 0, -0.2);
+            const uBase = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.26, 0.04, 20), psSteelMat); uBase.position.y = 0.02; u87Group.add(uBase);
+            const uPole = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.020, 1.55, 10), psChromeMat); uPole.position.y = 0.80; uPole.castShadow = true; u87Group.add(uPole);
+            const uBody = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.038, 0.24, 18), psChromeMat); uBody.position.set(0, 1.66, 0); u87Group.add(uBody);
+            const uGrille = new THREE.Mesh(new THREE.CylinderGeometry(0.044, 0.042, 0.11, 18), psBrassMat); uGrille.position.set(0, 1.82, 0); u87Group.add(uGrille);
+            const uPop = new THREE.Mesh(new THREE.TorusGeometry(0.10, 0.008, 8, 22), psSteelMat);
+            uPop.position.set(-0.14, 1.78, 0.05); uPop.rotation.y = Math.PI / 2; u87Group.add(uPop);
+            const uStand = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.36, 0.02), psSteelMat);
+            uStand.position.set(0.55, 1.38, -0.25); uStand.rotation.set(-0.45, -0.5, 0); u87Group.add(uStand);
+            const uSheet = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.30), new THREE.MeshStandardMaterial({ color: '#f5f0e4', roughness: 0.9 }));
+            uSheet.position.set(0.54, 1.39, -0.23); uSheet.rotation.set(-0.45, -0.5, 0); u87Group.add(uSheet);
+            tagInteractable(u87Group, 'desk_mic_mesh');
+            boothGroup.add(u87Group);
+            proStudioGroup.add(boothGroup);
+
+            // 6. MUR DE SYNTHÉS ANALOGIQUES « MIKE DEAN » (Mur Ouest x = -6.9, z = -2.2, interactif synth_mesh!)
+            const mikeDeanGroup = new THREE.Group();
+            mikeDeanGroup.position.set(-6.95, -1.0, -2.25);
+            mikeDeanGroup.rotation.y = Math.PI / 2;
+
+            // Grand stand 3 niveaux en acier noir + flancs noyer (dégagé au centre pour les 2 claviers 61 touches)
+            [-1.76, 1.76].forEach(sx => {
+                const upright = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.25, 0.72), psSteelMat);
+                upright.position.set(sx, 1.12, -0.15); upright.castShadow = true; mikeDeanGroup.add(upright);
+            });
+            // 2 Claviers Vintage 61 touches superposés (Prophet-5 & Juno-106)
+            [0.86, 1.38].forEach((sy, tierIdx) => {
+                const chassis = new THREE.Mesh(new THREE.BoxGeometry(3.46, 0.14, 0.62), tierIdx === 0 ? psSteelMat : new THREE.MeshStandardMaterial({ color: '#1d2230', roughness: 0.35, metalness: 0.7 }));
+                chassis.position.set(0, sy, 0.02); chassis.rotation.x = tierIdx === 0 ? 0.08 : 0.24; chassis.castShadow = true; mikeDeanGroup.add(chassis);
+                [-1.74, 1.74].forEach(wx => {
+                    const cheek = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.16, 0.66), psWalnutMat);
+                    cheek.position.set(wx, sy, 0.02); cheek.rotation.x = tierIdx === 0 ? 0.08 : 0.24; mikeDeanGroup.add(cheek);
+                });
+                // Clavier blanc & touches noires
+                const wKeys = new THREE.Mesh(new THREE.BoxGeometry(2.96, 0.04, 0.26), new THREE.MeshStandardMaterial({ color: '#f8f6f0', roughness: 0.3 }));
+                wKeys.position.set(0, sy + 0.06, 0.18); wKeys.rotation.x = tierIdx === 0 ? 0.08 : 0.24; mikeDeanGroup.add(wKeys);
+                for (let bk = 0; bk < 18; bk++) {
+                    if (bk % 7 === 2 || bk % 7 === 6) continue;
+                    const bKey = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.055, 0.15), psSteelMat);
+                    bKey.position.set(-1.38 + bk * 0.16, sy + 0.09, 0.12); bKey.rotation.x = tierIdx === 0 ? 0.08 : 0.24; mikeDeanGroup.add(bKey);
+                }
+            });
+            // Mur Modulaire Eurorack au-dessus (LEDs séquenceur animées + 8 câbles patch colorés!)
+            const euroCase = new THREE.Mesh(new THREE.BoxGeometry(3.52, 0.82, 0.28), psDarkWoodMat);
+            euroCase.position.set(0, 2.04, -0.24); euroCase.rotation.x = 0.12; mikeDeanGroup.add(euroCase);
+            const euroFace = new THREE.Mesh(new THREE.BoxGeometry(3.40, 0.72, 0.03), psSteelMat);
+            euroFace.position.set(0, 2.04, -0.10); euroFace.rotation.x = 0.12; mikeDeanGroup.add(euroFace);
+            window.proModularLeds = [];
+            const modLedCols = ['#f59e0b', '#34d399', '#38bdf8', '#f43f5e', '#a855f7'];
+            for (let ml = 0; ml < 24; ml++) {
+                const lMat = new THREE.MeshBasicMaterial({ color: modLedCols[ml % modLedCols.length] });
+                const led = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.022, 0.015), lMat);
+                led.position.set(-1.52 + (ml % 12) * 0.275, 1.88 + Math.floor(ml / 12) * 0.32, -0.075);
+                mikeDeanGroup.add(led);
+                window.proModularLeds.push({ mesh: led, phase: ml * 0.7 });
+            }
+            const patchCols = ['#ef4444', '#f59e0b', '#38bdf8', '#22c55e', '#a855f7', '#eab308'];
+            for (let pc = 0; pc < 6; pc++) {
+                const px1 = -1.35 + pc * 0.48, px2 = px1 + 0.36;
+                const curve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(px1, 2.15, -0.07),
+                    new THREE.Vector3((px1 + px2) * 0.5, 1.72 - (pc % 2) * 0.14, 0.09),
+                    new THREE.Vector3(px2, 1.98, -0.07)
+                ]);
+                const pCable = new THREE.Mesh(new THREE.TubeGeometry(curve, 14, 0.010, 6, false), new THREE.MeshStandardMaterial({ color: patchCols[pc], roughness: 0.45 }));
+                mikeDeanGroup.add(pCable);
+            }
+            tagInteractable(mikeDeanGroup, 'synth_mesh');
+            proStudioGroup.add(mikeDeanGroup);
+
+            // Ampli à lampes vintage + Guitare électrique posée sur trépied à côté du mur de synthés
+            const ampCab = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.78, 0.42), new THREE.MeshStandardMaterial({ color: '#1b1917', roughness: 0.88 }));
+            ampCab.position.set(-7.35, -0.61, 0.15); ampCab.rotation.y = Math.PI / 2 + 0.18; ampCab.castShadow = true; proStudioGroup.add(ampCab);
+            const ampGrill = new THREE.Mesh(new THREE.PlaneGeometry(0.54, 0.56), new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#9c8669', roughness: 0.92 }));
+            ampGrill.position.set(-7.13, -0.66, 0.19); ampGrill.rotation.y = Math.PI / 2 + 0.18; proStudioGroup.add(ampGrill);
+
+            // 7. LOUNGE VIP (Grand Canapé d'Angle en Cuir + Table Basse Marbre + Grande TV OLED 75" Murale)
+            const psLoungeGroup = new THREE.Group();
+            psLoungeGroup.position.set(-4.2, -1.0, 2.4);
+            // Grand canapé d'angle en cuir cognac (interactif sofa_mesh!)
+            const sMainBase = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.44, 1.05), psLeatherMat);
+            sMainBase.position.set(0, 0.26, -0.95); sMainBase.castShadow = true; sMainBase.receiveShadow = true; psLoungeGroup.add(sMainBase);
+            const sMainBack = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.62, 0.24), psLeatherMat);
+            sMainBack.position.set(0, 0.68, -1.36); sMainBack.castShadow = true; psLoungeGroup.add(sMainBack);
+            const sRetBase = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.44, 2.3), psLeatherMat);
+            sRetBase.position.set(-1.18, 0.26, 0.65); sRetBase.castShadow = true; sRetBase.receiveShadow = true; psLoungeGroup.add(sRetBase);
+            const sRetBack = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.62, 2.3), psLeatherMat);
+            sRetBack.position.set(-1.58, 0.68, 0.65); sRetBack.castShadow = true; psLoungeGroup.add(sRetBack);
+            tagInteractable(psLoungeGroup, 'sofa_mesh');
+            proStudioGroup.add(psLoungeGroup);
+
+            // Table basse en marbre noir veiné & piètement laiton
+            const psTableTop = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.06, 1.05), psMarbleMat);
+            psTableTop.position.set(-3.45, -0.58, 2.95); psTableTop.castShadow = true; psTableTop.receiveShadow = true; proStudioGroup.add(psTableTop);
+            [[-0.72, -0.42], [0.72, -0.42], [-0.72, 0.42], [0.72, 0.42]].forEach(([tx, tz]) => {
+                const tLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.014, 0.42, 8), psBrassMat);
+                tLeg.position.set(-3.45 + tx, -0.79, 2.95 + tz); proStudioGroup.add(tLeg);
+            });
+
+            // 8. STATION VINYLE AUDIOPHILE (Platine Technics qui tourne en direct!) + DOUBLE BAC DISQUES + 4 DISQUES D'OR/PLATINE
+            const vinylStation = new THREE.Group();
+            vinylStation.position.set(-3.6, -1.0, 5.38);
+            const credenza = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.84, 0.72), psWalnutMat);
+            credenza.position.y = 0.46; credenza.castShadow = true; credenza.receiveShadow = true; vinylStation.add(credenza);
+            // Platine Technics SL-1200 avec disque vinyle 12" qui tourne!
+            const ttBase = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.07, 0.54), psSteelMat);
+            ttBase.position.set(-0.92, 0.915, 0); vinylStation.add(ttBase);
+            const ttPlatter = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.23, 0.025, 28), psChromeMat);
+            ttPlatter.position.set(-0.98, 0.96, 0); vinylStation.add(ttPlatter);
+            const ttDiscGroup = new THREE.Group();
+            ttDiscGroup.position.set(-0.98, 0.978, 0);
+            const ttVinyl = new THREE.Mesh(new THREE.CylinderGeometry(0.205, 0.205, 0.006, 28), new THREE.MeshStandardMaterial({ color: '#0c0d11', roughness: 0.14, metalness: 0.45 }));
+            const ttLabel = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.068, 0.008, 18), new THREE.MeshStandardMaterial({ color: '#f59e0b', roughness: 0.45 }));
+            const ttDot = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.009, 0.012), new THREE.MeshBasicMaterial({ color: '#ffffff' }));
+            ttDot.position.x = 0.045;
+            ttDiscGroup.add(ttVinyl, ttLabel, ttDot);
+            vinylStation.add(ttDiscGroup);
+            window._proStudioTurntableDisc = ttDiscGroup;
+            const toneArm = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.28, 8), psChromeMat);
+            toneArm.rotation.z = Math.PI / 2; toneArm.rotation.y = 0.42; toneArm.position.set(-0.75, 0.995, -0.06); vinylStation.add(toneArm);
+
+            // Pochettes illustrées alignées sur la crédence (interactif achievements_board_mesh!)
+            for (let k = 0; k < 10; k++) {
+                const tex = (typeof window.createVinylCoverTexture === 'function') ? window.createVinylCoverTexture('pro_lp_' + k, 256) : null;
+                const lp = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.46, 0.015), new THREE.MeshStandardMaterial({ map: tex || null, color: tex ? '#ffffff' : '#f59e0b', roughness: 0.4 }));
+                lp.position.set(0.15 + k * 0.12, 1.11, 0); lp.rotation.y = Math.PI / 2 - 0.16; lp.castShadow = true;
+                vinylStation.add(lp);
+            }
+            tagInteractable(vinylStation, 'achievements_board_mesh');
+            proStudioGroup.add(vinylStation);
+
+            // 4 Grands Cadres Disques d'Or / Platine / Diamant éclairés sur le Mur Sud-Ouest
+            const awardColors = ['#cbd5e1', '#facc15', '#f1f5f9', '#38bdf8'];
+            [-5.8, -4.4, -3.0, -1.6].forEach((ax, ai) => {
+                const f = new THREE.Mesh(new THREE.BoxGeometry(0.92, 1.12, 0.05), psSteelMat);
+                f.position.set(ax, 2.25, 5.95);
+                const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.30, 0.02, 32), new THREE.MeshStandardMaterial({ color: awardColors[ai], roughness: 0.16, metalness: 0.96, envMapIntensity: 1.7 }));
+                disc.rotation.x = Math.PI / 2; disc.position.set(0, 0.08, -0.03); f.add(disc);
+                proStudioGroup.add(f);
+            });
+
+            // 9. BAR ESPRESSO PRO CHROMÉ (La Marzocco — interactif desk_mug_mesh!) + MÉRIDIENNE VIP FACE SKYLINE (bed_mesh!)
+            const barGroup = new THREE.Group();
+            barGroup.position.set(1.6, -1.0, 5.2);
+            const barCounter = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.98, 0.78), psDarkWoodMat);
+            barCounter.position.y = 0.49; barCounter.castShadow = true; barGroup.add(barCounter);
+            const barTop = new THREE.Mesh(new THREE.BoxGeometry(2.18, 0.06, 0.84), psMarbleMat);
+            barTop.position.y = 1.01; barGroup.add(barTop);
+            // Machine Espresso Pro chromée
+            const espBody = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.44, 0.48), psChromeMat);
+            espBody.position.set(-0.35, 1.26, -0.04); espBody.castShadow = true; barGroup.add(espBody);
+            const espPanel = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.16, 0.05), psSteelMat);
+            espPanel.position.set(-0.35, 1.38, 0.21); barGroup.add(espPanel);
+            const espCup = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.036, 0.08, 14), new THREE.MeshStandardMaterial({ color: '#f8f6f0', roughness: 0.2 }));
+            espCup.position.set(-0.35, 1.10, 0.16); barGroup.add(espCup);
+            tagInteractable(barGroup, 'desk_mug_mesh');
+            proStudioGroup.add(barGroup);
+
+            // Méridienne / Daybed Design Penthouse face à la baie vitrée d'angle (interactif bed_mesh pour dormir/récupérer!)
+            const daybedGroup = new THREE.Group();
+            daybedGroup.position.set(5.4, -1.0, 2.75);
+            daybedGroup.rotation.y = -0.35;
+            const dbFrame = new THREE.Mesh(new THREE.BoxGeometry(2.45, 0.22, 1.35), psWalnutMat);
+            dbFrame.position.y = 0.28; dbFrame.castShadow = true; dbFrame.receiveShadow = true; daybedGroup.add(dbFrame);
+            [[-1.08, -0.55], [1.08, -0.55], [-1.08, 0.55], [1.08, 0.55]].forEach(([dx, dz]) => {
+                const l = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.022, 0.22, 10), psBrassMat);
+                l.position.set(dx, 0.11, dz); daybedGroup.add(l);
+            });
+            const dbMattress = new THREE.Mesh(new THREE.BoxGeometry(2.34, 0.22, 1.26), new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#ebe6dc', roughness: 0.9 }));
+            dbMattress.position.y = 0.48; dbMattress.castShadow = true; daybedGroup.add(dbMattress);
+            const dbBolster = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 1.18, 18), psLeatherMat);
+            dbBolster.rotation.x = Math.PI / 2; dbBolster.position.set(-0.96, 0.66, 0); dbBolster.castShadow = true; daybedGroup.add(dbBolster);
+            const dbThrow = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.06, 1.30), new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#a86445', roughness: 0.94 }));
+            dbThrow.position.set(0.58, 0.60, 0); daybedGroup.add(dbThrow);
+            tagInteractable(daybedGroup, 'bed_mesh');
+            proStudioGroup.add(daybedGroup);
+
+            // Plante architecturale Olivier / Ficus géant dans le coin Sud-Est
+            const psPot = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.28, 0.64, 18), psMarbleMat);
+            psPot.position.set(6.95, -0.68, 4.95); psPot.castShadow = true; proStudioGroup.add(psPot);
+            const psTree = new THREE.Mesh(new THREE.SphereGeometry(0.68, 14, 12), new THREE.MeshStandardMaterial({ color: '#2d5c3b', roughness: 0.65 }));
+            psTree.scale.set(1.0, 1.35, 1.0); psTree.position.set(6.95, 0.72, 4.95); psTree.castShadow = true; proStudioGroup.add(psTree);
+
+            // 10. SKYLINE VERTIGINEUSE DU 42E ÉTAGE (Tours en contrebas + Héliport lumineux + Flèches de gratte-ciels!)
+            const penthouseSkylineGroup = new THREE.Group();
+            const helipadMat = new THREE.MeshStandardMaterial({ color: '#2b303b', roughness: 0.7 });
+            const spireMat = new THREE.MeshStandardMaterial({ color: '#1b202b', roughness: 0.45, metalness: 0.6 });
+            const helipadTower = new THREE.Mesh(new THREE.BoxGeometry(14, 48, 14), spireMat);
+            helipadTower.position.set(28, -28, 12); penthouseSkylineGroup.add(helipadTower);
+            const helipadRing = new THREE.Mesh(new THREE.RingGeometry(3.4, 4.2, 28), new THREE.MeshBasicMaterial({ color: '#fbbf24', side: THREE.DoubleSide }));
+            helipadRing.rotation.x = -Math.PI / 2; helipadRing.position.set(28, -3.95, 12); penthouseSkylineGroup.add(helipadRing);
+            // Tours voisines dont les toits arrivent sous ou à hauteur du 42e étage (vue plongeante vertigineuse!)
+            const highTowers = [
+                [24, -18, -16, 12, 42, 12], [38, -8, -4, 16, 62, 16], [22, -24, 28, 12, 34, 12],
+                [6, -22, 30, 14, 40, 12], [-14, -16, 36, 15, 50, 14], [48, -4, 24, 18, 72, 18],
+                [36, -12, -34, 14, 56, 14], [-6, -26, 22, 11, 28, 11], [54, 4, -12, 20, 82, 20]
+            ];
+            highTowers.forEach(([tx, ty, tz, tw, th, td], idx) => {
+                const matRef = (window.cityBuildingMats && window.cityBuildingMats.length)
+                    ? window.cityBuildingMats[idx % window.cityBuildingMats.length]
+                    : spireMat;
+                const b = new THREE.Mesh(new THREE.BoxGeometry(tw, th, td), matRef);
+                b.position.set(tx, ty, tz); penthouseSkylineGroup.add(b);
+                // Antenne rouge clignotante sur les plus hauts gratte-ciels
+                if (th >= 50) {
+                    const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.14, 10, 6), psSteelMat);
+                    ant.position.set(tx, ty + th / 2 + 5, tz); penthouseSkylineGroup.add(ant);
+                    const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.32, 8, 8), new THREE.MeshBasicMaterial({ color: '#ef4444' }));
+                    beacon.position.set(tx, ty + th / 2 + 10.1, tz); penthouseSkylineGroup.add(beacon);
+                }
+            });
+            proStudioGroup.add(penthouseSkylineGroup);
+
+            // Lumières intérieures chaudes dédiées au Penthouse Studio Pro
+            const psWarmKey = new THREE.PointLight('#ffd6a5', 2.4, 18, 1.5);
+            psWarmKey.position.set(0, 3.6, -1.8); proStudioGroup.add(psWarmKey);
+            const psLoungeLight = new THREE.PointLight('#ffc896', 2.0, 15, 1.5);
+            psLoungeLight.position.set(-4.0, 3.4, 2.5); proStudioGroup.add(psLoungeLight);
+            const psBoothLight = new THREE.PointLight('#ffe2ba', 1.5, 9, 1.6);
+            psBoothLight.position.set(5.2, 2.8, -3.5); proStudioGroup.add(psBoothLight);
+
+            scene.add(proStudioGroup);
+            window.proStudioGroup = proStudioGroup;
+            window.bedroomWorldGroups = [
+                archGroup, floor, wallLeft, wallRight, deskGroup, bedGroup, crateGroup,
+                sofaGroup, sideTableGroup, rugGroup, tvGroup, rackGroup,
+                acousticGroupL, acousticGroupR, synthGroup, guitarGroup, doorGroup
+            ].filter(Boolean);
+            window._proStudioExteriorRef = exteriorGroup;
+            window.activeStudioLocation = 'bedroom';
+
+            // Animation live des VU-mètres SSL, platine vinyle & LEDs modulaires Mike Dean
+            window.updateProStudioAnim = function(tSec) {
+                if (window.activeStudioLocation !== 'pro_studio') return;
+                if (window._proStudioTurntableDisc) {
+                    window._proStudioTurntableDisc.rotation.y -= 0.024;
+                }
+                if (window.proModularLeds) {
+                    for (let i = 0; i < window.proModularLeds.length; i++) {
+                        const it = window.proModularLeds[i];
+                        it.mesh.visible = (Math.sin(tSec * 5.2 + it.phase) > -0.15);
+                    }
+                }
+                if (window.proStudioOnAirMat && window.deskMicState) {
+                    const isHot = performance.now() < (window.deskMicState.activeUntil || 0);
+                    window.proStudioOnAirMat.emissiveIntensity = isHot ? (1.6 + Math.sin(tSec * 8) * 0.4) : 0.35;
+                }
+                const now = performance.now();
+                if (window._proVuCtx && now - (window._proVuLastTs || 0) > 75) {
+                    window._proVuLastTs = now;
+                    const ctx = window._proVuCtx;
+                    ctx.fillStyle = '#0e0d0c'; ctx.fillRect(0, 0, 1024, 128);
+                    for (let m = 0; m < 16; m++) {
+                        const mx = 10 + m * 63;
+                        ctx.fillStyle = '#f5d28a'; ctx.fillRect(mx, 14, 54, 100);
+                        ctx.strokeStyle = '#332210'; ctx.lineWidth = 2;
+                        ctx.beginPath(); ctx.arc(mx + 27, 108, 36, Math.PI * 1.18, Math.PI * 1.82); ctx.stroke();
+                        ctx.strokeStyle = '#dc2626';
+                        ctx.beginPath(); ctx.arc(mx + 27, 108, 36, Math.PI * 1.66, Math.PI * 1.82); ctx.stroke();
+                        const ang = Math.PI * (1.22 + 0.52 * Math.abs(Math.sin(tSec * 4.2 + m * 0.65) * Math.cos(tSec * 1.8 + m * 0.3)));
+                        ctx.strokeStyle = '#141210'; ctx.lineWidth = 2.5;
+                        ctx.beginPath(); ctx.moveTo(mx + 27, 108);
+                        ctx.lineTo(mx + 27 + Math.cos(ang) * 40, 108 + Math.sin(ang) * 40); ctx.stroke();
+                    }
+                    window._proVuTex.needsUpdate = true;
+                }
+            };
+
+            // Contrôleur de bascule Chambre <-> Studio Pro 42e Étage
+            window.applyStudioLocation = function(loc) {
+                const isPro = (loc === 'pro_studio');
+                window.activeStudioLocation = isPro ? 'pro_studio' : 'bedroom';
+                if (typeof state !== 'undefined' && state) state.activeLocation = window.activeStudioLocation;
+
+                if (window.proStudioGroup) window.proStudioGroup.visible = isPro;
+                if (window.bedroomWorldGroups) {
+                    window.bedroomWorldGroups.forEach(g => {
+                        if (!g) return;
+                        if (isPro) {
+                            g.visible = false;
+                        } else {
+                            // Restaure la visibilité de base de la chambre (les meubles Studio+ seront resynchronisés juste après)
+                            if (g === archGroup || g === floor || g === wallLeft || g === wallRight || g === deskGroup || g === bedGroup || g === crateGroup || g === doorGroup) {
+                                g.visible = true;
+                            }
+                        }
+                    });
+                }
+                // Conserve le ciel 360° visible dans les deux lieux (on le détache dans scene si nécessaire)
+                if (window.skyDomeMesh && window.skyDomeMesh.parent !== scene) {
+                    scene.add(window.skyDomeMesh);
+                }
+                if (window.skyDomeMesh) window.skyDomeMesh.visible = true;
+
+                if (!isPro) {
+                    if (typeof syncFurniture3DVisibility === 'function') { try { syncFurniture3DVisibility(); } catch(e) {} }
+                    if (typeof window.applyRoomEvolutionTier === 'function' && typeof state !== 'undefined' && state) {
+                        window.applyRoomEvolutionTier(state.roomTier || window.getTargetRoomTier(state), false);
+                    }
+                } else {
+                    window.roomTierLightMult = 1.0;
+                    window.currentRoomVisualTier = 3; // Active le DAW Mastering Pro + Analyseur FFT sur les 2 écrans!
+                    window._pcLiveLastTs = 0;
+                    if (typeof window.updateLivePcScreen === 'function') window.updateLivePcScreen(performance.now() * 0.001);
+                }
+
+                // Met à jour les boutons HUD & Porte
+                window.syncStudioSwitchButtons && window.syncStudioSwitchButtons();
+            };
+
+            window.syncStudioSwitchButtons = function() {
+                const st = typeof state !== 'undefined' ? state : null;
+                let unlocked = Boolean(st && st.studioUnlocked);
+                if (!unlocked && st && typeof calculateLevelData === 'function') {
+                    const lv = calculateLevelData(true);
+                    if (lv && lv.avg >= 80) unlocked = true;
+                }
+                const isPro = window.activeStudioLocation === 'pro_studio';
+                const hudBtn = document.getElementById('btn-switch-studio-room');
+                const hudLbl = document.getElementById('btn-switch-studio-label');
+                const doorBtn = document.getElementById('door-elevator-btn');
+                const doorLbl = document.getElementById('door-elevator-label');
+                if (hudBtn) hudBtn.classList.toggle('hidden', !unlocked);
+                if (hudLbl) hudLbl.textContent = isPro ? '🏠 RETOUR CHAMBRE' : '🏢 STUDIO PRO 42e';
+                if (doorBtn) doorBtn.classList.toggle('hidden', !unlocked);
+                if (doorLbl) doorLbl.textContent = isPro
+                    ? '🏠 Prendre l’ascenseur → Retourner à la Chambre (4e Étage)'
+                    : '🏢 Prendre l’ascenseur → Studio Pro (42e Étage)';
+            };
+
+            // Animation Cinématique Couloir + Ascenseur 42e Étage!
+            window.travelToStudioLocation = function(forcedTarget) {
+                if (window._elevatorBusy) return;
+                const targetLoc = forcedTarget || (window.activeStudioLocation === 'pro_studio' ? 'bedroom' : 'pro_studio');
+                const goingUp = (targetLoc === 'pro_studio');
+                window._elevatorBusy = true;
+                if (typeof window.exitFpsPointerLock === 'function') window.exitFpsPointerLock();
+
+                // 1. Ouvre la porte physique vers le couloir
+                window.doorTargetAngle = 0.72;
+                if (window.proStudioDoorPivot) window._proDoorTarget = 0.72;
+                try { if (typeof playTone === 'function') playTone(260, 'sine', 0.14, 0.04); } catch(e) {}
+
+                const ov = document.getElementById('elevator-transition-overlay');
+                const floorEl = document.getElementById('elev-floor-num');
+                const titleEl = document.getElementById('elev-dest-title');
+                const subEl = document.getElementById('elev-dest-sub');
+
+                if (titleEl) titleEl.textContent = goingUp ? 'STUDIO PRO · 42e ÉTAGE' : 'CHAMBRE · 4e ÉTAGE';
+                if (subEl) subEl.textContent = goingUp ? 'MONTÉE VERS LE 42e ÉTAGE…' : 'DESCENTE VERS LE 4e ÉTAGE…';
+
+                // 2. Fermeture des portes d'ascenseur en inox + défilement des étages
+                setTimeout(() => {
+                    if (ov) { ov.classList.add('active'); requestAnimationFrame(() => ov.classList.add('closed')); }
+                    let curF = goingUp ? 4 : 42;
+                    const endF = goingUp ? 42 : 4;
+                    if (floorEl) floorEl.textContent = curF + 'e';
+
+                    const stepTimer = setInterval(() => {
+                        curF += goingUp ? 3 : -3;
+                        if ((goingUp && curF >= endF) || (!goingUp && curF <= endF)) {
+                            curF = endF;
+                            clearInterval(stepTimer);
+                            if (floorEl) floorEl.textContent = curF + 'e';
+                            if (subEl) subEl.textContent = goingUp ? 'BIENVENUE AU 42e ÉTAGE' : 'ARRIVÉE AU 4e ÉTAGE';
+                            // Ding d'ascenseur cristallin!
+                            try {
+                                if (typeof playTone === 'function') {
+                                    playTone(1046.5, 'sine', 0.35, 0.06);
+                                    setTimeout(() => playTone(1318.5, 'sine', 0.45, 0.055), 110);
+                                }
+                            } catch(e) {}
+
+                            // 3. Bascule de la scène 3D + Repositionnement du joueur en zone 100 % dégagée (zéro collision!)
+                            window.applyStudioLocation(targetLoc);
+                            if (typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar) {
+                                if (goingUp) {
+                                    currentRoomAvatar.position.set(0.2, -1.0, 1.4);
+                                    if (window.fps) { window.fps.yaw = 0.15; window.fps.pitch = -0.04; }
+                                } else {
+                                    currentRoomAvatar.position.set(0.2, -1.0, 2.4);
+                                    if (window.fps) { window.fps.yaw = 0.42; window.fps.pitch = -0.04; }
+                                }
+                            }
+                            window.doorTargetAngle = 0;
+                            window._proDoorTarget = 0;
+                            if (typeof saveGame === 'function') saveGame();
+
+                            // 4. Ouverture des portes d'ascenseur sur le nouveau lieu!
+                            setTimeout(() => {
+                                if (ov) ov.classList.remove('closed');
+                                setTimeout(() => {
+                                    if (ov) ov.classList.remove('active');
+                                    window._elevatorBusy = false;
+                                }, 740);
+                            }, 420);
+                        } else {
+                            if (floorEl) floorEl.textContent = curF + 'e';
+                            try { if (typeof playTone === 'function') playTone(goingUp ? 420 + curF * 6 : 660 - (42 - curF) * 5, 'sine', 0.035, 0.016); } catch(e) {}
+                        }
+                    }, 75);
+                }, 420);
+            };
+
 
             scene.add(archGroup);
 
@@ -10973,7 +11862,25 @@ const DEFAULT_STATE = {
         
 
         function checkCollision(x, z) {
-            const r = 0.6; 
+            const r = 0.6;
+            if (window.activeStudioLocation === 'pro_studio') {
+                const rp = 0.25;
+                // Limites spacieuses du Penthouse Studio Pro 42e (16×12m)
+                if (x < -7.55 || x > 7.55 || z < -5.55 || z > 5.55) return true;
+                // Grande Console SSL + Racks latéraux
+                if (x > -2.85 - rp && x < 2.55 + rp && z > -3.45 - rp && z < -1.95 + rp) return true;
+                // Cabine Vocale Vitrée (Nord-Est)
+                if (x > 3.25 - rp && x < 7.6 + rp && z > -5.7 - rp && z < -1.65 + rp) return true;
+                // Mur de Synthés Mike Dean (Ouest)
+                if (x > -7.8 - rp && x < -6.35 + rp && z > -3.95 - rp && z < 0.25 + rp) return true;
+                // Lounge VIP Canapé d'angle & Table basse
+                if (x > -5.75 - rp && x < -2.65 + rp && z > 1.25 - rp && z < 3.45 + rp) return true;
+                // Station Vinyle + Bar Espresso (Sud)
+                if (x > -5.2 - rp && x < 2.6 + rp && z > 4.85 - rp && z < 5.9 + rp) return true;
+                // Méridienne Penthouse (Sud-Est)
+                if (x > 4.35 - rp && x < 6.5 + rp && z > 2.0 - rp && z < 3.5 + rp) return true;
+                return false;
+            }
             if (x > -4.45 - r && x < 0.05 + r && z > -4.6 - r && z < -2.4 + r) return true; // Bureau
             if (x > 2.6 - r && x < 5.0 + r && z > -5.0 - r && z < -0.8 + r) return true;    // Lit
             if (x < -5 + r || x > 5 - r || z < -5 + r || z > 5 - r) return true;            // Murs
@@ -11572,14 +12479,24 @@ const DEFAULT_STATE = {
                 window._loginMouseSmoothX = (window._loginMouseSmoothX || 0) + ((window._loginMouseX || 0) - (window._loginMouseSmoothX || 0)) * 0.04;
                 window._loginMouseSmoothY = (window._loginMouseSmoothY || 0) + ((window._loginMouseY || 0) - (window._loginMouseSmoothY || 0)) * 0.04;
 
-                const camX = 1.65 + Math.sin(time * 0.12) * 0.40 + window._loginMouseSmoothX * 0.20;
-                const camY = 1.48 + Math.cos(time * 0.09) * 0.04 - window._loginMouseSmoothY * 0.08;
-                const camZ = 2.65 + Math.cos(time * 0.11) * 0.18;
-                camera.position.set(camX, camY, camZ);
-                camera.fov = 60;
-                camera.updateProjectionMatrix();
-                // Cadre équilibré : le bureau, l'horloge Nixie, le lit et la baie vitrée s'ouvrent magistralement à droite du panneau UI
-                camera.lookAt(-0.95 + window._loginMouseSmoothX * 0.22, 0.78 - window._loginMouseSmoothY * 0.10, -2.85);
+                if (window.activeStudioLocation === 'pro_studio') {
+                    if (typeof window.updateProStudioAnim === 'function') window.updateProStudioAnim(time);
+                    const camX = 3.2 + Math.sin(time * 0.10) * 0.65 + window._loginMouseSmoothX * 0.28;
+                    const camY = 1.85 + Math.cos(time * 0.08) * 0.06 - window._loginMouseSmoothY * 0.10;
+                    const camZ = 3.2 + Math.cos(time * 0.09) * 0.28;
+                    camera.position.set(camX, camY, camZ);
+                    camera.fov = 62;
+                    camera.updateProjectionMatrix();
+                    camera.lookAt(-0.6 + window._loginMouseSmoothX * 0.25, 0.95 - window._loginMouseSmoothY * 0.10, -2.8);
+                } else {
+                    const camX = 1.65 + Math.sin(time * 0.12) * 0.40 + window._loginMouseSmoothX * 0.20;
+                    const camY = 1.48 + Math.cos(time * 0.09) * 0.04 - window._loginMouseSmoothY * 0.08;
+                    const camZ = 2.65 + Math.cos(time * 0.11) * 0.18;
+                    camera.position.set(camX, camY, camZ);
+                    camera.fov = 60;
+                    camera.updateProjectionMatrix();
+                    camera.lookAt(-0.95 + window._loginMouseSmoothX * 0.22, 0.78 - window._loginMouseSmoothY * 0.10, -2.85);
+                }
                 camera.rotation.order = 'YXZ';
                 window._loginCamPos = camera.position.clone();
                 window._loginCamYaw = camera.rotation.y;
@@ -11860,15 +12777,17 @@ const DEFAULT_STATE = {
                 let displacementX = 0;
                 let displacementZ = 0;
                 const canCheckCollision = typeof checkCollision === 'function';
+                // Anti-blocage : si la position actuelle est déjà dans une zone de collision, on autorise la sortie libre!
+                const alreadyStuck = canCheckCollision && checkCollision(currentRoomAvatar.position.x, currentRoomAvatar.position.z);
 
-                if (!canCheckCollision || !checkCollision(nextX, currentRoomAvatar.position.z)) {
+                if (!canCheckCollision || alreadyStuck || !checkCollision(nextX, currentRoomAvatar.position.z)) {
                     displacementX = nextX - currentRoomAvatar.position.x;
                     currentRoomAvatar.position.x = nextX;
                 } else {
                     window.velX = 0; 
                 }
                 
-                if (!canCheckCollision || !checkCollision(currentRoomAvatar.position.x, nextZ)) {
+                if (!canCheckCollision || alreadyStuck || !checkCollision(currentRoomAvatar.position.x, nextZ)) {
                     displacementZ = nextZ - currentRoomAvatar.position.z;
                     currentRoomAvatar.position.z = nextZ;
                 } else {
@@ -12342,6 +13261,11 @@ const DEFAULT_STATE = {
                         }
                     }
 
+                    // --- ANIMATIONS LIVE DU STUDIO PRO 42E ÉTAGE (VU SSL, PLATINE, MODULAIRES, PORTE) ---
+                    if (typeof window.updateProStudioAnim === 'function') window.updateProStudioAnim(time);
+                    if (window.proStudioDoorPivot && typeof window._proDoorTarget === 'number') {
+                        window.proStudioDoorPivot.rotation.y += (window._proDoorTarget - window.proStudioDoorPivot.rotation.y) * 0.14;
+                    }
                     // --- MICRO-ANIMATION DE LA PORTE DU STUDIO ---
                     if (window.doorPivot && typeof window.doorTargetAngle === 'number') {
                         window.doorPivot.rotation.y += (window.doorTargetAngle - window.doorPivot.rotation.y) * 0.14;
@@ -12408,8 +13332,10 @@ const DEFAULT_STATE = {
                     camera.fov = startFov + (targetFov - startFov) * ease;
                     camera.updateProjectionMatrix();
                 } else if (currentState.isSleeping) {
-                    // POV Allongé sur le lit regardant le plafond / baie vitrée
-                    const bedTarget = window._v3finalCam.set(3.8, 0.24, -4.05);
+                    // POV Allongé sur le lit (Chambre) ou sur la Méridienne face skyline (42F Studio Pro)
+                    const bedTarget = (window.activeStudioLocation === 'pro_studio')
+                        ? window._v3finalCam.set(4.8, 0.32, 2.55)
+                        : window._v3finalCam.set(3.8, 0.24, -4.05);
                     camera.position.lerp(bedTarget, 0.08);
                     const restPitch = 0.62 + Math.sin(time * 0.45) * 0.03;
                     const restYaw = 0.65 + Math.cos(time * 0.3) * 0.04;
@@ -12419,8 +13345,10 @@ const DEFAULT_STATE = {
                         0, 'YXZ'
                     );
                 } else if (currentState.isSitting) {
-                    // POV Assis sur le canapé face à la TV avec regard libre assis
-                    const sitPos = window._v3finalCam.set(-3.82, 0.56, 1.5);
+                    // POV Assis sur le canapé (Chambre ou Lounge VIP 42F)
+                    const sitPos = (window.activeStudioLocation === 'pro_studio')
+                        ? window._v3finalCam.set(-4.2, 0.62, 1.65)
+                        : window._v3finalCam.set(-3.82, 0.56, 1.5);
                     camera.position.lerp(sitPos, 0.12);
                     const breathe = Math.sin(time * 1.1) * 0.012;
                     camera.position.y += breathe;
@@ -13599,6 +14527,10 @@ const DEFAULT_STATE = {
             if (k === 'e') {
                 e.preventDefault();
                 window.executeFpsTargetInteraction();
+            } else if (k === 'l') {
+                if (typeof state !== 'undefined' && state && state.studioUnlocked && window.isFpsRoomActive && window.isFpsRoomActive()) {
+                    if (typeof window.travelToStudioLocation === 'function') window.travelToStudioLocation();
+                }
             } else if (k === 'f') {
                 e.preventDefault();
                 window.exitFpsPointerLock();
@@ -13774,10 +14706,14 @@ const DEFAULT_STATE = {
             else if (objName === 'achievements_board_mesh') { window.exitFpsPointerLock(); openAchievementsBoard(); }
             else if (objName === 'door_mesh') {
                 const doorReady = parseInt(state.cooldowns?.doorTimeReady, 10) || 0;
-                const canPlayDoor = getTotalMins() >= doorReady;
+                const canPlayDoor = getTotalMins() >= doorReady || Boolean(state.studioUnlocked);
                 if (canPlayDoor && !state.isEventActive && !state.isSleeping && !state.isSitting) {
                     window.exitFpsPointerLock();
-                    if (typeof window.animateDoorCrackOpen === 'function') {
+                    if (typeof window.syncStudioSwitchButtons === 'function') window.syncStudioSwitchButtons();
+                    if (window.activeStudioLocation === 'pro_studio') {
+                        window._proDoorTarget = 0.48;
+                        setTimeout(() => { openMiniGameMenu(); setTimeout(() => { window._proDoorTarget = 0; }, 900); }, 320);
+                    } else if (typeof window.animateDoorCrackOpen === 'function') {
                         window.animateDoorCrackOpen(() => openMiniGameMenu());
                     } else {
                         openMiniGameMenu();
@@ -13787,7 +14723,7 @@ const DEFAULT_STATE = {
                 }
             }
             else if (objName === 'synth_mesh') {
-                if (isOwned('synth')) openPianoRoll();
+                if (isOwned('synth') || window.activeStudioLocation === 'pro_studio') openPianoRoll();
                 else showToast("Tu dois d'abord acheter le Synthétiseur dans Studio+ !", "warning");
             }
             else if (objName === 'bed_mesh') {
@@ -13795,7 +14731,7 @@ const DEFAULT_STATE = {
                 else showToast("Tu n'es pas assez fatigué (< 50% NRJ).", "info");
             }
             else if (objName === 'sofa_mesh') {
-                if (isOwned('sofa')) goSit();
+                if (isOwned('sofa') || window.activeStudioLocation === 'pro_studio') goSit();
                 else showToast("Tu dois d'abord acheter le Canapé en cuir dans Studio+ !", "warning");
             }
             else if (objName === 'interactiveLamp') {
@@ -14326,6 +15262,21 @@ function calculateLevelData(isSilentInit = false) {
                 if (typeof saveGame === 'function') saveGame();
                 window.applyRoomEvolutionTier(targetTier, true);
             }
+            // Déblocage du VRAI STUDIO PRO (42e Étage) dès 80 % de Global Mastery!
+            if (avgMastery >= 80 && !state.studioUnlocked) {
+                state.studioUnlocked = true;
+                if (typeof saveGame === 'function') saveGame();
+                if (!isSilentInit && !window.isBooting) {
+                    const banner = document.getElementById('room-evolution-banner');
+                    const titleEl = document.getElementById('room-evo-title');
+                    const subEl = document.getElementById('room-evo-sub');
+                    if (titleEl) titleEl.textContent = '🏢 STUDIO PRO DÉBLOQUÉ · 42E ÉTAGE';
+                    if (subEl) subEl.textContent = '80 % Global Mastery atteint ! Utilise la porte ou la touche [L] pour y accéder à tout moment.';
+                    if (banner) { banner.classList.add('visible'); setTimeout(() => banner.classList.remove('visible'), 5500); }
+                    if (typeof showToast === 'function') showToast('🏢 Penthouse Studio Pro (42e Étage) débloqué ! Appuie sur [L] ou passe par la porte.', 'success');
+                }
+            }
+            if (typeof window.syncStudioSwitchButtons === 'function') window.syncStudioSwitchButtons();
         }
     } catch(e) {}
 
@@ -18209,6 +19160,13 @@ document.addEventListener('mouseover', (e) => {
                     money: 25000, rep: 78, followers: 28000, energy: 95, inspi: 92, hype: 84,
                     roomTier: 3, ownedFurniture: ['rug', 'sofa', 'table', 'tv', 'rack_lamp', 'led_panel_l', 'led_panel_r', 'synth', 'guitar'],
                     stats: { tracks: 8, bangers: 6, flops: 1, totalEarned: 62000 }
+                },
+                DEV_STUDIO: {
+                    username: 'DEV_STUDIO', activeCharacter: 3, day: 60, timeMins: 1080,
+                    money: 120000, rep: 100, followers: 65000, energy: 96, inspi: 95, hype: 94,
+                    roomTier: 3, studioUnlocked: true, activeLocation: 'pro_studio',
+                    ownedFurniture: ['rug', 'sofa', 'table', 'tv', 'rack_lamp', 'led_panel_l', 'led_panel_r', 'synth', 'guitar'],
+                    stats: { tracks: 14, bangers: 11, flops: 1, totalEarned: 340000 }
                 }
             };
 
@@ -18277,9 +19235,14 @@ document.addEventListener('mouseover', (e) => {
                 let autoHour = 9.2, autoRain = 0.0, autoClock = '08:00', autoWeather = 'MATIN CLAIR', autoDay = 1;
 
                 if (parsedSave) {
-                    if (typeof window.getTargetRoomTier === 'function' && typeof window.applyRoomEvolutionTier === 'function') {
-                        const saveTier = Math.max(Number(parsedSave.roomTier) || 1, window.getTargetRoomTier(parsedSave));
-                        window.applyRoomEvolutionTier(saveTier, false);
+                    if (parsedSave.activeLocation === 'pro_studio' && typeof window.applyStudioLocation === 'function') {
+                        window.applyStudioLocation('pro_studio');
+                    } else {
+                        if (typeof window.applyStudioLocation === 'function') window.applyStudioLocation('bedroom');
+                        if (typeof window.getTargetRoomTier === 'function' && typeof window.applyRoomEvolutionTier === 'function') {
+                            const saveTier = Math.max(Number(parsedSave.roomTier) || 1, window.getTargetRoomTier(parsedSave));
+                            window.applyRoomEvolutionTier(saveTier, false);
+                        }
                     }
                     const day = parsedSave.day || 1;
                     const tMins = typeof parsedSave.timeMins === 'number' ? parsedSave.timeMins : 480;
@@ -18312,6 +19275,7 @@ document.addEventListener('mouseover', (e) => {
                         if (avEl) avEl.classList.add('selected');
                     }
                 } else {
+                    if (typeof window.applyStudioLocation === 'function') window.applyStudioLocation('bedroom');
                     if (typeof window.applyRoomEvolutionTier === 'function') window.applyRoomEvolutionTier(1, false);
                     if (sDot) { sDot.className = 'w-2 h-2 rounded-full bg-amber-400 shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.75)]'; }
                     if (sTitle) { sTitle.textContent = 'NOUVELLE CARRIÈRE'; sTitle.className = 'text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 truncate'; }
@@ -19879,6 +20843,18 @@ document.addEventListener('mouseover', (e) => {
                 const initTier = Math.max(Number(state.roomTier) || 1, window.getTargetRoomTier(state));
                 state.roomTier = initTier;
                 window.applyRoomEvolutionTier(initTier, false);
+            }
+            if (typeof window.applyStudioLocation === 'function') {
+                const targetLoc = (state.activeLocation === 'pro_studio' && (state.studioUnlocked || username.toUpperCase() === 'DEV_STUDIO')) ? 'pro_studio' : 'bedroom';
+                if (username.toUpperCase() === 'DEV_STUDIO') state.studioUnlocked = true;
+                window.applyStudioLocation(targetLoc);
+                if (targetLoc === 'pro_studio' && typeof currentRoomAvatar !== 'undefined' && currentRoomAvatar) {
+                    currentRoomAvatar.position.set(0.2, -1.0, 1.4);
+                    if (window.fps) { window.fps.yaw = 0.15; window.fps.pitch = -0.04; }
+                }
+            }
+            if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                document.activeElement.blur();
             }
             if (typeof window.updateVinylCrate === 'function') window.updateVinylCrate();
 
