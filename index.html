@@ -319,6 +319,32 @@
                 background: radial-gradient(circle at center, transparent 54%, rgba(0, 0, 0, 0.52) 100%);
             }
 
+            /* Ultra-Subtle Photographic Film Grain (kills sterile CGI look) */
+            #fps-film-grain {
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                z-index: 7;
+                opacity: 0.038;
+                mix-blend-mode: overlay;
+                background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+                background-size: 180px 180px;
+            }
+
+            /* Soft Peripheral Eye-Fatigue Blur (< 25% NRJ) - keeps center crosshair razor-sharp */
+            #fps-fatigue-blur {
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                z-index: 8;
+                opacity: 0;
+                transition: opacity 0.8s ease;
+                backdrop-filter: blur(5px) saturate(0.8);
+                -webkit-backdrop-filter: blur(5px) saturate(0.8);
+                mask-image: radial-gradient(circle at center, transparent 36%, black 92%);
+                -webkit-mask-image: radial-gradient(circle at center, transparent 36%, black 92%);
+            }
+
             /* Realistic Eyelids (Sleep / Wake-up / Intro) */
             #fps-eyelids {
                 position: fixed;
@@ -3787,6 +3813,8 @@
 
         <div id="room-ui">
             <div id="fps-vignette"></div>
+            <div id="fps-film-grain"></div>
+            <div id="fps-fatigue-blur"></div>
             <div id="fps-eyelids">
                 <div class="fps-eyelid fps-eyelid-top"></div>
                 <div class="fps-eyelid fps-eyelid-bottom"></div>
@@ -5531,7 +5559,7 @@ const DEFAULT_STATE = {
 
         const aspect = window.innerWidth / window.innerHeight;
         const baseFpsFov = window.innerWidth <= 767 ? 74 : 68;
-        const camera = new THREE.PerspectiveCamera(baseFpsFov, aspect, 0.08, 160);
+        const camera = new THREE.PerspectiveCamera(baseFpsFov, aspect, 0.08, 280);
         camera.rotation.order = 'YXZ';
         camera.position.set(0.2, 1.45, 2.4);
 
@@ -7412,45 +7440,142 @@ const DEFAULT_STATE = {
                 return { map: configureTex(diffC, rx, ry, true), bumpMap: configureTex(bumpC, rx, ry, false) };
             }
 
-            // 6. ÉCRAN PC ABLESTUDIO DAW LIVE TEXTURE
+            // 6. ÉCRAN PC ABLESTUDIO DAW VIVANT (Playhead animé + VU-mètres temps réel)
             function createAbleOsScreenTexture() {
                 const w = 512, h = 320;
-                const c = document.createElement('canvas'); c.width = w; c.height = h;
-                const ctx = c.getContext('2d');
-                const bg = ctx.createLinearGradient(0, 0, w, h);
+                const baseC = document.createElement('canvas'); baseC.width = w; baseC.height = h;
+                const bCtx = baseC.getContext('2d');
+                const bg = bCtx.createLinearGradient(0, 0, w, h);
                 bg.addColorStop(0, '#0b1020'); bg.addColorStop(0.5, '#12172c'); bg.addColorStop(1, '#090d18');
-                ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
+                bCtx.fillStyle = bg; bCtx.fillRect(0, 0, w, h);
 
-                ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.fillRect(0, 0, w, 24);
-                ctx.fillStyle = '#818cf8'; ctx.font = 'bold 11px monospace'; ctx.fillText('ABLE_OS // ABLESTUDIO PRO', 12, 16);
-                ctx.fillStyle = '#34d399'; ctx.fillText('128 BPM  •  REC', w - 115, 16);
+                bCtx.fillStyle = 'rgba(0,0,0,0.68)'; bCtx.fillRect(0, 0, w, 24);
+                bCtx.fillStyle = '#818cf8'; bCtx.font = 'bold 11px monospace'; bCtx.fillText('ABLE_OS // ABLESTUDIO PRO', 12, 16);
 
-                ctx.fillStyle = '#111422'; ctx.fillRect(18, 36, w - 36, h - 72);
-                ctx.strokeStyle = 'rgba(129,140,248,0.45)'; ctx.lineWidth = 2; ctx.strokeRect(18, 36, w - 36, h - 72);
+                bCtx.fillStyle = '#111422'; bCtx.fillRect(18, 36, w - 68, h - 72);
+                bCtx.strokeStyle = 'rgba(129,140,248,0.45)'; bCtx.lineWidth = 2; bCtx.strokeRect(18, 36, w - 68, h - 72);
 
                 const trackColors = ['#818cf8', '#38bdf8', '#34d399', '#f472b6', '#fbbf24'];
                 for (let t = 0; t < 5; t++) {
                     const ty = 52 + t * 38;
-                    ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fillRect(26, ty, w - 52, 30);
-                    ctx.fillStyle = trackColors[t]; ctx.fillRect(26, ty, 6, 30);
+                    bCtx.fillStyle = 'rgba(255,255,255,0.04)'; bCtx.fillRect(26, ty, w - 84, 30);
+                    bCtx.fillStyle = trackColors[t]; bCtx.fillRect(26, ty, 6, 30);
                     for (let cl = 0; cl < 3; cl++) {
-                        const cx = 44 + cl * 138 + (t % 2) * 20;
-                        const cw = 112;
-                        ctx.fillStyle = trackColors[t] + '33'; ctx.fillRect(cx, ty + 3, cw, 24);
-                        ctx.strokeStyle = trackColors[t]; ctx.lineWidth = 1; ctx.strokeRect(cx, ty + 3, cw, 24);
-                        ctx.fillStyle = trackColors[t];
+                        const cx = 42 + cl * 128 + (t % 2) * 14;
+                        const cw = 104;
+                        bCtx.fillStyle = trackColors[t] + '33'; bCtx.fillRect(cx, ty + 3, cw, 24);
+                        bCtx.strokeStyle = trackColors[t]; bCtx.lineWidth = 1; bCtx.strokeRect(cx, ty + 3, cw, 24);
+                        bCtx.fillStyle = trackColors[t];
                         for (let bx = cx + 4; bx < cx + cw - 4; bx += 4) {
                             const bh = 4 + Math.abs(Math.sin(bx * 0.25 + t)) * 16;
-                            ctx.fillRect(bx, ty + 15 - bh / 2, 2, bh);
+                            bCtx.fillRect(bx, ty + 15 - bh / 2, 2, bh);
                         }
                     }
                 }
-                ctx.fillStyle = '#f43f5e'; ctx.fillRect(218, 38, 2, h - 76);
-                ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(150, h - 26, 212, 18);
+                // Master VU Housing on right
+                bCtx.fillStyle = '#090b12'; bCtx.fillRect(w - 42, 36, 26, h - 72);
+                bCtx.strokeStyle = 'rgba(255,255,255,0.12)'; bCtx.strokeRect(w - 42, 36, 26, h - 72);
+
+                // Bottom Dock
+                bCtx.fillStyle = 'rgba(255,255,255,0.08)'; bCtx.fillRect(150, h - 26, 212, 18);
                 for (let i = 0; i < 5; i++) {
-                    ctx.fillStyle = trackColors[i]; ctx.fillRect(164 + i * 38, h - 23, 22, 12);
+                    bCtx.fillStyle = trackColors[i]; bCtx.fillRect(164 + i * 38, h - 23, 22, 12);
                 }
-                return configureTex(c, 1, 1, true);
+
+                const liveC = document.createElement('canvas'); liveC.width = w; liveC.height = h;
+                const liveCtx = liveC.getContext('2d');
+                liveCtx.drawImage(baseC, 0, 0);
+                const liveTex = configureTex(liveC, 1, 1, true);
+
+                window._pcLiveBase = baseC;
+                window._pcLiveCtx = liveCtx;
+                window._pcLiveTex = liveTex;
+                window._pcLiveLastTs = 0;
+                window.updateLivePcScreen = function(tSec) {
+                    const now = performance.now();
+                    if (now - window._pcLiveLastTs < 65) return; // ~15 FPS, 0 overhead
+                    window._pcLiveLastTs = now;
+                    const ctx = window._pcLiveCtx;
+                    ctx.drawImage(window._pcLiveBase, 0, 0);
+
+                    // Clock & REC blink
+                    const recOn = Math.floor(tSec * 2) % 2 === 0;
+                    const sysT = document.getElementById('sys-time')?.textContent || '12:00';
+                    ctx.fillStyle = recOn ? '#34d399' : '#10b981';
+                    ctx.font = 'bold 11px monospace';
+                    ctx.fillText(`128 BPM • ${sysT}`, w - 132, 16);
+
+                    // Scrolling Red Playhead
+                    const minX = 34, maxX = w - 58;
+                    const playX = minX + ((tSec * 52) % (maxX - minX));
+                    ctx.fillStyle = '#f43f5e';
+                    ctx.fillRect(playX, 38, 2.5, h - 76);
+                    ctx.fillStyle = 'rgba(244,63,94,0.22)';
+                    ctx.fillRect(playX - 5, 38, 12, h - 76);
+
+                    // Stereo Bouncing Master VU-Meters
+                    const vuH = h - 84;
+                    const lvL = 0.32 + 0.52 * Math.abs(Math.sin(tSec * 5.2) * Math.cos(tSec * 2.1));
+                    const lvR = 0.28 + 0.56 * Math.abs(Math.sin(tSec * 5.6 + 0.6) * Math.cos(tSec * 1.9));
+                    [lvL, lvR].forEach((lv, ch) => {
+                        const x0 = w - 38 + ch * 10;
+                        const segs = 18;
+                        const lit = Math.floor(lv * segs);
+                        for (let s = 0; s < lit; s++) {
+                            const sy = (h - 44) - (s + 1) * (vuH / segs);
+                            ctx.fillStyle = s > 14 ? '#f43f5e' : (s > 10 ? '#fbbf24' : '#34d399');
+                            ctx.fillRect(x0, sy, 7, (vuH / segs) - 2);
+                        }
+                    });
+                    window._pcLiveTex.needsUpdate = true;
+                };
+
+                // TV Lo-Fi Live Visualizer CanvasTexture
+                const tvC = document.createElement('canvas'); tvC.width = 256; tvC.height = 160;
+                const tvCtx = tvC.getContext('2d');
+                const tvTex = configureTex(tvC, 1, 1, true);
+                window._tvLiveCtx = tvCtx;
+                window._tvLiveTex = tvTex;
+                window._tvLiveLastTs = 0;
+                if (window.tvScreenMat) {
+                    window.tvScreenMat.map = tvTex;
+                    window.tvScreenMat.emissiveMap = tvTex;
+                    window.tvScreenMat.needsUpdate = true;
+                }
+                window.updateLiveTvScreen = function(tSec) {
+                    const now = performance.now();
+                    if (now - window._tvLiveLastTs < 70) return;
+                    window._tvLiveLastTs = now;
+                    const ctx = window._tvLiveCtx;
+                    const tw = 256, th = 160;
+                    const g = ctx.createLinearGradient(0, 0, 0, th);
+                    g.addColorStop(0, '#120824'); g.addColorStop(0.55, '#2b1055'); g.addColorStop(1, '#090d1a');
+                    ctx.fillStyle = g; ctx.fillRect(0, 0, tw, th);
+
+                    // Retro Sun
+                    const sunG = ctx.createLinearGradient(0, 26, 0, 96);
+                    sunG.addColorStop(0, '#fde047'); sunG.addColorStop(0.55, '#fb7185'); sunG.addColorStop(1, '#a855f7');
+                    ctx.fillStyle = sunG;
+                    ctx.beginPath(); ctx.arc(tw / 2, 66, 30, 0, Math.PI * 2); ctx.fill();
+                    // Sun horizontal slices
+                    ctx.fillStyle = '#240d46';
+                    for (let sy = 68; sy < 98; sy += 6) ctx.fillRect(tw / 2 - 34, sy, 68, 2);
+
+                    // Animated Audio Spectrum Bars
+                    const bars = 24;
+                    const bw = (tw - 24) / bars;
+                    for (let i = 0; i < bars; i++) {
+                        const amp = 8 + Math.abs(Math.sin(tSec * 3.8 + i * 0.45) * Math.cos(tSec * 1.9 - i * 0.25)) * 46;
+                        ctx.fillStyle = i % 2 === 0 ? '#38bdf8' : '#c084fc';
+                        ctx.fillRect(12 + i * bw, th - 16 - amp, bw - 3, amp);
+                    }
+                    // Channel tag
+                    ctx.fillStyle = '#34d399'; ctx.font = 'bold 9px monospace';
+                    ctx.fillText('LO-FI RADIO 24/7  ●', 12, 16);
+                    window._tvLiveTex.needsUpdate = true;
+                };
+
+                return liveTex;
             }
 
             // 7. CONTACT SHADOW (BAKED AO DECAL TEXTURE)
@@ -7763,31 +7888,54 @@ const DEFAULT_STATE = {
                 archGroup.add(slat);
             }
 
-            // 3 Disques d'Or / Platine encadrés avec verre réaliste
+            // 3 Disques Évolutifs sur le Mur Sud (Vinyle noir mat -> Argent -> Or -> Platine selon progression!)
             const frameBlackMat = new THREE.MeshStandardMaterial({ color: '#111318', roughness: 0.25, metalness: 0.65 });
-            const discMats = [
-                new THREE.MeshStandardMaterial({ color: '#facc15', roughness: 0.2, metalness: 0.94, envMapIntensity: 1.5 }),
-                new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.16, metalness: 0.96, envMapIntensity: 1.6 }),
-                new THREE.MeshStandardMaterial({ color: '#f59e0b', roughness: 0.2, metalness: 0.94, envMapIntensity: 1.5 })
-            ];
+            window.careerWallDiscs = [];
             [-1.28, 0, 1.28].forEach((rx, idx) => {
                 const recFrame = new THREE.Mesh(new THREE.BoxGeometry(0.84, 0.98, 0.05), frameBlackMat);
                 recFrame.position.set(rx, 2.05, 4.85);
                 const matBacking = new THREE.Mesh(new THREE.PlaneGeometry(0.74, 0.88), new THREE.MeshStandardMaterial({ color: '#171922', roughness: 0.9 }));
                 matBacking.position.set(0, 0, -0.026); matBacking.rotation.y = Math.PI;
                 recFrame.add(matBacking);
-                const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.015, 32), discMats[idx]);
+                const dMat = new THREE.MeshStandardMaterial({ color: '#14161c', roughness: 0.55, metalness: 0.2, envMapIntensity: 0.8 });
+                const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.015, 32), dMat);
                 disc.rotation.x = Math.PI / 2; disc.position.set(0, 0.06, -0.032);
                 recFrame.add(disc);
-                const plaque = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.1, 0.01), discMats[idx]);
+                const labelCenter = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.018, 20), new THREE.MeshStandardMaterial({ color: idx === 1 ? '#818cf8' : '#334155', roughness: 0.7 }));
+                labelCenter.rotation.x = Math.PI / 2; labelCenter.position.set(0, 0.06, -0.033);
+                recFrame.add(labelCenter);
+                const plaque = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.1, 0.01), dMat);
                 plaque.position.set(0, -0.29, -0.03);
                 recFrame.add(plaque);
                 archGroup.add(recFrame);
+                window.careerWallDiscs.push({ mat: dMat, label: labelCenter.material, tier: idx });
             });
+            window.syncCareerWallDiscs = function() {
+                if (!window.careerWallDiscs || typeof state === 'undefined' || !state) return;
+                const hits = (state.history || []).filter(t => (t.score || 0) >= 8 || (t.isHit)).length;
+                const rep = Number(state.rep) || 0;
+                const tiers = [
+                    { unlocked: hits >= 1 || rep >= 50,  color: '#cbd5e1', metal: 0.92, rough: 0.20, label: '#38bdf8' }, // Disque d'Argent
+                    { unlocked: hits >= 3 || rep >= 150, color: '#facc15', metal: 0.95, rough: 0.18, label: '#f59e0b' }, // Disque d'Or
+                    { unlocked: hits >= 6 || rep >= 350, color: '#f1f5f9', metal: 0.98, rough: 0.12, label: '#a855f7' }  // Disque de Platine
+                ];
+                window.careerWallDiscs.forEach((d, i) => {
+                    const t = tiers[i];
+                    if (t && t.unlocked) {
+                        d.mat.color.set(t.color); d.mat.metalness = t.metal; d.mat.roughness = t.rough; d.mat.envMapIntensity = 1.65;
+                        d.label.color.set(t.label);
+                    } else {
+                        d.mat.color.set('#181a22'); d.mat.metalness = 0.22; d.mat.roughness = 0.58; d.mat.envMapIntensity = 0.6;
+                        d.label.color.set('#334155');
+                    }
+                    d.mat.needsUpdate = true;
+                });
+            };
 
             // 2 Appliques murales architecturales chaudes sur le Mur Sud
             const sconceBodyMat = new THREE.MeshStandardMaterial({ color: '#181a20', roughness: 0.3, metalness: 0.8 });
-            const sconceGlowMat = new THREE.MeshStandardMaterial({ color: '#fff3d6', emissive: '#ffcf87', emissiveIntensity: 2.0 });
+            const sconceGlowMat = new THREE.MeshStandardMaterial({ color: '#fff3d6', emissive: '#ffcf87', emissiveIntensity: 1.6 });
+            window.sconceGlowMat = sconceGlowMat;
             [-3.15, 3.15].forEach(sx => {
                 const sconce = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.36, 16), sconceBodyMat);
                 sconce.position.set(sx, 2.05, 4.88);
@@ -7842,7 +7990,7 @@ const DEFAULT_STATE = {
                 }
             });
 
-            // Double vitrage réaliste ultra-propre
+            // Double vitrage réaliste + Couche Pluie GLSL dynamique (Inspiration basse / Soirs pluvieux)
             const glassMat = new THREE.MeshStandardMaterial({
                 color: '#d6e8ff', transparent: true, opacity: 0.08, roughness: 0.05, metalness: 0.65,
                 envMapIntensity: 1.5, side: THREE.DoubleSide, depthWrite: false
@@ -7851,7 +7999,63 @@ const DEFAULT_STATE = {
             windowGlass.position.set(5.05, 1.69, 1.1); windowGlass.rotation.y = -Math.PI / 2;
             archGroup.add(windowGlass);
 
-            // 2 Faisceaux volumétriques doux entrant par la baie vitrée
+            const rainUniforms = {
+                uTime: { value: 0.0 },
+                uRainIntensity: { value: 0.0 },
+                uLightning: { value: 0.0 }
+            };
+            window.windowRainUniforms = rainUniforms;
+            const rainGlassMat = new THREE.ShaderMaterial({
+                uniforms: rainUniforms,
+                transparent: true,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+                vertexShader: `
+                    varying vec2 vUv;
+                    void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+                `,
+                fragmentShader: `
+                    uniform float uTime;
+                    uniform float uRainIntensity;
+                    uniform float uLightning;
+                    varying vec2 vUv;
+
+                    float hash21(vec2 p) {
+                        p = fract(p * vec2(123.34, 456.21));
+                        p += dot(p, p + 45.32);
+                        return fract(p.x * p.y);
+                    }
+                    float rainLayer(vec2 uv, float t, float scale) {
+                        vec2 st = uv * vec2(scale * 1.45, scale * 0.55);
+                        vec2 id = floor(st);
+                        float n = hash21(id);
+                        float speed = 0.45 + n * 0.65;
+                        st.y += t * speed + n * 10.0;
+                        vec2 gv = fract(st) - 0.5;
+                        float xOff = sin(st.y * 2.5 + n * 6.28) * 0.16;
+                        float dropY = sin(t * speed * 2.0 + n * 6.28) * 0.25;
+                        vec2 dPos = vec2((gv.x - xOff) * 1.8, (gv.y - dropY) * 1.1);
+                        float drop = smoothstep(0.16, 0.04, length(dPos));
+                        float trail = smoothstep(0.08, 0.01, abs(gv.x - xOff)) * smoothstep(-0.45, 0.2, gv.y - dropY) * smoothstep(0.45, 0.1, gv.y - dropY) * 0.35;
+                        return clamp(drop + trail, 0.0, 1.0) * step(0.32, n);
+                    }
+                    void main() {
+                        if (uRainIntensity < 0.01) discard;
+                        float r1 = rainLayer(vUv, uTime * 1.1, 16.0);
+                        float r2 = rainLayer(vUv + 0.37, uTime * 0.85, 28.0) * 0.7;
+                        float mist = 0.08 * uRainIntensity;
+                        float drops = clamp(r1 + r2, 0.0, 1.0);
+                        vec3 col = mix(vec3(0.65, 0.78, 0.92), vec3(0.95, 0.98, 1.0), drops + uLightning * 0.7);
+                        float alpha = clamp((drops * 0.48 + mist) * uRainIntensity, 0.0, 0.62);
+                        gl_FragColor = vec4(col, alpha);
+                    }
+                `
+            });
+            const rainPane = new THREE.Mesh(new THREE.PlaneGeometry(4.94, 3.18), rainGlassMat);
+            rainPane.position.set(5.01, 1.69, 1.1); rainPane.rotation.y = -Math.PI / 2;
+            archGroup.add(rainPane);
+
+            // 2 Faisceaux volumétriques doux entrant par la baie vitrée + Poussières Dorées Flottantes
             const beamMat = new THREE.MeshBasicMaterial({
                 map: beamTex, color: '#fff3db', transparent: true, opacity: 0.12,
                 blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
@@ -7865,11 +8069,36 @@ const DEFAULT_STATE = {
                 archGroup.add(beam);
             });
 
-            // --- BALCON ARCHITECTURAL EXTÉRIEUR + PANORAMA VILLE ULTRA-RÉALISTE ---
+            // Poussières dorées dérivant lentement dans les faisceaux de soleil
+            const dustCount = 58;
+            const dustPos = new Float32Array(dustCount * 3);
+            const dustSeeds = [];
+            for (let i = 0; i < dustCount; i++) {
+                dustPos[i * 3]     = 1.4 + Math.random() * 3.3;
+                dustPos[i * 3 + 1] = -0.35 + Math.random() * 3.1;
+                dustPos[i * 3 + 2] = -0.9 + Math.random() * 4.1;
+                dustSeeds.push({ sx: Math.random() * 6.28, sy: 0.0012 + Math.random() * 0.0018, sz: Math.random() * 6.28 });
+            }
+            const dustGeo = new THREE.BufferGeometry();
+            dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+            const dustSpriteC = document.createElement('canvas'); dustSpriteC.width = 32; dustSpriteC.height = 32;
+            const dSCtx = dustSpriteC.getContext('2d');
+            const dG = dSCtx.createRadialGradient(16, 16, 1, 16, 16, 15);
+            dG.addColorStop(0, 'rgba(255,244,210,1)'); dG.addColorStop(0.4, 'rgba(255,232,180,0.45)'); dG.addColorStop(1, 'rgba(255,232,180,0)');
+            dSCtx.fillStyle = dG; dSCtx.fillRect(0, 0, 32, 32);
+            const dustMat = new THREE.PointsMaterial({
+                size: 0.055, map: new THREE.CanvasTexture(dustSpriteC), transparent: true, opacity: 0.55,
+                blending: THREE.AdditiveBlending, depthWrite: false
+            });
+            const sunDustPoints = new THREE.Points(dustGeo, dustMat);
+            sunDustPoints.userData.seeds = dustSeeds;
+            archGroup.add(sunDustPoints);
+            window.sunDustPoints = sunDustPoints;
+
+            // --- BALCON ARCHITECTURAL EXTÉRIEUR + VASTE MÉTROPOLE 3D ULTRA-RÉALISTE ---
             const exteriorGroup = new THREE.Group();
             exteriorGroup.name = 'CityExterior';
 
-            // Dalle béton balcon extérieur + Garde-corps acier & verre
             const balconyMat = new THREE.MeshStandardMaterial({ color: '#6b6d72', roughness: 0.88 });
             const balconySlab = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.25, 6.2), balconyMat);
             balconySlab.position.set(6.05, -1.02, 1.1); balconySlab.receiveShadow = true;
@@ -7884,13 +8113,15 @@ const DEFAULT_STATE = {
             railGlass.position.set(6.86, -0.38, 1.1); railGlass.rotation.y = -Math.PI / 2;
             exteriorGroup.add(railGlass);
 
-            // CIEL ATMOSPHÉRIQUE GLSL (Gradient Rayleigh + Nuages volumétriques + Étoiles + Halo Soleil/Lune)
+            // CIEL ATMOSPHÉRIQUE GLSL (Gradient Rayleigh + Nuages + Tempête + Éclairs + Étoiles)
             const skyUniforms = {
                 uZenithColor: { value: new THREE.Color('#2d5a9e') },
                 uHorizonColor: { value: new THREE.Color('#b8d6f0') },
                 uSunColor: { value: new THREE.Color('#fff5d6') },
                 uSunPos: { value: new THREE.Vector2(0.56, 0.68) },
                 uNight: { value: 0.0 },
+                uStorm: { value: 0.0 },
+                uLightning: { value: 0.0 },
                 uTime: { value: 0.0 }
             };
             window.exteriorSkyUniforms = skyUniforms;
@@ -7898,10 +8129,11 @@ const DEFAULT_STATE = {
                 uniforms: skyUniforms,
                 fog: false,
                 depthWrite: false,
+                side: THREE.BackSide,
                 vertexShader: `
-                    varying vec2 vUv;
+                    varying vec3 vDir;
                     void main() {
-                        vUv = uv;
+                        vDir = normalize(position);
                         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
                     }
                 `,
@@ -7911,8 +8143,10 @@ const DEFAULT_STATE = {
                     uniform vec3 uSunColor;
                     uniform vec2 uSunPos;
                     uniform float uNight;
+                    uniform float uStorm;
+                    uniform float uLightning;
                     uniform float uTime;
-                    varying vec2 vUv;
+                    varying vec3 vDir;
 
                     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
                     float noise(vec2 p) {
@@ -7928,108 +8162,228 @@ const DEFAULT_STATE = {
                     }
 
                     void main() {
-                        float h = clamp((vUv.y - 0.16) / 0.84, 0.0, 1.0);
-                        vec3 col = mix(uHorizonColor, uZenithColor, pow(h, 0.62));
+                        vec3 d = normalize(vDir);
+                        float elev = clamp(d.y, -1.0, 1.0);
+                        float h = clamp((elev + 0.06) / 0.85, 0.0, 1.0);
+                        vec3 zen = mix(uZenithColor, vec3(0.11, 0.14, 0.20), uStorm * 0.78);
+                        vec3 hor = mix(uHorizonColor, vec3(0.24, 0.28, 0.36), uStorm * 0.72);
+                        vec3 col = mix(hor, zen, pow(h, 0.62));
 
-                        // Atmospheric Mie sun/moon glow
-                        vec2 dSun = (vUv - uSunPos) * vec2(1.6, 1.0);
-                        float dist = length(dSun);
-                        float halo = exp(-dist * 4.5) * 0.65 + exp(-dist * 24.0) * 0.9;
+                        // Azimuth & elevation mapped cleanly around full 360° dome (no edges!)
+                        float az = atan(d.z, d.x); // 0 = straight East (+X), -PI/2 = North, +PI/2 = South
+                        vec2 skyUv = vec2(az / 3.14159 * 0.5 + 0.5, elev * 0.5 + 0.5);
+
+                        // Sun/Moon Mie Halo in Eastern sky
+                        vec3 sunDir = normalize(vec3(1.0, (uSunPos.y - 0.32) * 1.1, 0.18));
+                        float sunDot = max(dot(d, sunDir), 0.0);
+                        float halo = (pow(sunDot, 12.0) * 0.55 + pow(sunDot, 160.0) * 1.1) * (1.0 - uStorm * 0.85);
                         col += uSunColor * halo;
 
-                        // Drifting volumetric clouds
-                        vec2 cloudUv = vec2(vUv.x * 5.2 + uTime * 0.008, vUv.y * 3.4);
+                        // Volumetric 360° drifting clouds
+                        vec2 cloudUv = vec2(az * 2.2 + uTime * (0.01 + uStorm * 0.018), elev * 5.2);
                         float cl = fbm(cloudUv);
-                        float cloudMask = smoothstep(0.47, 0.78, cl) * smoothstep(0.18, 0.42, vUv.y) * smoothstep(0.98, 0.65, vUv.y);
-                        vec3 cloudCol = mix(mix(vec3(0.97, 0.98, 1.0), uSunColor, 0.35), vec3(0.14, 0.18, 0.28), uNight);
-                        col = mix(col, cloudCol, cloudMask * 0.62);
+                        float thresh = mix(0.46, 0.28, uStorm);
+                        float cloudMask = smoothstep(thresh, 0.78, cl) * smoothstep(-0.02, 0.22, elev) * smoothstep(0.95, 0.38, elev);
+                        vec3 cloudCol = mix(mix(vec3(0.97, 0.98, 1.0), uSunColor, 0.32), vec3(0.13, 0.16, 0.24), max(uNight, uStorm * 0.75));
+                        col = mix(col, cloudCol, cloudMask * mix(0.62, 0.88, uStorm));
 
-                        // Subtle stars at night
-                        if (uNight > 0.15) {
-                            vec2 starGrid = floor(vUv * vec2(220.0, 120.0));
+                        // Distant lightning flash illuminating storm clouds
+                        if (uLightning > 0.01) {
+                            float boltGlow = pow(max(dot(d, normalize(vec3(0.95, 0.28, 0.25))), 0.0), 8.0);
+                            col += vec3(0.75, 0.86, 1.0) * uLightning * (0.32 + boltGlow * 1.15);
+                        }
+
+                        // Twinkling stars across the upper dome on clear nights
+                        if (uNight > 0.2 && uStorm < 0.4 && elev > 0.08) {
+                            vec2 starGrid = floor(vec2(az * 110.0, elev * 140.0));
                             float s = hash(starGrid);
-                            if (s > 0.994 && vUv.y > 0.42) {
+                            if (s > 0.993) {
                                 float tw = 0.55 + 0.45 * sin(uTime * 2.5 + s * 100.0);
-                                col += vec3(0.85, 0.92, 1.0) * tw * uNight * smoothstep(0.42, 0.68, vUv.y);
+                                col += vec3(0.85, 0.92, 1.0) * tw * uNight * (1.0 - uStorm) * smoothstep(0.08, 0.35, elev);
                             }
                         }
 
-                        // Soft warm urban horizon glow below skyline
-                        float cityGlow = exp(-abs(vUv.y - 0.24) * 9.0) * (0.28 + 0.25 * uNight);
-                        col += mix(vec3(1.0, 0.86, 0.72), vec3(0.95, 0.62, 0.38), uNight) * cityGlow;
+                        // Warm continuous 360° urban horizon glow & lower street haze
+                        float cityGlow = exp(-abs(elev) * 8.0) * (0.26 + 0.30 * uNight);
+                        col += mix(vec3(1.0, 0.88, 0.74), vec3(0.98, 0.64, 0.36), uNight) * cityGlow;
+                        if (elev < -0.02) {
+                            vec3 groundHaze = mix(vec3(0.28, 0.32, 0.40), vec3(0.08, 0.10, 0.16), uNight);
+                            col = mix(col, groundHaze, smoothstep(-0.02, -0.35, elev));
+                        }
 
                         gl_FragColor = vec4(col, 1.0);
                     }
                 `
             });
-            const skyBackdrop = new THREE.Mesh(new THREE.PlaneGeometry(140, 68), skyShaderMat);
-            skyBackdrop.position.set(66, 9, 1.5);
-            skyBackdrop.rotation.y = -Math.PI / 2;
-            exteriorGroup.add(skyBackdrop);
+            // Dôme 360° complet : aucune coupure ni bord vide même collé à la vitre en regardant à 89° sur les côtés !
+            const skyDome = new THREE.Mesh(new THREE.SphereGeometry(148, 32, 20), skyShaderMat);
+            skyDome.position.set(8, 0, 1.1);
+            exteriorGroup.add(skyDome);
 
-            // 4 Matériaux d'immeubles réalistes (Verre, Béton Loft, Haussmann, Commercial)
+            // Sol urbain / Grille d'avenues illuminées 5 étages sous le balcon (visible si on regarde vers le bas)
+            const streetC = document.createElement('canvas'); streetC.width = 512; streetC.height = 512;
+            const stCtx = streetC.getContext('2d');
+            stCtx.fillStyle = '#1b1e26'; stCtx.fillRect(0, 0, 512, 512);
+            for (let g = 0; g < 512; g += 64) {
+                stCtx.fillStyle = '#2b2f3a'; stCtx.fillRect(g, 0, 14, 512); stCtx.fillRect(0, g, 512, 14);
+                stCtx.fillStyle = 'rgba(255,220,155,0.45)';
+                for (let k = 8; k < 512; k += 28) {
+                    stCtx.fillRect(g + 3, k, 2, 6); stCtx.fillRect(k, g + 3, 6, 2);
+                }
+            }
+            const streetTex = configureTex(streetC, 6, 8, true);
+            const cityGround = new THREE.Mesh(
+                new THREE.PlaneGeometry(200, 260),
+                new THREE.MeshStandardMaterial({ color: '#8a92a4', map: streetTex, emissive: '#ffcf87', emissiveMap: streetTex, emissiveIntensity: 0.28, roughness: 0.92 })
+            );
+            cityGround.rotation.x = -Math.PI / 2;
+            cityGround.position.set(78, -15.2, 1.1);
+            exteriorGroup.add(cityGround);
+
+            // 4 Matériaux d'immeubles réalistes + 2 plans de brume urbaine
             const facadeGlass = createRealisticFacadePair('glass_tower');
             const facadeLoft = createRealisticFacadePair('concrete_loft');
             const facadeHauss = createRealisticFacadePair('haussmann');
             const facadeComm = createRealisticFacadePair('commercial');
 
             const bldgMaterials = [
-                new THREE.MeshStandardMaterial({ color: '#d4dce8', map: facadeGlass.map, emissive: '#ffebb8', emissiveMap: facadeGlass.emissiveMap, emissiveIntensity: 0.2, roughness: 0.28, metalness: 0.55 }),
+                new THREE.MeshStandardMaterial({ color: '#d4dce8', map: facadeGlass.map, emissive: '#ffebb8', emissiveMap: facadeGlass.emissiveMap, emissiveIntensity: 0.2, roughness: 0.26, metalness: 0.58 }),
                 new THREE.MeshStandardMaterial({ color: '#dbd6cd', map: facadeLoft.map, emissive: '#ffdfa8', emissiveMap: facadeLoft.emissiveMap, emissiveIntensity: 0.2, roughness: 0.82, metalness: 0.08 }),
                 new THREE.MeshStandardMaterial({ color: '#e5ddd0', map: facadeHauss.map, emissive: '#ffe0a8', emissiveMap: facadeHauss.emissiveMap, emissiveIntensity: 0.2, roughness: 0.86, metalness: 0.05 }),
-                new THREE.MeshStandardMaterial({ color: '#b9c2d0', map: facadeComm.map, emissive: '#ffebc2', emissiveMap: facadeComm.emissiveMap, emissiveIntensity: 0.2, roughness: 0.45, metalness: 0.35 })
+                new THREE.MeshStandardMaterial({ color: '#b9c2d0', map: facadeComm.map, emissive: '#ffebc2', emissiveMap: facadeComm.emissiveMap, emissiveIntensity: 0.2, roughness: 0.42, metalness: 0.38 })
             ];
             window.cityBuildingMats = bldgMaterials;
 
-            // Perspective aérienne : les tours lointaines se fondent dans la brume de l'horizon
-            const farSilhouetteMat = new THREE.MeshBasicMaterial({ color: '#7a95b8', transparent: true, opacity: 0.72, fog: false });
+            const midHazeMat = new THREE.MeshStandardMaterial({ color: '#70849e', map: facadeGlass.map, emissive: '#ffdfa8', emissiveMap: facadeGlass.emissiveMap, emissiveIntensity: 0.22, roughness: 0.6, metalness: 0.2 });
+            window.midCityHazeMat = midHazeMat;
+            const farSilhouetteMat = new THREE.MeshBasicMaterial({ color: '#7a95b8', transparent: true, opacity: 0.68, fog: false });
             window.farCitySilhouetteMat = farSilhouetteMat;
             const roofUnitMat = new THREE.MeshStandardMaterial({ color: '#454952', roughness: 0.8 });
+            const penthouseGlowMat = new THREE.MeshBasicMaterial({ color: '#ffe5b8', fog: false });
             const beaconMat = new THREE.MeshBasicMaterial({ color: '#ff3b30', fog: false });
             window.cityBeacons = [];
 
-            // Plan proche/moyen : Immeubles architecturaux détaillés avec toits, climatiseurs et antennes
+            // VASTE MÉTROPOLE 3D : 50+ bâtiments sur 4 plans de profondeur (Toits parisiens -> Quartier financier -> Tours de verre -> Horizon)
             const citySpecs = [
-                { x: 16.5, z: -9.5, w: 4.5, h: 16, d: 4.8, m: 2 },
-                { x: 18.0, z: -4.2, w: 5.2, h: 19, d: 4.6, m: 1, hvac: true },
-                { x: 15.8, z: 1.2,  w: 4.4, h: 13.5, d: 4.2, m: 2 },
-                { x: 18.5, z: 6.4,  w: 5.0, h: 18, d: 4.8, m: 1, hvac: true },
-                { x: 17.0, z: 11.8, w: 4.6, h: 15, d: 4.5, m: 2 },
-                // Plan intermédiaire (gratte-ciel modernes de verre)
-                { x: 26.5, z: -13.0, w: 6.2, h: 28, d: 6.0, m: 0, spire: true },
-                { x: 25.0, z: -6.5,  w: 5.8, h: 32, d: 5.4, m: 0, spire: true },
-                { x: 28.0, z: -0.2,  w: 6.4, h: 25, d: 6.2, m: 3, hvac: true },
-                { x: 24.5, z: 4.2,   w: 5.4, h: 35, d: 5.6, m: 0, spire: true },
-                { x: 27.5, z: 10.5,  w: 6.0, h: 27, d: 5.8, m: 3, spire: true },
-                { x: 26.0, z: 16.5,  w: 5.8, h: 24, d: 5.5, m: 0 },
-                // Plan lointain (brume urbaine / aerial perspective)
-                { x: 42, z: -19, w: 8, h: 36, d: 8, far: true },
-                { x: 44, z: -10, w: 9, h: 44, d: 8, far: true, spire: true },
-                { x: 46, z: -2,  w: 10, h: 38, d: 9, far: true },
-                { x: 43, z: 7,   w: 8.5, h: 48, d: 8, far: true, spire: true },
-                { x: 45, z: 16,  w: 9, h: 35, d: 8, far: true },
-                { x: 42, z: 24,  w: 8, h: 32, d: 8, far: true }
+                // Plan 1 : Façades & toits urbains proches + prolongements latéraux Nord/Sud (X: 9..21, Z: -65..+68)
+                { x: 10.5, z: -56.0, w: 6.5, h: 24, d: 8.0, m: 1 },
+                { x: 11.2, z: -45.0, w: 6.0, h: 22, d: 7.5, m: 2, hvac: true },
+                { x: 10.8, z: -34.5, w: 5.8, h: 20, d: 7.2, m: 1 },
+                { x: 11.5, z: -24.5, w: 5.5, h: 19, d: 6.5, m: 2, hvac: true },
+                { x: 15.5, z: -16.5, w: 4.8, h: 15, d: 5.2, m: 2, hvac: true },
+                { x: 16.5, z: -10.5, w: 4.6, h: 16.5, d: 4.8, m: 2 },
+                { x: 18.2, z: -4.8,  w: 5.2, h: 19, d: 4.8, m: 1, hvac: true },
+                { x: 15.6, z: 0.8,   w: 4.5, h: 13.8, d: 4.4, m: 2, waterTower: true },
+                { x: 18.5, z: 6.2,   w: 5.0, h: 18.5, d: 4.8, m: 1, hvac: true },
+                { x: 16.8, z: 12.0,  w: 4.8, h: 15.5, d: 4.6, m: 2 },
+                { x: 17.5, z: 18.0,  w: 5.2, h: 17, d: 5.0, m: 1, hvac: true },
+                { x: 11.8, z: 25.5,  w: 5.8, h: 21, d: 6.8, m: 2, hvac: true },
+                { x: 11.0, z: 35.5,  w: 6.0, h: 23, d: 7.5, m: 1 },
+                { x: 11.5, z: 46.5,  w: 6.5, h: 20, d: 8.0, m: 2, hvac: true },
+                { x: 10.5, z: 58.0,  w: 6.8, h: 25, d: 8.5, m: 1 },
+
+                // Plan 2 : Quartier Moderne & Gratte-ciel de Verre étendus jusqu'à ±72 en Z (X: 24..36)
+                { x: 26.0, z: -64.0, w: 7.5, h: 34, d: 7.5, m: 0, spire: true },
+                { x: 27.0, z: -50.0, w: 7.2, h: 30, d: 7.0, m: 3, hvac: true },
+                { x: 25.5, z: -37.0, w: 6.8, h: 36, d: 6.8, m: 0, tier: true },
+                { x: 27.5, z: -24.0, w: 6.5, h: 31, d: 6.2, m: 0, tier: true, spire: true },
+                { x: 26.5, z: -16.0, w: 6.2, h: 28, d: 6.0, m: 3, hvac: true },
+                { x: 25.2, z: -8.5,  w: 5.8, h: 35, d: 5.6, m: 0, tier: true, spire: true },
+                { x: 28.5, z: -2.2,  w: 6.6, h: 26, d: 6.2, m: 3, hvac: true },
+                { x: 24.8, z: 4.4,   w: 5.6, h: 39, d: 5.6, m: 0, tier: true, spire: true, crown: true },
+                { x: 28.0, z: 11.2,  w: 6.2, h: 29, d: 5.8, m: 3, spire: true },
+                { x: 26.2, z: 18.0,  w: 6.0, h: 33, d: 5.6, m: 0, tier: true },
+                { x: 29.0, z: 25.5,  w: 6.8, h: 27, d: 6.2, m: 1, hvac: true },
+                { x: 26.5, z: 36.5,  w: 7.0, h: 34, d: 6.8, m: 0, tier: true, spire: true },
+                { x: 27.5, z: 49.0,  w: 7.4, h: 31, d: 7.2, m: 3, hvac: true },
+                { x: 26.0, z: 63.0,  w: 7.8, h: 36, d: 7.5, m: 0, spire: true },
+
+                // Plan 3 : Gratte-ciel Financiers & Tour Iconique Hero (Z: -78..+78)
+                { x: 41.0, z: -74.0, w: 8.5, h: 46, d: 8.5, mid: true, spire: true },
+                { x: 42.0, z: -58.0, w: 8.2, h: 42, d: 8.0, mid: true, tier: true },
+                { x: 40.0, z: -44.0, w: 7.8, h: 48, d: 7.6, mid: true },
+                { x: 41.0, z: -32.0, w: 7.5, h: 42, d: 7.2, mid: true, spire: true },
+                { x: 39.5, z: -22.5, w: 7.2, h: 48, d: 7.0, mid: true, tier: true, crown: true },
+                { x: 43.0, z: -13.0, w: 8.0, h: 52, d: 7.6, mid: true, tier: true, spire: true },
+                { x: 40.0, z: -4.0,  w: 7.4, h: 45, d: 7.2, mid: true },
+                { x: 46.5, z: 1.5,   w: 8.6, h: 66, d: 8.6, mid: true, tier: true, spire: true, crown: true }, // HERO LANDMARK TOWER
+                { x: 41.5, z: 9.5,   w: 7.6, h: 50, d: 7.4, mid: true, tier: true },
+                { x: 44.0, z: 19.0,  w: 8.2, h: 46, d: 7.8, mid: true, spire: true },
+                { x: 40.5, z: 29.0,  w: 7.8, h: 40, d: 7.4, mid: true },
+                { x: 43.0, z: 37.5,  w: 8.0, h: 36, d: 7.5, mid: true },
+                { x: 41.5, z: 50.0,  w: 8.2, h: 46, d: 8.0, mid: true, tier: true },
+                { x: 43.0, z: 64.0,  w: 8.6, h: 50, d: 8.4, mid: true, spire: true },
+                { x: 40.5, z: 78.0,  w: 8.8, h: 44, d: 8.5, mid: true },
+
+                // Plan 4 : Immense Horizon Métropolitain Panoramique 180° (Z: -95..+95)
+                { x: 64, z: -92, w: 12, h: 48, d: 12, far: true },
+                { x: 68, z: -76, w: 12, h: 56, d: 11, far: true, spire: true },
+                { x: 65, z: -60, w: 11, h: 50, d: 10, far: true },
+                { x: 64, z: -42, w: 10, h: 45, d: 9, far: true },
+                { x: 68, z: -32, w: 11, h: 56, d: 10, far: true, spire: true },
+                { x: 62, z: -22, w: 9,  h: 48, d: 9, far: true },
+                { x: 70, z: -14, w: 12, h: 64, d: 10, far: true, spire: true },
+                { x: 65, z: -5,  w: 10, h: 52, d: 9, far: true },
+                { x: 72, z: 4,   w: 11, h: 60, d: 10, far: true, spire: true },
+                { x: 66, z: 13,  w: 10, h: 58, d: 9, far: true },
+                { x: 74, z: 22,  w: 12, h: 66, d: 10, far: true, spire: true },
+                { x: 65, z: 31,  w: 10, h: 48, d: 9, far: true },
+                { x: 70, z: 41,  w: 11, h: 52, d: 10, far: true },
+                { x: 68, z: 54,  w: 11, h: 46, d: 10, far: true },
+                { x: 66, z: 68,  w: 12, h: 54, d: 11, far: true, spire: true },
+                { x: 69, z: 82,  w: 12, h: 48, d: 11, far: true },
+                { x: 65, z: 95,  w: 13, h: 44, d: 12, far: true }
             ];
             citySpecs.forEach(b => {
-                const mat = b.far ? farSilhouetteMat : bldgMaterials[b.m];
+                const mat = b.far ? farSilhouetteMat : (b.mid ? midHazeMat : bldgMaterials[b.m]);
                 const mesh = new THREE.Mesh(new THREE.BoxGeometry(b.w, b.h, b.d), mat);
-                const topY = b.h - 14;
+                const topY = b.h - 15;
                 mesh.position.set(b.x, topY - b.h / 2, b.z);
                 exteriorGroup.add(mesh);
 
+                let highestY = topY;
+                if (b.tier) {
+                    const tH = Math.min(7.5, b.h * 0.16);
+                    const tierMesh = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.68, tH, b.d * 0.68), mat);
+                    tierMesh.position.set(b.x, topY + tH / 2, b.z);
+                    exteriorGroup.add(tierMesh);
+                    highestY = topY + tH;
+                }
+                if (b.crown && !b.far) {
+                    const crownStrip = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.70, 0.35, b.d * 0.70), penthouseGlowMat);
+                    crownStrip.position.set(b.x, highestY - 0.5, b.z);
+                    exteriorGroup.add(crownStrip);
+                }
                 if (b.hvac && !b.far) {
-                    const box1 = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.45, 1.1, b.d * 0.4), roofUnitMat);
-                    box1.position.set(b.x, topY + 0.55, b.z - 0.6); exteriorGroup.add(box1);
+                    const box1 = new THREE.Mesh(new THREE.BoxGeometry(b.w * 0.42, 1.15, b.d * 0.36), roofUnitMat);
+                    box1.position.set(b.x, highestY + 0.55, b.z - 0.6); exteriorGroup.add(box1);
+                }
+                if (b.waterTower && !b.far) {
+                    const wt = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.68, 1.6, 12), new THREE.MeshStandardMaterial({ color: '#6b4c35', roughness: 0.85 }));
+                    wt.position.set(b.x, highestY + 1.4, b.z + 0.8); exteriorGroup.add(wt);
+                    const wtCone = new THREE.Mesh(new THREE.ConeGeometry(0.75, 0.65, 12), roofUnitMat);
+                    wtCone.position.set(b.x, highestY + 2.5, b.z + 0.8); exteriorGroup.add(wtCone);
                 }
                 if (b.spire) {
-                    const spire = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.14, 4.8, 6), aluFrameMat);
-                    spire.position.set(b.x, topY + 2.4, b.z); exteriorGroup.add(spire);
-                    const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 8), beaconMat.clone());
-                    beacon.position.set(b.x, topY + 4.9, b.z);
+                    const spH = b.h > 55 ? 8.5 : 5.2;
+                    const spire = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.18, spH, 6), aluFrameMat);
+                    spire.position.set(b.x, highestY + spH / 2, b.z); exteriorGroup.add(spire);
+                    const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.20, 8, 8), beaconMat.clone());
+                    beacon.position.set(b.x, highestY + spH + 0.1, b.z);
                     exteriorGroup.add(beacon);
                     window.cityBeacons.push(beacon);
                 }
             });
+
+            // Avions lointains traversant le ciel nocturne
+            window.cityPlanes = [];
+            for (let p = 0; p < 2; p++) {
+                const planeDot = new THREE.Mesh(new THREE.SphereGeometry(0.22, 6, 6), new THREE.MeshBasicMaterial({ color: p === 0 ? '#ffffff' : '#ff5555', fog: false }));
+                planeDot.position.set(78 + p * 8, 22 + p * 6, -38 + p * 35);
+                planeDot.userData = { speed: p === 0 ? 0.09 : -0.07 };
+                exteriorGroup.add(planeDot);
+                window.cityPlanes.push(planeDot);
+            }
             archGroup.add(exteriorGroup);
 
             // --- PLAFOND LUMINEUX (Y = +4.0) + NUAGES ACOUSTIQUES + PLAFONNIER ---
@@ -8122,13 +8476,122 @@ const DEFAULT_STATE = {
             });
             deskGroup.add(hpGroup);
 
-            // 5. Mug céramique mat + café
+            // 5. Mug céramique mat + café + VAPEUR CHAUDE ANIMÉE
             const mugMat = new THREE.MeshStandardMaterial({ color: '#f1ede6', roughness: 0.24, metalness: 0.04 });
             const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.058, 0.14, 18), mugMat);
             mug.position.set(-1.55, 0.82, 0.48); mug.castShadow = true;
             const coffeeTop = new THREE.Mesh(new THREE.CircleGeometry(0.056, 16), new THREE.MeshStandardMaterial({ color: '#2b160c', roughness: 0.12 }));
             coffeeTop.rotation.x = -Math.PI / 2; coffeeTop.position.set(0, 0.055, 0); mug.add(coffeeTop);
             deskGroup.add(mug);
+
+            const steamC = document.createElement('canvas'); steamC.width = 64; steamC.height = 64;
+            const sCtx = steamC.getContext('2d');
+            const sGrad = sCtx.createRadialGradient(32, 32, 2, 32, 32, 30);
+            sGrad.addColorStop(0, 'rgba(255,250,244,0.45)'); sGrad.addColorStop(0.5, 'rgba(240,240,245,0.16)'); sGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            sCtx.fillStyle = sGrad; sCtx.fillRect(0, 0, 64, 64);
+            const steamTex = new THREE.CanvasTexture(steamC);
+            window.coffeeSteamPuffs = [];
+            for (let i = 0; i < 6; i++) {
+                const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: steamTex, transparent: true, opacity: 0.22, depthWrite: false }));
+                sp.position.set(-1.55, 0.92 + i * 0.065, 0.48);
+                sp.scale.set(0.11, 0.11, 1);
+                sp.userData = { phase: i / 6 };
+                deskGroup.add(sp);
+                window.coffeeSteamPuffs.push(sp);
+            }
+
+            // 5B. CÂBLES & CONNECTIQUE RÉALISTES (TubeGeometry) + MULTIPRISE SOL
+            const wireMat = new THREE.MeshStandardMaterial({ color: '#14151a', roughness: 0.72, metalness: 0.15 });
+            function addTubeCable(parent, pts, radius = 0.011) {
+                const curve = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(p[0], p[1], p[2])));
+                const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 18, radius, 6, false), wireMat);
+                mesh.castShadow = false;
+                parent.add(mesh);
+            }
+            // Câble Enceinte Gauche -> Interface Audio
+            addTubeCable(deskGroup, [[-1.5, 0.85, -0.62], [-1.42, 0.77, -0.35], [-1.24, 0.77, -0.05]]);
+            // Câble Enceinte Droite -> Interface Audio (passe derrière le pied d'écran)
+            addTubeCable(deskGroup, [[1.5, 0.85, -0.62], [0.65, 0.77, -0.78], [-0.45, 0.77, -0.68], [-1.02, 0.77, -0.05]]);
+            // Câble XLR Micro le long du bras articulé vers l'arrière du bureau
+            addTubeCable(deskGroup, [[-1.25, 1.18, 0.60], [-1.52, 1.24, 0.52], [-1.82, 1.02, 0.45], [-1.96, 0.76, 0.35], [-1.92, 0.76, -0.75]], 0.009);
+            // Multiprise au sol sous le bureau + Voyant rouge + Cordons d'alim
+            const stripGroup = new THREE.Group();
+            stripGroup.position.set(-2.2, -0.965, -4.35);
+            const stripBody = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.06, 0.13), new THREE.MeshStandardMaterial({ color: '#1b1d24', roughness: 0.6 }));
+            stripGroup.add(stripBody);
+            const stripSwitch = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.02, 0.04), new THREE.MeshBasicMaterial({ color: '#ef4444' }));
+            stripSwitch.position.set(-0.24, 0.036, 0); stripGroup.add(stripSwitch);
+            archGroup.add(stripGroup);
+            addTubeCable(archGroup, [[-2.2, 0.72, -4.42], [-2.25, -0.15, -4.55], [-2.12, -0.94, -4.35]], 0.012);
+            addTubeCable(archGroup, [[-3.3, 0.72, -4.42], [-3.1, -0.25, -4.55], [-2.02, -0.94, -4.35]], 0.010);
+
+            // 5C. POST-IT NOTES SUR LE CADRE DU MONITEUR
+            function createPostIt(text, bgHex) {
+                const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+                const ctx = c.getContext('2d');
+                ctx.fillStyle = bgHex; ctx.fillRect(0, 0, 128, 128);
+                ctx.fillStyle = 'rgba(0,0,0,0.08)'; ctx.fillRect(0, 0, 128, 18);
+                ctx.fillStyle = '#1f2937'; ctx.font = 'bold 18px monospace';
+                text.split('\n').forEach((line, i) => ctx.fillText(line, 12, 52 + i * 26));
+                return new THREE.MeshStandardMaterial({ map: configureTex(c, 1, 1, true), roughness: 0.88 });
+            }
+            const postIt1 = new THREE.Mesh(new THREE.PlaneGeometry(0.11, 0.11), createPostIt('128 BPM\nF MINOR', '#fde047'));
+            postIt1.position.set(-0.56, -0.36, 0.028); postIt1.rotation.z = 0.06; pcFrame.add(postIt1);
+            const postIt2 = new THREE.Mesh(new THREE.PlaneGeometry(0.10, 0.10), createPostIt('CUT\n200 Hz!', '#fbcfe8'));
+            postIt2.position.set(0.56, -0.35, 0.028); postIt2.rotation.z = -0.09; pcFrame.add(postIt2);
+
+            // 5D. SMARTPHONE 3D SUR LE BUREAU (S'allume & vibre sur DM SoundNet / Brand Deal!)
+            const phoneGroup = new THREE.Group();
+            phoneGroup.position.set(0.92, 0.768, 0.62);
+            phoneGroup.rotation.y = -0.32;
+            const phoneBody = new THREE.Mesh(new THREE.BoxGeometry(0.125, 0.014, 0.24), new THREE.MeshStandardMaterial({ color: '#181a20', roughness: 0.25, metalness: 0.85 }));
+            phoneBody.castShadow = true; phoneGroup.add(phoneBody);
+            const phoneC = document.createElement('canvas'); phoneC.width = 128; phoneC.height = 256;
+            const pCtx = phoneC.getContext('2d');
+            pCtx.fillStyle = '#090b12'; pCtx.fillRect(0, 0, 128, 256);
+            pCtx.fillStyle = '#1e293b'; pCtx.fillRect(10, 68, 108, 66);
+            pCtx.fillStyle = '#f472b6'; pCtx.font = 'bold 12px monospace'; pCtx.fillText('SOUNDNET', 22, 92);
+            pCtx.fillStyle = '#ffffff'; pCtx.font = '11px sans-serif'; pCtx.fillText('New DM / Deal', 22, 114);
+            const phoneTex = configureTex(phoneC, 1, 1, true);
+            const phoneScreenMat = new THREE.MeshStandardMaterial({
+                color: '#111827', map: phoneTex, emissive: '#38bdf8', emissiveMap: phoneTex,
+                emissiveIntensity: 0.04, roughness: 0.12, metalness: 0.2
+            });
+            const phoneScreen = new THREE.Mesh(new THREE.PlaneGeometry(0.112, 0.222), phoneScreenMat);
+            phoneScreen.rotation.x = -Math.PI / 2; phoneScreen.position.set(0, 0.008, 0);
+            phoneGroup.add(phoneScreen);
+            deskGroup.add(phoneGroup);
+            window.deskPhoneGroup = phoneGroup;
+            window.deskPhoneScreenMat = phoneScreenMat;
+            window.deskPhoneAlertUntil = 0;
+            window.triggerDeskPhoneNotif = function(kind = 'dm') {
+                window.deskPhoneAlertUntil = performance.now() + 9000;
+                if (window.deskPhoneScreenMat) {
+                    window.deskPhoneScreenMat.emissive.set(kind === 'deal' ? '#fbbf24' : '#f472b6');
+                }
+            };
+
+            // 5E. PRISES MURALES & INTERRUPTEUR LUMINEUX PRÈS DE LA PORTE
+            const plateMat = new THREE.MeshStandardMaterial({ color: '#e5e2dc', roughness: 0.45 });
+            const holeMat = new THREE.MeshBasicMaterial({ color: '#111318' });
+            function addWallOutlet(x, y, z, rotY) {
+                const og = new THREE.Group(); og.position.set(x, y, z); og.rotation.y = rotY;
+                og.add(new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.02), plateMat));
+                [-0.022, 0.022].forEach(hx => {
+                    const h = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.025, 8), holeMat);
+                    h.rotation.x = Math.PI / 2; h.position.set(hx, 0, 0.004); og.add(h);
+                });
+                archGroup.add(og);
+            }
+            addWallOutlet(0.65, -0.62, -4.96, 0);
+            addWallOutlet(-4.96, -0.62, 0.1, Math.PI / 2);
+            // Interrupteur lumineux près de la porte
+            const swGroup = new THREE.Group();
+            swGroup.position.set(-4.96, 0.72, 2.95); swGroup.rotation.y = Math.PI / 2;
+            swGroup.add(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.022), plateMat));
+            const swLed = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.008, 0.026), new THREE.MeshBasicMaterial({ color: '#fbbf24' }));
+            swLed.position.set(0, -0.025, 0.002); swGroup.add(swLed);
+            archGroup.add(swGroup);
 
             // 6. Fauteuil de studio ergonomique
             const chairGroup = new THREE.Group();
@@ -8186,9 +8649,49 @@ const DEFAULT_STATE = {
             nsBox.position.set(0, 0.31, 0); nsBox.castShadow = true; nsBox.receiveShadow = true; nsGroup.add(nsBox);
             const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.18, 14), new THREE.MeshStandardMaterial({ color: '#d4b895', roughness: 0.35, metalness: 0.4 }));
             lampBase.position.set(0, 0.71, 0); nsGroup.add(lampBase);
-            const lampShade = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.19, 0.24, 18, 1, true), new THREE.MeshStandardMaterial({ color: '#fff7e6', emissive: '#ffcf87', emissiveIntensity: 0.85, roughness: 0.85, side: THREE.DoubleSide }));
+            const bedsideShadeMat = new THREE.MeshStandardMaterial({ color: '#fff7e6', emissive: '#ffcf87', emissiveIntensity: 0.65, roughness: 0.85, side: THREE.DoubleSide });
+            const lampShade = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.19, 0.24, 18, 1, true), bedsideShadeMat);
             lampShade.position.set(0, 0.92, 0); nsGroup.add(lampShade);
+            const bedsideLight = new THREE.PointLight('#ffbe78', 0.8, 7.5, 1.7);
+            bedsideLight.position.set(0, 0.96, 0.12); nsGroup.add(bedsideLight);
+            window.bedsideLight = bedsideLight;
+            window.bedsideShadeMat = bedsideShadeMat;
             archGroup.add(nsGroup);
+
+            // =========================================================================
+            // MICRO-ANIMATION DE LA PORTE (PIVOT CHARNIÈRE + RAI DE LUMIÈRE)
+            // =========================================================================
+            try {
+                const doorPivot = new THREE.Group();
+                doorPivot.position.set(-0.70, 0, 0);
+                doorGroup.add(doorPivot);
+                // Déplace le panneau + moulures + poignée dans le pivot de charnière
+                const moveChildren = [doorPanel, stileL, stileR, railTop, railMid, railBottom, handlePlate, handleStem, handleLever];
+                moveChildren.forEach(m => {
+                    if (m && m.parent === doorGroup) {
+                        m.position.x += 0.70;
+                        doorPivot.add(m);
+                    }
+                });
+                const doorLightRayMat = new THREE.MeshBasicMaterial({
+                    color: '#fff2d6', transparent: true, opacity: 0.0, side: THREE.DoubleSide, depthWrite: false
+                });
+                const doorLightRay = new THREE.Mesh(new THREE.PlaneGeometry(1.36, 3.22), doorLightRayMat);
+                doorLightRay.position.set(0, 1.62, -0.06);
+                doorGroup.add(doorLightRay);
+
+                window.doorPivot = doorPivot;
+                window.doorLightRayMat = doorLightRayMat;
+                window.doorTargetAngle = 0;
+                window.animateDoorCrackOpen = function(callback) {
+                    window.doorTargetAngle = 0.44;
+                    if (typeof playTone === 'function') playTone(210, 'triangle', 0.14, 0.04);
+                    setTimeout(() => {
+                        if (typeof callback === 'function') callback();
+                        setTimeout(() => { window.doorTargetAngle = 0; }, 900);
+                    }, 340);
+                };
+            } catch(e) { console.warn('Door pivot setup fallback:', e); }
 
             scene.add(archGroup);
 
@@ -8843,17 +9346,22 @@ const DEFAULT_STATE = {
             }
             
             // ==========================================
-            // --- LOGIQUE DE LA TÉLÉVISION ---
+            // --- LOGIQUE DE LA TÉLÉVISION (LO-FI VISUALIZER) & ÉCRAN PC VIVANT ---
             // ==========================================
+            if (typeof window.updateLivePcScreen === 'function') {
+                window.updateLivePcScreen(time);
+            }
             if (window.tvScreenMat && window.tvLight) {
                 const isLampOn = window.pixarLamp && window.pixarLamp.userData && window.pixarLamp.userData.isOn;
                 const isSitting = currentState.isSitting;
+                const hasTv = state && state.ownedFurniture && state.ownedFurniture.includes('tv');
 
-                if (isSitting && isLampOn) {
-                    const flicker = 0.7 + Math.random() * 0.3; 
-                    window.tvScreenMat.emissive.setHex(0x0ea5e9); 
-                    window.tvScreenMat.emissiveIntensity = flicker;
-                    window.tvLight.intensity = flicker * 4; 
+                if (hasTv && (isSitting || isLampOn)) {
+                    if (typeof window.updateLiveTvScreen === 'function') window.updateLiveTvScreen(time);
+                    const flicker = 0.88 + Math.sin(time * 7.0) * 0.1;
+                    window.tvScreenMat.emissive.setHex(0xffffff);
+                    window.tvScreenMat.emissiveIntensity = isSitting ? 1.15 * flicker : 0.75 * flicker;
+                    window.tvLight.intensity = (isSitting ? 4.2 : 2.2) * flicker;
                 } else {
                     window.tvScreenMat.emissive.setHex(0x000000);
                     window.tvScreenMat.emissiveIntensity = 0;
@@ -9241,18 +9749,126 @@ const DEFAULT_STATE = {
                         window.sunbeamMat.opacity += ((isLampDark ? 0.015 : beamOp) - window.sunbeamMat.opacity) * 0.04;
                         window.sunbeamMat.color.lerp(window._cBm ? window._cBm.set(sunHex) : (window._cBm = new THREE.Color(sunHex)), 0.04);
                     }
+                    // --- MÉTÉO PLUIE SUR LA VITRE & ÉCLAIRS LOINTAINS (Inspi basse < 42% ou soir pluvieux) ---
+                    const inspiNow = (typeof state !== 'undefined' && state && typeof state.inspi === 'number') ? state.inspi : 100;
+                    const dayNum = (typeof state !== 'undefined' && state && typeof state.day === 'number') ? state.day : 1;
+                    const isRainy = (inspiNow < 42) || ((hour >= 21 || hour < 5) && (dayNum % 2 === 0));
+                    const targetRain = isRainy ? (inspiNow < 25 ? 1.0 : 0.72) : 0.0;
+
+                    if (window.windowRainUniforms) {
+                        window.windowRainUniforms.uTime.value = time;
+                        window.windowRainUniforms.uRainIntensity.value += (targetRain - window.windowRainUniforms.uRainIntensity.value) * 0.03;
+                    }
+                    // Rares éclairs lointains sur la skyline par temps d'orage
+                    window._lightningFlash = window._lightningFlash || 0;
+                    if (targetRain > 0.5 && Math.random() < 0.0022 && window._lightningFlash < 0.05) {
+                        window._lightningFlash = 1.0;
+                    }
+                    window._lightningFlash *= 0.84;
+                    if (window.exteriorSkyUniforms) {
+                        window.exteriorSkyUniforms.uStorm.value += (targetRain - window.exteriorSkyUniforms.uStorm.value) * 0.025;
+                        window.exteriorSkyUniforms.uLightning.value = window._lightningFlash;
+                    }
+                    if (window.windowRainUniforms) {
+                        window.windowRainUniforms.uLightning.value = window._lightningFlash;
+                    }
+
+                    // --- AMBIANCE « SESSION NOCTURNE » AUTOMATIQUE (21h00 -> 05h30) ---
+                    const isNightSession = (hour >= 21.0 || hour < 5.5);
+                    if (window.bedsideLight && window.bedsideShadeMat) {
+                        const targetBedInt = isNightSession ? 5.2 : 0.45;
+                        window.bedsideLight.intensity += (targetBedInt - window.bedsideLight.intensity) * 0.03;
+                        window.bedsideShadeMat.emissiveIntensity += ((isNightSession ? 2.1 : 0.45) - window.bedsideShadeMat.emissiveIntensity) * 0.03;
+                    }
+                    if (window.deskBiasLight) {
+                        const targetBias = isNightSession ? 5.6 : 2.6;
+                        window.deskBiasLight.intensity += (targetBias - window.deskBiasLight.intensity) * 0.03;
+                    }
+                    if (window.sconceGlowMat) {
+                        window.sconceGlowMat.emissiveIntensity += ((isNightSession ? 2.6 : 0.9) - window.sconceGlowMat.emissiveIntensity) * 0.03;
+                    }
+
                     if (!isLampDark) {
+                        const stormDim = 1.0 - targetRain * 0.35;
+                        const nightCeil = isNightSession ? 22 : 42;
                         dirLight.color.lerp(window._tmpSunCol ? window._tmpSunCol.set(sunHex) : (window._tmpSunCol = new THREE.Color(sunHex)), 0.04);
-                        dirLight.intensity += (sunInt - dirLight.intensity) * 0.04;
-                        hemiLight.intensity += (hemiInt - hemiLight.intensity) * 0.04;
+                        dirLight.intensity += ((sunInt * stormDim + window._lightningFlash * 2.2) - dirLight.intensity) * 0.06;
+                        hemiLight.intensity += ((hemiInt * stormDim) - hemiLight.intensity) * 0.04;
+                        ceilingLight.intensity += (nightCeil - ceilingLight.intensity) * 0.03;
                         if (window.windowBounceLight) {
                             window.windowBounceLight.color.lerp(window._tmpBncCol ? window._tmpBncCol.set(bounceHex) : (window._tmpBncCol = new THREE.Color(bounceHex)), 0.04);
-                            window.windowBounceLight.intensity += (bounceInt - window.windowBounceLight.intensity) * 0.04;
+                            window.windowBounceLight.intensity += ((bounceInt * stormDim + window._lightningFlash * 4.5) - window.windowBounceLight.intensity) * 0.06;
                         }
-                        if (window.ceilingFixtureMat) window.ceilingFixtureMat.emissiveIntensity = 2.0;
+                        if (window.ceilingFixtureMat) window.ceilingFixtureMat.emissiveIntensity = isNightSession ? 1.1 : 2.0;
                     } else {
-                        if (window.windowBounceLight) window.windowBounceLight.intensity += (0.8 - window.windowBounceLight.intensity) * 0.06;
+                        if (window.windowBounceLight) window.windowBounceLight.intensity += ((0.8 + window._lightningFlash * 3.0) - window.windowBounceLight.intensity) * 0.06;
                         if (window.ceilingFixtureMat) window.ceilingFixtureMat.emissiveIntensity = 0.12;
+                    }
+
+                    // --- POUSSIÈRES DORÉES DANS LES RAYONS DE SOLEIL ---
+                    if (window.sunDustPoints) {
+                        const posAttr = window.sunDustPoints.geometry.attributes.position;
+                        const seeds = window.sunDustPoints.userData.seeds;
+                        for (let i = 0; i < seeds.length; i++) {
+                            let x = posAttr.getX(i) + Math.sin(time * 0.35 + seeds[i].sx) * 0.0012;
+                            let y = posAttr.getY(i) + seeds[i].sy;
+                            let z = posAttr.getZ(i) + Math.cos(time * 0.28 + seeds[i].sz) * 0.0012;
+                            if (y > 2.85) y = -0.35;
+                            posAttr.setXYZ(i, x, y, z);
+                        }
+                        posAttr.needsUpdate = true;
+                        const targetDustOp = (isLampDark || isNightSession || isRainy) ? 0.14 : 0.58;
+                        window.sunDustPoints.material.opacity += (targetDustOp - window.sunDustPoints.material.opacity) * 0.04;
+                    }
+
+                    // --- VAPEUR CHAUDE AU-DESSUS DU MUG DE CAFÉ ---
+                    if (window.coffeeSteamPuffs) {
+                        window.coffeeSteamPuffs.forEach(sp => {
+                            sp.userData.phase = (sp.userData.phase + 0.0055) % 1.0;
+                            const p = sp.userData.phase;
+                            sp.position.set(-1.55 + Math.sin(time * 1.4 + p * 6.28) * 0.025 * p, 0.90 + p * 0.34, 0.48 + Math.cos(time * 1.1 + p * 4.0) * 0.018 * p);
+                            const sc = 0.07 + p * 0.15;
+                            sp.scale.set(sc, sc, 1);
+                            sp.material.opacity = Math.sin(p * Math.PI) * 0.26;
+                        });
+                    }
+
+                    // --- SMARTPHONE 3D SUR LE BUREAU (NOTIF DM / BRAND DEAL) ---
+                    if (window.deskPhoneGroup && window.deskPhoneScreenMat) {
+                        const nowMs = performance.now();
+                        const hasUnread = (typeof state !== 'undefined' && state && Array.isArray(state.dms) && state.dms.some(d => !d.resolved));
+                        const isAlerting = (nowMs < (window.deskPhoneAlertUntil || 0)) || hasUnread;
+                        if (isAlerting) {
+                            const pulse = 0.65 + 0.35 * Math.sin(time * 4.5);
+                            window.deskPhoneScreenMat.emissiveIntensity = pulse * 1.4;
+                            if (nowMs < (window.deskPhoneAlertUntil || 0)) {
+                                window.deskPhoneGroup.rotation.y = -0.32 + Math.sin(time * 28.0) * 0.035;
+                            } else {
+                                window.deskPhoneGroup.rotation.y = -0.32;
+                            }
+                        } else {
+                            window.deskPhoneScreenMat.emissiveIntensity += (0.04 - window.deskPhoneScreenMat.emissiveIntensity) * 0.08;
+                            window.deskPhoneGroup.rotation.y = -0.32;
+                        }
+                    }
+
+                    // --- AVIONS LOINTAINS DANS LE CIEL ---
+                    if (window.cityPlanes) {
+                        window.cityPlanes.forEach(pl => {
+                            pl.position.z += pl.userData.speed;
+                            if (pl.position.z > 50) pl.position.z = -48;
+                            if (pl.position.z < -50) pl.position.z = 48;
+                            pl.visible = (nightFactor > 0.25);
+                        });
+                    }
+
+                    // --- MICRO-ANIMATION DE LA PORTE DU STUDIO ---
+                    if (window.doorPivot && typeof window.doorTargetAngle === 'number') {
+                        window.doorPivot.rotation.y += (window.doorTargetAngle - window.doorPivot.rotation.y) * 0.14;
+                        if (window.doorLightRayMat) {
+                            const openRatio = Math.min(1, Math.abs(window.doorPivot.rotation.y) / 0.42);
+                            window.doorLightRayMat.opacity = openRatio * 0.72;
+                        }
                     }
                 } catch(e) {}
 
@@ -10440,7 +11056,11 @@ const DEFAULT_STATE = {
             } else if (k === 'f') {
                 e.preventDefault();
                 window.exitFpsPointerLock();
-                if (typeof window.triggerCinematic === 'function') {
+                if (typeof window.animateDoorCrackOpen === 'function') {
+                    window.animateDoorCrackOpen(() => {
+                        if (typeof window.triggerCinematic === 'function') window.triggerCinematic('escape');
+                    });
+                } else if (typeof window.triggerCinematic === 'function') {
                     window.triggerCinematic('escape');
                 }
             }
@@ -10598,7 +11218,11 @@ const DEFAULT_STATE = {
                 const canPlayDoor = getTotalMins() >= doorReady;
                 if (canPlayDoor && !state.isEventActive && !state.isSleeping && !state.isSitting) {
                     window.exitFpsPointerLock();
-                    openMiniGameMenu();
+                    if (typeof window.animateDoorCrackOpen === 'function') {
+                        window.animateDoorCrackOpen(() => openMiniGameMenu());
+                    } else {
+                        openMiniGameMenu();
+                    }
                 } else if (!canPlayDoor) {
                     showToast("T'es déjà sorti récemment. Va taffer.", "warning");
                 }
@@ -13674,6 +14298,8 @@ document.addEventListener('mouseover', (e) => {
         const btnDMs = document.getElementById('tab-social-dms');
         if (btnDMs) btnDMs.classList.add('animate-dm-shake');
 
+        // Notification 3D sur le Smartphone du bureau
+        if (typeof window.triggerDeskPhoneNotif === 'function') window.triggerDeskPhoneNotif('dm');
         // Notification visuelle et sonore
         showToast(`💬 Nouveau message privé de ${state.dms[state.dms.length-1].runtimeSender || template.sender} !`, "info", () => {
             openApp('app-social');
@@ -17564,6 +18190,13 @@ document.addEventListener('mouseover', (e) => {
                 if (fpsEV) fpsEV.textContent = `${energyVal}%`;
                 if (fpsI) fpsI.style.width = `${iv}%`;
                 if (fpsIV) fpsIV.textContent = `${iv}%`;
+                // Flou périphérique doux sous 25% NRJ
+                const fBlur = document.getElementById('fps-fatigue-blur');
+                if (fBlur) {
+                    fBlur.style.opacity = energyVal < 25 ? String(Math.min(0.88, (25 - energyVal) / 25)) : '0';
+                }
+                // Mise à jour évolutive des 3 Disques d'Or / Platine sur le mur Sud
+                if (typeof window.syncCareerWallDiscs === 'function') window.syncCareerWallDiscs();
             } catch(e) {}
             
             const widgetClock = document.getElementById('widget-clock-time');
