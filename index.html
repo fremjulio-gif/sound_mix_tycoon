@@ -5,6 +5,10 @@
         <meta charset="UTF-8">
         <link rel="icon" type="logo/jpeg" href="logo.jpeg">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="theme-color" content="#050505">
         <title>bounce_it</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
@@ -1803,6 +1807,147 @@
                 overflow: hidden;   /* Évite l'apparition de barres de défilement */
                 }
             } /* FIN DE @media (max-width: 767px) */
+
+            /* =====================================================================
+               FULL COMPATIBILITÉ MOBILE PORTRAIT + PAYSAGE + TABLETTES TACTILES
+               ===================================================================== */
+            @media (max-width: 480px) {
+                #hud {
+                    width: calc(100vw - 12px) !important;
+                    padding: 4px 8px !important;
+                    gap: 4px !important;
+                    min-height: 46px !important;
+                    border-radius: 14px !important;
+                }
+                #hud-avatar {
+                    width: 36px !important;
+                    height: 36px !important;
+                }
+                #hud [role="progressbar"] {
+                    min-width: 42px !important;
+                    height: 6px !important;
+                }
+                #hud .px-2 {
+                    padding-left: 4px !important;
+                    padding-right: 4px !important;
+                }
+                #pc-top-bar {
+                    padding-right: 54px !important;
+                    padding-left: 8px !important;
+                }
+                #mobile-nav {
+                    height: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
+                    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+                    padding-left: 2px !important;
+                    padding-right: 2px !important;
+                }
+                #mobile-nav > div {
+                    min-width: 0 !important;
+                    padding: 0 2px !important;
+                }
+                #mobile-nav span {
+                    font-size: 7.5px !important;
+                    letter-spacing: 0.02em !important;
+                    white-space: nowrap !important;
+                    overflow: hidden !important;
+                    text-overflow: ellipsis !important;
+                    max-width: 100% !important;
+                }
+                #app-empire button[id^="tab-empire-"] {
+                    font-size: 9px !important;
+                    padding: 10px 4px !important;
+                    letter-spacing: 0.04em !important;
+                    line-height: 1.2 !important;
+                    min-height: 44px !important;
+                }
+            }
+
+            /* Mobile Paysage (ex: iPhone 844x390 / Android 740x360) */
+            @media (max-width: 940px) and (max-height: 500px) {
+                #hud {
+                    top: max(4px, env(safe-area-inset-top, 4px)) !important;
+                    min-height: 42px !important;
+                    padding: 3px 10px !important;
+                    border-radius: 14px !important;
+                }
+                #hud-avatar {
+                    width: 34px !important;
+                    height: 34px !important;
+                }
+                #fps-vitals-hud {
+                    top: calc(52px + env(safe-area-inset-top, 4px)) !important;
+                    left: max(8px, env(safe-area-inset-left, 8px)) !important;
+                    min-width: 126px !important;
+                    padding: 5px 8px !important;
+                    gap: 4px !important;
+                }
+                #mobile-joy-rest {
+                    width: 64px !important;
+                    height: 64px !important;
+                    bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
+                    left: max(14px, env(safe-area-inset-left, 14px)) !important;
+                }
+                #mobile-look-rest {
+                    bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+                    right: max(14px, env(safe-area-inset-right, 14px)) !important;
+                    padding: 6px 10px !important;
+                    font-size: 9px !important;
+                }
+                #fps-interact-prompt {
+                    bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
+                    padding: 7px 14px !important;
+                }
+                #fps-mobile-interact-btn {
+                    bottom: max(14px, env(safe-area-inset-bottom, 14px)) !important;
+                    right: max(14px, env(safe-area-inset-right, 14px)) !important;
+                    padding: 10px 16px !important;
+                }
+                #taskbar-bottom {
+                    display: none !important;
+                }
+                #mobile-nav {
+                    display: flex !important;
+                    height: calc(50px + env(safe-area-inset-bottom, 0px)) !important;
+                    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+                }
+                .os-window {
+                    position: fixed !important;
+                    top: 44px !important;
+                    left: 0 !important;
+                    width: 100vw !important;
+                    height: calc(100dvh - 44px - 50px - env(safe-area-inset-bottom, 0px)) !important;
+                    max-width: 100vw !important;
+                    max-height: none !important;
+                    border-radius: 0 !important;
+                    transform: none !important;
+                }
+                #login-screen .cinema-card,
+                #login-screen > div[class*="max-w-"] {
+                    max-height: 88dvh !important;
+                    overflow-y: auto !important;
+                    -webkit-overflow-scrolling: touch !important;
+                }
+            }
+
+            /* Ergonomie tactile universelle (iOS Safari, Android, iPadOS) */
+            @media (hover: none) and (pointer: coarse) {
+                .os-window .window-content,
+                #empire-view-label, #empire-view-sync, #empire-view-vault,
+                #minigames-menu-overlay > div,
+                #live-drum-overlay > div,
+                #settings-audio-panel {
+                    -webkit-overflow-scrolling: touch;
+                    overscroll-behavior: contain;
+                    touch-action: pan-y;
+                }
+                #app-empire button,
+                #daw-mastering-rack button,
+                #live-drum-overlay button,
+                #minigames-menu-overlay button {
+                    touch-action: manipulation;
+                    -webkit-tap-highlight-color: transparent;
+                }
+            }
 
             
 
@@ -3706,7 +3851,7 @@
         .banger-flash::before {
             content: '';
             position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
+            top: 0; left: 0; width: 100vw; height: 100dvh;
             background: white;
             z-index: 10000;
             pointer-events: none;
@@ -5735,8 +5880,8 @@
                 <div class="bg-gradient-to-r from-amber-500/15 via-purple-500/10 to-black/60 border border-amber-400/30 rounded-xl p-4 mb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <div class="text-[10px] font-mono text-amber-300/80 uppercase tracking-widest">Direction Artistique & Distribution</div>
-                        <div class="flex items-center gap-3 mt-1">
-                            <input id="label-name-input" type="text" maxlength="22" value="42E RECORDS" onchange="window.renamePlayerLabel(this.value)" class="bg-black/60 border border-amber-400/40 rounded-lg px-3 py-1.5 text-base md:text-lg font-bold font-mono text-white tracking-wider uppercase focus:outline-none focus:border-amber-400 w-56" />
+                        <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-1">
+                            <input id="label-name-input" type="text" maxlength="22" value="42E RECORDS" onchange="window.renamePlayerLabel(this.value)" class="bg-black/60 border border-amber-400/40 rounded-lg px-3 py-1.5 text-base md:text-lg font-bold font-mono text-white tracking-wider uppercase focus:outline-none focus:border-amber-400 w-full sm:w-56" />
                             <span class="text-[10px] font-mono text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded">Actif au 42e Étage</span>
                         </div>
                         <p class="text-xs text-gray-400 mt-1.5">Les artistes signés génèrent des royalties passives chaque jour et viennent chiller en **3D dans ton Studio Pro**.</p>
@@ -5793,34 +5938,34 @@
         <!-- =========================================================================
              OVERLAY LIVE ROOM : BATTERIE ACOUSTIQUE 5 FÛTS & GROOVE PAD JUICY
              ========================================================================= -->
-        <div id="live-drum-overlay" class="fixed inset-0 z-[100005] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
-            <div class="w-full max-w-xl bg-[#0e111a] border border-amber-500/40 rounded-2xl shadow-[0_24px_90px_rgba(0,0,0,0.95)] overflow-hidden">
-                <div class="bg-[#080a10] px-5 py-3.5 border-b border-white/10 flex items-center justify-between">
-                    <div class="flex items-center gap-2.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_#ef4444]"></span>
-                        <span class="font-mono text-xs font-bold tracking-widest text-amber-300 uppercase">LIVE ROOM · BATTERIE ACOUSTIQUE STUDIO 5 FÛTS</span>
+        <div id="live-drum-overlay" class="fixed inset-0 z-[100005] bg-black/80 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4">
+            <div class="w-full max-w-xl max-h-[92dvh] overflow-y-auto bg-[#0e111a] border border-amber-500/40 rounded-2xl shadow-[0_24px_90px_rgba(0,0,0,0.95)]">
+                <div class="bg-[#080a10] px-4 sm:px-5 py-3 border-b border-white/10 flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="w-2.5 h-2.5 shrink-0 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_#ef4444]"></span>
+                        <span class="font-mono text-[10px] sm:text-xs font-bold tracking-widest text-amber-300 uppercase truncate">LIVE ROOM · BATTERIE ACOUSTIQUE 5 FÛTS</span>
                     </div>
-                    <button type="button" onclick="window.closeLiveDrumSession()" class="text-gray-400 hover:text-white text-sm font-mono px-2 py-1 rounded bg-white/5 hover:bg-white/10 cursor-pointer">✕ FERMER</button>
+                    <button type="button" onclick="window.closeLiveDrumSession()" class="shrink-0 text-gray-400 hover:text-white text-xs sm:text-sm font-mono px-2.5 py-1.5 rounded bg-white/5 hover:bg-white/10 cursor-pointer">✕ FERMER</button>
                 </div>
-                <div class="p-5">
-                    <p class="text-xs text-gray-300 mb-4">Joue un groove acoustique dans la Live Room (clic ou touches <kbd class="px-1.5 py-0.5 bg-white/10 rounded text-amber-300 font-mono">1</kbd> à <kbd class="px-1.5 py-0.5 bg-white/10 rounded text-amber-300 font-mono">4</kbd>) pour recharger ton **Inspiration (+12%)** et activer le bonus **[Groove Batterie Live +0.6 Score]** sur ton prochain son !</p>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                        <button type="button" onclick="window.hitLiveDrumPad('kick')" class="py-5 px-3 rounded-xl bg-gradient-to-b from-red-500/25 to-red-900/20 hover:from-red-500/40 border border-red-400/40 flex flex-col items-center gap-1 active:scale-95 transition-all cursor-pointer shadow-lg">
+                <div class="p-4 sm:p-5">
+                    <p class="text-xs text-gray-300 mb-4">Joue un groove acoustique dans la Live Room (tap, clic ou touches <kbd class="px-1.5 py-0.5 bg-white/10 rounded text-amber-300 font-mono">1</kbd> à <kbd class="px-1.5 py-0.5 bg-white/10 rounded text-amber-300 font-mono">4</kbd>) pour recharger ton <strong>Inspiration (+12%)</strong> et activer le bonus <strong>[Groove Batterie Live +0.6 Score]</strong> sur ton prochain son !</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 select-none">
+                        <button type="button" onpointerdown="event.preventDefault(); window.hitLiveDrumPad('kick')" class="py-5 px-3 rounded-xl bg-gradient-to-b from-red-500/25 to-red-900/20 hover:from-red-500/40 border border-red-400/40 flex flex-col items-center gap-1 active:scale-95 transition-all cursor-pointer shadow-lg select-none">
                             <span class="text-xl">🥁</span>
                             <span class="text-[11px] font-mono font-bold text-red-200">KICK 22"</span>
                             <span class="text-[9px] font-mono text-gray-400">Touche [1]</span>
                         </button>
-                        <button type="button" onclick="window.hitLiveDrumPad('snare')" class="py-5 px-3 rounded-xl bg-gradient-to-b from-amber-500/25 to-amber-900/20 hover:from-amber-500/40 border border-amber-400/40 flex flex-col items-center gap-1 active:scale-95 transition-all cursor-pointer shadow-lg">
+                        <button type="button" onpointerdown="event.preventDefault(); window.hitLiveDrumPad('snare')" class="py-5 px-3 rounded-xl bg-gradient-to-b from-amber-500/25 to-amber-900/20 hover:from-amber-500/40 border border-amber-400/40 flex flex-col items-center gap-1 active:scale-95 transition-all cursor-pointer shadow-lg select-none">
                             <span class="text-xl">⚡</span>
                             <span class="text-[11px] font-mono font-bold text-amber-200">SNARE CRISP</span>
                             <span class="text-[9px] font-mono text-gray-400">Touche [2]</span>
                         </button>
-                        <button type="button" onclick="window.hitLiveDrumPad('hat')" class="py-5 px-3 rounded-xl bg-gradient-to-b from-cyan-500/25 to-cyan-900/20 hover:from-cyan-500/40 border border-cyan-400/40 flex flex-col items-center gap-1 active:scale-95 transition-all cursor-pointer shadow-lg">
+                        <button type="button" onpointerdown="event.preventDefault(); window.hitLiveDrumPad('hat')" class="py-5 px-3 rounded-xl bg-gradient-to-b from-cyan-500/25 to-cyan-900/20 hover:from-cyan-500/40 border border-cyan-400/40 flex flex-col items-center gap-1 active:scale-95 transition-all cursor-pointer shadow-lg select-none">
                             <span class="text-xl">✨</span>
                             <span class="text-[11px] font-mono font-bold text-cyan-200">HI-HAT LAITON</span>
                             <span class="text-[9px] font-mono text-gray-400">Touche [3]</span>
                         </button>
-                        <button type="button" onclick="window.hitLiveDrumPad('crash')" class="py-5 px-3 rounded-xl bg-gradient-to-b from-purple-500/25 to-purple-900/20 hover:from-purple-500/40 border border-purple-400/40 flex flex-col items-center gap-1 active:scale-95 transition-all cursor-pointer shadow-lg">
+                        <button type="button" onpointerdown="event.preventDefault(); window.hitLiveDrumPad('crash')" class="py-5 px-3 rounded-xl bg-gradient-to-b from-purple-500/25 to-purple-900/20 hover:from-purple-500/40 border border-purple-400/40 flex flex-col items-center gap-1 active:scale-95 transition-all cursor-pointer shadow-lg select-none">
                             <span class="text-xl">💥</span>
                             <span class="text-[11px] font-mono font-bold text-purple-200">CRASH & TOM</span>
                             <span class="text-[9px] font-mono text-gray-400">Touche [4]</span>
@@ -6230,9 +6375,30 @@ const DEFAULT_STATE = {
         // ==========================================
         // 1. RESPONSIVE & GLOBALS
         // ==========================================
-        // FIX: Breakpoint isMobile ajusté à 767px (Smartphones Portrait)
-        let isMobile = window.innerWidth <= 767;
+        // FIX: Détection unifiée Mobile Portrait + Mobile Paysage (iPhone/Android) + Tablettes tactiles
+        function computeIsMobileLayout() {
+            const isCoarse = Boolean(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+            return window.innerWidth <= 767 || (isCoarse && window.innerHeight <= 500);
+        }
+        let isMobile = computeIsMobileLayout();
         window.isMobile = isMobile;
+        window.computeIsMobileLayout = computeIsMobileLayout;
+
+        // Déverrouillage universel WebAudio (iOS Safari / Android Chrome) dès le premier toucher ou clic
+        (function installGlobalAudioUnlocker() {
+            const unlock = () => {
+                try {
+                    if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state === 'suspended') {
+                        audioCtx.resume().catch(() => {});
+                    }
+                    if (window.THREE && typeof listener !== 'undefined' && listener && listener.context && listener.context.state === 'suspended') {
+                        listener.context.resume().catch(() => {});
+                    }
+                } catch(e) {}
+            };
+            window.addEventListener('pointerdown', unlock, { passive: true });
+            window.addEventListener('touchstart', unlock, { passive: true });
+        })();
 
         const themesList = [
             { name: 'neon',   vars: ['#09090b', '#1e1b4b', '#0f172a', '#312e81'] },
@@ -6439,19 +6605,24 @@ const DEFAULT_STATE = {
         });
 
         
-        // EVENEMENT RESIZE GLOBAL
-        window.addEventListener('resize', () => {
-            setTimeout(() => {
-                isMobile = window.innerWidth <= 767;
+        // EVENEMENT RESIZE & ORIENTATIONCHANGE GLOBAL (Desktop + Mobile Portrait / Paysage)
+        let _resizeTimer = null;
+        function handleViewportResize() {
+            if (_resizeTimer) clearTimeout(_resizeTimer);
+            _resizeTimer = setTimeout(() => {
+                isMobile = computeIsMobileLayout();
                 window.isMobile = isMobile;
 
-                const aspect = window.innerWidth / window.innerHeight;
-                camera.aspect = aspect;
-                const baseFov = isMobile ? 74 : 68;
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+                camera.aspect = w / Math.max(1, h);
+                const baseFov = isMobile ? (w > h ? 66 : 74) : 68;
                 camera.fov = Math.max(42, Math.min(82, baseFov + (window.fps ? window.fps.fovZoomOffset : 0)));
                 camera.updateProjectionMatrix();
-                
-                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                const dprNow = isMobile ? Math.min(window.devicePixelRatio || 1, 1.25) : Math.min(window.devicePixelRatio || 1, 2);
+                renderer.setPixelRatio(dprNow);
+                renderer.setSize(w, h);
 
                 if (isMobile) {
                     document.querySelectorAll('.os-window').forEach(win => {
@@ -6459,7 +6630,9 @@ const DEFAULT_STATE = {
                     });
                 }
             }, 100);
-        });
+        }
+        window.addEventListener('resize', handleViewportResize, { passive: true });
+        window.addEventListener('orientationchange', handleViewportResize, { passive: true });
 
         const hemiLight = new THREE.HemisphereLight('#f2f6ff', '#8b6e52', 1.05);
         scene.add(hemiLight);
