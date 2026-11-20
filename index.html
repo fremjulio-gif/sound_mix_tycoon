@@ -7261,8 +7261,41 @@ const DEFAULT_STATE = {
                 tex.anisotropy = maxAniso;
                 if (isColor && 'colorSpace' in tex && THREE.SRGBColorSpace) {
                     tex.colorSpace = THREE.SRGBColorSpace;
+                } else if (!isColor && 'colorSpace' in tex && THREE.NoColorSpace) {
+                    tex.colorSpace = THREE.NoColorSpace;
                 }
                 return tex;
+            }
+
+            // VRAI GÉNÉRATEUR DE NORMAL MAPS RGB TANGENTES (Filtre Sobel 3x3 ultra-rapide <25ms)
+            function heightCanvasToNormalMap(heightCanvas, strength = 2.6, rx = 1, ry = 1) {
+                const w = heightCanvas.width, h = heightCanvas.height;
+                const srcCtx = heightCanvas.getContext('2d');
+                const src = srcCtx.getImageData(0, 0, w, h).data;
+                const outC = document.createElement('canvas'); outC.width = w; outC.height = h;
+                const outCtx = outC.getContext('2d');
+                const outImg = outCtx.createImageData(w, h);
+                const dst = outImg.data;
+
+                const sample = (x, y) => src[(((y + h) % h) * w + ((x + w) % w)) * 4] / 255.0;
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        const tl = sample(x - 1, y - 1), t = sample(x, y - 1), tr = sample(x + 1, y - 1);
+                        const l  = sample(x - 1, y),                           r  = sample(x + 1, y);
+                        const bl = sample(x - 1, y + 1), b = sample(x, y + 1), br = sample(x + 1, y + 1);
+                        const dx = (tr + 2 * r + br - tl - 2 * l - bl) * strength;
+                        const dy = (bl + 2 * b + br - tl - 2 * t - tr) * strength;
+                        const dz = 1.0;
+                        const invLen = 1.0 / Math.sqrt(dx * dx + dy * dy + dz * dz);
+                        const idx = (y * w + x) * 4;
+                        dst[idx]     = Math.round((-dx * invLen * 0.5 + 0.5) * 255);
+                        dst[idx + 1] = Math.round((-dy * invLen * 0.5 + 0.5) * 255);
+                        dst[idx + 2] = Math.round(( dz * invLen * 0.5 + 0.5) * 255);
+                        dst[idx + 3] = 255;
+                    }
+                }
+                outCtx.putImageData(outImg, 0, 0);
+                return configureTex(outC, rx, ry, false);
             }
 
             // 1. PARQUET CHÊNE EUROPÉEN NATUREL HAUTE DÉFINITION (Diffuse + Bump + Roughness)
@@ -7325,7 +7358,7 @@ const DEFAULT_STATE = {
                 }
                 return {
                     map: configureTex(diffC, 3.2, 3.2, true),
-                    bumpMap: configureTex(bumpC, 3.2, 3.2, false),
+                    normalMap: heightCanvasToNormalMap(bumpC, 3.2, 3.2, 3.2),
                     roughnessMap: configureTex(roughC, 3.2, 3.2, false)
                 };
             }
@@ -7369,7 +7402,7 @@ const DEFAULT_STATE = {
                 }
                 return {
                     map: configureTex(diffC, rx, ry, true),
-                    bumpMap: configureTex(bumpC, rx, ry, false)
+                    normalMap: heightCanvasToNormalMap(bumpC, 1.8, rx, ry)
                 };
             }
 
@@ -7397,7 +7430,7 @@ const DEFAULT_STATE = {
                 }
                 return {
                     map: configureTex(diffC, rx, ry, true),
-                    bumpMap: configureTex(bumpC, rx, ry, false)
+                    normalMap: heightCanvasToNormalMap(bumpC, 2.6, rx, ry)
                 };
             }
 
@@ -7417,7 +7450,7 @@ const DEFAULT_STATE = {
                     bCtx.fillStyle = Math.random() > 0.5 ? '#9e9e9e' : '#585858';
                     bCtx.beginPath(); bCtx.arc(x, y, r, 0, Math.PI * 2); bCtx.fill();
                 }
-                return { map: configureTex(diffC, 3, 3, true), bumpMap: configureTex(bumpC, 3, 3, false) };
+                return { map: configureTex(diffC, 3, 3, true), normalMap: heightCanvasToNormalMap(bumpC, 2.8, 3, 3) };
             }
 
             // 5. TISSU LIN / COTON TISSÉ (Tapis, Couette, Rideaux)
@@ -7735,8 +7768,9 @@ const DEFAULT_STATE = {
 
             // --- UPGRADE MATÉRIAUX EXISTANTS VERS PHOTORÉALISME LUMINEUX ---
             floorMat.map = oakTex.map;
-            floorMat.bumpMap = oakTex.bumpMap;
-            floorMat.bumpScale = 0.022;
+            floorMat.bumpMap = null;
+            floorMat.normalMap = oakTex.normalMap;
+            floorMat.normalScale = new THREE.Vector2(0.85, 0.85);
             floorMat.roughnessMap = oakTex.roughnessMap;
             floorMat.color.set('#ffffff');
             floorMat.roughness = 0.42;
@@ -7745,8 +7779,9 @@ const DEFAULT_STATE = {
             floorMat.needsUpdate = true;
 
             wallMat.map = wallTex.map;
-            wallMat.bumpMap = wallTex.bumpMap;
-            wallMat.bumpScale = 0.012;
+            wallMat.bumpMap = null;
+            wallMat.normalMap = wallTex.normalMap;
+            wallMat.normalScale = new THREE.Vector2(0.42, 0.42);
             wallMat.color.set('#f5f1ea');
             wallMat.roughness = 0.88;
             wallMat.metalness = 0.01;
@@ -7754,8 +7789,9 @@ const DEFAULT_STATE = {
             wallMat.needsUpdate = true;
 
             deskTopMat.map = walnutTex.map;
-            deskTopMat.bumpMap = walnutTex.bumpMap;
-            deskTopMat.bumpScale = 0.014;
+            deskTopMat.bumpMap = null;
+            deskTopMat.normalMap = walnutTex.normalMap;
+            deskTopMat.normalScale = new THREE.Vector2(0.65, 0.65);
             deskTopMat.color.set('#dfb998');
             deskTopMat.roughness = 0.34;
             deskTopMat.metalness = 0.06;
@@ -7809,13 +7845,13 @@ const DEFAULT_STATE = {
             blanketMat.color.set('#d7e2f2'); blanketMat.roughness = 0.92; blanketMat.needsUpdate = true;
             pillowMat.map = curtainTex.map; pillowMat.color.set('#f8f6f2'); pillowMat.roughness = 0.88; pillowMat.needsUpdate = true;
 
-            crateMat.map = walnutTex.map; crateMat.bumpMap = walnutTex.bumpMap; crateMat.bumpScale = 0.02;
+            crateMat.map = walnutTex.map; crateMat.bumpMap = null; crateMat.normalMap = walnutTex.normalMap; crateMat.normalScale = new THREE.Vector2(0.7, 0.7);
             crateMat.color.set('#d1a67e'); crateMat.roughness = 0.58; crateMat.needsUpdate = true;
 
             rugMat.map = rugTex.map; rugMat.bumpMap = rugTex.bumpMap; rugMat.bumpScale = 0.03;
             rugMat.color.set('#d8dde8'); rugMat.roughness = 0.95; rugMat.needsUpdate = true;
 
-            doorMat.map = walnutTex.map; doorMat.bumpMap = walnutTex.bumpMap; doorMat.bumpScale = 0.018;
+            doorMat.map = walnutTex.map; doorMat.bumpMap = null; doorMat.normalMap = walnutTex.normalMap; doorMat.normalScale = new THREE.Vector2(0.65, 0.65);
             doorMat.color.set('#b89270'); doorMat.roughness = 0.48; doorMat.needsUpdate = true;
 
             if (typeof sofaGroup !== 'undefined') {
@@ -7823,7 +7859,7 @@ const DEFAULT_STATE = {
                     if (ch.isMesh && ch.material) {
                         const mat = ch.userData.originalMaterial || ch.material;
                         if (mat.isMeshStandardMaterial) {
-                            mat.map = leatherTex.map; mat.bumpMap = leatherTex.bumpMap; mat.bumpScale = 0.022;
+                            mat.map = leatherTex.map; mat.bumpMap = null; mat.normalMap = leatherTex.normalMap; mat.normalScale = new THREE.Vector2(0.75, 0.75);
                             mat.color.set('#c79878'); mat.roughness = 0.38; mat.metalness = 0.06; mat.envMapIntensity = 0.72;
                             mat.needsUpdate = true;
                         }
@@ -7981,12 +8017,16 @@ const DEFAULT_STATE = {
                 map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.015,
                 color: '#e6e0d5', roughness: 0.92, side: THREE.DoubleSide
             });
+            window.curtainFolds = [];
             [-1.42, 3.62].forEach(cz => {
                 for (let f = 0; f < 4; f++) {
                     const fold = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.095, 4.46, 10), curtainMat);
-                    fold.position.set(4.83 + (f % 2) * 0.03, 1.25, cz + (cz < 0 ? f * 0.13 : -f * 0.13));
+                    const baseX = 4.83 + (f % 2) * 0.03;
+                    fold.position.set(baseX, 1.25, cz + (cz < 0 ? f * 0.13 : -f * 0.13));
+                    fold.userData = { baseX: baseX, phase: f * 0.9 + (cz > 0 ? 2.1 : 0) };
                     fold.castShadow = false; fold.receiveShadow = true;
                     archGroup.add(fold);
+                    window.curtainFolds.push(fold);
                 }
             });
 
@@ -8055,9 +8095,9 @@ const DEFAULT_STATE = {
             rainPane.position.set(5.01, 1.69, 1.1); rainPane.rotation.y = -Math.PI / 2;
             archGroup.add(rainPane);
 
-            // 2 Faisceaux volumétriques doux entrant par la baie vitrée + Poussières Dorées Flottantes
+            // 2 Faisceaux volumétriques très doux entrant par la baie vitrée (sans particules flottantes)
             const beamMat = new THREE.MeshBasicMaterial({
-                map: beamTex, color: '#fff3db', transparent: true, opacity: 0.12,
+                map: beamTex, color: '#fff3db', transparent: true, opacity: 0.085,
                 blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
             });
             window.sunbeamMat = beamMat;
@@ -8068,32 +8108,7 @@ const DEFAULT_STATE = {
                 beam.rotation.z = -0.58;
                 archGroup.add(beam);
             });
-
-            // Poussières dorées dérivant lentement dans les faisceaux de soleil
-            const dustCount = 58;
-            const dustPos = new Float32Array(dustCount * 3);
-            const dustSeeds = [];
-            for (let i = 0; i < dustCount; i++) {
-                dustPos[i * 3]     = 1.4 + Math.random() * 3.3;
-                dustPos[i * 3 + 1] = -0.35 + Math.random() * 3.1;
-                dustPos[i * 3 + 2] = -0.9 + Math.random() * 4.1;
-                dustSeeds.push({ sx: Math.random() * 6.28, sy: 0.0012 + Math.random() * 0.0018, sz: Math.random() * 6.28 });
-            }
-            const dustGeo = new THREE.BufferGeometry();
-            dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
-            const dustSpriteC = document.createElement('canvas'); dustSpriteC.width = 32; dustSpriteC.height = 32;
-            const dSCtx = dustSpriteC.getContext('2d');
-            const dG = dSCtx.createRadialGradient(16, 16, 1, 16, 16, 15);
-            dG.addColorStop(0, 'rgba(255,244,210,1)'); dG.addColorStop(0.4, 'rgba(255,232,180,0.45)'); dG.addColorStop(1, 'rgba(255,232,180,0)');
-            dSCtx.fillStyle = dG; dSCtx.fillRect(0, 0, 32, 32);
-            const dustMat = new THREE.PointsMaterial({
-                size: 0.055, map: new THREE.CanvasTexture(dustSpriteC), transparent: true, opacity: 0.55,
-                blending: THREE.AdditiveBlending, depthWrite: false
-            });
-            const sunDustPoints = new THREE.Points(dustGeo, dustMat);
-            sunDustPoints.userData.seeds = dustSeeds;
-            archGroup.add(sunDustPoints);
-            window.sunDustPoints = sunDustPoints;
+            window.sunDustPoints = null;
 
             // --- BALCON ARCHITECTURAL EXTÉRIEUR + VASTE MÉTROPOLE 3D ULTRA-RÉALISTE ---
             const exteriorGroup = new THREE.Group();
@@ -8388,7 +8403,7 @@ const DEFAULT_STATE = {
 
             // --- PLAFOND LUMINEUX (Y = +4.0) + NUAGES ACOUSTIQUES + PLAFONNIER ---
             const ceilingMat = new THREE.MeshStandardMaterial({
-                map: ceilTex.map, bumpMap: ceilTex.bumpMap, bumpScale: 0.008,
+                map: ceilTex.map, normalMap: ceilTex.normalMap, normalScale: new THREE.Vector2(0.28, 0.28),
                 color: '#ece8e0', roughness: 0.92, metalness: 0.01
             });
             const ceilingMesh = new THREE.Mesh(new THREE.PlaneGeometry(10.2, 10.2), ceilingMat);
@@ -8714,26 +8729,733 @@ const DEFAULT_STATE = {
             swLed.position.set(0, -0.025, 0.002); swGroup.add(swLed);
             archGroup.add(swGroup);
 
-            // 6. Fauteuil de studio ergonomique
+            // 6. FAUTEUIL DE PRODUCTEUR ERGONOMIQUE DÉTAILLÉ (Assise galbée, Accoudoirs T, Appui-tête, 5 Roulettes doubles)
             const chairGroup = new THREE.Group();
             chairGroup.position.set(-1.25, -1, -2.02);
             chairGroup.rotation.y = 0.55;
-            const chairSeatMat = new THREE.MeshStandardMaterial({ map: leatherTex.map, bumpMap: leatherTex.bumpMap, bumpScale: 0.015, color: '#2b2e38', roughness: 0.45 });
-            const chairBase = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.62, 12), aluFrameMat);
-            chairBase.position.set(0, 0.35, 0); chairGroup.add(chairBase);
+            const chairSeatMat = new THREE.MeshStandardMaterial({ map: leatherTex.map, normalMap: leatherTex.normalMap, normalScale: new THREE.Vector2(0.7, 0.7), color: '#282c36', roughness: 0.42 });
+            const chairChromeMat = new THREE.MeshStandardMaterial({ color: '#d8dee9', roughness: 0.18, metalness: 0.94, envMapIntensity: 1.4 });
+            const chairMeshMat = new THREE.MeshStandardMaterial({ map: rugTex.map, color: '#1b1e26', roughness: 0.78 });
+
+            // Vérin pneumatique chromé + mécanisme sous-assise
+            const gasCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.042, 0.52, 16), chairChromeMat);
+            gasCyl.position.set(0, 0.34, 0); chairGroup.add(gasCyl);
+            const tiltBox = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.08, 0.30), aluFrameMat);
+            tiltBox.position.set(0, 0.60, 0.02); chairGroup.add(tiltBox);
+
+            // Base étoile 5 branches inclinées + 5 vraies roulettes doubles au sol
             for (let a = 0; a < 5; a++) {
                 const ang = (a / 5) * Math.PI * 2;
-                const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.035, 0.42), aluFrameMat);
-                spoke.position.set(Math.sin(ang) * 0.2, 0.08, Math.cos(ang) * 0.2);
-                spoke.rotation.y = ang; chairGroup.add(spoke);
+                const legG = new THREE.Group(); legG.rotation.y = ang;
+                const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.046, 0.032, 0.42), chairChromeMat);
+                spoke.position.set(0, 0.10, 0.21); spoke.rotation.x = 0.08; legG.add(spoke);
+                const casterStem = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.05, 8), aluFrameMat);
+                casterStem.position.set(0, 0.065, 0.40); legG.add(casterStem);
+                [-0.016, 0.016].forEach(wx => {
+                    const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.016, 14), aluFrameMat);
+                    wheel.rotation.z = Math.PI / 2; wheel.position.set(wx, 0.032, 0.40); legG.add(wheel);
+                });
+                chairGroup.add(legG);
             }
-            const seat = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.12, 0.72), chairSeatMat);
+
+            // Assise galbée organique (subdivisée avec bords arrondis et creux ergonomique)
+            const seatGeo = new THREE.BoxGeometry(0.78, 0.12, 0.74, 12, 3, 12);
+            const sPos = seatGeo.attributes.position;
+            for (let i = 0; i < sPos.count; i++) {
+                const vx = sPos.getX(i), vy = sPos.getY(i), vz = sPos.getZ(i);
+                const edgeR = Math.min(1, Math.hypot(vx / 0.39, vz / 0.37));
+                const bolster = Math.pow(Math.abs(vx / 0.39), 2) * 0.028;
+                const frontDrop = vz < -0.22 ? -(Math.abs(vz + 0.22) * 0.24) : 0;
+                const roundY = vy > 0 ? vy * (1.0 - edgeR * 0.22) + bolster + frontDrop : vy * (1.0 - edgeR * 0.15) + frontDrop * 0.5;
+                sPos.setY(i, roundY);
+            }
+            seatGeo.computeVertexNormals();
+            const seat = new THREE.Mesh(seatGeo, chairSeatMat);
             seat.position.set(0, 0.68, 0); seat.castShadow = true; seat.receiveShadow = true; chairGroup.add(seat);
-            const backrest = new THREE.Mesh(new THREE.BoxGeometry(0.72, 1.05, 0.11), chairSeatMat);
-            backrest.position.set(0, 1.24, 0.34); backrest.rotation.x = 0.08; backrest.castShadow = true; chairGroup.add(backrest);
+
+            // Dossier ergonomique courbé en S (maintien lombaire) + cadre alu
+            const backGeo = new THREE.BoxGeometry(0.68, 0.96, 0.085, 10, 14, 2);
+            const bPos = backGeo.attributes.position;
+            for (let i = 0; i < bPos.count; i++) {
+                const vx = bPos.getX(i), vy = bPos.getY(i), vz = bPos.getZ(i);
+                const lumbarCurve = Math.sin((vy + 0.48) * 3.1) * -0.055; // Courbure S lombaire
+                const sideWrap = -Math.pow(vx / 0.34, 2) * 0.055;        // Enveloppement latéral
+                bPos.setZ(i, vz + lumbarCurve + sideWrap);
+            }
+            backGeo.computeVertexNormals();
+            const backrest = new THREE.Mesh(backGeo, chairMeshMat);
+            backrest.position.set(0, 1.20, 0.34); backrest.rotation.x = 0.09; backrest.castShadow = true; chairGroup.add(backrest);
+
+            // Appui-tête réglable bombé
+            const hrStem = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.16, 0.025), aluFrameMat);
+            hrStem.position.set(0, 1.72, 0.37); chairGroup.add(hrStem);
+            const hrGeo = new THREE.SphereGeometry(0.19, 16, 12); hrGeo.scale(1.35, 0.58, 0.45);
+            const headrest = new THREE.Mesh(hrGeo, chairSeatMat);
+            headrest.position.set(0, 1.83, 0.34); headrest.rotation.x = -0.15; headrest.castShadow = true; chairGroup.add(headrest);
+
+            // 2 Accoudoirs en T métalliques avec coussinets soft-touch
+            [-0.42, 0.42].forEach(ax => {
+                const armPost = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.28, 0.05), aluFrameMat);
+                armPost.position.set(ax, 0.80, 0.06); chairGroup.add(armPost);
+                const armBracket = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.03, 0.05), aluFrameMat);
+                armBracket.position.set(ax * 0.88, 0.66, 0.06); chairGroup.add(armBracket);
+                const armPad = new THREE.Mesh(new THREE.BoxGeometry(0.095, 0.032, 0.34), chairSeatMat);
+                armPad.position.set(ax, 0.945, 0.02); armPad.castShadow = true; chairGroup.add(armPad);
+            });
             archGroup.add(chairGroup);
 
-            // 7. Plante Botanique (Monstera / Ficus) en Pot Terracotta près de la fenêtre ensoleillée
+            // 6B. LIT ULTRA-RÉALISTE (Menuiserie Noyer + Tête Capitonnée + Matelas Biseauté + Couette Matelassée + 4 Coussins + Plaid à Franges)
+            try {
+                if (typeof frame !== 'undefined') frame.visible = false;
+                if (typeof mattress !== 'undefined') mattress.visible = false;
+                if (typeof blanket !== 'undefined') blanket.visible = false;
+                if (typeof pillow1 !== 'undefined') pillow1.visible = false;
+                if (typeof pillow2 !== 'undefined') pillow2.visible = false;
+
+                const bedWoodMat = new THREE.MeshStandardMaterial({
+                    map: walnutTex.map, normalMap: walnutTex.normalMap, normalScale: new THREE.Vector2(0.6, 0.6),
+                    color: '#a87d59', roughness: 0.44, metalness: 0.04
+                });
+                const headboardFabricMat = new THREE.MeshStandardMaterial({
+                    map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.018,
+                    color: '#5a5d68', roughness: 0.92
+                });
+                const mattressRealMat = new THREE.MeshStandardMaterial({
+                    map: curtainTex.map, color: '#f2eee7', roughness: 0.90
+                });
+                const pipingMat = new THREE.MeshStandardMaterial({ color: '#6b7280', roughness: 0.8 });
+
+                // 1. Cadre menuisé en noyer + 4 pieds bois fuselés posés au sol (y = -0.20 dans bedGroup = sol y=-1.0)
+                const legPositions = [[-1.12, -1.94], [1.12, -1.94], [-1.12, 1.94], [1.12, 1.94]];
+                legPositions.forEach(([lx, lz]) => {
+                    const bLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.032, 0.24, 14), bedWoodMat);
+                    bLeg.position.set(lx, -0.08, lz);
+                    bLeg.castShadow = true; bLeg.receiveShadow = true; bLeg.name = 'bed_mesh';
+                    bedGroup.add(bLeg);
+                });
+                // Rails périmétriques en noyer massif
+                const railL = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.22, 4.18), bedWoodMat);
+                railL.position.set(-1.19, 0.11, 0); railL.castShadow = true; railL.receiveShadow = true; railL.name = 'bed_mesh';
+                const railR = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.22, 4.18), bedWoodMat);
+                railR.position.set(1.19, 0.11, 0); railR.castShadow = true; railR.receiveShadow = true; railR.name = 'bed_mesh';
+                const railFoot = new THREE.Mesh(new THREE.BoxGeometry(2.49, 0.22, 0.12), bedWoodMat);
+                railFoot.position.set(0, 0.11, 2.04); railFoot.castShadow = true; railFoot.receiveShadow = true; railFoot.name = 'bed_mesh';
+                const railHead = new THREE.Mesh(new THREE.BoxGeometry(2.49, 0.22, 0.12), bedWoodMat);
+                railHead.position.set(0, 0.11, -2.04); railHead.name = 'bed_mesh';
+                const bedBaseBox = new THREE.Mesh(new THREE.BoxGeometry(2.28, 0.16, 3.96), headboardFabricMat);
+                bedBaseBox.position.set(0, 0.10, 0); bedBaseBox.name = 'bed_mesh';
+                bedGroup.add(railL, railR, railFoot, railHead, bedBaseBox);
+
+                // 2. Tête de lit capitonnée verticale (Channel-Tufted Headboard) dans un cadre en noyer
+                const hbGroup = new THREE.Group();
+                hbGroup.position.set(0, 0.80, -2.04);
+                const hbWoodBack = new THREE.Mesh(new THREE.BoxGeometry(2.54, 1.32, 0.08), bedWoodMat);
+                hbWoodBack.castShadow = true; hbWoodBack.receiveShadow = true; hbWoodBack.name = 'bed_mesh';
+                hbGroup.add(hbWoodBack);
+                const hbTopCap = new THREE.Mesh(new THREE.BoxGeometry(2.58, 0.055, 0.15), bedWoodMat);
+                hbTopCap.position.set(0, 0.67, 0.025); hbTopCap.castShadow = true; hbTopCap.name = 'bed_mesh';
+                hbGroup.add(hbTopCap);
+                // 8 panneaux verticaux rembourrés bombés
+                const tuftCount = 8;
+                const tuftW = 2.38 / tuftCount;
+                for (let t = 0; t < tuftCount; t++) {
+                    const tuftGeo = new THREE.CylinderGeometry(tuftW * 0.48, tuftW * 0.48, 1.18, 14);
+                    tuftGeo.scale(1.0, 1.0, 0.36);
+                    const tuft = new THREE.Mesh(tuftGeo, headboardFabricMat);
+                    tuft.position.set(-1.19 + tuftW * (t + 0.5), 0.02, 0.045);
+                    tuft.castShadow = true; tuft.receiveShadow = true; tuft.name = 'bed_mesh';
+                    hbGroup.add(tuft);
+                }
+                bedGroup.add(hbGroup);
+
+                // 3. Matelas épais à coins arrondis + passepoil réaliste
+                const mShape = new THREE.Shape();
+                const mw = 1.07, ml = 1.94, mr = 0.12;
+                mShape.moveTo(-mw + mr, -ml);
+                mShape.lineTo(mw - mr, -ml); mShape.quadraticCurveTo(mw, -ml, mw, -ml + mr);
+                mShape.lineTo(mw, ml - mr); mShape.quadraticCurveTo(mw, ml, mw - mr, ml);
+                mShape.lineTo(-mw + mr, ml); mShape.quadraticCurveTo(-mw, ml, -mw, ml - mr);
+                mShape.lineTo(-mw, -ml + mr); mShape.quadraticCurveTo(-mw, -ml, -mw + mr, -ml);
+                const realMattressGeo = new THREE.ExtrudeGeometry(mShape, {
+                    depth: 0.24, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.04, bevelSegments: 4
+                });
+                realMattressGeo.rotateX(Math.PI / 2);
+                const realMattress = new THREE.Mesh(realMattressGeo, mattressRealMat);
+                realMattress.position.set(0, 0.46, 0);
+                realMattress.castShadow = true; realMattress.receiveShadow = true; realMattress.name = 'bed_mesh';
+                bedGroup.add(realMattress);
+
+                // 4. Couette drapée haute-résolution avec retombée naturelle souple et plis matelassés
+                const duvetGeo = new THREE.BoxGeometry(2.46, 0.36, 3.18, 28, 6, 32);
+                const dPos = duvetGeo.attributes.position;
+                for (let i = 0; i < dPos.count; i++) {
+                    let vx = dPos.getX(i), vy = dPos.getY(i), vz = dPos.getZ(i);
+                    const nx = Math.min(1.0, Math.abs(vx) / 1.23);
+                    const nz = Math.min(1.0, Math.abs(vz) / 1.59);
+                    // Retombée douce arrondie sur les flancs et le pied
+                    const sideCascade = Math.pow(nx, 4.5) * 0.22;
+                    const footCascade = vz > 0 ? Math.pow(Math.max(0, vz / 1.59), 5.0) * 0.18 : 0;
+                    if (vy > 0) {
+                        const loft = (1.0 - Math.pow(nx, 3.2) * 0.36) * (1.0 - Math.pow(nz, 3.6) * 0.28);
+                        const quiltGrid = Math.sin(vx * 7.5) * Math.sin(vz * 7.5) * 0.008;
+                        const organicFold = Math.sin(vx * 2.4 + vz * 1.5) * 0.026 + Math.cos(vx * 4.8 - vz * 2.3) * 0.012;
+                        vy = vy * loft - sideCascade * 0.42 - footCascade * 0.35 + quiltGrid + organicFold;
+                    } else {
+                        vy = vy - sideCascade * 0.35 - footCascade * 0.32;
+                    }
+                    if (nx > 0.92) {
+                        vx += Math.sin(vz * 3.4 + vy * 5.0) * 0.022 * Math.sign(vx);
+                    }
+                    dPos.setXYZ(i, vx, vy, vz);
+                }
+                duvetGeo.computeVertexNormals();
+                const organicDuvetMat = new THREE.MeshStandardMaterial({
+                    map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.015,
+                    color: '#2d4563', roughness: 0.90
+                });
+                const organicDuvet = new THREE.Mesh(duvetGeo, organicDuvetMat);
+                organicDuvet.position.set(0, 0.43, 0.44);
+                organicDuvet.castShadow = true; organicDuvet.receiveShadow = true; organicDuvet.name = 'bed_mesh';
+                bedGroup.add(organicDuvet);
+
+                // 5. Rebord de drap blanc cassé plissé rabattu en haut de la couette
+                const cuffGeo = new THREE.BoxGeometry(2.42, 0.075, 0.44, 24, 2, 8);
+                const cPos = cuffGeo.attributes.position;
+                for (let i = 0; i < cPos.count; i++) {
+                    const cx = cPos.getX(i), cy = cPos.getY(i), cz = cPos.getZ(i);
+                    const cnx = Math.min(1, Math.abs(cx) / 1.21);
+                    const drop = Math.pow(cnx, 4) * 0.14;
+                    cPos.setY(i, cy - drop + Math.sin(cx * 3.6 + cz * 2.2) * 0.013);
+                }
+                cuffGeo.computeVertexNormals();
+                const sheetCuff = new THREE.Mesh(cuffGeo, mattressRealMat);
+                sheetCuff.position.set(0, 0.59, -0.96); sheetCuff.rotation.x = 0.04; sheetCuff.castShadow = true; sheetCuff.receiveShadow = true; sheetCuff.name = 'bed_mesh';
+                bedGroup.add(sheetCuff);
+
+                // 6. 2 Grands Oreillers de couchage bombés + 2 Coussins déco devant (lin sable & terracotta)
+                function buildSculptedPillow(sx, sy, sz, px, py, pz, rx, ry, rz, mat) {
+                    const pGeo = new THREE.SphereGeometry(0.44, 22, 16);
+                    pGeo.scale(sx, sy, sz);
+                    const pp = pGeo.attributes.position;
+                    for (let i = 0; i < pp.count; i++) {
+                        let vx = pp.getX(i), vy = pp.getY(i), vz = pp.getZ(i);
+                        // Forme coussin carré-arrondi + léger creux central réaliste
+                        const squeeze = 1.0 + 0.12 * Math.pow(Math.abs(vx * vz) * 4.5, 0.7);
+                        vx *= Math.min(1.16, squeeze);
+                        const dimple = Math.exp(-(vx * vx * 6.5 + vz * vz * 9.0)) * -0.024;
+                        if (vy > 0) vy += dimple;
+                        pp.setXYZ(i, vx, vy, vz);
+                    }
+                    pGeo.computeVertexNormals();
+                    const pMesh = new THREE.Mesh(pGeo, mat);
+                    pMesh.position.set(px, py, pz);
+                    pMesh.rotation.set(rx, ry, rz);
+                    pMesh.castShadow = true; pMesh.receiveShadow = true; pMesh.name = 'bed_mesh';
+                    bedGroup.add(pMesh);
+                }
+                const sleepPillowMat = new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#f6f3ec', roughness: 0.91 });
+                const accentPillowMat1 = new THREE.MeshStandardMaterial({ map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.014, color: '#d8c5ad', roughness: 0.93 });
+                const accentPillowMat2 = new THREE.MeshStandardMaterial({ map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.014, color: '#b86b49', roughness: 0.92 });
+                // 2 grands oreillers adossés à la tête de lit
+                buildSculptedPillow(1.22, 0.34, 0.74, -0.56, 0.72, -1.66, 0.58, 0.08, 0.03, sleepPillowMat);
+                buildSculptedPillow(1.22, 0.34, 0.74,  0.55, 0.72, -1.66, 0.54, -0.10, -0.02, sleepPillowMat);
+                // 2 coussins déco plus petits (lin sable & terracotta chaud) posés devant
+                buildSculptedPillow(0.76, 0.25, 0.54, -0.34, 0.65, -1.16, 0.88, 0.18, 0.04, accentPillowMat1);
+                buildSculptedPillow(0.70, 0.24, 0.50,  0.38, 0.64, -1.14, 0.84, -0.22, -0.05, accentPillowMat2);
+
+                // 7. Plaid tissé chaud drapé organiquement au pied du lit + franges sur les flancs
+                const plaidGeo = new THREE.BoxGeometry(2.54, 0.04, 0.76, 30, 2, 10);
+                const plPos = plaidGeo.attributes.position;
+                const plaidCenterZ = 1.32;
+                for (let i = 0; i < plPos.count; i++) {
+                    const lx = plPos.getX(i), ly = plPos.getY(i), lz = plPos.getZ(i);
+                    const skewZ = lz - lx * 0.06;
+                    const worldZ = plaidCenterZ + skewZ;
+                    const duvetLocalZ = worldZ - 0.44;
+                    const absX = Math.abs(lx);
+                    const nx = Math.min(1.0, absX / 1.23);
+                    const nz = Math.min(1.0, Math.abs(duvetLocalZ) / 1.59);
+                    const sideCascade = Math.pow(nx, 4.5) * 0.22;
+                    const footCascade = duvetLocalZ > 0 ? Math.pow(Math.max(0, duvetLocalZ / 1.59), 5.0) * 0.18 : 0;
+                    const loft = (1.0 - Math.pow(nx, 3.2) * 0.36) * (1.0 - Math.pow(nz, 3.6) * 0.28);
+                    const organicFold = Math.sin(lx * 2.4 + duvetLocalZ * 1.5) * 0.026 + Math.cos(lx * 4.8 - duvetLocalZ * 2.3) * 0.012;
+                    const duvetTopY = 0.43 + 0.18 * loft - sideCascade * 0.42 - footCascade * 0.35 + organicFold;
+                    let finalX = lx;
+                    let sideDrop = 0;
+                    if (absX > 1.15) {
+                        const t = (absX - 1.15) / 0.12;
+                        finalX = Math.sign(lx) * (1.15 + Math.sin(Math.min(1, t) * Math.PI * 0.5) * 0.105);
+                        sideDrop = Math.pow(t, 1.55) * 0.25;
+                    }
+                    const clothRipple = Math.sin(lx * 6.0 + skewZ * 4.0) * 0.007;
+                    plPos.setX(i, finalX);
+                    plPos.setZ(i, skewZ);
+                    plPos.setY(i, ly + (duvetTopY + 0.032) - sideDrop + clothRipple);
+                }
+                plaidGeo.computeVertexNormals();
+                const plaidMat = new THREE.MeshStandardMaterial({ map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.018, color: '#ad6d4b', roughness: 0.95 });
+                const plaid = new THREE.Mesh(plaidGeo, plaidMat);
+                plaid.position.set(0, 0, plaidCenterZ); plaid.castShadow = true; plaid.receiveShadow = true; plaid.name = 'bed_mesh';
+                bedGroup.add(plaid);
+                // Franges fines en coton le long des deux tombés latéraux du plaid
+                const fringeMat = new THREE.MeshStandardMaterial({ color: '#d8c5b0', roughness: 0.96 });
+                for (let side of [-1, 1]) {
+                    for (let f = 0; f < 9; f++) {
+                        const fz = plaidCenterZ - 0.32 + f * 0.08 - side * 0.07;
+                        const tassel = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.006, 0.09, 5), fringeMat);
+                        tassel.position.set(side * 1.255, 0.24, fz);
+                        tassel.rotation.z = side * 0.06;
+                        tassel.name = 'bed_mesh';
+                        bedGroup.add(tassel);
+                    }
+                }
+            } catch(e) { console.warn('Organic bed build fallback:', e); }
+
+            // 6C. AMBIENT OCCLUSION ARCHITECTURAL (4 ANGLES VERTICAUX + PLAFOND + FENÊTRE)
+            function createEdgeGradientTex(vertical = false) {
+                const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+                const ctx = c.getContext('2d');
+                const g = vertical ? ctx.createLinearGradient(0, 0, 0, 64) : ctx.createLinearGradient(0, 0, 64, 0);
+                g.addColorStop(0, 'rgba(12,10,8,0.42)');
+                g.addColorStop(0.45, 'rgba(12,10,8,0.12)');
+                g.addColorStop(1, 'rgba(12,10,8,0.0)');
+                ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64);
+                return new THREE.CanvasTexture(c);
+            }
+            const cornerAoMat = new THREE.MeshBasicMaterial({ map: createEdgeGradientTex(false), transparent: true, opacity: 0.58, depthWrite: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1 });
+            const ceilAoMat = new THREE.MeshBasicMaterial({ map: createEdgeGradientTex(true), transparent: true, opacity: 0.50, depthWrite: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1 });
+
+            // 4 Angles verticaux entre les murs (bande douce de 0.65m de chaque côté)
+            [
+                { x: -4.66, z: -4.97, ry: 0 },      { x: -4.97, z: -4.66, ry: Math.PI / 2 },
+                { x:  4.66, z: -4.97, ry: Math.PI }, { x:  4.97, z: -4.66, ry: -Math.PI / 2 },
+                { x: -4.66, z:  4.97, ry: 0 },      { x: -4.97, z:  4.66, ry: -Math.PI / 2 },
+                { x:  4.66, z:  4.97, ry: Math.PI }, { x:  4.97, z:  4.66, ry: Math.PI / 2 }
+            ].forEach(c => {
+                const strip = new THREE.Mesh(new THREE.PlaneGeometry(0.68, 5.0), cornerAoMat);
+                strip.position.set(c.x, 1.5, c.z); strip.rotation.y = c.ry;
+                archGroup.add(strip);
+            });
+            // Jonction Plafond / Murs + Corniches fines architecturales (Y = 3.94)
+            const corniceMat = new THREE.MeshStandardMaterial({ color: '#f0ece4', roughness: 0.72 });
+            [
+                { x: 0, z: -4.95, w: 10, d: 0.09, ry: 0 },
+                { x: 0, z:  4.95, w: 10, d: 0.09, ry: Math.PI },
+                { x: -4.95, z: 0, w: 0.09, d: 10, ry: Math.PI / 2 },
+                { x:  4.95, z: 0, w: 0.09, d: 10, ry: -Math.PI / 2 }
+            ].forEach(m => {
+                const cornice = new THREE.Mesh(new THREE.BoxGeometry(m.w, 0.11, m.d), corniceMat);
+                cornice.position.set(m.x, 3.945, m.z); archGroup.add(cornice);
+                const cAo = new THREE.Mesh(new THREE.PlaneGeometry(10, 0.45), ceilAoMat);
+                cAo.position.set(m.x === 0 ? 0 : (m.x > 0 ? 4.96 : -4.96), 3.68, m.z === 0 ? 0 : (m.z > 0 ? 4.96 : -4.96));
+                cAo.rotation.y = m.ry; archGroup.add(cAo);
+            });
+
+            // 6D. RADIATEUR DESIGN SOUS LA BAIE VITRÉE (Acier blanc mat + Tuyaux cuivre + Vanne thermostatique)
+            const radGroup = new THREE.Group();
+            radGroup.position.set(4.80, -0.45, 2.05);
+            const radWhiteMat = new THREE.MeshStandardMaterial({ color: '#edeae4', roughness: 0.34, metalness: 0.25 });
+            const copperMat = new THREE.MeshStandardMaterial({ color: '#c87a4b', roughness: 0.24, metalness: 0.9, envMapIntensity: 1.3 });
+            const radManTop = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, 1.92, 12), radWhiteMat);
+            radManTop.rotation.x = Math.PI / 2; radManTop.position.set(0, 0.32, 0); radGroup.add(radManTop);
+            const radManBot = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, 1.92, 12), radWhiteMat);
+            radManBot.rotation.x = Math.PI / 2; radManBot.position.set(0, -0.32, 0); radGroup.add(radManBot);
+            for (let t = 0; t < 14; t++) {
+                const tz = -0.88 + t * (1.76 / 13);
+                const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.68, 12), radWhiteMat);
+                tube.position.set(0, 0, tz); tube.castShadow = true; tube.receiveShadow = true; radGroup.add(tube);
+            }
+            // Tuyaux cuivre vers le mur + Vanne thermostatique
+            [-0.98, 0.98].forEach((tz, ti) => {
+                const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.22, 10), copperMat);
+                pipe.rotation.z = Math.PI / 2; pipe.position.set(0.09, ti === 0 ? 0.32 : -0.32, tz); radGroup.add(pipe);
+            });
+            const thermoKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.028, 0.09, 14), radWhiteMat);
+            thermoKnob.rotation.x = Math.PI / 2; thermoKnob.position.set(-0.02, 0.32, -1.02); radGroup.add(thermoKnob);
+            archGroup.add(radGroup);
+
+            // 6E. HORLOGE MURALE LED / NIXIE 3D (Affiche la vraie heure in-game en direct!)
+            const wallClockGroup = new THREE.Group();
+            wallClockGroup.position.set(1.35, 2.55, -4.93);
+            const clockBody = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.34, 0.08), new THREE.MeshStandardMaterial({ map: walnutTex.map, color: '#6b4932', roughness: 0.4 }));
+            clockBody.castShadow = true; wallClockGroup.add(clockBody);
+            const clockC = document.createElement('canvas'); clockC.width = 256; clockC.height = 96;
+            const clockCtx = clockC.getContext('2d');
+            const clockTex = configureTex(clockC, 1, 1, true);
+            const clockFace = new THREE.Mesh(
+                new THREE.PlaneGeometry(0.84, 0.26),
+                new THREE.MeshStandardMaterial({ color: '#090a0f', map: clockTex, emissive: '#ffaa44', emissiveMap: clockTex, emissiveIntensity: 1.45, roughness: 0.14 })
+            );
+            clockFace.position.set(0, 0, 0.042); wallClockGroup.add(clockFace);
+            archGroup.add(wallClockGroup);
+            window._wallClockLastStr = '';
+            window.updateWallClock3D = function() {
+                const timeStr = document.getElementById('sys-time')?.textContent || '08:00';
+                if (timeStr === window._wallClockLastStr) return;
+                window._wallClockLastStr = timeStr;
+                clockCtx.fillStyle = '#07060a'; clockCtx.fillRect(0, 0, 256, 96);
+                // Tubes Nixie translucides en arrière-plan
+                for (let d = 0; d < 4; d++) {
+                    const bx = 26 + d * 54 + (d >= 2 ? 12 : 0);
+                    clockCtx.fillStyle = 'rgba(255,140,40,0.08)';
+                    clockCtx.fillRect(bx, 12, 42, 72);
+                }
+                clockCtx.fillStyle = '#ffb85c';
+                clockCtx.font = 'bold 58px monospace';
+                clockCtx.textAlign = 'center';
+                clockCtx.textBaseline = 'middle';
+                clockCtx.fillText(timeStr, 128, 52);
+                clockTex.needsUpdate = true;
+            };
+            window.updateWallClock3D();
+
+            // 6F. MICRO-VIE DE STUDIO : CARNET OUVERT + STYLO, SNEAKERS PRÈS DE LA PORTE & VINYLES EN VRAC
+            // Carnet ouvert + Stylo sur le bureau (gauche du clavier)
+            const nbGroup = new THREE.Group();
+            nbGroup.position.set(-1.35, 0.764, 0.56); nbGroup.rotation.y = 0.28;
+            const nbCover = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.012, 0.28), new THREE.MeshStandardMaterial({ color: '#1e2430', roughness: 0.7 }));
+            nbGroup.add(nbCover);
+            const pageC = document.createElement('canvas'); pageC.width = 256; pageC.height = 160;
+            const pgCtx = pageC.getContext('2d');
+            pgCtx.fillStyle = '#f5f0e4'; pgCtx.fillRect(0, 0, 256, 160);
+            pgCtx.fillStyle = 'rgba(120,140,180,0.22)';
+            for (let ly = 20; ly < 150; ly += 14) pgCtx.fillRect(10, ly, 236, 1);
+            pgCtx.fillStyle = 'rgba(0,0,0,0.18)'; pgCtx.fillRect(127, 0, 2, 160);
+            pgCtx.fillStyle = '#1e293b'; pgCtx.font = 'bold 12px monospace';
+            pgCtx.fillText('CHORDS: Fm7 DbM7', 16, 44);
+            pgCtx.fillText('Bbm7 -> C7#9', 16, 68);
+            pgCtx.fillText('808 SLIDE @ BAR 4', 140, 44);
+            pgCtx.fillText('SIDECHAIN KICK', 140, 68);
+            const pages = new THREE.Mesh(new THREE.BoxGeometry(0.39, 0.015, 0.25), new THREE.MeshStandardMaterial({ map: configureTex(pageC, 1, 1, true), roughness: 0.9 }));
+            pages.position.set(0, 0.008, 0); nbGroup.add(pages);
+            const pen = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.005, 0.24, 10), chairChromeMat);
+            pen.rotation.z = Math.PI / 2; pen.rotation.y = -0.35; pen.position.set(0.04, 0.022, 0.02); nbGroup.add(pen);
+            deskGroup.add(nbGroup);
+
+            // Paire de Sneakers Streetwear Ultra-Réaliste (profil anatomique gauche/droite, col creux, languette, lacets croisés, swoosh courbe)
+            function buildRealisticSneaker(x, z, rotY, side = 1) {
+                const sn = new THREE.Group();
+                sn.position.set(x, -1.0, z);
+                sn.rotation.y = rotY;
+                // Effet miroir pied gauche (-1) vs pied droit (+1)
+                const foot = new THREE.Group();
+                foot.scale.x = side;
+                sn.add(foot);
+
+                const outsoleMat = new THREE.MeshStandardMaterial({ color: '#1b1d22', roughness: 0.85 });
+                const midsoleMat = new THREE.MeshStandardMaterial({ color: '#f2eee6', roughness: 0.62 });
+                const leatherWhiteMat = new THREE.MeshStandardMaterial({ map: leatherTex.map, normalMap: leatherTex.normalMap, normalScale: new THREE.Vector2(0.35, 0.35), color: '#ede9e0', roughness: 0.46 });
+                const suedePanelMat = new THREE.MeshStandardMaterial({ map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.012, color: '#2b2f3a', roughness: 0.88 });
+                const accentRedMat = new THREE.MeshStandardMaterial({ map: leatherTex.map, color: '#b83227', roughness: 0.48 });
+                const liningMat = new THREE.MeshStandardMaterial({ color: '#14151a', roughness: 0.95 });
+                const laceMat = new THREE.MeshStandardMaterial({ color: '#f8f6f1', roughness: 0.9 });
+                const eyeletMat = new THREE.MeshStandardMaterial({ color: '#9ca3af', roughness: 0.32, metalness: 0.82 });
+
+                // 1. Forme anatomique de semelle (cambrure interne, avant-pied large, talon galbé)
+                const soleShape = new THREE.Shape();
+                soleShape.moveTo(-0.044, 0.16);
+                soleShape.bezierCurveTo(-0.068, 0.14, -0.068, 0.05, -0.056, -0.02);   // Côté extérieur (talon -> voûte)
+                soleShape.bezierCurveTo(-0.072, -0.09, -0.070, -0.175, -0.020, -0.205); // Avant-pied extérieur -> pointe
+                soleShape.bezierCurveTo(0.025, -0.215, 0.066, -0.182, 0.068, -0.115);   // Pointe arrondie -> intérieur
+                soleShape.bezierCurveTo(0.064, -0.04, 0.046, 0.02, 0.052, 0.10);        // Cambrure voûte plantaire
+                soleShape.bezierCurveTo(0.056, 0.145, 0.036, 0.172, 0.0, 0.174);        // Arrondi talon
+                soleShape.bezierCurveTo(-0.024, 0.174, -0.036, 0.168, -0.044, 0.16);
+
+                // Semelle extérieure crantée caoutchouc noir
+                const outGeo = new THREE.ExtrudeGeometry(soleShape, { depth: 0.012, bevelEnabled: true, bevelThickness: 0.004, bevelSize: 0.004, bevelSegments: 2 });
+                outGeo.rotateX(Math.PI / 2);
+                const outsole = new THREE.Mesh(outGeo, outsoleMat);
+                outsole.position.set(0, 0.016, 0); outsole.castShadow = true; outsole.receiveShadow = true;
+                foot.add(outsole);
+
+                // Semelle intermédiaire (Midsole) blanc cassé avec légère courbure avant (toe-spring)
+                const midGeo = new THREE.ExtrudeGeometry(soleShape, { depth: 0.026, bevelEnabled: true, bevelThickness: 0.005, bevelSize: 0.003, bevelSegments: 3 });
+                midGeo.rotateX(Math.PI / 2);
+                const mPos = midGeo.attributes.position;
+                for (let i = 0; i < mPos.count; i++) {
+                    const mz = mPos.getZ(i);
+                    if (mz < -0.12) {
+                        const lift = Math.pow((-0.12 - mz) / 0.10, 1.8) * 0.012;
+                        mPos.setY(i, mPos.getY(i) + lift);
+                    }
+                }
+                midGeo.computeVertexNormals();
+                const midsole = new THREE.Mesh(midGeo, midsoleMat);
+                midsole.position.set(0, 0.044, 0); midsole.castShadow = true; midsole.receiveShadow = true;
+                foot.add(midsole);
+
+                // 2. Toe-box bombée (cuir blanc) + Mudguard avant (daim charcoal)
+                const toeBoxGeo = new THREE.SphereGeometry(0.066, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.56);
+                toeBoxGeo.scale(0.98, 0.72, 1.48);
+                const toeBox = new THREE.Mesh(toeBoxGeo, leatherWhiteMat);
+                toeBox.position.set(0.002, 0.040, -0.105); toeBox.castShadow = true;
+                foot.add(toeBox);
+
+                const mudGeo = new THREE.TorusGeometry(0.062, 0.017, 10, 20, Math.PI * 1.15);
+                mudGeo.scale(1.02, 1.38, 0.9);
+                const mudguard = new THREE.Mesh(mudGeo, suedePanelMat);
+                mudguard.rotation.x = Math.PI / 2;
+                mudguard.rotation.z = Math.PI * 0.92;
+                mudguard.position.set(0.002, 0.056, -0.115); mudguard.castShadow = true;
+                foot.add(mudguard);
+
+                // 3. Quartiers latéraux (cuir blanc) + Contrefort talon (cuir bordeaux/rouge)
+                const midBodyGeo = new THREE.CylinderGeometry(0.054, 0.061, 0.072, 18, 1, false);
+                midBodyGeo.scale(1.06, 1.0, 1.55);
+                const midBody = new THREE.Mesh(midBodyGeo, leatherWhiteMat);
+                midBody.position.set(0, 0.078, 0.005); midBody.castShadow = true;
+                foot.add(midBody);
+
+                const heelGeo = new THREE.CylinderGeometry(0.054, 0.058, 0.095, 16, 1, false, -Math.PI * 0.6, Math.PI * 1.2);
+                heelGeo.scale(1.02, 1.0, 1.18);
+                const heelCounter = new THREE.Mesh(heelGeo, accentRedMat);
+                heelCounter.position.set(0, 0.090, 0.088); heelCounter.rotation.x = -0.10; heelCounter.castShadow = true;
+                foot.add(heelCounter);
+
+                // 4. Col de cheville rembourré OUVERT & CREUX (bourrelet en U + doublure sombre interne)
+                const collarRimGeo = new THREE.TorusGeometry(0.052, 0.017, 12, 22, Math.PI * 1.48);
+                collarRimGeo.scale(0.96, 1.32, 1.0);
+                const collarRim = new THREE.Mesh(collarRimGeo, suedePanelMat);
+                collarRim.rotation.x = Math.PI / 2 + 0.18;
+                collarRim.rotation.z = -Math.PI * 0.24;
+                collarRim.position.set(0, 0.132, 0.075); collarRim.castShadow = true;
+                foot.add(collarRim);
+
+                // Intérieur creux sombre + semelle intérieure visible au fond
+                const cavityWall = new THREE.Mesh(new THREE.CylinderGeometry(0.044, 0.042, 0.075, 16, 1, true), liningMat);
+                cavityWall.scale.set(0.95, 1.0, 1.25);
+                cavityWall.position.set(0, 0.098, 0.072);
+                foot.add(cavityWall);
+                const insole = new THREE.Mesh(new THREE.CircleGeometry(0.042, 14), liningMat);
+                insole.scale.set(0.94, 1.25, 1);
+                insole.rotation.x = -Math.PI / 2;
+                insole.position.set(0, 0.062, 0.072);
+                foot.add(insole);
+
+                // 5. Languette rembourrée souple + étiquette tissée + œillets + 5 lacets croisés
+                const tongueGeo = new THREE.BoxGeometry(0.068, 0.115, 0.016, 4, 6, 1);
+                const tPos = tongueGeo.attributes.position;
+                for (let i = 0; i < tPos.count; i++) {
+                    const ty = tPos.getY(i);
+                    tPos.setZ(i, tPos.getZ(i) + Math.pow(Math.max(0, ty + 0.05), 1.6) * 0.22);
+                }
+                tongueGeo.computeVertexNormals();
+                const tongue = new THREE.Mesh(tongueGeo, leatherWhiteMat);
+                tongue.position.set(0, 0.116, -0.012); tongue.rotation.x = 0.56; tongue.castShadow = true;
+                foot.add(tongue);
+                const tongueTag = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.018, 0.004), accentRedMat);
+                tongueTag.position.set(0, 0.156, 0.016); tongueTag.rotation.x = 0.56;
+                foot.add(tongueTag);
+
+                // Bandes d'œillets (eyestays) + 5 lacets croisés en X + petit nœud au sommet
+                for (let s of [-1, 1]) {
+                    const eyestay = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.095, 0.022), suedePanelMat);
+                    eyestay.position.set(s * 0.038, 0.106, -0.026);
+                    eyestay.rotation.x = 0.68; eyestay.rotation.z = s * 0.12;
+                    foot.add(eyestay);
+                }
+                for (let li = 0; li < 5; li++) {
+                    const lz = -0.068 + li * 0.022;
+                    const ly = 0.088 + li * 0.014;
+                    const lace1 = new THREE.Mesh(new THREE.CylinderGeometry(0.0032, 0.0032, 0.068, 6), laceMat);
+                    lace1.position.set(0, ly, lz);
+                    lace1.rotation.set(0, 0.26, Math.PI / 2);
+                    const lace2 = new THREE.Mesh(new THREE.CylinderGeometry(0.0032, 0.0032, 0.068, 6), laceMat);
+                    lace2.position.set(0, ly + 0.002, lz);
+                    lace2.rotation.set(0, -0.26, Math.PI / 2);
+                    foot.add(lace1, lace2);
+                    for (let s of [-1, 1]) {
+                        const eyelet = new THREE.Mesh(new THREE.CylinderGeometry(0.0035, 0.0035, 0.005, 8), eyeletMat);
+                        eyelet.position.set(s * 0.035, ly, lz); eyelet.rotation.z = Math.PI / 2;
+                        foot.add(eyelet);
+                    }
+                }
+                // Boucles de nœud de lacets en haut de la languette
+                for (let s of [-1, 1]) {
+                    const bowLoop = new THREE.Mesh(new THREE.TorusGeometry(0.013, 0.0028, 6, 12), laceMat);
+                    bowLoop.scale.set(1.4, 0.65, 1);
+                    bowLoop.position.set(s * 0.016, 0.148, 0.024);
+                    bowLoop.rotation.set(0.4, s * 0.35, s * 0.25);
+                    foot.add(bowLoop);
+                }
+
+                // 6. Swoosh latéral courbe sculpté des deux côtés
+                const swShape = new THREE.Shape();
+                swShape.moveTo(-0.075, 0.010);
+                swShape.quadraticCurveTo(-0.015, -0.014, 0.085, 0.024);
+                swShape.quadraticCurveTo(0.002, -0.032, -0.080, -0.004);
+                swShape.closePath();
+                const swGeo = new THREE.ExtrudeGeometry(swShape, { depth: 0.006, bevelEnabled: false });
+                for (let s of [-1, 1]) {
+                    const sw = new THREE.Mesh(swGeo, accentRedMat);
+                    sw.rotation.y = s > 0 ? Math.PI / 2 : -Math.PI / 2;
+                    sw.position.set(s * 0.059, 0.078, 0.008);
+                    foot.add(sw);
+                }
+
+                archGroup.add(sn);
+                addContactAO(x, -0.996, z, 0.28, 0.44, 0.42);
+            }
+            buildRealisticSneaker(-4.20, 3.54, 0.42, -1);
+            buildRealisticSneaker(-3.93, 3.70, 0.08, 1);
+
+            // 6G. BAC À DISQUES VINYLES DE PRODUCTEUR ULTRA-RÉALISTE (Meuble Noyer ajouré sur pieds acier + 12 pochettes illustrées + disques noirs!)
+            try {
+                if (typeof crateBase !== 'undefined') crateBase.visible = false;
+                if (typeof crateSideL !== 'undefined') crateSideL.visible = false;
+                if (typeof crateSideR !== 'undefined') crateSideR.visible = false;
+                if (typeof crateBack !== 'undefined') crateBack.visible = false;
+                if (typeof crateFront !== 'undefined') crateFront.visible = false;
+
+                const crateWalnutMat = new THREE.MeshStandardMaterial({
+                    map: walnutTex.map, normalMap: walnutTex.normalMap, normalScale: new THREE.Vector2(0.7, 0.7),
+                    color: '#b88a62', roughness: 0.44, metalness: 0.04
+                });
+                const crateSteelMat = new THREE.MeshStandardMaterial({ color: '#1b1d23', roughness: 0.34, metalness: 0.85 });
+                const crateBrassMat = new THREE.MeshStandardMaterial({ color: '#d4af37', roughness: 0.28, metalness: 0.88 });
+
+                const standGroup = new THREE.Group();
+                const tagCrate = (m) => { m.name = 'achievements_board_mesh'; m.castShadow = true; m.receiveShadow = true; return m; };
+
+                // 4 Pieds compas inclinés en acier noir mat + traverses (surélèvent élégamment le bac)
+                const cLegCoords = [[-0.36, -0.26, -0.12, -0.10], [0.36, -0.26, 0.12, -0.10], [-0.36, 0.26, -0.12, 0.10], [0.36, 0.26, 0.12, 0.10]];
+                cLegCoords.forEach(([lx, lz, rz, rx]) => {
+                    const leg = tagCrate(new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.011, 0.21, 10), crateSteelMat));
+                    leg.position.set(lx, 0.10, lz);
+                    leg.rotation.set(rx, 0, -rz);
+                    standGroup.add(leg);
+                    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.014, 0.012, 10), crateBrassMat);
+                    cap.position.set(lx * 1.05, 0.008, lz * 1.05);
+                    standGroup.add(cap);
+                });
+                // Cadre inférieur métallique de support
+                const frameBarF = tagCrate(new THREE.Mesh(new THREE.BoxGeometry(0.80, 0.022, 0.022), crateSteelMat));
+                frameBarF.position.set(0, 0.19, 0.26);
+                const frameBarB = tagCrate(new THREE.Mesh(new THREE.BoxGeometry(0.80, 0.022, 0.022), crateSteelMat));
+                frameBarB.position.set(0, 0.19, -0.26);
+                standGroup.add(frameBarF, frameBarB);
+
+                // Fond biseauté en noyer massif
+                const deck = tagCrate(new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.036, 0.64), crateWalnutMat));
+                deck.position.set(0, 0.218, 0);
+                standGroup.add(deck);
+
+                // 4 Montants d'angle chanfreinés en noyer
+                [[-0.41, -0.30], [0.41, -0.30], [-0.41, 0.30], [0.41, 0.30]].forEach(([px, pz]) => {
+                    const postH = pz < 0 ? 0.44 : 0.36;
+                    const post = tagCrate(new THREE.Mesh(new THREE.BoxGeometry(0.042, postH, 0.042), crateWalnutMat));
+                    post.position.set(px, 0.22 + postH / 2, pz);
+                    standGroup.add(post);
+                });
+
+                // Flancs ajourés à 3 lattes horizontales en noyer (on aperçoit les pochettes entre les lattes!)
+                for (let side of [-1, 1]) {
+                    [0.31, 0.43, 0.55].forEach((ry) => {
+                        const slat = tagCrate(new THREE.Mesh(new THREE.BoxGeometry(0.026, 0.072, 0.60), crateWalnutMat));
+                        slat.position.set(side * 0.415, ry, 0);
+                        standGroup.add(slat);
+                    });
+                }
+                // Dos ajouré à 3 lattes + barre de retenue supérieure
+                [0.32, 0.45, 0.58].forEach((ry) => {
+                    const backSlat = tagCrate(new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.078, 0.026), crateWalnutMat));
+                    backSlat.position.set(0, ry, -0.305);
+                    standGroup.add(backSlat);
+                });
+                // Façade basse élégante inclinée + plaque laiton brossé de disquaire
+                const frontPanel = tagCrate(new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.18, 0.03), crateWalnutMat));
+                frontPanel.position.set(0, 0.31, 0.305);
+                standGroup.add(frontPanel);
+                const brassPlaque = tagCrate(new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.045, 0.008), crateBrassMat));
+                brassPlaque.position.set(0, 0.32, 0.324);
+                standGroup.add(brassPlaque);
+
+                // 2 Arceaux séparateurs en fil d'acier noir à l'intérieur du bac
+                [-0.14, 0.14].forEach(dx => {
+                    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.34, 8), crateSteelMat);
+                    rod.position.set(dx, 0.39, -0.02); rod.rotation.x = -0.14;
+                    standGroup.add(rod);
+                });
+
+                // Collection permanente de 12 vinyles illustrés dans le bac + 2 disques noirs brillants qui dépassent !
+                const vinylDiscMat = new THREE.MeshStandardMaterial({ color: '#0c0d11', roughness: 0.16, metalness: 0.42 });
+                const sleeveEdgeMat = new THREE.MeshStandardMaterial({ color: '#e5dfd3', roughness: 0.85 });
+                const sleeveBackMat = new THREE.MeshStandardMaterial({ color: '#1b1d24', roughness: 0.72 });
+                const lpGeo = new THREE.BoxGeometry(0.56, 0.56, 0.014);
+                const labelColors = ['#e11d48', '#f59e0b', '#10b981', '#6366f1'];
+
+                for (let k = 0; k < 12; k++) {
+                    const covTex = (typeof window.createVinylCoverTexture === 'function')
+                        ? window.createVinylCoverTexture('studio_dig_lp_' + k, 256)
+                        : null;
+                    const frontArtMat = new THREE.MeshStandardMaterial({
+                        map: covTex || null,
+                        color: covTex ? '#ffffff' : labelColors[k % labelColors.length],
+                        roughness: 0.45
+                    });
+                    const lp = tagCrate(new THREE.Mesh(lpGeo, [sleeveEdgeMat, sleeveEdgeMat, sleeveEdgeMat, sleeveEdgeMat, frontArtMat, sleeveBackMat]));
+                    const zPos = -0.24 + k * 0.036;
+                    const xJitter = ((k * 37) % 11 - 5) * 0.012;
+                    lp.position.set(xJitter, 0.51, zPos);
+                    lp.rotation.set(-0.18 + (k > 9 ? 0.08 : 0), (k % 3 - 1) * 0.02, ((k * 13) % 7 - 3) * 0.012);
+                    standGroup.add(lp);
+
+                    // Sur 2 pochettes, un vrai disque vinyle noir 12" sort à moitié avec son macaron coloré !
+                    if (k === 3 || k === 10) {
+                        const discGroup = new THREE.Group();
+                        const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.005, 28), vinylDiscMat);
+                        disc.rotation.x = Math.PI / 2;
+                        const label = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.007, 20), new THREE.MeshStandardMaterial({ color: k === 3 ? '#f59e0b' : '#e11d48', roughness: 0.55 }));
+                        label.rotation.x = Math.PI / 2;
+                        const hole = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.009, 10), sleeveEdgeMat);
+                        hole.rotation.x = Math.PI / 2;
+                        discGroup.add(disc, label, hole);
+                        discGroup.position.set(k === 3 ? 0.13 : -0.11, 0.09, 0.002);
+                        lp.add(discGroup);
+                    }
+                }
+
+                crateGroup.add(standGroup);
+                if (typeof vinylsContainer !== 'undefined') {
+                    vinylsContainer.position.set(0, 0.23, 0.02);
+                }
+            } catch(e) { console.warn('Realistic vinyl crate build fallback:', e); }
+
+            // 3 Vinyles illustrés en vrac appuyés naturellement contre le côté du bac à disques (+ 1 disque noir qui glisse hors de sa pochette)
+            const looseEdgeMat = new THREE.MeshStandardMaterial({ color: '#e5dfd3', roughness: 0.85 });
+            const looseBackMat = new THREE.MeshStandardMaterial({ color: '#1b1d24', roughness: 0.72 });
+            const looseDiscMat = new THREE.MeshStandardMaterial({ color: '#0c0d11', roughness: 0.16, metalness: 0.42 });
+            for (let vi = 0; vi < 3; vi++) {
+                const artTex = (typeof window.createVinylCoverTexture === 'function')
+                    ? window.createVinylCoverTexture('loose_floor_lp_' + vi, 256)
+                    : null;
+                const artMat = new THREE.MeshStandardMaterial({
+                    map: artTex || null,
+                    color: artTex ? '#ffffff' : ['#e11d48', '#2563eb', '#d97706'][vi],
+                    roughness: 0.44
+                });
+                const vSleeve = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.56, 0.56, 0.014),
+                    [looseEdgeMat, looseEdgeMat, looseEdgeMat, looseEdgeMat, artMat, looseBackMat]
+                );
+                vSleeve.position.set(2.94 - vi * 0.036, -0.73, 0.46 + vi * 0.065);
+                vSleeve.rotation.order = 'YXZ';
+                vSleeve.rotation.set(-0.19 - vi * 0.035, -Math.PI / 2 + (vi - 1) * 0.07, 0);
+                vSleeve.castShadow = true; vSleeve.receiveShadow = true;
+                vSleeve.name = 'achievements_board_mesh';
+                if (vi === 2) {
+                    const outDisc = new THREE.Mesh(new THREE.CylinderGeometry(0.255, 0.255, 0.005, 28), looseDiscMat);
+                    outDisc.rotation.x = Math.PI / 2;
+                    outDisc.position.set(0.11, 0.07, 0.002);
+                    const outLbl = new THREE.Mesh(new THREE.CylinderGeometry(0.082, 0.082, 0.007, 18), new THREE.MeshStandardMaterial({ color: '#38bdf8', roughness: 0.5 }));
+                    outLbl.rotation.x = Math.PI / 2;
+                    outLbl.position.set(0.11, 0.07, 0.002);
+                    vSleeve.add(outDisc, outLbl);
+                }
+                archGroup.add(vSleeve);
+            }
+
+            // 7. Plante Botanique (Monstera / Ficus) en Pot Terracotta (feuilles animées par la brise!)
             const plantGroup = new THREE.Group();
             plantGroup.position.set(4.25, -1, 4.15);
             const potMat = new THREE.MeshStandardMaterial({ color: '#b4674a', roughness: 0.78 });
@@ -8743,6 +9465,7 @@ const DEFAULT_STATE = {
             soil.rotation.x = -Math.PI / 2; soil.position.set(0, 0.46, 0); plantGroup.add(soil);
             const leafMat = new THREE.MeshStandardMaterial({ color: '#2f643e', roughness: 0.38, metalness: 0.04, side: THREE.DoubleSide });
             const stemMat = new THREE.MeshStandardMaterial({ color: '#244d30', roughness: 0.7 });
+            window.plantLeaves = [];
             for (let l = 0; l < 11; l++) {
                 const ang = (l / 11) * Math.PI * 2 + (l % 2) * 0.2;
                 const h = 0.55 + (l % 4) * 0.22;
@@ -8756,9 +9479,12 @@ const DEFAULT_STATE = {
                 const leaf = new THREE.Mesh(leafGeo, leafMat);
                 leaf.position.set(Math.cos(ang) * reach, 0.42 + h * 0.9, Math.sin(ang) * reach);
                 leaf.rotation.y = -ang + Math.PI / 2;
-                leaf.rotation.x = 0.45 + (l % 3) * 0.12;
+                const baseRx = 0.45 + (l % 3) * 0.12;
+                leaf.rotation.x = baseRx;
+                leaf.userData = { baseRx: baseRx, phase: l * 0.85 };
                 leaf.castShadow = true;
                 plantGroup.add(leaf);
+                window.plantLeaves.push(leaf);
             }
             archGroup.add(plantGroup);
             addContactAO(4.25, -0.996, 4.15, 0.85, 0.85, 0.45);
@@ -9845,6 +10571,43 @@ const DEFAULT_STATE = {
                         cityGlow = 0.65; nightFactor = 0.35; beamOp = 0.12; sunY = 0.38;
                     }
 
+                    // --- COURSE RÉELLE DU SOLEIL SELON L'HEURE (Ombres glissantes sur le parquet!) ---
+                    if (hour >= 6 && hour <= 20) {
+                        const dayFrac = (hour - 6) / 14; // 0 = 06h00, 0.5 = 13h00, 1 = 20h00
+                        const sunElevY = 3.2 + Math.sin(dayFrac * Math.PI) * 7.2;
+                        const sunAzZ = 5.4 - dayFrac * 10.6; // Glisse du Sud-Est (+5.4) vers Nord-Est (-5.2)
+                        dirLight.position.set(13.5, sunElevY, sunAzZ);
+                    } else {
+                        dirLight.position.set(13.0, 8.2, 1.8);
+                    }
+
+                    // --- ADAPTATION AUTOMATIQUE DE L'ŒIL (EYE ADAPTATION) ---
+                    if (typeof renderer !== 'undefined' && camera) {
+                        const lookDir = window._v3a;
+                        camera.getWorldDirection(lookDir);
+                        // Regard vers la baie vitrée Est (+X)
+                        const lookEast = Math.max(-1, Math.min(1, lookDir.x));
+                        const daylightAmt = (1.0 - nightFactor) * (isLampDark ? 0.15 : 1.0);
+                        // Quand on fixe la fenêtre en plein jour -> exposition serrée (0.97) ; vers l'intérieur -> ouverte (1.24)
+                        const targetExp = 1.16 - (lookEast * 0.17 * daylightAmt) + (nightFactor * 0.05);
+                        renderer.toneMappingExposure += (targetExp - renderer.toneMappingExposure) * 0.04;
+                    }
+
+                    // --- HORLOGE MURALE NIXIE 3D + LÉGÈRE BRISE RIDEAUX & PLANTE ---
+                    if (typeof window.updateWallClock3D === 'function') window.updateWallClock3D();
+                    if (window.curtainFolds) {
+                        for (let i = 0; i < window.curtainFolds.length; i++) {
+                            const cf = window.curtainFolds[i];
+                            cf.position.x = cf.userData.baseX + Math.sin(time * 0.85 + cf.userData.phase) * 0.008;
+                        }
+                    }
+                    if (window.plantLeaves) {
+                        for (let i = 0; i < window.plantLeaves.length; i++) {
+                            const lf = window.plantLeaves[i];
+                            lf.rotation.x = lf.userData.baseRx + Math.sin(time * 0.9 + lf.userData.phase) * 0.025;
+                        }
+                    }
+
                     if (window.exteriorSkyUniforms) {
                         const u = window.exteriorSkyUniforms;
                         u.uTime.value = time;
@@ -9926,22 +10689,6 @@ const DEFAULT_STATE = {
                     } else {
                         if (window.windowBounceLight) window.windowBounceLight.intensity += ((0.8 + window._lightningFlash * 3.0) - window.windowBounceLight.intensity) * 0.06;
                         if (window.ceilingFixtureMat) window.ceilingFixtureMat.emissiveIntensity = 0.12;
-                    }
-
-                    // --- POUSSIÈRES DORÉES DANS LES RAYONS DE SOLEIL ---
-                    if (window.sunDustPoints) {
-                        const posAttr = window.sunDustPoints.geometry.attributes.position;
-                        const seeds = window.sunDustPoints.userData.seeds;
-                        for (let i = 0; i < seeds.length; i++) {
-                            let x = posAttr.getX(i) + Math.sin(time * 0.35 + seeds[i].sx) * 0.0012;
-                            let y = posAttr.getY(i) + seeds[i].sy;
-                            let z = posAttr.getZ(i) + Math.cos(time * 0.28 + seeds[i].sz) * 0.0012;
-                            if (y > 2.85) y = -0.35;
-                            posAttr.setXYZ(i, x, y, z);
-                        }
-                        posAttr.needsUpdate = true;
-                        const targetDustOp = (isLampDark || isNightSession || isRainy) ? 0.14 : 0.58;
-                        window.sunDustPoints.material.opacity += (targetDustOp - window.sunDustPoints.material.opacity) * 0.04;
                     }
 
                     // --- VAPEUR CHAUDE AU-DESSUS DU MUG DE CAFÉ ---
@@ -10094,23 +10841,34 @@ const DEFAULT_STATE = {
                     camera.position.y += breathe;
                     camera.rotation.set(fps.pitch, fps.yaw, 0, 'YXZ');
                 } else {
-                    // POV DEBOUT STANDARD : Position yeux + Head-bob naturel + Respiration
+                    // POV DEBOUT STANDARD : Position yeux + Head-bob ultra-subtil + Micro-inertie douce
                     if (isMoving) {
-                        fps.bobTime += 0.17 * energySpeedMult;
-                        fps.bobAmount += (1 - fps.bobAmount) * 0.15;
+                        fps.bobTime += 0.145 * energySpeedMult;
+                        fps.bobAmount += (1 - fps.bobAmount) * 0.11;
+                        fps.wasMovingPrev = true;
                     } else {
-                        fps.bobAmount *= 0.85;
+                        if (fps.wasMovingPrev) {
+                            fps.stopSettle = -0.006; // Amorti ultra-subtil à l'arrêt
+                            fps.wasMovingPrev = false;
+                        }
+                        fps.bobAmount *= 0.86;
                     }
-                    const bobY = Math.sin(fps.bobTime * 2) * 0.038 * fps.bobAmount;
-                    const bobRoll = Math.cos(fps.bobTime) * 0.008 * fps.bobAmount;
-                    const idleBreath = Math.sin(time * 1.25) * 0.009;
+                    fps.stopSettle = (fps.stopSettle || 0) * 0.88;
+
+                    // Micro-inclinaison latérale très subtile sur Q/D
+                    const strafeInputDir = (window.kbdState?.left ? 1 : 0) - (window.kbdState?.right ? 1 : 0);
+                    fps.strafeRoll = (fps.strafeRoll || 0) + (strafeInputDir * 0.0045 - (fps.strafeRoll || 0)) * 0.08;
+
+                    const bobY = Math.sin(fps.bobTime * 2) * 0.011 * fps.bobAmount + fps.stopSettle;
+                    const bobRoll = Math.cos(fps.bobTime) * 0.0022 * fps.bobAmount + fps.strafeRoll;
+                    const idleBreath = Math.sin(time * 1.15) * 0.003;
 
                     const targetCamPos = window._v3finalCam.set(
                         currentRoomAvatar.position.x,
                         currentRoomAvatar.position.y + 2.45 + bobY + idleBreath,
                         currentRoomAvatar.position.z
                     );
-                    camera.position.lerp(targetCamPos, 0.38);
+                    camera.position.lerp(targetCamPos, 0.36);
 
                     // Smooth FOV zoom (molette pour inspecter les objets)
                     const baseFov = isMobile ? 74 : 68;
@@ -13401,7 +14159,7 @@ function triggerRankUp(oldRank, newRank) {
             } else if (chosenType === 'neon_radar') {
                 // 2. Radar Sweep & Boost d'Inspiration (Coin bas-gauche)
                 container.innerHTML = `
-                    <div id="amc-card" class="absolute bottom-8 left-8 flex items-center gap-4 p-4 rounded-2xl bg-black/80 backdrop-blur-xl border border-emerald-400/40 shadow-[0_0_40px_rgba(52,211,153,0.4)] opacity-0 -translate-x-32">
+                    <div id="amc-card" class="absolute bottom-36 left-6 flex items-center gap-4 p-4 rounded-2xl bg-black/80 backdrop-blur-xl border border-emerald-400/40 shadow-[0_0_40px_rgba(52,211,153,0.4)] opacity-0 -translate-x-32">
                         <div class="relative w-16 h-16 rounded-xl overflow-hidden border border-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.6)]">
                             <img src="${avatarData.img}" class="w-full h-full object-cover scale-[1.5]" />
                             <div class="absolute inset-0 border-2 border-emerald-400/50 rounded-xl animate-ping"></div>
