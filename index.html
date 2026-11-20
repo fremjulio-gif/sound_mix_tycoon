@@ -2558,43 +2558,232 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .fade-in { animation: fadeIn 0.3s ease-in; }
 
-        /* SPLASH & LOGIN JUICE */
+        /* =========================================
+           OPTION 3 — CINEMA LOADER & LIVE 3D LOGIN
+           ========================================= */
         .splash-bg {
-            background: radial-gradient(circle at center, #0a0a0f 0%, #000000 100%);
-            animation: bass-pulse 4s ease-in-out infinite alternate;
+            background:
+                radial-gradient(ellipse 70% 55% at 50% 48%, rgba(245, 158, 11, 0.08) 0%, rgba(15, 17, 26, 0.72) 48%, #050609 100%);
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        @keyframes bass-pulse {
-            0% { background: radial-gradient(circle at center, #050508 0%, #000000 100%); }
-            100% { background: radial-gradient(circle at center, #1a1b2e 0%, #000000 100%); }
+        .cinema-grain-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.055;
+            background-image: radial-gradient(rgba(255,255,255,0.65) 0.6px, transparent 0.6px);
+            background-size: 3px 3px;
+            mix-blend-mode: overlay;
         }
-
-        .organic-bar {
-            animation: organic-wave 1s cubic-bezier(0.36, 0, 0.66, 1) infinite alternate;
+        .cinema-letterbox-bar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            height: clamp(36px, 6.4vh, 58px);
+            background: rgba(4, 5, 8, 0.96);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 clamp(16px, 3vw, 40px);
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 10px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(226, 232, 240, 0.58);
+            transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.65s ease;
         }
-        @keyframes organic-wave {
-            0% { height: 15%; opacity: 0.4; box-shadow: 0 0 5px currentColor; }
-            100% { height: 100%; opacity: 1; box-shadow: 0 0 25px currentColor, 0 0 40px currentColor; }
+        .cinema-letterbox-bar.top {
+            top: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
         }
-
+        .cinema-letterbox-bar.bottom {
+            bottom: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .cinema-rec-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 9999px;
+            background: #f59e0b;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.85);
+            animation: cinemaRecPulse 2.1s ease-in-out infinite;
+        }
+        @keyframes cinemaRecPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.86); }
+        }
+        .cinema-osc-line {
+            stroke-dasharray: 280;
+            stroke-dashoffset: 0;
+            animation: cinemaOscFlow 2.6s ease-in-out infinite alternate;
+        }
+        @keyframes cinemaOscFlow {
+            0% { stroke-dashoffset: 38; opacity: 0.55; }
+            100% { stroke-dashoffset: -38; opacity: 1; }
+        }
         .impact-flash {
-            animation: white-flash 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-            color: #fff !important;
+            color: #fef3c7 !important;
+            text-shadow: 0 0 18px rgba(245, 158, 11, 0.55);
         }
-        @keyframes white-flash {
-            0% { filter: brightness(1); transform: scale(1); }
-            10% { filter: brightness(10) contrast(3); text-shadow: 0 0 50px #fff, 0 0 100px #fff; transform: scale(1.05); }
-            100% { filter: brightness(1); transform: scale(1); text-shadow: 0 0 10px #fff, 0 0 20px var(--accent), 0 0 40px var(--accent); }
+
+        /* LOGIN CINÉMASCOPE OVER LIVE 3D STUDIO */
+        body:has(#login-screen:not([style*="display: none"]):not(.cinema-entering)) #hud,
+        body:has(#studio-loader:not([style*="display: none"])) #hud {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+        #three-canvas-container {
+            transition: filter 0.95s cubic-bezier(0.22, 1, 0.36, 1), transform 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        body:has(#login-screen:not([style*="display: none"]):not(.cinema-entering)) #three-canvas-container {
+            filter: blur(5.5px) brightness(0.94);
+            transform: scale(1.035);
+        }
+        #login-screen {
+            z-index: 2500 !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow: hidden;
+            transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        #login-scrim {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(90deg, rgba(6, 7, 11, 0.90) 0%, rgba(6, 7, 11, 0.74) 30%, rgba(6, 7, 11, 0.24) 56%, rgba(6, 7, 11, 0.0) 82%),
+                radial-gradient(ellipse at 74% 48%, rgba(245, 158, 11, 0.05) 0%, rgba(4, 5, 8, 0.28) 100%);
+            transition: opacity 0.75s ease;
+        }
+        @media (max-width: 767px) {
+            #login-scrim {
+                background: linear-gradient(0deg, rgba(6, 7, 11, 0.96) 0%, rgba(6, 7, 11, 0.84) 58%, rgba(6, 7, 11, 0.22) 100%);
+            }
+        }
+        #login-panel {
+            transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.55s ease;
+        }
+        #login-screen.cinema-entering {
+            pointer-events: none !important;
+        }
+        #login-screen.cinema-entering .cinema-letterbox-bar.top {
+            transform: translateY(-105%);
+            opacity: 0;
+        }
+        #login-screen.cinema-entering .cinema-letterbox-bar.bottom {
+            transform: translateY(105%);
+            opacity: 0;
+        }
+        #login-screen.cinema-entering #login-panel {
+            transform: translateX(-36px);
+            opacity: 0;
+        }
+        #login-screen.cinema-entering #login-scrim {
+            opacity: 0;
+        }
+
+        .cinema-input {
+            background: rgba(10, 12, 18, 0.62);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #f8fafc;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+        }
+        .cinema-input:focus {
+            outline: none;
+            border-color: rgba(245, 158, 11, 0.72);
+            background: rgba(14, 16, 24, 0.82);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12), 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+        .cinema-cta {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #090a0f;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            border: 1px solid rgba(254, 243, 199, 0.38);
+            box-shadow: 0 12px 32px rgba(245, 158, 11, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, filter 0.2s ease;
+        }
+        .cinema-cta:hover:not(:disabled) {
+            transform: translateY(-1px);
+            filter: brightness(1.07);
+            box-shadow: 0 16px 38px rgba(245, 158, 11, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+        }
+        .cinema-cta:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+        .cinema-cta:disabled {
+            opacity: 0.72;
+            cursor: wait;
+        }
+        #login-screen #avatar-container .avatar-sel {
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(12, 14, 20, 0.65);
+            transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+        }
+        #login-screen #avatar-container .avatar-sel:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.35);
+        }
+        #login-screen #avatar-container .avatar-sel.selected {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.14);
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25), 0 8px 20px rgba(0, 0, 0, 0.45);
+        }
+        .cinema-ambience-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(241, 245, 249, 0.85);
+            font-size: 9.5px;
+            letter-spacing: 0.18em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .cinema-ambience-btn:hover {
+            border-color: rgba(245, 158, 11, 0.55);
+            background: rgba(245, 158, 11, 0.12);
+            color: #fef3c7;
+        }
+        .cinema-profile-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: rgba(226, 232, 240, 0.85);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+        .cinema-profile-chip:hover {
+            border-color: rgba(245, 158, 11, 0.6);
+            background: rgba(245, 158, 11, 0.12);
+            color: #fff;
         }
 
         .stagger-in {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(14px);
         }
         #login-screen.login-active .stagger-in {
-            animation: slideFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: slideFadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes slideFadeUp {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(14px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
@@ -3930,28 +4119,97 @@
             <div class="joystick-knob" id="joystick-knob"></div>
         </div>
 
-<div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl px-4">
-            <div class="liquid-glass-heavy p-4 md:p-10 rounded-2xl w-full max-w-2xl flex flex-col items-center border border-white/20 max-h-[100dvh] overflow-y-auto">
-                <h1 class="text-2xl md:text-4xl font-retro font-bold mb-1 md:mb-2 text-white tracking-widest text-center shadow-black drop-shadow-2xl">bounce_it</h1>
-                <p class="text-[var(--text-muted)] font-retro text-[10px] md:text-xs mb-4 md:mb-8 tracking-widest uppercase text-center">Version Beta</p>
-                <div class="mb-6 flex justify-center">
-                    <img src="logo.jpeg" alt="Logo bounce_it" 
-                        class="w-32 h-32 md:w-40 md:h-40 object-cover rounded-2xl border border-white/10 shadow-[0_0_25px_rgba(129,140,248,0.2)] pixelated" />
+<div id="login-screen" class="absolute inset-0 z-[2000] flex flex-col justify-center">
+            <!-- Dégradé cinéma latéral laissant la scène 3D du studio visible en direct -->
+            <div id="login-scrim"></div>
+            <div class="cinema-grain-overlay"></div>
+
+            <!-- Bande Cinémascope Supérieure (2.39:1) -->
+            <div class="cinema-letterbox-bar top">
+                <div class="flex items-center gap-2.5">
+                    <span class="cinema-rec-dot"></span>
+                    <span class="text-white/80 font-semibold">STUDIO 04</span>
+                    <span class="hidden sm:inline text-white/35">·</span>
+                    <span class="hidden sm:inline">PARIS 11E · CAM LIVE</span>
                 </div>
-                <div class="w-full mb-4 md:mb-6">
-                    <label class="block text-[10px] font-retro text-gray-300 mb-2 uppercase tracking-widest">Artist_ID</label>
-                    <input type="text" id="login-username" class="w-full bg-black/60 border border-gray-600 rounded-lg px-4 py-2 md:py-3 text-white font-retro text-sm focus:outline-none focus:border-[var(--accent)] transition-all shadow-inner" placeholder="Enter Alias...">
+                <div class="flex items-center gap-3">
+                    <span id="login-topbar-meta" class="hidden md:inline text-amber-200/80">JOUR 1 · 08:00 · MATIN CLAIR</span>
+                    <button type="button" id="login-ambience-btn" class="cinema-ambience-btn" title="Prévisualiser l'ambiance lumineuse du studio en direct">
+                        <span id="login-ambience-dot" class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                        <span id="login-ambience-label">AMBIANCE : AUTO</span>
+                    </button>
                 </div>
-                <div class="w-full mb-6 md:mb-8">
-                    <label class="block text-[10px] font-retro text-gray-300 mb-2 md:mb-4 uppercase tracking-widest">Select_Avatar</label>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-6" id="avatar-container"></div>
+            </div>
+
+            <!-- Panneau Cinéma Ancré à Gauche (la moitié droite ouvre sur le studio 3D) -->
+            <div id="login-panel" class="relative z-10 w-full max-w-[430px] px-6 sm:px-10 md:ml-[5vw] py-16 flex flex-col justify-center max-h-[86dvh] overflow-y-auto">
+                <!-- Sur-titre & Titre Éditorial -->
+                <div class="mb-5 stagger-in" style="animation-delay: 0.05s;">
+                    <div class="flex items-center gap-2 text-[10px] font-mono tracking-[0.32em] uppercase text-amber-300/85 mb-2">
+                        <span>A BEATMAKER SIMULATION</span>
+                    </div>
+                    <h1 class="text-4xl sm:text-5xl font-extralight tracking-[0.22em] text-white uppercase leading-none">
+                        BOUNCE <span class="font-bold text-amber-400">IT</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400 tracking-[0.14em] uppercase mt-2">
+                        Studio 1re Personne · Production &amp; Carrière
+                    </p>
                 </div>
-                <div class="w-full mb-4 md:mb-6">
-                <button id="btn-login" class="w-full btn-action py-3 rounded-lg text-sm font-retro tracking-widest uppercase font-bold mt-2 shrink-0">Boot Studio Environment</button>
-                <p id="login-error" class="text-[var(--retro-red)] font-retro text-xs mt-4 hidden text-center">Error: Missing ID</p>
+
+                <!-- Carte Statut Session (Détection sauvegarde en direct) -->
+                <div id="login-session-card" class="mb-5 px-3.5 py-2.5 rounded-xl bg-black/45 border border-white/10 backdrop-blur-md flex items-center justify-between gap-3 stagger-in" style="animation-delay: 0.12s;">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <span id="login-session-dot" class="w-2 h-2 rounded-full bg-amber-400 shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.75)]"></span>
+                        <div class="min-w-0">
+                            <div id="login-session-title" class="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 truncate">NOUVELLE CARRIÈRE</div>
+                            <div id="login-session-sub" class="text-[11px] text-slate-300/85 truncate">Jour 1 · 08:00 · Studio de départ</div>
+                        </div>
+                    </div>
+                    <span id="login-session-badge" class="text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300 shrink-0">NEW</span>
+                </div>
+
+                <!-- Alias Artiste + Profils Récents -->
+                <div class="w-full mb-4 stagger-in" style="animation-delay: 0.18s;">
+                    <label for="login-username" class="block text-[10px] font-mono text-slate-300/80 mb-1.5 uppercase tracking-[0.24em]">Nom d'Artiste</label>
+                    <input type="text" id="login-username" autocomplete="off" class="w-full cinema-input rounded-xl px-4 py-3 text-sm tracking-wide placeholder:text-slate-500" placeholder="Entre ton blase de producteur...">
+                    <div id="login-recent-profiles" class="flex flex-wrap gap-1.5 mt-2 hidden"></div>
+                </div>
+
+                <!-- Sélection Avatar Compacte -->
+                <div class="w-full mb-5 stagger-in" style="animation-delay: 0.24s;">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-[10px] font-mono text-slate-300/80 uppercase tracking-[0.24em]">Identité Visuelle</label>
+                        <span class="text-[9px] font-mono text-slate-500 uppercase tracking-widest">4 Profils</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2.5" id="avatar-container"></div>
+                </div>
+
+                <!-- Bouton Principal Cinéma -->
+                <div class="w-full stagger-in" style="animation-delay: 0.30s;">
+                    <button id="btn-login" class="w-full cinema-cta py-3.5 px-5 rounded-xl text-xs uppercase flex items-center justify-center gap-2.5 shrink-0">
+                        <span id="btn-login-label">OUVRIR LA SESSION</span>
+                        <span aria-hidden="true" class="text-sm leading-none">→</span>
+                    </button>
+                    <p id="login-error" class="text-rose-400 font-mono text-[11px] mt-2.5 hidden tracking-wide">Veuillez entrer un nom d'artiste pour ouvrir le studio.</p>
+                </div>
+            </div>
+
+            <!-- Bande Cinémascope Inférieure (2.39:1) -->
+            <div class="cinema-letterbox-bar bottom">
+                <div class="flex items-center gap-3 text-[9.5px] text-slate-400">
+                    <span><strong class="text-slate-200">ZQSD</strong> Marcher</span>
+                    <span class="text-white/20">·</span>
+                    <span><strong class="text-slate-200">SOURIS</strong> Regarder</span>
+                    <span class="hidden sm:inline text-white/20">·</span>
+                    <span class="hidden sm:inline"><strong class="text-slate-200">E / CLIC</strong> Interagir</span>
+                </div>
+                <div class="flex items-center gap-2 text-[9.5px] text-slate-400">
+                    <span class="hidden sm:inline">48 kHz · 24-BIT</span>
+                    <span class="hidden sm:inline text-white/20">·</span>
+                    <span class="text-amber-300/75">V4 PHOTOREALISM</span>
+                </div>
             </div>
         </div>
-    </div>
 
 <div id="achievements-overlay" class="fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden px-4">
         <div class="settings-shell liquid-glass-heavy p-5 md:p-7 rounded-2xl border-2 border-[var(--retro-orange)] shadow-[0_0_60px_rgba(251,191,36,0.15)] flex flex-col relative">
@@ -5124,20 +5382,55 @@
 
         <div id="toast-zone" class="fixed top-[90px] md:top-24 left-4 md:left-6 flex flex-col gap-3 z-[10000000] pointer-events-none w-[calc(100vw-32px)] md:w-80" style="z-index: 10000000 !important;"></div>
 
-        <div id="studio-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-1000 splash-bg">
-            <div class="splash-card flex flex-col items-center w-full max-w-lg px-8 relative z-10">
-                <h1 class="font-retro text-3xl md:text-5xl text-white tracking-[0.4em] uppercase mb-16 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] flex flex-col items-center justify-center w-full">BOUNCE_IT<span class="text-[var(--accent)] opacity-80 whitespace-nowrap text-[10px] md:text-xs mt-4 tracking-widest block text-center w-full font-mono font-bold">Version Beta</span></h1>
-                
-                <!-- Organic Equalizer (5 bars) -->
-                <div class="flex items-end justify-center gap-2 md:gap-3 h-24 mb-16 w-full" id="splash-wave">
-                    <div class="w-1.5 md:w-2 rounded-full organic-bar bg-white/30" style="animation-delay: 0.1s; animation-duration: 1.2s"></div>
-                    <div class="w-1.5 md:w-2 rounded-full organic-bar bg-[var(--accent)]" style="animation-delay: 0.3s; animation-duration: 1.5s"></div>
-                    <div class="w-1.5 md:w-2 rounded-full organic-bar bg-white" style="animation-delay: 0.0s; animation-duration: 0.9s"></div>
-                    <div class="w-1.5 md:w-2 rounded-full organic-bar bg-[var(--accent)]" style="animation-delay: 0.4s; animation-duration: 1.1s"></div>
-                    <div class="w-1.5 md:w-2 rounded-full organic-bar bg-white/30" style="animation-delay: 0.2s; animation-duration: 1.3s"></div>
+        <div id="studio-loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-1000 splash-bg overflow-hidden">
+            <div class="cinema-grain-overlay"></div>
+
+            <!-- Bande Cinémascope Haute -->
+            <div class="cinema-letterbox-bar top">
+                <div class="flex items-center gap-2.5">
+                    <span class="cinema-rec-dot"></span>
+                    <span class="text-white/80 font-semibold">STUDIO 04 · PARIS</span>
+                </div>
+                <div class="flex items-center gap-3 text-slate-400">
+                    <span id="loader-timecode">00:00:00:00</span>
+                    <span class="text-white/20">·</span>
+                    <span class="hidden sm:inline">24 FPS · 48 kHz</span>
+                </div>
+            </div>
+
+            <!-- Générique Minimaliste A24 / Studio -->
+            <div class="flex flex-col items-center w-full max-w-xl px-8 relative z-10 text-center">
+                <span class="text-[10px] font-mono tracking-[0.42em] text-amber-300/75 uppercase mb-5">A Beatmaker Simulation</span>
+                <h1 class="text-4xl sm:text-6xl font-extralight tracking-[0.34em] text-white uppercase leading-none mb-7">
+                    BOUNCE <span class="font-bold text-amber-400">IT</span>
+                </h1>
+
+                <!-- Oscillographe Analogique Minimaliste -->
+                <div class="w-48 h-8 mb-8 flex items-center justify-center opacity-80" id="splash-wave">
+                    <svg viewBox="0 0 220 32" class="w-full h-full overflow-visible" fill="none">
+                        <line x1="0" y1="16" x2="220" y2="16" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <path class="cinema-osc-line" d="M 0 16 Q 20 16 32 16 T 58 10 T 80 24 T 104 6 T 126 26 T 148 11 T 172 19 T 192 16 L 220 16" stroke="url(#cinemaOscGrad)" stroke-width="1.5" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="cinemaOscGrad" x1="0" y1="0" x2="220" y2="0" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="rgba(255,255,255,0.1)"/>
+                                <stop offset="45%" stop-color="#f59e0b"/>
+                                <stop offset="65%" stop-color="#fef3c7"/>
+                                <stop offset="100%" stop-color="rgba(255,255,255,0.1)"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
                 </div>
 
-                <div id="loader-text" class="text-gray-400 font-mono font-bold text-[10px] md:text-xs tracking-[0.3em] uppercase mt-10 text-center h-4 transition-all duration-300 w-full">Initializing Kernel...</div>
+                <div id="loader-text" class="text-slate-300/80 font-mono text-[10px] md:text-[11px] tracking-[0.26em] uppercase h-4 transition-all duration-300 w-full">Mise sous tension des moniteurs…</div>
+            </div>
+
+            <!-- Bande Cinémascope Basse + Fine Barre de Progression 2px -->
+            <div class="cinema-letterbox-bar bottom">
+                <div class="absolute top-0 left-0 right-0 h-[2px] bg-white/5 overflow-hidden">
+                    <div id="loader-progress-bar" class="h-full w-0 bg-gradient-to-r from-amber-500 via-amber-300 to-white transition-[width] duration-100 ease-out shadow-[0_0_12px_rgba(245,158,11,0.8)]"></div>
+                </div>
+                <span class="text-slate-400">CHARGEMENT DU STUDIO 3D</span>
+                <span id="loader-pct" class="text-amber-300/90 font-semibold">00%</span>
             </div>
         </div>
 
@@ -5364,13 +5657,13 @@ const DEFAULT_STATE = {
         } catch (err) { console.warn('Relocate achievement popup failed', err); }
     })();
 
-    // Phrases d'immersion (studio vibe)
+    // Phrases d'immersion cinéma studio
     const loadingPhrases = [
-        "AUDIO: Initializing Core Driver...",
-        "VST: Scanning Plugin Registry...",
-        "IO: Mapping Virtual Patchbay...",
-        "DSP: Warming Analog Emulation...",
-        "ENGINE READY."
+        "Mise sous tension des moniteurs…",
+        "Calibration acoustique du studio…",
+        "Préchauffage du préampli analogique…",
+        "Synchronisation de la baie vitrée & lumière…",
+        "STUDIO PRÊT."
     ];
 
     let phraseIndex = 0;
@@ -5379,45 +5672,62 @@ const DEFAULT_STATE = {
     function simulateLoading() {
         const sLoader = document.getElementById('studio-loader');
         const lText = document.getElementById('loader-text');
+        const lBar = document.getElementById('loader-progress-bar');
+        const lPct = document.getElementById('loader-pct');
+        const lTc = document.getElementById('loader-timecode');
         if (!sLoader || !lText) return;
 
-        // Fait défiler le texte toutes les 800ms
+        const bootStartMs = performance.now();
+        const tcInterval = setInterval(() => {
+            if (!lTc) return;
+            const elapsed = (performance.now() - bootStartMs) / 1000;
+            const mins = Math.floor(elapsed / 60);
+            const secs = Math.floor(elapsed % 60);
+            const frames = Math.floor((elapsed % 1) * 24);
+            lTc.textContent = `00:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}:${String(frames).padStart(2, '0')}`;
+        }, 42);
+
         const textInterval = setInterval(() => {
             phraseIndex++;
-            if (phraseIndex < loadingPhrases.length) {
+            if (phraseIndex < loadingPhrases.length - 1) {
                 lText.innerText = loadingPhrases[phraseIndex];
             }
-        }, 500);
+        }, 420);
 
-        // Fait avancer la progression fluidement
         const progressInterval = setInterval(() => {
-            // Vitesse de chargement accélérée
-            loadPercentage += (Math.random() * 3) + 1.5; 
-            
+            loadPercentage += (Math.random() * 4.2) + 2.4;
+            if (loadPercentage > 100) loadPercentage = 100;
+            if (lBar) lBar.style.width = loadPercentage.toFixed(1) + '%';
+            if (lPct) lPct.textContent = String(Math.floor(loadPercentage)).padStart(2, '0') + '%';
+
             if (loadPercentage >= 100) {
-                loadPercentage = 100;
                 clearInterval(progressInterval);
                 clearInterval(textInterval);
-                lText.innerText = loadingPhrases[loadingPhrases.length - 1]; 
+                clearInterval(tcInterval);
+                lText.innerText = loadingPhrases[loadingPhrases.length - 1];
                 lText.classList.add('impact-flash');
-                
-                setTimeout(() => hideLoader(sLoader), 1200); 
+
+                setTimeout(() => hideLoader(sLoader), 650);
             }
-        }, 60);
+        }, 55);
     }
 
     function hideLoader(sLoader) {
         if (!sLoader) return;
         sLoader.style.opacity = '0';
-        
+        sLoader.style.pointerEvents = 'none';
+
         const ls = document.getElementById('login-screen');
         if (ls && ls.style.display !== 'none') {
             ls.classList.add('login-active');
+            if (typeof window.refreshLoginSessionPreview === 'function') {
+                window.refreshLoginSessionPreview();
+            }
         }
 
         setTimeout(() => {
             sLoader.style.display = 'none';
-        }, 1000);
+        }, 950);
     }
 
     // Lancement automatique au chargement de la page
@@ -6151,20 +6461,22 @@ const DEFAULT_STATE = {
         // ==========================================
         const rugGroup = new THREE.Group();
         rugGroup.visible = false;
-        // Décalé vers la gauche et aligné avec le canapé
-        rugGroup.position.set(-0.5, -0.99, 1.5);
+        // Surélevé légèrement au-dessus du parquet (y=-1.0) pour éviter tout Z-fighting
+        rugGroup.position.set(-0.5, -0.980, 1.5);
 
-        // Tapis plus grand (5.5 de large sur 4.0 de profondeur)
-        const rugGeo = new THREE.BoxGeometry(5, 0.02, 4.0);
+        // Tapis plus grand (5.0 de large sur 4.0 de profondeur)
+        const rugGeo = new THREE.BoxGeometry(5, 0.018, 4.0);
         const rugMat = new THREE.MeshStandardMaterial({ color: '#17123f', roughness: 1.0 });
         const rug = new THREE.Mesh(rugGeo, rugMat);
         rug.receiveShadow = true;
         
-        // Bande décorative ajustée à la nouvelle largeur
-        const stripeGeo = new THREE.BoxGeometry(5, 0.021, 0.3);
+        // Bande décorative posée proprement SUR la face supérieure (zéro chevauchement interne!)
+        const stripeGeo = new THREE.PlaneGeometry(4.96, 0.30);
         const stripeMat = new THREE.MeshStandardMaterial({ color: '#7dd3fc', roughness: 1.0 });
         const stripe = new THREE.Mesh(stripeGeo, stripeMat);
-        stripe.position.set(0, 0, 1.4); // Légèrement décalée vers le bord
+        stripe.rotation.x = -Math.PI / 2;
+        stripe.position.set(0, 0.0105, 1.4);
+        stripe.userData.hideWhenUnowned = true;
         
         rugGroup.add(rug, stripe);
         scene.add(rugGroup);
@@ -8401,34 +8713,102 @@ const DEFAULT_STATE = {
             }
             archGroup.add(exteriorGroup);
 
-            // --- PLAFOND LUMINEUX (Y = +4.0) + NUAGES ACOUSTIQUES + PLAFONNIER ---
+            // --- PLAFOND BLANC PARISIEN LUMINEUX (Y = +4.0) + NUAGES ACOUSTIQUES SUSPENDUS + RAIL DE SPOTS DESIGN ---
             const ceilingMat = new THREE.MeshStandardMaterial({
-                map: ceilTex.map, normalMap: ceilTex.normalMap, normalScale: new THREE.Vector2(0.28, 0.28),
-                color: '#ece8e0', roughness: 0.92, metalness: 0.01
+                map: ceilTex.map, normalMap: ceilTex.normalMap, normalScale: new THREE.Vector2(0.18, 0.18),
+                color: '#f8f6f2', emissive: '#2c2b28', emissiveIntensity: 0.42, roughness: 0.94, metalness: 0.0
             });
             const ceilingMesh = new THREE.Mesh(new THREE.PlaneGeometry(10.2, 10.2), ceilingMat);
             ceilingMesh.position.set(0, 4.0, 0); ceilingMesh.rotation.x = Math.PI / 2;
             ceilingMesh.receiveShadow = true; ceilingMesh.castShadow = false;
             archGroup.add(ceilingMesh);
 
-            const cloudFrameMat = new THREE.MeshStandardMaterial({ color: '#272a33', roughness: 0.85 });
-            const cloudLedMat = new THREE.MeshStandardMaterial({ color: '#fff3d6', emissive: '#ffcf91', emissiveIntensity: 0.95 });
-            [-2.1, 1.3].forEach((cx, idx) => {
-                const cloud = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.12, 2.0), cloudFrameMat);
-                cloud.position.set(cx, 3.7, idx === 0 ? -2.7 : 0.4);
-                archGroup.add(cloud);
-                const ledRim = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.02, 1.8), cloudLedMat);
-                ledRim.position.set(cx, 3.77, idx === 0 ? -2.7 : 0.4);
-                archGroup.add(ledRim);
+            // 2 Nuages Acoustiques Studio Pro (Cadre noyer + feutre anthracite + lattes bois + 4 câbles acier vers le plafond)
+            const cloudWoodMat = new THREE.MeshStandardMaterial({
+                map: walnutTex.map, normalMap: walnutTex.normalMap, normalScale: new THREE.Vector2(0.5, 0.5),
+                color: '#a87d59', roughness: 0.45
+            });
+            const cloudFabricMat = new THREE.MeshStandardMaterial({
+                map: curtainTex.map, color: '#272a33', roughness: 0.94
+            });
+            const cableMat = new THREE.MeshStandardMaterial({ color: '#9ca3af', roughness: 0.32, metalness: 0.85 });
+            const cloudLedMat = new THREE.MeshStandardMaterial({ color: '#fff5e0', emissive: '#ffcf91', emissiveIntensity: 0.65 });
+
+            const acousticCloudsSpec = [
+                { x: -2.15, z: -2.65, w: 2.85, d: 1.55 }, // Au-dessus du bureau de mixage
+                { x: -1.95, z:  1.65, w: 2.40, d: 1.45 }  // Au-dessus du coin écoute canapé (loin du rail de spots!)
+            ];
+            acousticCloudsSpec.forEach(spec => {
+                const cg = new THREE.Group();
+                cg.position.set(spec.x, 3.72, spec.z);
+                // Panneau absorbant central
+                const core = new THREE.Mesh(new THREE.BoxGeometry(spec.w, 0.075, spec.d), cloudFabricMat);
+                core.castShadow = true; core.receiveShadow = true; cg.add(core);
+                // Cadre menuisé en noyer sur les 4 bords
+                const rimF = new THREE.Mesh(new THREE.BoxGeometry(spec.w + 0.08, 0.088, 0.045), cloudWoodMat);
+                rimF.position.set(0, 0, spec.d / 2 + 0.02);
+                const rimB = rimF.clone(); rimB.position.z = -spec.d / 2 - 0.02;
+                const rimL = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.088, spec.d + 0.08), cloudWoodMat);
+                rimL.position.set(-spec.w / 2 - 0.02, 0, 0);
+                const rimR = rimL.clone(); rimR.position.x = spec.w / 2 + 0.02;
+                cg.add(rimF, rimB, rimL, rimR);
+                // Fines lattes acoustiques en noyer sur la face inférieure (style studio pro Acupanel)
+                const slatCount = Math.floor(spec.w / 0.24);
+                for (let s = 0; s < slatCount; s++) {
+                    const sx = -spec.w / 2 + 0.14 + s * ((spec.w - 0.28) / Math.max(1, slatCount - 1));
+                    const slat = new THREE.Mesh(new THREE.BoxGeometry(0.038, 0.018, spec.d - 0.08), cloudWoodMat);
+                    slat.position.set(sx, -0.045, 0);
+                    cg.add(slat);
+                }
+                // Discret ruban LED indirect sur le dessus vers le plafond
+                const ledRim = new THREE.Mesh(new THREE.BoxGeometry(spec.w - 0.24, 0.012, spec.d - 0.24), cloudLedMat);
+                ledRim.position.set(0, 0.042, 0);
+                cg.add(ledRim);
+                // 4 Câbles de suspension en acier fin reliant chaque coin au plafond (y = 4.0)
+                const hw = spec.w / 2 - 0.14, hd = spec.d / 2 - 0.14;
+                [[-hw, -hd], [hw, -hd], [-hw, hd], [hw, hd]].forEach(([kx, kz]) => {
+                    const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.28, 6), cableMat);
+                    wire.position.set(kx, 0.14, kz);
+                    cg.add(wire);
+                    const anchor = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.015, 10), aluFrameMat);
+                    anchor.position.set(kx, 0.275, kz);
+                    cg.add(anchor);
+                });
+                archGroup.add(cg);
             });
 
-            const fixtureRing = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.48, 0.09, 28), aluFrameMat);
-            fixtureRing.position.set(0, 3.95, -0.2); archGroup.add(fixtureRing);
+            // Rail de Spots Architecturaux Noir Mat au Plafond (Zone Centre-Est, 100% dégagé des nuages!)
+            const trackGroup = new THREE.Group();
+            trackGroup.position.set(1.15, 3.96, -0.55);
+            const trackBar = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.035, 2.75), aluFrameMat);
+            trackGroup.add(trackBar);
+            const trackCanopy = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.028, 16), aluFrameMat);
+            trackCanopy.position.set(0, 0.015, 0);
+            trackGroup.add(trackCanopy);
+
             const fixtureDiffuserMat = new THREE.MeshStandardMaterial({
-                color: '#fff9ed', emissive: '#ffeed6', emissiveIntensity: 2.0, roughness: 0.2
+                color: '#fffaf0', emissive: '#ffedd2', emissiveIntensity: 1.9, roughness: 0.2
             });
-            const fixtureDiffuser = new THREE.Mesh(new THREE.CylinderGeometry(0.39, 0.39, 0.04, 28), fixtureDiffuserMat);
-            fixtureDiffuser.position.set(0, 3.91, -0.2); archGroup.add(fixtureDiffuser);
+            const spotBrassRingMat = new THREE.MeshStandardMaterial({ color: '#d4af37', roughness: 0.3, metalness: 0.82 });
+            [
+                { z: -1.05, aimX: -0.25, aimZ: -0.22 },
+                { z:  0.00, aimX: -0.30, aimZ:  0.00 },
+                { z:  1.05, aimX:  0.22, aimZ:  0.18 }
+            ].forEach(sp => {
+                const headG = new THREE.Group();
+                headG.position.set(0, -0.095, sp.z);
+                headG.rotation.set(sp.aimZ, 0, sp.aimX);
+                const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.010, 0.010, 0.07, 8), aluFrameMat);
+                stem.position.y = 0.055; headG.add(stem);
+                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.058, 0.13, 18), aluFrameMat);
+                headG.add(barrel);
+                const brassLip = new THREE.Mesh(new THREE.TorusGeometry(0.053, 0.006, 8, 18), spotBrassRingMat);
+                brassLip.rotation.x = Math.PI / 2; brassLip.position.y = -0.063; headG.add(brassLip);
+                const lens = new THREE.Mesh(new THREE.CircleGeometry(0.048, 16), fixtureDiffuserMat);
+                lens.rotation.x = Math.PI / 2; lens.position.y = -0.062; headG.add(lens);
+                trackGroup.add(headG);
+            });
+            archGroup.add(trackGroup);
             window.ceilingFixtureMat = fixtureDiffuserMat;
 
             // =========================================================================
@@ -8868,20 +9248,20 @@ const DEFAULT_STATE = {
                 }
                 bedGroup.add(hbGroup);
 
-                // 3. Matelas épais à coins arrondis + passepoil réaliste
+                // 3. Matelas épais à coins arrondis (calibré pour ne jamais percer la couette au pied!)
                 const mShape = new THREE.Shape();
-                const mw = 1.07, ml = 1.94, mr = 0.12;
+                const mw = 1.02, ml = 1.74, mr = 0.10;
                 mShape.moveTo(-mw + mr, -ml);
                 mShape.lineTo(mw - mr, -ml); mShape.quadraticCurveTo(mw, -ml, mw, -ml + mr);
                 mShape.lineTo(mw, ml - mr); mShape.quadraticCurveTo(mw, ml, mw - mr, ml);
                 mShape.lineTo(-mw + mr, ml); mShape.quadraticCurveTo(-mw, ml, -mw, ml - mr);
                 mShape.lineTo(-mw, -ml + mr); mShape.quadraticCurveTo(-mw, -ml, -mw + mr, -ml);
                 const realMattressGeo = new THREE.ExtrudeGeometry(mShape, {
-                    depth: 0.24, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.04, bevelSegments: 4
+                    depth: 0.20, bevelEnabled: true, bevelThickness: 0.028, bevelSize: 0.028, bevelSegments: 4
                 });
                 realMattressGeo.rotateX(Math.PI / 2);
                 const realMattress = new THREE.Mesh(realMattressGeo, mattressRealMat);
-                realMattress.position.set(0, 0.46, 0);
+                realMattress.position.set(0, 0.40, -0.14);
                 realMattress.castShadow = true; realMattress.receiveShadow = true; realMattress.name = 'bed_mesh';
                 bedGroup.add(realMattress);
 
@@ -8932,14 +9312,13 @@ const DEFAULT_STATE = {
                 sheetCuff.position.set(0, 0.59, -0.96); sheetCuff.rotation.x = 0.04; sheetCuff.castShadow = true; sheetCuff.receiveShadow = true; sheetCuff.name = 'bed_mesh';
                 bedGroup.add(sheetCuff);
 
-                // 6. 2 Grands Oreillers de couchage bombés + 2 Coussins déco devant (lin sable & terracotta)
+                // 6. 2 Grands Oreillers de couchage bombés + 2 Vrais Coussins Déco Carrés-Bombés adossés proprement devant
                 function buildSculptedPillow(sx, sy, sz, px, py, pz, rx, ry, rz, mat) {
                     const pGeo = new THREE.SphereGeometry(0.44, 22, 16);
                     pGeo.scale(sx, sy, sz);
                     const pp = pGeo.attributes.position;
                     for (let i = 0; i < pp.count; i++) {
                         let vx = pp.getX(i), vy = pp.getY(i), vz = pp.getZ(i);
-                        // Forme coussin carré-arrondi + léger creux central réaliste
                         const squeeze = 1.0 + 0.12 * Math.pow(Math.abs(vx * vz) * 4.5, 0.7);
                         vx *= Math.min(1.16, squeeze);
                         const dimple = Math.exp(-(vx * vx * 6.5 + vz * vz * 9.0)) * -0.024;
@@ -8953,23 +9332,45 @@ const DEFAULT_STATE = {
                     pMesh.castShadow = true; pMesh.receiveShadow = true; pMesh.name = 'bed_mesh';
                     bedGroup.add(pMesh);
                 }
+                function buildSquareCushion(w, h, d, px, py, pz, rx, ry, rz, mat) {
+                    const cGeo = new THREE.BoxGeometry(w, h, d, 12, 12, 6);
+                    const cp = cGeo.attributes.position;
+                    for (let i = 0; i < cp.count; i++) {
+                        let vx = cp.getX(i), vy = cp.getY(i), vz = cp.getZ(i);
+                        const nx = vx / (w * 0.5), ny = vy / (h * 0.5);
+                        const r2 = Math.min(1.0, nx * nx * 0.85 + ny * ny * 0.85);
+                        // Gonflant central de vrai coussin carré + bords pincés couture
+                        const puff = Math.cos(r2 * Math.PI * 0.5) * 0.85 + 0.15;
+                        vz *= puff;
+                        // Légère courbure souple aux coins
+                        const cornerPinch = 1.0 - Math.pow(Math.abs(nx * ny), 2.5) * 0.08;
+                        vx *= cornerPinch; vy *= cornerPinch;
+                        cp.setXYZ(i, vx, vy, vz);
+                    }
+                    cGeo.computeVertexNormals();
+                    const cMesh = new THREE.Mesh(cGeo, mat);
+                    cMesh.position.set(px, py, pz);
+                    cMesh.rotation.set(rx, ry, rz);
+                    cMesh.castShadow = true; cMesh.receiveShadow = true; cMesh.name = 'bed_mesh';
+                    bedGroup.add(cMesh);
+                }
                 const sleepPillowMat = new THREE.MeshStandardMaterial({ map: curtainTex.map, color: '#f6f3ec', roughness: 0.91 });
-                const accentPillowMat1 = new THREE.MeshStandardMaterial({ map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.014, color: '#d8c5ad', roughness: 0.93 });
-                const accentPillowMat2 = new THREE.MeshStandardMaterial({ map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.014, color: '#b86b49', roughness: 0.92 });
+                const accentPillowMat1 = new THREE.MeshStandardMaterial({ map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.014, color: '#d6c3ab', roughness: 0.93 });
+                const accentPillowMat2 = new THREE.MeshStandardMaterial({ map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.014, color: '#b56a49', roughness: 0.92 });
                 // 2 grands oreillers adossés à la tête de lit
                 buildSculptedPillow(1.22, 0.34, 0.74, -0.56, 0.72, -1.66, 0.58, 0.08, 0.03, sleepPillowMat);
                 buildSculptedPillow(1.22, 0.34, 0.74,  0.55, 0.72, -1.66, 0.54, -0.10, -0.02, sleepPillowMat);
-                // 2 coussins déco plus petits (lin sable & terracotta chaud) posés devant
-                buildSculptedPillow(0.76, 0.25, 0.54, -0.34, 0.65, -1.16, 0.88, 0.18, 0.04, accentPillowMat1);
-                buildSculptedPillow(0.70, 0.24, 0.50,  0.38, 0.64, -1.14, 0.84, -0.22, -0.05, accentPillowMat2);
+                // 2 vrais coussins carrés-bombés bien posés au-dessus du drap devant les oreillers
+                buildSquareCushion(0.56, 0.44, 0.18, -0.34, 0.74, -1.25, -0.26, 0.18, 0.04, accentPillowMat1);
+                buildSquareCushion(0.50, 0.40, 0.16,  0.34, 0.72, -1.23, -0.30, -0.20, -0.05, accentPillowMat2);
 
-                // 7. Plaid tissé chaud drapé organiquement au pied du lit + franges sur les flancs
-                const plaidGeo = new THREE.BoxGeometry(2.54, 0.04, 0.76, 30, 2, 10);
+                // 7. Plaid tissé chaud drapé proprement au pied du lit (finition ourlet lisse sans barreaux!)
+                const plaidGeo = new THREE.BoxGeometry(2.50, 0.038, 0.74, 30, 2, 10);
                 const plPos = plaidGeo.attributes.position;
-                const plaidCenterZ = 1.32;
+                const plaidCenterZ = 1.24;
                 for (let i = 0; i < plPos.count; i++) {
                     const lx = plPos.getX(i), ly = plPos.getY(i), lz = plPos.getZ(i);
-                    const skewZ = lz - lx * 0.06;
+                    const skewZ = lz - lx * 0.055;
                     const worldZ = plaidCenterZ + skewZ;
                     const duvetLocalZ = worldZ - 0.44;
                     const absX = Math.abs(lx);
@@ -8983,32 +9384,20 @@ const DEFAULT_STATE = {
                     let finalX = lx;
                     let sideDrop = 0;
                     if (absX > 1.15) {
-                        const t = (absX - 1.15) / 0.12;
-                        finalX = Math.sign(lx) * (1.15 + Math.sin(Math.min(1, t) * Math.PI * 0.5) * 0.105);
-                        sideDrop = Math.pow(t, 1.55) * 0.25;
+                        const t = (absX - 1.15) / 0.10;
+                        finalX = Math.sign(lx) * (1.15 + Math.sin(Math.min(1, t) * Math.PI * 0.5) * 0.095);
+                        sideDrop = Math.pow(t, 1.55) * 0.22;
                     }
-                    const clothRipple = Math.sin(lx * 6.0 + skewZ * 4.0) * 0.007;
+                    const clothRipple = Math.sin(lx * 6.0 + skewZ * 4.0) * 0.006;
                     plPos.setX(i, finalX);
                     plPos.setZ(i, skewZ);
-                    plPos.setY(i, ly + (duvetTopY + 0.032) - sideDrop + clothRipple);
+                    plPos.setY(i, ly + (duvetTopY + 0.030) - sideDrop + clothRipple);
                 }
                 plaidGeo.computeVertexNormals();
                 const plaidMat = new THREE.MeshStandardMaterial({ map: curtainTex.map, bumpMap: curtainTex.bumpMap, bumpScale: 0.018, color: '#ad6d4b', roughness: 0.95 });
                 const plaid = new THREE.Mesh(plaidGeo, plaidMat);
                 plaid.position.set(0, 0, plaidCenterZ); plaid.castShadow = true; plaid.receiveShadow = true; plaid.name = 'bed_mesh';
                 bedGroup.add(plaid);
-                // Franges fines en coton le long des deux tombés latéraux du plaid
-                const fringeMat = new THREE.MeshStandardMaterial({ color: '#d8c5b0', roughness: 0.96 });
-                for (let side of [-1, 1]) {
-                    for (let f = 0; f < 9; f++) {
-                        const fz = plaidCenterZ - 0.32 + f * 0.08 - side * 0.07;
-                        const tassel = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.006, 0.09, 5), fringeMat);
-                        tassel.position.set(side * 1.255, 0.24, fz);
-                        tassel.rotation.z = side * 0.06;
-                        tassel.name = 'bed_mesh';
-                        bedGroup.add(tassel);
-                    }
-                }
             } catch(e) { console.warn('Organic bed build fallback:', e); }
 
             // 6C. AMBIENT OCCLUSION ARCHITECTURAL (4 ANGLES VERTICAUX + PLAFOND + FENÊTRE)
@@ -9074,37 +9463,141 @@ const DEFAULT_STATE = {
             thermoKnob.rotation.x = Math.PI / 2; thermoKnob.position.set(-0.02, 0.32, -1.02); radGroup.add(thermoKnob);
             archGroup.add(radGroup);
 
-            // 6E. HORLOGE MURALE LED / NIXIE 3D (Affiche la vraie heure in-game en direct!)
+            // 6E. HORLOGE MURALE DESIGN D'ARCHITECTE (Ronde Braun / Studio, aiguilles live + guichet heure)
             const wallClockGroup = new THREE.Group();
-            wallClockGroup.position.set(1.35, 2.55, -4.93);
-            const clockBody = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.34, 0.08), new THREE.MeshStandardMaterial({ map: walnutTex.map, color: '#6b4932', roughness: 0.4 }));
-            clockBody.castShadow = true; wallClockGroup.add(clockBody);
-            const clockC = document.createElement('canvas'); clockC.width = 256; clockC.height = 96;
+            wallClockGroup.position.set(1.38, 2.52, -4.95);
+            const clockRadius = 0.31;
+
+            // Boîtier rond fin en aluminium noir mat + liseré laiton brossé
+            const clockBezelMat = new THREE.MeshStandardMaterial({ color: '#1b1d23', roughness: 0.32, metalness: 0.78 });
+            const clockBrassMat = new THREE.MeshStandardMaterial({ color: '#c8a86b', roughness: 0.30, metalness: 0.85 });
+            const clockCase = new THREE.Mesh(new THREE.CylinderGeometry(clockRadius, clockRadius + 0.012, 0.052, 40), clockBezelMat);
+            clockCase.rotation.x = Math.PI / 2;
+            clockCase.castShadow = true; clockCase.receiveShadow = true;
+            wallClockGroup.add(clockCase);
+
+            // Rebord biseauté extérieur (lunette fine)
+            const clockRim = new THREE.Mesh(new THREE.TorusGeometry(clockRadius - 0.004, 0.011, 12, 48), clockBezelMat);
+            clockRim.position.z = 0.028;
+            wallClockGroup.add(clockRim);
+            const clockInnerRing = new THREE.Mesh(new THREE.TorusGeometry(clockRadius - 0.018, 0.003, 8, 48), clockBrassMat);
+            clockInnerRing.position.z = 0.026;
+            wallClockGroup.add(clockInnerRing);
+
+            // Cadran analogique haute-résolution (512x512) style Braun / studio parisien
+            const clockC = document.createElement('canvas'); clockC.width = 512; clockC.height = 512;
             const clockCtx = clockC.getContext('2d');
             const clockTex = configureTex(clockC, 1, 1, true);
             const clockFace = new THREE.Mesh(
-                new THREE.PlaneGeometry(0.84, 0.26),
-                new THREE.MeshStandardMaterial({ color: '#090a0f', map: clockTex, emissive: '#ffaa44', emissiveMap: clockTex, emissiveIntensity: 1.45, roughness: 0.14 })
+                new THREE.CircleGeometry(clockRadius - 0.016, 48),
+                new THREE.MeshStandardMaterial({ map: clockTex, roughness: 0.65, metalness: 0.02 })
             );
-            clockFace.position.set(0, 0, 0.042); wallClockGroup.add(clockFace);
+            clockFace.position.z = 0.027;
+            wallClockGroup.add(clockFace);
+
+            // Verre de protection léger avec reflets réalistes
+            const clockGlass = new THREE.Mesh(
+                new THREE.CircleGeometry(clockRadius - 0.014, 40),
+                new THREE.MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.11, roughness: 0.06, metalness: 0.25 })
+            );
+            clockGlass.position.z = 0.036;
+            wallClockGroup.add(clockGlass);
+
             archGroup.add(wallClockGroup);
             window._wallClockLastStr = '';
-            window.updateWallClock3D = function() {
-                const timeStr = document.getElementById('sys-time')?.textContent || '08:00';
+            window.updateWallClock3D = function(overrideTimeStr) {
+                const timeStr = (typeof overrideTimeStr === 'string' && overrideTimeStr.length >= 4)
+                    ? overrideTimeStr
+                    : (document.getElementById('sys-time')?.textContent || '08:00');
                 if (timeStr === window._wallClockLastStr) return;
                 window._wallClockLastStr = timeStr;
-                clockCtx.fillStyle = '#07060a'; clockCtx.fillRect(0, 0, 256, 96);
-                // Tubes Nixie translucides en arrière-plan
-                for (let d = 0; d < 4; d++) {
-                    const bx = 26 + d * 54 + (d >= 2 ? 12 : 0);
-                    clockCtx.fillStyle = 'rgba(255,140,40,0.08)';
-                    clockCtx.fillRect(bx, 12, 42, 72);
+
+                const parts = timeStr.split(':');
+                const hh = parseInt(parts[0], 10) || 8;
+                const mm = parseInt(parts[1], 10) || 0;
+                const cx = 256, cy = 256, R = 236;
+
+                // Fond cadran ivoire mat architectural avec très léger vignettage interne
+                const dialGrad = clockCtx.createRadialGradient(cx, cy - 30, 30, cx, cy, R);
+                dialGrad.addColorStop(0, '#faf8f3');
+                dialGrad.addColorStop(0.84, '#f1ede4');
+                dialGrad.addColorStop(1, '#dfd9cc');
+                clockCtx.fillStyle = dialGrad;
+                clockCtx.fillRect(0, 0, 512, 512);
+
+                // 60 graduations de minutes + 12 bâtons d'heures nets
+                for (let i = 0; i < 60; i++) {
+                    const ang = (i / 60) * Math.PI * 2 - Math.PI / 2;
+                    const isQuarter = (i % 15 === 0);
+                    const isHour = (i % 5 === 0);
+                    const rOut = R - 14;
+                    const rIn = isQuarter ? R - 46 : (isHour ? R - 36 : R - 24);
+                    clockCtx.strokeStyle = isHour ? '#181a20' : 'rgba(24,26,32,0.42)';
+                    clockCtx.lineWidth = isQuarter ? 7 : (isHour ? 4.5 : 2);
+                    clockCtx.lineCap = 'round';
+                    clockCtx.beginPath();
+                    clockCtx.moveTo(cx + Math.cos(ang) * rIn, cy + Math.sin(ang) * rIn);
+                    clockCtx.lineTo(cx + Math.cos(ang) * rOut, cy + Math.sin(ang) * rOut);
+                    clockCtx.stroke();
                 }
-                clockCtx.fillStyle = '#ffb85c';
-                clockCtx.font = 'bold 58px monospace';
+
+                // Chiffres minimalistes 12, 3, 6, 9
+                clockCtx.fillStyle = '#181a20';
+                clockCtx.font = '600 34px Outfit, -apple-system, sans-serif';
                 clockCtx.textAlign = 'center';
                 clockCtx.textBaseline = 'middle';
-                clockCtx.fillText(timeStr, 128, 52);
+                clockCtx.fillText('12', cx, cy - 154);
+                clockCtx.fillText('3',  cx + 156, cy + 2);
+                clockCtx.fillText('6',  cx, cy + 156);
+                clockCtx.fillText('9',  cx - 156, cy + 2);
+
+                // Inscription discrète studio à 12h + petit guichet numérique discret à 6h
+                clockCtx.fillStyle = 'rgba(24,26,32,0.52)';
+                clockCtx.font = '600 15px monospace';
+                clockCtx.fillText('STUDIO 04 · PARIS', cx, cy - 82);
+
+                // Guichet numérique discret (fond sombre + heure précise)
+                clockCtx.fillStyle = '#14161c';
+                clockCtx.beginPath();
+                clockCtx.roundRect(cx - 50, cy + 66, 100, 32, 6);
+                clockCtx.fill();
+                clockCtx.fillStyle = '#f59e0b';
+                clockCtx.font = 'bold 20px monospace';
+                clockCtx.fillText(timeStr, cx, cy + 83);
+
+                // Aiguille des heures (noire mate avec ombre légère)
+                const hourAngle = (((hh % 12) + mm / 60) / 12) * Math.PI * 2 - Math.PI / 2;
+                clockCtx.save();
+                clockCtx.shadowColor = 'rgba(0,0,0,0.22)'; clockCtx.shadowBlur = 6; clockCtx.shadowOffsetY = 3;
+                clockCtx.strokeStyle = '#14161c'; clockCtx.lineWidth = 12; clockCtx.lineCap = 'round';
+                clockCtx.beginPath();
+                clockCtx.moveTo(cx - Math.cos(hourAngle) * 26, cy - Math.sin(hourAngle) * 26);
+                clockCtx.lineTo(cx + Math.cos(hourAngle) * 124, cy + Math.sin(hourAngle) * 124);
+                clockCtx.stroke();
+
+                // Aiguille des minutes
+                const minAngle = (mm / 60) * Math.PI * 2 - Math.PI / 2;
+                clockCtx.lineWidth = 8;
+                clockCtx.beginPath();
+                clockCtx.moveTo(cx - Math.cos(minAngle) * 32, cy - Math.sin(minAngle) * 32);
+                clockCtx.lineTo(cx + Math.cos(minAngle) * 176, cy + Math.sin(minAngle) * 176);
+                clockCtx.stroke();
+
+                // Trotteuse fine ambrée/orange Dieter Rams
+                const secAngle = (((mm * 7 + hh * 13) % 60) / 60) * Math.PI * 2 - Math.PI / 2;
+                clockCtx.strokeStyle = '#d97706'; clockCtx.lineWidth = 3.5;
+                clockCtx.beginPath();
+                clockCtx.moveTo(cx - Math.cos(secAngle) * 38, cy - Math.sin(secAngle) * 38);
+                clockCtx.lineTo(cx + Math.cos(secAngle) * 184, cy + Math.sin(secAngle) * 184);
+                clockCtx.stroke();
+                clockCtx.restore();
+
+                // Capuchon central métallique
+                clockCtx.fillStyle = '#14161c';
+                clockCtx.beginPath(); clockCtx.arc(cx, cy, 12, 0, Math.PI * 2); clockCtx.fill();
+                clockCtx.fillStyle = '#d97706';
+                clockCtx.beginPath(); clockCtx.arc(cx, cy, 5, 0, Math.PI * 2); clockCtx.fill();
+
                 clockTex.needsUpdate = true;
             };
             window.updateWallClock3D();
@@ -9934,6 +10427,7 @@ const DEFAULT_STATE = {
                                 child.userData.originalReceiveShadow = child.receiveShadow;
                             }
                             if (isOwned) {
+                                if (child.userData.hideWhenUnowned) child.visible = true;
                                 child.material = child.userData.originalMaterial;
                                 child.castShadow = child.userData.originalCastShadow;
                                 child.receiveShadow = child.userData.originalReceiveShadow;
@@ -9948,10 +10442,21 @@ const DEFAULT_STATE = {
                                     child.material.needsUpdate = true;
                                 }
                             } else {
+                                if (child.userData.hideWhenUnowned) {
+                                    child.visible = false;
+                                    return;
+                                }
                                 // Projection Hologramme Néon + Contours Filaires Lumineux (0 ombre noire!)
                                 if (!child.userData.mysticMaterial) {
                                     child.userData.mysticMaterial = baseMysticMaterial.clone();
-                                    child.userData.mysticMaterial.userData = { targetOpacity: 0.095 };
+                                    child.userData.mysticMaterial.userData = { targetOpacity: item.sceneObject === 'rugGroup' ? 0.065 : 0.095 };
+                                    if (item.sceneObject === 'rugGroup') {
+                                        // Évite tout Z-fighting avec le parquet sur le tapis plat non acheté
+                                        child.userData.mysticMaterial.side = THREE.FrontSide;
+                                        child.userData.mysticMaterial.polygonOffset = true;
+                                        child.userData.mysticMaterial.polygonOffsetFactor = -4;
+                                        child.userData.mysticMaterial.polygonOffsetUnits = -4;
+                                    }
                                 }
                                 child.material = child.userData.mysticMaterial;
                                 child.castShadow = false;
@@ -10011,21 +10516,140 @@ const DEFAULT_STATE = {
         function animate3D() {
         requestAnimationFrame(animate3D);
 
-        // Correctif 2 : On ne rend rien tant que les shaders ne sont pas compilés
-        if (!isSceneReady) return;
-
-        // SMART RENDERING : Pause 3D si une interface fullscreen est active
+        // SMART RENDERING : Pause 3D si une interface fullscreen (PC / Piano Roll) est active
         const loginLayer = document.getElementById('login-screen');
         const pcLayer = document.getElementById('pc-ui-layer');
         const prLayer = document.getElementById('standalone-pianoroll');
         
-        const isLoginActive = loginLayer && loginLayer.style.display !== 'none';
+        const isLoginActive = loginLayer && loginLayer.style.display !== 'none' && !loginLayer.classList.contains('cinema-entering');
         const isPcActive = pcLayer && pcLayer.style.display === 'flex';
         const isPrActive = prLayer && !prLayer.classList.contains('hidden');
 
-        if (isLoginActive || isPcActive || isPrActive) {
+        if (isPcActive || isPrActive) {
             return;
         }
+
+        // === OPTION 3 : STUDIO 3D LIVE DERRIÈRE L'ÉCRAN DE LOGIN CINÉMASCOPE ===
+        if (isLoginActive) {
+            if (!window._loginScenePrepped) {
+                window._loginScenePrepped = true;
+                try { if (typeof syncFurniture3DVisibility === 'function') syncFurniture3DVisibility(); } catch(e) {}
+            }
+            time += 0.014;
+            try {
+                const pHour = (typeof window._loginPreviewHour === 'number') ? window._loginPreviewHour : 9.2;
+                const pRain = (typeof window._loginPreviewRain === 'number') ? window._loginPreviewRain : 0.0;
+                const isNight = (pHour >= 21 || pHour < 6);
+                const isGolden = (pHour >= 17 && pHour < 21);
+
+                // Lumière & ciel synchronisés avec la sauvegarde ou le bouton Ambiance
+                let zenHex = '#2e63a8', horHex = '#c4dff5', sunColHex = '#fff8e6', farHex = '#8ea9c7', sunHex = '#fff5e4';
+                let sunInt = 2.15, bounceInt = 5.6, hemiInt = 1.04, nightF = 0.0, cityGlow = 0.12, sunY = 0.68;
+                if (isNight) {
+                    zenHex = '#091124'; horHex = '#1c2842'; sunColHex = '#c8dcff'; farHex = '#19243b'; sunHex = '#8fb0f5';
+                    sunInt = 0.60; bounceInt = 2.1; hemiInt = 0.54; nightF = 1.0; cityGlow = 1.15; sunY = 0.72;
+                } else if (isGolden) {
+                    zenHex = '#2c3563'; horHex = '#eb956a'; sunColHex = '#ffc48a'; farHex = '#75667a'; sunHex = '#ffae73';
+                    sunInt = 1.75; bounceInt = 4.4; hemiInt = 0.86; nightF = 0.35; cityGlow = 0.68; sunY = 0.38;
+                }
+                if (pRain > 0.3) {
+                    zenHex = isNight ? '#0a0f1c' : '#3a4659';
+                    horHex = isNight ? '#1b2232' : '#7b8799';
+                    sunInt *= 0.48; bounceInt *= 0.68;
+                }
+
+                if (window.exteriorSkyUniforms) {
+                    const u = window.exteriorSkyUniforms;
+                    u.uTime.value = time;
+                    u.uZenithColor.value.lerp(window._cZen ? window._cZen.set(zenHex) : (window._cZen = new THREE.Color(zenHex)), 0.08);
+                    u.uHorizonColor.value.lerp(window._cHor ? window._cHor.set(horHex) : (window._cHor = new THREE.Color(horHex)), 0.08);
+                    u.uSunColor.value.lerp(window._cSun ? window._cSun.set(sunColHex) : (window._cSun = new THREE.Color(sunColHex)), 0.08);
+                    u.uNight.value += (nightF - u.uNight.value) * 0.08;
+                    u.uSunPos.value.y += (sunY - u.uSunPos.value.y) * 0.08;
+                    u.uStorm.value += (pRain - u.uStorm.value) * 0.06;
+                }
+                if (window.farCitySilhouetteMat) {
+                    window.farCitySilhouetteMat.color.lerp(window._cFar ? window._cFar.set(farHex) : (window._cFar = new THREE.Color(farHex)), 0.08);
+                }
+                if (window.cityBuildingMats) {
+                    for (let i = 0; i < window.cityBuildingMats.length; i++) {
+                        window.cityBuildingMats[i].emissiveIntensity += (cityGlow - window.cityBuildingMats[i].emissiveIntensity) * 0.08;
+                    }
+                }
+                if (typeof dirLight !== 'undefined') {
+                    dirLight.color.set(sunHex);
+                    dirLight.intensity += (sunInt - dirLight.intensity) * 0.08;
+                    if (pHour >= 6 && pHour <= 20) {
+                        const df = (pHour - 6) / 14;
+                        dirLight.position.set(13.5, 3.2 + Math.sin(df * Math.PI) * 7.2, 5.4 - df * 10.6);
+                    } else {
+                        dirLight.position.set(13.0, 8.2, 1.8);
+                    }
+                }
+                if (window.windowBounceLight) window.windowBounceLight.intensity += (bounceInt - window.windowBounceLight.intensity) * 0.08;
+                if (typeof hemiLight !== 'undefined') hemiLight.intensity += (hemiInt - hemiLight.intensity) * 0.08;
+                if (window.bedsideLight) window.bedsideLight.intensity += ((isNight ? 3.2 : 0.45) - window.bedsideLight.intensity) * 0.08;
+                if (window.deskHaloLight) window.deskHaloLight.intensity += ((isNight ? 2.4 : 0.7) - window.deskHaloLight.intensity) * 0.08;
+                if (window.windowRainUniforms) {
+                    window.windowRainUniforms.uTime.value = time * 1.1;
+                    window.windowRainUniforms.uRainIntensity.value += (pRain - window.windowRainUniforms.uRainIntensity.value) * 0.06;
+                }
+                if (window.sunbeamMat) window.sunbeamMat.opacity = (isNight || pRain > 0.3) ? 0.015 : 0.085;
+                if (typeof window.update3DPCScreen === 'function') window.update3DPCScreen(time);
+                if (typeof window.updateWallClock3D === 'function') window.updateWallClock3D(window._loginPreviewClockStr);
+                if (window.coffeeSteamPuffs) {
+                    window.coffeeSteamPuffs.forEach(sp => {
+                        sp.userData.phase = (sp.userData.phase + 0.0045) % 1.0;
+                        const p = sp.userData.phase;
+                        sp.position.set(-1.55 + Math.sin(time * 1.2 + p * 6.28) * 0.022 * p, 0.90 + p * 0.32, 0.48 + Math.cos(time * 1.0 + p * 4.0) * 0.016 * p);
+                        const sc = 0.07 + p * 0.14;
+                        sp.scale.set(sc, sc, 1);
+                        sp.material.opacity = Math.sin(p * Math.PI) * 0.24;
+                    });
+                }
+                if (window.curtainFolds) {
+                    for (let i = 0; i < window.curtainFolds.length; i++) {
+                        const cf = window.curtainFolds[i];
+                        if (cf && cf.userData) cf.position.x = cf.userData.baseX + Math.sin(time * 0.7 + cf.userData.phase) * 0.008;
+                    }
+                }
+                if (window.plantLeaves) {
+                    for (let i = 0; i < window.plantLeaves.length; i++) {
+                        const lf = window.plantLeaves[i];
+                        if (lf && lf.userData) lf.rotation.x = lf.userData.baseRx + Math.sin(time * 0.9 + lf.userData.phase) * 0.022;
+                    }
+                }
+                // Porte du studio légèrement entrouverte (invitation à entrer)
+                if (window.doorPivot) {
+                    window.doorPivot.rotation.y += (0.20 - window.doorPivot.rotation.y) * 0.06;
+                    if (window.doorLightRayMat) window.doorLightRayMat.opacity = 0.34;
+                }
+
+                // Caméra cinématique lente + micro-parallaxe souris cadrant le studio (bureau + lit + baie vitrée à droite du panneau)
+                window._loginMouseSmoothX = (window._loginMouseSmoothX || 0) + ((window._loginMouseX || 0) - (window._loginMouseSmoothX || 0)) * 0.04;
+                window._loginMouseSmoothY = (window._loginMouseSmoothY || 0) + ((window._loginMouseY || 0) - (window._loginMouseSmoothY || 0)) * 0.04;
+
+                const camX = 1.65 + Math.sin(time * 0.12) * 0.40 + window._loginMouseSmoothX * 0.20;
+                const camY = 1.48 + Math.cos(time * 0.09) * 0.04 - window._loginMouseSmoothY * 0.08;
+                const camZ = 2.65 + Math.cos(time * 0.11) * 0.18;
+                camera.position.set(camX, camY, camZ);
+                camera.fov = 60;
+                camera.updateProjectionMatrix();
+                // Cadre équilibré : le bureau, l'horloge Nixie, le lit et la baie vitrée s'ouvrent magistralement à droite du panneau UI
+                camera.lookAt(-0.95 + window._loginMouseSmoothX * 0.22, 0.78 - window._loginMouseSmoothY * 0.10, -2.85);
+                camera.rotation.order = 'YXZ';
+                window._loginCamPos = camera.position.clone();
+                window._loginCamYaw = camera.rotation.y;
+                window._loginCamPitch = camera.rotation.x;
+
+                renderer.toneMappingExposure += ((isNight ? 1.18 : 1.10) - renderer.toneMappingExposure) * 0.05;
+            } catch(e) { console.warn('Login preview tick:', e); }
+            renderer.render(scene, camera);
+            return;
+        }
+
+        // Correctif 2 : On ne rend rien tant que les shaders ne sont pas compilés
+        if (!isSceneReady) return;
 
         // Optimisé : maintien des 60 FPS fluides sans saut artificiel de frame
 
@@ -10804,9 +11428,9 @@ const DEFAULT_STATE = {
                         if (typeof doneCb === 'function') doneCb();
                     }
                 } else if (window.isIntroAnimating) {
-                    // Intro POV : Ouverture des yeux au centre du studio face au bureau
+                    // Intro POV Cinéma : Glissement fluide depuis la caméra de l'écran titre jusqu'aux yeux FPS!
                     if (typeof window.introProgress === 'undefined') window.introProgress = 0;
-                    window.introProgress += 0.018;
+                    window.introProgress += 0.015;
                     if (window.introProgress >= 1) {
                         window.introProgress = 1;
                         window.isIntroAnimating = false;
@@ -10814,14 +11438,25 @@ const DEFAULT_STATE = {
                         if (lids) lids.classList.remove('closed');
                     }
                     const t = window.introProgress;
-                    const ease = 1 - Math.pow(1 - t, 3);
+                    // Courbe cinématique ease-in-out cubique
+                    const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
                     const standY = currentRoomAvatar.position.y + 2.45;
+                    const startPos = window._introFromPos || window._v3startPos.set(currentRoomAvatar.position.x, standY - 0.35, currentRoomAvatar.position.z);
+                    const startYaw = (typeof window._introFromYaw === 'number') ? window._introFromYaw : fps.yaw;
+                    const startPitch = (typeof window._introFromPitch === 'number') ? window._introFromPitch : -0.18;
+                    const startFov = (typeof window._introFromFov === 'number') ? window._introFromFov : 60;
+                    const targetFov = isMobile ? 74 : 68;
+
                     camera.position.set(
-                        currentRoomAvatar.position.x,
-                        (standY - 0.35) + 0.35 * ease,
-                        currentRoomAvatar.position.z
+                        startPos.x + (currentRoomAvatar.position.x - startPos.x) * ease,
+                        startPos.y + (standY - startPos.y) * ease,
+                        startPos.z + (currentRoomAvatar.position.z - startPos.z) * ease
                     );
-                    camera.rotation.set(-0.28 + (fps.pitch + 0.28) * ease, fps.yaw, 0, 'YXZ');
+                    const curYaw = startYaw + normalizeAngle(fps.yaw - startYaw) * ease;
+                    const curPitch = startPitch + (fps.pitch - startPitch) * ease;
+                    camera.rotation.set(curPitch, curYaw, 0, 'YXZ');
+                    camera.fov = startFov + (targetFov - startFov) * ease;
+                    camera.updateProjectionMatrix();
                 } else if (currentState.isSleeping) {
                     // POV Allongé sur le lit regardant le plafond / baie vitrée
                     const bedTarget = window._v3finalCam.set(3.8, 0.24, -4.05);
@@ -16525,22 +17160,195 @@ document.addEventListener('mouseover', (e) => {
             initPianoRollEvents();
             initInteractiveStudio();
             const startAudioAndLogin = async () => {
-            const btn = document.getElementById('btn-login');
-            const originalText = btn.innerText;
-                btn.innerText = "Compiling Sounds..."; 
+                const btn = document.getElementById('btn-login');
+                const lbl = document.getElementById('btn-login-label');
+                const originalText = lbl ? lbl.innerText : btn.innerText;
+                if (lbl) lbl.innerText = "OUVERTURE DU STUDIO…";
+                else btn.innerText = "OUVERTURE DU STUDIO…";
                 btn.disabled = true;
-                
+
                 await MusicSystem.init();
                 MusicSystem.startAllTracks();
                 MusicSystem.crossfadeTo('room', 3.0); // Déclenche la musique de la room
-                
+
                 await attemptLogin(); // Lance ton jeu
-                btn.innerText = originalText;
+                if (lbl) lbl.innerText = originalText;
+                else btn.innerText = originalText;
                 btn.disabled = false;
             };
 
             document.getElementById('btn-login').addEventListener('click', startAudioAndLogin);
             document.getElementById('login-username').addEventListener('keypress', (e) => { if (e.key === 'Enter') startAudioAndLogin(); });
+
+            // === OPTION 3 : DÉTECTION SAUVEGARDE LIVE, PROFILS RÉCENTS, AMBIANCE 3D & PARALLAXE ===
+            const loginAmbienceModes = [
+                { key: 'auto', label: 'AMBIANCE : AUTO', dot: '#f59e0b' },
+                { key: 'morning', label: 'AMBIANCE : MATIN', dot: '#fbbf24', hour: 9.2, rain: 0.0, clock: '09:12', weather: 'MATIN DORÉ' },
+                { key: 'sunset', label: 'AMBIANCE : SOIR', dot: '#fb923c', hour: 18.4, rain: 0.0, clock: '18:24', weather: 'GOLDEN HOUR' },
+                { key: 'night', label: 'AMBIANCE : NUIT', dot: '#818cf8', hour: 22.5, rain: 0.0, clock: '22:30', weather: 'SESSION NUIT' },
+                { key: 'rain', label: 'AMBIANCE : PLUIE', dot: '#38bdf8', hour: 23.2, rain: 0.92, clock: '23:12', weather: 'PLUIE SUR PARIS' }
+            ];
+            let loginAmbIdx = 0;
+
+            function formatClockFromMins(mins) {
+                const m = ((Math.floor(Number(mins) || 480) % 1440) + 1440) % 1440;
+                const hh = Math.floor(m / 60);
+                const mm = m % 60;
+                return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+            }
+
+            function findSavedProfilesList() {
+                const found = [];
+                try {
+                    const seen = new Set();
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const k = localStorage.key(i);
+                        if (!k) continue;
+                        let name = null;
+                        if (k.startsWith('bounce_it_save_')) name = k.slice('bounce_it_save_'.length);
+                        else if (k.startsWith('smt_save_')) name = k.slice('smt_save_'.length);
+                        if (name && !seen.has(name.toLowerCase())) {
+                            seen.add(name.toLowerCase());
+                            try {
+                                const raw = localStorage.getItem(k);
+                                const parsed = JSON.parse(raw);
+                                if (parsed && typeof parsed === 'object') {
+                                    found.push({ name: parsed.username || name, day: parsed.day || 1, money: parsed.money || 0 });
+                                }
+                            } catch(e) {}
+                        }
+                    }
+                } catch(e) {}
+                return found.slice(0, 3);
+            }
+
+            window.refreshLoginSessionPreview = function(autoFillLast = false) {
+                const input = document.getElementById('login-username');
+                const errEl = document.getElementById('login-error');
+                if (errEl) errEl.classList.add('hidden');
+
+                // Remplissage discret du dernier alias utilisé + puces de profils récents
+                const profiles = findSavedProfilesList();
+                const recentWrap = document.getElementById('login-recent-profiles');
+                if (recentWrap) {
+                    if (profiles.length > 0) {
+                        recentWrap.innerHTML = '';
+                        profiles.forEach(p => {
+                            const chip = document.createElement('button');
+                            chip.type = 'button';
+                            chip.className = 'cinema-profile-chip';
+                            chip.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span><span>${p.name}</span><span class="text-[9px] text-slate-400 font-mono">J${p.day}</span>`;
+                            chip.onclick = () => {
+                                if (input) { input.value = p.name; window.refreshLoginSessionPreview(false); }
+                            };
+                            recentWrap.appendChild(chip);
+                        });
+                        recentWrap.classList.remove('hidden');
+                    } else {
+                        recentWrap.classList.add('hidden');
+                    }
+                }
+                if (autoFillLast && input && !input.value.trim()) {
+                    const lastAlias = SafeStorage.get('bounce_it_last_alias') || (profiles[0] ? profiles[0].name : '');
+                    if (lastAlias) input.value = lastAlias;
+                }
+
+                const alias = input ? input.value.trim() : '';
+                let parsedSave = null;
+                if (alias) {
+                    try {
+                        const raw = SafeStorage.get(getSaveKey(alias)) || SafeStorage.get('smt_save_' + alias);
+                        if (raw && raw !== 'undefined' && raw !== 'null') parsedSave = JSON.parse(raw);
+                    } catch(e) {}
+                }
+
+                const sDot = document.getElementById('login-session-dot');
+                const sTitle = document.getElementById('login-session-title');
+                const sSub = document.getElementById('login-session-sub');
+                const sBadge = document.getElementById('login-session-badge');
+                const btnLbl = document.getElementById('btn-login-label');
+                const topMeta = document.getElementById('login-topbar-meta');
+
+                let autoHour = 9.2, autoRain = 0.0, autoClock = '08:00', autoWeather = 'MATIN CLAIR', autoDay = 1;
+
+                if (parsedSave) {
+                    const day = parsedSave.day || 1;
+                    const tMins = typeof parsedSave.timeMins === 'number' ? parsedSave.timeMins : 480;
+                    const clk = formatClockFromMins(tMins);
+                    const hr = ((tMins % 1440) + 1440) % 1440 / 60;
+                    const inspi = typeof parsedSave.inspi === 'number' ? parsedSave.inspi : 80;
+                    const isRainySave = (inspi < 35) || (day % 3 === 0 && (hr >= 20 || hr < 6));
+                    const moneyStr = typeof formatNum === 'function' ? '$' + formatNum(parsedSave.money || 0) : '$' + (parsedSave.money || 0);
+                    const foll = parsedSave.followers || 0;
+                    const tracks = parsedSave.stats ? (parsedSave.stats.tracks || 0) : 0;
+
+                    autoHour = hr;
+                    autoRain = isRainySave ? 0.85 : 0.0;
+                    autoClock = clk;
+                    autoDay = day;
+                    autoWeather = isRainySave ? 'PLUIE SUR PARIS' : (hr >= 21 || hr < 6 ? 'SESSION NUIT' : (hr >= 17 ? 'GOLDEN HOUR' : 'CIEL CLAIR'));
+
+                    if (sDot) { sDot.className = 'w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.8)]'; }
+                    if (sTitle) { sTitle.textContent = 'SESSION TROUVÉE'; sTitle.className = 'text-[10px] font-mono uppercase tracking-[0.2em] text-emerald-300 truncate'; }
+                    if (sSub) sSub.textContent = `Jour ${day} · ${clk} · ${moneyStr} · ${foll} Fans · ${tracks} Titre${tracks > 1 ? 's' : ''}`;
+                    if (sBadge) { sBadge.textContent = 'RESUME'; sBadge.className = 'text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 shrink-0'; }
+                    if (btnLbl) btnLbl.textContent = 'REPRENDRE LA SESSION';
+
+                    // Synchronise visuellement l'avatar enregistré si l'utilisateur n'a pas encore changé
+                    const savedAv = parseInt(parsedSave.activeCharacter ?? parsedSave.avatar, 10);
+                    if (!avatarChanged && !isNaN(savedAv) && savedAv >= 0 && savedAv < avatars.length) {
+                        selectedAvatarIndex = savedAv;
+                        document.querySelectorAll('.avatar-sel').forEach(el => el.classList.remove('selected'));
+                        const avEl = document.querySelector(`.avatar-sel[data-idx="${savedAv}"]`);
+                        if (avEl) avEl.classList.add('selected');
+                    }
+                } else {
+                    if (sDot) { sDot.className = 'w-2 h-2 rounded-full bg-amber-400 shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.75)]'; }
+                    if (sTitle) { sTitle.textContent = 'NOUVELLE CARRIÈRE'; sTitle.className = 'text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 truncate'; }
+                    if (sSub) sSub.textContent = 'Jour 1 · 08:00 · Studio de départ';
+                    if (sBadge) { sBadge.textContent = 'NEW'; sBadge.className = 'text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300 shrink-0'; }
+                    if (btnLbl) btnLbl.textContent = 'OUVRIR LA SESSION';
+                }
+
+                // Applique l'ambiance 3D live (soit Auto=sauvegarde, soit choix manuel du joueur)
+                const mode = loginAmbienceModes[loginAmbIdx];
+                if (mode.key === 'auto') {
+                    window._loginPreviewHour = autoHour;
+                    window._loginPreviewRain = autoRain;
+                    window._loginPreviewClockStr = autoClock;
+                    if (topMeta) topMeta.textContent = `JOUR ${autoDay} · ${autoClock} · ${autoWeather}`;
+                } else {
+                    window._loginPreviewHour = mode.hour;
+                    window._loginPreviewRain = mode.rain;
+                    window._loginPreviewClockStr = mode.clock;
+                    if (topMeta) topMeta.textContent = `APERÇU · ${mode.clock} · ${mode.weather}`;
+                }
+            };
+
+            const loginInputEl = document.getElementById('login-username');
+            if (loginInputEl) {
+                loginInputEl.addEventListener('input', () => window.refreshLoginSessionPreview(false));
+            }
+            const ambBtn = document.getElementById('login-ambience-btn');
+            if (ambBtn) {
+                ambBtn.addEventListener('click', () => {
+                    loginAmbIdx = (loginAmbIdx + 1) % loginAmbienceModes.length;
+                    const mode = loginAmbienceModes[loginAmbIdx];
+                    const lbl = document.getElementById('login-ambience-label');
+                    const dot = document.getElementById('login-ambience-dot');
+                    if (lbl) lbl.textContent = mode.label;
+                    if (dot) dot.style.background = mode.dot;
+                    window.refreshLoginSessionPreview(false);
+                });
+            }
+            window.addEventListener('mousemove', (ev) => {
+                const ls = document.getElementById('login-screen');
+                if (!ls || ls.style.display === 'none') return;
+                window._loginMouseX = ((ev.clientX / Math.max(1, window.innerWidth)) - 0.5) * 2;
+                window._loginMouseY = ((ev.clientY / Math.max(1, window.innerHeight)) - 0.5) * 2;
+            }, { passive: true });
+            window.refreshLoginSessionPreview(true);
+
             switchBrowserTab('crackz');
             updateTaskbar();
         }
@@ -18064,35 +18872,48 @@ document.addEventListener('mouseover', (e) => {
             state.echoTrust = state.echoTrust !== undefined ? state.echoTrust : 50;
             state.echoStance = state.echoStance || 'neutral';
 
+            // Mémorise le dernier alias pour l'écran titre cinéma
+            try { SafeStorage.set('bounce_it_last_alias', username); } catch(e) {}
+
             // Mise à jour de l'indicateur avant le blocage GPU
+            const loginBtnLbl = document.getElementById('btn-login-label');
             const loginBtn = document.getElementById('btn-login');
-            if (loginBtn) loginBtn.innerText = "Compiling Sounds and Shaders...";
+            if (loginBtnLbl) loginBtnLbl.innerText = "ENTRÉE DANS LE STUDIO…";
+            else if (loginBtn) loginBtn.innerText = "ENTRÉE DANS LE STUDIO…";
             // On force une pause pour laisser le temps au navigateur de peindre le changement de texte
             await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
 
             // Correctif 1 : Pré-compilation des shaders pour éviter le freeze au lancement
-            // On compile la scène avec tous les objets (y compris l'avatar fraîchement spawn)
             renderer.compile(scene, camera);
-             // Correctif 2 : Warmup des fonctions de mouvement pour éviter le lag au premier input
+            // Correctif 2 : Warmup des fonctions de mouvement pour éviter le lag au premier input
             warmupMovement();
             isSceneReady = true; // Débloque la boucle animate3D
 
-            // --- DÉCLENCHEMENT DE LA CINÉMATIQUE D'INTRO POV ---
+            // --- DÉCLENCHEMENT DE LA TRANSITION CINÉMASCOPE CONTINUE VERS FPS ---
+            window._introFromPos = window._loginCamPos ? window._loginCamPos.clone() : camera.position.clone();
+            window._introFromYaw = (typeof window._loginCamYaw === 'number') ? window._loginCamYaw : 0.42;
+            window._introFromPitch = (typeof window._loginCamPitch === 'number') ? window._loginCamPitch : -0.05;
+            window._introFromFov = camera.fov || 60;
+            window._loginPreviewClockStr = null; // Rend la main à l'horloge in-game réelle
+            window.doorTargetAngle = 0; // Referme doucement la porte du studio derrière toi
+
             window.isIntroAnimating = true;
             window.introProgress = 0;
             if (window.fps) { window.fps.yaw = 0.42; window.fps.pitch = -0.05; window.fps.fovZoomOffset = 0; }
-            const introLids = document.getElementById('fps-eyelids');
-            if (introLids) {
-                introLids.classList.add('closed');
-                setTimeout(() => introLids.classList.remove('closed'), 120);
-            }
 
             if (window.gameInterval) { clearInterval(window.gameInterval); window.gameInterval = null; }
             window.gameInterval = setInterval(gameTick, 1000);
 
             try {
 
-            document.getElementById('login-screen').style.display = 'none';
+            const loginScreenEl = document.getElementById('login-screen');
+            if (loginScreenEl) {
+                loginScreenEl.classList.add('cinema-entering');
+                setTimeout(() => {
+                    loginScreenEl.style.display = 'none';
+                    loginScreenEl.classList.remove('cinema-entering');
+                }, 780);
+            }
             document.getElementById('room-ui').style.display = 'flex';
             document.getElementById('audio-settings-gear').style.display = 'flex'; // Fait apparaître les paramètres
             document.getElementById('hud-avatar').innerHTML = `<img src="${avatars[state.activeCharacter].img}" class="pixelated w-full h-full object-cover object-center scale-[1.6] origin-center" />`;
