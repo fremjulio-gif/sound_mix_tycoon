@@ -438,46 +438,52 @@
                 gap: 10px;
                 padding: 8px 16px;
                 border-radius: 14px;
-                background: rgba(7, 9, 16, 0.82);
+                background: rgba(7, 9, 16, 0.84);
                 backdrop-filter: blur(16px);
                 -webkit-backdrop-filter: blur(16px);
-                border: 1px solid rgba(255, 255, 255, 0.16);
+                border: 1px solid rgba(255, 255, 255, 0.18);
                 box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
-                white-space: nowrap;
+                max-width: min(92vw, 440px);
+                touch-action: manipulation;
             }
             #fps-interact-prompt.visible {
                 opacity: 1;
                 transform: translateX(-50%) translateY(0);
+                pointer-events: auto;
+                cursor: pointer;
             }
             #fps-interact-key {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                min-width: 24px;
-                height: 24px;
-                padding: 0 6px;
-                border-radius: 6px;
-                background: rgba(255, 255, 255, 0.14);
-                border: 1px solid rgba(255, 255, 255, 0.35);
+                min-width: 26px;
+                height: 26px;
+                padding: 0 7px;
+                border-radius: 7px;
+                background: rgba(129, 140, 248, 0.22);
+                border: 1px solid rgba(129, 140, 248, 0.55);
                 color: #ffffff;
                 font-family: 'Share Tech Mono', monospace;
                 font-size: 11px;
                 font-weight: 700;
                 letter-spacing: 0.06em;
+                flex-shrink: 0;
             }
             #fps-interact-title {
                 color: #ffffff;
                 font-family: 'Share Tech Mono', monospace;
                 font-size: 12px;
                 font-weight: 700;
-                letter-spacing: 0.08em;
+                letter-spacing: 0.06em;
                 text-transform: uppercase;
+                line-height: 1.25;
             }
             #fps-interact-sub {
                 color: #94a3b8;
                 font-size: 10px;
                 font-family: system-ui, -apple-system, sans-serif;
                 margin-top: 1px;
+                line-height: 1.25;
             }
 
             /* Bottom-Left Studio Vitals Telemetry */
@@ -549,35 +555,105 @@
                 pointer-events: none;
             }
 
+            /* Subtle Dual-Zone Mobile / Touch Resting Guides */
+            #mobile-touch-hud {
+                display: none;
+                pointer-events: none;
+                position: fixed;
+                inset: 0;
+                z-index: 42;
+            }
+            #mobile-joy-rest {
+                position: fixed;
+                bottom: max(22px, env(safe-area-inset-bottom));
+                left: max(20px, env(safe-area-inset-left));
+                width: 78px;
+                height: 78px;
+                border-radius: 50%;
+                background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(7,9,16,0.38) 100%);
+                border: 1px solid rgba(255, 255, 255, 0.16);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), inset 0 0 12px rgba(255, 255, 255, 0.04);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                transition: opacity 0.2s ease, transform 0.2s ease;
+                opacity: 0.58;
+            }
+            #mobile-joy-rest-dot {
+                width: 26px;
+                height: 26px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.18);
+                border: 1px solid rgba(255, 255, 255, 0.34);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+            }
+            #mobile-joy-rest-lbl {
+                position: absolute;
+                bottom: -17px;
+                font-family: 'Share Tech Mono', monospace;
+                font-size: 8px;
+                letter-spacing: 0.16em;
+                color: rgba(226, 232, 240, 0.65);
+                text-transform: uppercase;
+                white-space: nowrap;
+            }
+            #mobile-look-rest {
+                position: fixed;
+                bottom: max(28px, env(safe-area-inset-bottom));
+                right: max(18px, env(safe-area-inset-right));
+                padding: 8px 13px;
+                border-radius: 9999px;
+                background: rgba(7, 9, 16, 0.46);
+                border: 1px solid rgba(255, 255, 255, 0.13);
+                font-family: 'Share Tech Mono', monospace;
+                font-size: 9px;
+                letter-spacing: 0.12em;
+                color: rgba(226, 232, 240, 0.72);
+                text-transform: uppercase;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                transition: opacity 0.2s ease;
+                opacity: 0.68;
+            }
+
             /* Mobile Contextual Interact Button */
             #fps-mobile-interact-btn {
                 position: fixed;
-                bottom: max(26px, env(safe-area-inset-bottom));
-                right: 18px;
+                bottom: max(24px, env(safe-area-inset-bottom));
+                right: max(18px, env(safe-area-inset-right));
                 z-index: 65;
                 display: none;
                 align-items: center;
-                gap: 8px;
-                padding: 12px 18px;
+                gap: 9px;
+                min-height: 48px;
+                padding: 10px 18px;
                 border-radius: 9999px;
-                background: rgba(129, 140, 248, 0.92);
+                background: linear-gradient(135deg, rgba(99, 102, 241, 0.94), rgba(168, 85, 247, 0.94));
                 color: #ffffff;
                 font-family: 'Share Tech Mono', monospace;
                 font-size: 11px;
                 font-weight: 700;
-                letter-spacing: 0.1em;
+                letter-spacing: 0.08em;
                 text-transform: uppercase;
-                border: 1px solid rgba(255, 255, 255, 0.4);
+                border: 1px solid rgba(255, 255, 255, 0.45);
                 box-shadow: 0 10px 28px rgba(129, 140, 248, 0.55);
                 pointer-events: auto;
+                touch-action: manipulation;
+                max-width: 62vw;
             }
-            @media (max-width: 767px) {
+            #fps-mobile-interact-btn:active {
+                transform: scale(0.95);
+            }
+            @media (max-width: 900px), (hover: none) and (pointer: coarse) {
                 #fps-lock-banner { display: none !important; }
+                #mobile-touch-hud { display: block; }
                 #fps-vitals-hud {
                     bottom: auto;
-                    top: calc(64px + env(safe-area-inset-top, 4px));
-                    left: 10px;
-                    min-width: 136px;
+                    top: calc(66px + env(safe-area-inset-top, 4px));
+                    left: max(10px, env(safe-area-inset-left));
+                    min-width: 142px;
                     padding: 7px 10px;
                     gap: 5px;
                 }
@@ -2337,42 +2413,41 @@
         .level-up-toast h2 { font-weight: 900; text-transform: uppercase; letter-spacing: -1px; }
         .level-up-toast button { box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
 
-        /* --- JOYSTICK VISUAL INDICATOR (LIQUID GLASS) --- */
+        /* --- JOYSTICK VISUAL INDICATOR (SUBTLE OBSIDIAN GLASS) --- */
         #joystick-ui {
             position: fixed;
             pointer-events: none;
             z-index: 5000; 
             display: none;
-            width: 100px;
-            height: 100px;
+            width: 96px;
+            height: 96px;
             transform: translate(-50%, -50%);
             opacity: 0;
-            transition: opacity 0.2s ease;
+            transition: opacity 0.16s ease;
         }
         .joystick-base {
             position: absolute;
             inset: 0;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, rgba(10, 12, 20, 0.42) 100%);
+            border: 1.5px solid rgba(255, 255, 255, 0.22);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 0 12px rgba(129, 140, 248, 0.12);
         }
         .joystick-knob {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 40px;
-            height: 40px;
-            margin: -20px 0 0 -20px;
+            width: 38px;
+            height: 38px;
+            margin: -19px 0 0 -19px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.2);
+            background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.42), rgba(129, 140, 248, 0.35));
+            border: 1.5px solid rgba(255, 255, 255, 0.55);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35), 0 0 12px rgba(129, 140, 248, 0.35);
         }
 
-        /* Media query to ensure joystick is hidden on desktop */
-        @media (min-width: 768px) {
+        /* Media query to ensure joystick is hidden only on non-touch desktop */
+        @media (hover: hover) and (pointer: fine) and (min-width: 1025px) {
             #joystick-ui {
                 display: none !important;
             }
@@ -3125,16 +3200,28 @@
         }
 
 
-             /* --- EXTREME MOBILE OPTIMIZATIONS --- */
+             /* --- EXTREME MOBILE OPTIMIZATIONS & TOUCH ERGONOMICS --- */
             @media (max-width: 767px) {
                 .liquid-glass, .liquid-glass-heavy, .glass-panel, .os-window, #pc-ui-layer {
                     backdrop-filter: none !important;
                     -webkit-backdrop-filter: none !important;
-                    background: rgba(10, 10, 15, 0.95) !important;
+                    background: rgba(10, 10, 15, 0.96) !important;
                     box-shadow: none !important;
                 }
-                .joystick-container, #joystick-ui, .joystick-base, .joystick-knob, .btn-daw-pad, .seq-pad, .os-window {
+                #three-canvas-container, .joystick-container, #joystick-ui, .joystick-base, .joystick-knob, .seq-pad {
                     touch-action: none !important;
+                }
+                .os-window, .os-window .window-content, #desktop-content, .widgets-container, .custom-scrollbar {
+                    touch-action: pan-y !important;
+                    -webkit-overflow-scrolling: touch;
+                    overscroll-behavior: contain;
+                }
+                button, .desktop-icon, .taskbar-btn, .btn-daw-pad, .cinema-profile-chip {
+                    touch-action: manipulation;
+                }
+                #daw-mastering-rack {
+                    padding: 8px !important;
+                    margin-top: 6px !important;
                 }
                 /* Mobile Optimizations for ECHO SVG Filter */
                 .echo-talking .echo-entity-svg {
@@ -4121,11 +4208,24 @@
             <div id="fps-crosshair"></div>
 
             <!-- Contextual Interaction Prompt -->
-            <div id="fps-interact-prompt">
+            <div id="fps-interact-prompt" onclick="window.executeFpsTargetInteraction && window.executeFpsTargetInteraction()">
                 <span id="fps-interact-key">E</span>
                 <div class="flex flex-col">
                     <span id="fps-interact-title">INTERAGIR</span>
                     <span id="fps-interact-sub"></span>
+                </div>
+            </div>
+
+            <!-- Subtle Dual-Zone Mobile / Touch Resting Guides -->
+            <div id="mobile-touch-hud">
+                <div id="mobile-joy-rest">
+                    <div id="mobile-joy-rest-dot"></div>
+                    <span id="mobile-joy-rest-lbl">MARCHER</span>
+                </div>
+                <div id="mobile-look-rest">
+                    <span>👁️ GLISSER: VUE</span>
+                    <span class="opacity-40">•</span>
+                    <span>TAP: ACTION</span>
                 </div>
             </div>
 
@@ -4688,6 +4788,10 @@
                 <div class="flex flex-col items-center justify-center cursor-pointer h-full w-full group" onclick="window.openEmpireApp('label')">
                     <svg class="w-5 h-5 text-amber-400 group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                     <span class="text-[8px] mt-1 font-retro text-amber-300">LABEL</span>
+                </div>
+                <div class="flex flex-col items-center justify-center cursor-pointer h-full w-full group border-l border-white/10" onclick="quitPC()">
+                    <svg class="w-5 h-5 text-rose-400 group-active:scale-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <span class="text-[8px] mt-1 font-retro text-rose-300">3D ROOM</span>
                 </div>
             </div>
 
@@ -14283,114 +14387,14 @@ const DEFAULT_STATE = {
         // Chrono pour détecter le double-clic / double-tap
         let lastFloorClickTime = 0; 
 
+        let joystickPointerId = null;
+
         function onPointerDown(event) {
             if (document.getElementById('room-ui').style.display !== 'flex') return;
-            
-            mousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            raycaster.setFromCamera(mousePos, camera);
 
-            const intersects = raycaster.intersectObjects(scene.children, true).filter(hit => {
-                let isVisibleMesh = hit.object.isMesh && hit.object.visible;
-                if (!isVisibleMesh) return false;
-                let curr = hit.object.parent;
-                while (curr) {
-                    if (!curr.visible) return false;
-                    curr = curr.parent;
-                }
-                return true;
-            });
-            
-            // 1. Priorité aux interactions objets (PC, Lit, etc.)
-            const interactableHit = intersects.find(hit => interactableNames.includes(hit.object.name));
-            if (interactableHit) {
-                // If an object is interacted with, the joystick should not activate.
-                stopJoystick(); // Ensure joystick is off and hidden
-
-                // ... (existing interaction logic for interactableHit) ...
-                // The original logic for object interaction is here.
-                // We need to ensure it runs.
-                try {
-                    const objName = interactableHit.object.name;
-                    
-                    // --- CORRECTION DU RAYCASTER (Safe Navigation) ---
-                    if (intersects.length > 0) {
-                        const clickedObj = intersects[0].object;
-                        const objId = clickedObj.parent?.userData?.id || clickedObj.userData?.id;
-                        
-                        if (objId && state && Array.isArray(state.ownedFurniture) && !state.ownedFurniture.includes(objId)) {
-                            if (window.innerWidth <= 768) {
-                                if (window.mobileInteractionToastTimer) clearTimeout(window.mobileInteractionToastTimer);
-                                window.mobileInteractionToastTimer = setTimeout(() => showToast("Tu dois d'abord acheter cet objet dans Studio+ !", "warning"), 350);
-                            } else {
-                                showToast("Tu dois d'abord acheter cet objet dans Studio+ !", "warning");
-                            }
-                            return; // Stoppe l'action si l'objet n'est pas possédé
-                        }
-                    }
-
-                    const worldPos = new THREE.Vector3();
-                    interactableHit.object.getWorldPosition(worldPos);
-                    const dist = Math.hypot(worldPos.x - currentRoomAvatar.position.x, worldPos.z - currentRoomAvatar.position.z);
-                    
-                    let interactDist = INTERACTION_DIST;
-                    if (objName === 'bed_mesh') interactDist = 2.8;
-                    if (objName === 'pc_mesh') interactDist = 2.4;
-                    if (objName === 'door_mesh') interactDist = 3.0;
-                    if (objName === 'achievements_board_mesh') interactDist = 2.5;
-                    if (objName === 'sofa_mesh') interactDist = 3.0;
-
-                    if (dist <= interactDist) {
-                        const isOwned = (id) => state && state.ownedFurniture && state.ownedFurniture.includes(id);
-
-                        if (objName === 'pc_mesh') enterPC();
-                        else if (objName === 'achievements_board_mesh') openAchievementsBoard();
-                        else if (objName === 'door_mesh') {
-                            const doorReady = parseInt(state.cooldowns?.doorTimeReady, 10) || 0;
-                            const canPlayDoor = getTotalMins() >= doorReady;
-                            if (canPlayDoor && !state.isEventActive && !state.isSleeping && !state.isSitting) {
-                                openMiniGameMenu();
-                            } else if (!canPlayDoor) {
-                                showToast("T'es déjà sorti récemment. Va taffer.", "warning");
-                            }
-                        }
-                        else if (objName === 'synth_mesh') {
-                            if (isOwned('synth')) openPianoRoll();
-                            else {
-                                if (window.innerWidth <= 768) {
-                                    if (window.mobileInteractionToastTimer) clearTimeout(window.mobileInteractionToastTimer);
-                                    window.mobileInteractionToastTimer = setTimeout(() => showToast("Tu dois d'abord acheter le Synthétiseur dans Studio+ !", "warning"), 350);
-                                } else showToast("Tu dois d'abord acheter le Synthétiseur dans Studio+ !", "warning");
-                            }
-                        }
-                        else if (objName === 'bed_mesh') { if (state.energy < 50) goSleep(); else showToast("Tu n'es pas assez fatigué (< 50% NRJ).", "info"); }
-                        else if (objName === 'sofa_mesh') {
-                            if (isOwned('sofa')) goSit();
-                            else {
-                                if (window.innerWidth <= 768) {
-                                    if (window.mobileInteractionToastTimer) clearTimeout(window.mobileInteractionToastTimer);
-                                    window.mobileInteractionToastTimer = setTimeout(() => showToast("Tu dois d'abord acheter le Canapé en cuir dans Studio+ !", "warning"), 350);
-                                } else showToast("Tu dois d'abord acheter le Canapé en cuir dans Studio+ !", "warning");
-                            }
-                        }
-                        else if (objName === 'interactiveLamp') {
-                            if (isOwned('rack_lamp')) togglePixarLamp();
-                            else {
-                                if (window.innerWidth <= 768) {
-                                    if (window.mobileInteractionToastTimer) clearTimeout(window.mobileInteractionToastTimer);
-                                    window.mobileInteractionToastTimer = setTimeout(() => showToast("Tu dois d'abord acheter le Rack & Lampe dans Studio+ !", "warning"), 350);
-                                } else showToast("Tu dois d'abord acheter le Rack & Lampe dans Studio+ !", "warning");
-                            }
-                        }
-                        else if (objName === 'speaker_mesh') openAudioSettings();
-                    }
-                } catch (e) { console.error("Error during object interaction:", e); }
-                return; // Stop processing here if an object was interacted with
-            }
-
-            // 2. If no interactable object was hit, proceed with movement logic
-            if (event.pointerType === 'touch') { 
+            if (event.pointerType === 'touch') {
                 isJoystickActive = true;
+                joystickPointerId = event.pointerId;
                 joystickStartX = event.clientX;
                 joystickStartY = event.clientY;
                 joystickAnchorX = event.clientX;
@@ -14403,39 +14407,31 @@ const DEFAULT_STATE = {
                     jUI.style.left = `${joystickStartX}px`;
                     jUI.style.top = `${joystickStartY}px`;
                     jUI.style.display = 'block';
-                    // Forcer un reflow pour déclencher la transition d'opacité
                     void jUI.offsetWidth;
                     jUI.style.opacity = '1';
                 }
-                // Capture le pointeur pour assurer le suivi du mouvement
-                if (event.target.setPointerCapture) event.target.setPointerCapture(event.pointerId);
-            } else if (event.pointerType === 'mouse') { // Desktop mouse click on empty space
-                const groundHit = intersects.find(hit => hit.object.name === 'floor_mesh' || hit.object.parent?.name === 'RoomAvatarRoot');
-                if (groundHit) {
-                    targetPosition = groundHit.point; // Set target for mouse-click movement
-                }
-                // For desktop, isJoystickActive remains false, so keyboard is prioritized.
+                const joyRest = document.getElementById('mobile-joy-rest');
+                if (joyRest) joyRest.style.opacity = '0.12';
+                return;
             }
         }
 
-        // --- ÉCOUTEURS COMPLÉMENTAIRES DU JOYSTICK ---
+        // --- ÉCOUTEURS COMPLÉMENTAIRES DU JOYSTICK (MULTI-TOUCH SAFE) ---
         const canvasCont = document.getElementById('three-canvas-container');
         const joystickUI = document.getElementById('joystick-ui');
         const joystickKnob = document.getElementById('joystick-knob');
 
         canvasCont.addEventListener('pointermove', (e) => {
-            if (isJoystickActive) { // Only process if joystick is active (i.e., a touch is ongoing)
+            if (isJoystickActive && (joystickPointerId === null || e.pointerId === joystickPointerId)) {
                 window.lastPointerX = e.clientX;
                 window.lastPointerY = e.clientY;
-                e.preventDefault(); // Prevent scrolling/native zoom while dragging joystick
+                e.preventDefault();
             }
-            // The existing hover logic should only apply if the joystick is NOT active.
-            // This is already handled by the `if (!isJoystickActive)` check in the IIFE below.
         });
 
-        // NOUVEAU : Blocage natif des scrolls fantômes sur mobile via touchmove
+        // Blocage natif des scrolls fantômes sur mobile via touchmove dans la scène 3D
         canvasCont.addEventListener('touchmove', (e) => {
-            if (typeof isJoystickActive !== 'undefined' && isJoystickActive) {
+            if (window.isFpsRoomActive && window.isFpsRoomActive()) {
                 e.preventDefault();
             }
         }, { passive: false });
@@ -14856,26 +14852,29 @@ const DEFAULT_STATE = {
             });
         })();
 
-        const stopJoystick = () => {
+        const stopJoystick = (e) => {
+            if (e && e.pointerId !== undefined && joystickPointerId !== null && e.pointerId !== joystickPointerId) {
+                return;
+            }
             isJoystickActive = false;
+            joystickPointerId = null;
             window.joystickVec.x = 0;
             window.joystickVec.z = 0;
             if (joystickUI) {
-            joystickUI.style.opacity = '0';
+                joystickUI.style.opacity = '0';
                 setTimeout(() => {
                     if (!isJoystickActive) joystickUI.style.display = 'none';
-                }, 200);
+                }, 180);
             }
             if (joystickKnob) joystickKnob.style.transform = 'translate(0, 0)';
+            const joyRest = document.getElementById('mobile-joy-rest');
+            if (joyRest) joyRest.style.opacity = '0.58';
         };
         canvasCont.addEventListener('pointerup', stopJoystick);
         canvasCont.addEventListener('pointercancel', stopJoystick);
 
-            
-
-
         // =========================================================================
-        // VRAI CONTRÔLEUR FPS POINTER LOCK + VISEUR CENTRAL + MOBILE TOUCH LOOK
+        // VRAI CONTRÔLEUR FPS POINTER LOCK + VISEUR CENTRAL + MOBILE DUAL-ZONE & TAP
         // =========================================================================
         window.fps = {
             yaw: 0.42,          // Regarde naturellement vers le bureau AbleStudio au spawn
@@ -14919,6 +14918,12 @@ const DEFAULT_STATE = {
             'live-drum-overlay'
         ];
 
+        const isTouchUIActive = () => Boolean(
+            isMobile ||
+            window.innerWidth <= 900 ||
+            (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+        );
+
         window.isFpsRoomActive = function() {
             const roomUi = document.getElementById('room-ui');
             const pcUi = document.getElementById('pc-ui-layer');
@@ -14932,7 +14937,6 @@ const DEFAULT_STATE = {
             if (sleepUi && sleepUi.classList.contains('active')) return false;
             if (theater && theater.classList.contains('pointer-events-auto')) return false;
 
-            // Priorité absolue aux événements aléatoires, reviews, QTE et modales
             if (typeof state !== 'undefined' && state && (state.isEventActive || state.isReviewing || state.isSleeping)) {
                 return false;
             }
@@ -14945,7 +14949,6 @@ const DEFAULT_STATE = {
             return true;
         };
 
-        // Garde automatique : dès qu'un event ou modal apparaît, libère IMMÉDIATEMENT la souris (zéro besoin d'appuyer sur Échap!)
         window.enforceFpsModalPriority = function() {
             if (!window.isFpsRoomActive()) {
                 if (document.pointerLockElement) {
@@ -14957,10 +14960,10 @@ const DEFAULT_STATE = {
                     window.kbdState.left = false;
                     window.kbdState.right = false;
                 }
+                stopJoystick();
             }
         };
 
-        // MutationObserver temps réel sur tous les overlays bloquants pour une réactivité instantanée (<1ms)
         try {
             const modalObserver = new MutationObserver(() => {
                 window.enforceFpsModalPriority();
@@ -14972,7 +14975,7 @@ const DEFAULT_STATE = {
         } catch(e) {}
 
         window.requestFpsPointerLock = function() {
-            if (isMobile || !window.isFpsRoomActive()) return;
+            if (isTouchUIActive() || !window.isFpsRoomActive()) return;
             try {
                 const el = renderer && renderer.domElement;
                 if (el && el.requestPointerLock && document.pointerLockElement !== el) {
@@ -14992,12 +14995,13 @@ const DEFAULT_STATE = {
 
         function updateFpsLockUI() {
             const isLocked = (document.pointerLockElement === renderer.domElement);
+            const touchMode = isTouchUIActive();
             window.fps.isLocked = isLocked;
             const crosshair = document.getElementById('fps-crosshair');
             const banner = document.getElementById('fps-lock-banner');
-            if (crosshair) crosshair.classList.toggle('locked', isLocked || isMobile);
+            if (crosshair) crosshair.classList.toggle('locked', isLocked || touchMode);
             if (banner) {
-                const showBanner = !isMobile && !isLocked && window.isFpsRoomActive() && !(state && state.isSleeping);
+                const showBanner = !touchMode && !isLocked && window.isFpsRoomActive() && !(state && state.isSleeping);
                 banner.classList.toggle('hidden-banner', !showBanner);
             }
         }
@@ -15015,7 +15019,6 @@ const DEFAULT_STATE = {
             let nextPitch = window.fps.pitch - e.movementY * sens;
 
             if (state && state.isSitting) {
-                // Cône de regard confortable assis sur le canapé face à la TV (-PI/2)
                 const baseSitYaw = -Math.PI / 2;
                 const diff = normalizeAngle(nextYaw - baseSitYaw);
                 nextYaw = baseSitYaw + Math.max(-1.25, Math.min(1.25, diff));
@@ -15028,135 +15031,13 @@ const DEFAULT_STATE = {
             window.fps.pitch = nextPitch;
         });
 
-        // Contrôles tactiles Mobile : moitié gauche = Joystick, moitié droite = Look 360°
-        let mobileLookTouchId = null;
-        let mobileLookLastX = 0;
-        let mobileLookLastY = 0;
-
-        canvasCont.addEventListener('pointerdown', (e) => {
-            if (!window.isFpsRoomActive()) return;
-
-            if (e.pointerType === 'touch') {
-                // Moitié droite de l'écran = Caméra Look POV tactile
-                if (e.clientX >= window.innerWidth * 0.48) {
-                    mobileLookTouchId = e.pointerId;
-                    mobileLookLastX = e.clientX;
-                    mobileLookLastY = e.clientY;
-                    return;
-                }
-                // Moitié gauche = Joystick virtuel existant
-                onPointerDown(e);
-                return;
-            }
-
-            // Desktop : Si déjà verrouillé en FPS -> Clic gauche déclenche l'interaction visée
-            if (document.pointerLockElement === renderer.domElement) {
-                if (e.button === 0) {
-                    window.executeFpsTargetInteraction();
-                }
-            } else {
-                // Sinon on verrouille la souris pour plonger en FPS
-                window.requestFpsPointerLock();
-            }
-        });
-
-        canvasCont.addEventListener('pointermove', (e) => {
-            if (e.pointerType === 'touch' && e.pointerId === mobileLookTouchId) {
-                const dx = e.clientX - mobileLookLastX;
-                const dy = e.clientY - mobileLookLastY;
-                mobileLookLastX = e.clientX;
-                mobileLookLastY = e.clientY;
-                window.fps.yaw -= dx * 0.0052;
-                window.fps.pitch = Math.max(-1.25, Math.min(1.25, window.fps.pitch - dy * 0.0045));
-                e.preventDefault();
-            }
-        });
-
-        const clearMobileLook = (e) => {
-            if (e.pointerId === mobileLookTouchId) mobileLookTouchId = null;
-        };
-        canvasCont.addEventListener('pointerup', clearMobileLook);
-        canvasCont.addEventListener('pointercancel', clearMobileLook);
-
-        // Touches d'interaction FPS : [E] Interagir, [F] Prendre l'air + [Échap] Quitter AbleOS si aucune app ouverte
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && document.body.classList.contains('os-active')) {
-                const openWins = Array.from(document.querySelectorAll('.os-window')).filter(w => w.style.display && w.style.display !== 'none');
-                if (openWins.length > 0) {
-                    openWins.sort((a, b) => (parseInt(b.style.zIndex, 10) || 0) - (parseInt(a.style.zIndex, 10) || 0));
-                    if (typeof closeApp === 'function') closeApp(openWins[0].id);
-                    return;
-                } else if (typeof quitPC === 'function') {
-                    quitPC();
-                    return;
-                }
-            }
-            if (!window.isFpsRoomActive()) return;
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-            const k = e.key.toLowerCase();
-            if (k === 'e') {
-                e.preventDefault();
-                window.executeFpsTargetInteraction();
-            } else if (k === 'l') {
-                if (typeof state !== 'undefined' && state && state.studioUnlocked && window.isFpsRoomActive && window.isFpsRoomActive()) {
-                    if (typeof window.travelToStudioLocation === 'function') window.travelToStudioLocation();
-                }
-            } else if (k === 'f') {
-                e.preventDefault();
-                window.exitFpsPointerLock();
-                if (typeof window.animateDoorCrackOpen === 'function') {
-                    window.animateDoorCrackOpen(() => {
-                        if (typeof window.triggerCinematic === 'function') window.triggerCinematic('escape');
-                    });
-                } else if (typeof window.triggerCinematic === 'function') {
-                    window.triggerCinematic('escape');
-                }
-            }
-        });
-
-        // Raycast central continu pour le viseur FPS
+        // Construction d'une cible d'interaction à partir d'une liste de hits Raycaster
         const fpsCenterVec = new THREE.Vector2(0, 0);
+        const fpsTapVec = new THREE.Vector2(0, 0);
         const fpsRaycaster = new THREE.Raycaster();
-        const fpsTmpPos = new THREE.Vector3();
 
-        window.updateFpsCrosshairTarget = function() {
-            const now = performance.now();
-            if (now - window.fps.lastRaycastTime < 45) return; // ~22 Hz ultra-fluide & 0 surcharge CPU
-            window.fps.lastRaycastTime = now;
-
-            const crosshair = document.getElementById('fps-crosshair');
-            const promptEl = document.getElementById('fps-interact-prompt');
-            const keyEl = document.getElementById('fps-interact-key');
-            const titleEl = document.getElementById('fps-interact-title');
-            const subEl = document.getElementById('fps-interact-sub');
-            const mobBtn = document.getElementById('fps-mobile-interact-btn');
-            const mobLabel = document.getElementById('fps-mobile-interact-label');
-
-            updateFpsLockUI();
-
-            if (!window.isFpsRoomActive() || window.fps.transition || (state && state.isSleeping)) {
-                window.fps.currentTarget = null;
-                if (promptEl) promptEl.classList.remove('visible');
-                if (crosshair) crosshair.classList.remove('targeting', 'targeting-buy', 'targeting-locked');
-                if (mobBtn) mobBtn.style.display = 'none';
-                return;
-            }
-
-            fpsRaycaster.setFromCamera(fpsCenterVec, camera);
-            const hits = fpsRaycaster.intersectObjects(scene.children, true).filter(hit => {
-                if (!hit.object.isMesh || !hit.object.visible) return false;
-                if (hit.distance > 6.5) return false;
-                let curr = hit.object.parent;
-                while (curr) {
-                    if (!curr.visible) return false;
-                    curr = curr.parent;
-                }
-                return true;
-            });
-
+        function resolveTargetFromHits(hits, maxInteractDist) {
             let foundTarget = null;
-
-            // 1. Priorité aux silhouettes Studio+ non achetées (Achat diégétique direct en FPS)
             for (let i = 0; i < hits.length; i++) {
                 const hit = hits[i];
                 if (typeof window.findCatalogItemByObject === 'function') {
@@ -15164,7 +15045,7 @@ const DEFAULT_STATE = {
                     if (catalogMatch && catalogMatch.item) {
                         const item = catalogMatch.item;
                         const isOwned = state && state.ownedFurniture && state.ownedFurniture.includes(item.id);
-                        if (!isOwned && hit.distance <= 5.8) {
+                        if (!isOwned && hit.distance <= Math.max(5.8, maxInteractDist)) {
                             const scaledPrice = typeof getScaledPrice === 'function' ? getScaledPrice(item.price) : item.price;
                             const hasRep = (state.rep || 0) >= (item.reqRep || 0);
                             const hasFol = (state.followers || 0) >= (item.reqFollowers || 0);
@@ -15183,8 +15064,7 @@ const DEFAULT_STATE = {
                         }
                     }
                 }
-                // 2. Objets interactifs classiques possédés
-                if (interactableNames.includes(hit.object.name) && hit.distance <= 4.6) {
+                if (interactableNames.includes(hit.object.name) && hit.distance <= maxInteractDist) {
                     const objName = hit.object.name;
                     const meta = FPS_INTERACT_LABELS[objName] || { title: 'Interagir', sub: '' };
                     let title = meta.title;
@@ -15240,7 +15120,183 @@ const DEFAULT_STATE = {
                     break;
                 }
             }
+            return foundTarget;
+        }
 
+        // Direct Tap-to-Interact sur Mobile / Tactile (permet de toucher directement un objet 3D à l'écran!)
+        window.tryDirectTapInteraction = function(clientX, clientY) {
+            if (!window.isFpsRoomActive()) return false;
+            fpsTapVec.x = (clientX / window.innerWidth) * 2 - 1;
+            fpsTapVec.y = -(clientY / window.innerHeight) * 2 + 1;
+            fpsRaycaster.setFromCamera(fpsTapVec, camera);
+            const hits = fpsRaycaster.intersectObjects(scene.children, true).filter(hit => {
+                if (!hit.object.isMesh || !hit.object.visible) return false;
+                if (hit.distance > 9.0) return false;
+                let curr = hit.object.parent;
+                while (curr) {
+                    if (!curr.visible) return false;
+                    curr = curr.parent;
+                }
+                return true;
+            });
+            const tappedTarget = resolveTargetFromHits(hits, 8.5);
+            if (tappedTarget) {
+                window.fps.currentTarget = tappedTarget;
+                window.executeFpsTargetInteraction();
+                return true;
+            }
+            return false;
+        };
+
+        // Contrôles tactiles Mobile Dual-Zone (Multi-Touch Indépendant : Gauche = Joystick, Droite = Vue 360°, Tap = Interaction directe!)
+        let mobileLookTouchId = null;
+        let mobileLookLastX = 0;
+        let mobileLookLastY = 0;
+        const touchTrackers = new Map();
+
+        canvasCont.addEventListener('pointerdown', (e) => {
+            if (!window.isFpsRoomActive()) return;
+
+            if (e.pointerType === 'touch') {
+                touchTrackers.set(e.pointerId, {
+                    startX: e.clientX,
+                    startY: e.clientY,
+                    startTime: performance.now(),
+                    moved: false
+                });
+                // Moitié droite de l'écran = Caméra Look POV 360° tactile
+                if (e.clientX >= window.innerWidth * 0.48 && mobileLookTouchId === null) {
+                    mobileLookTouchId = e.pointerId;
+                    mobileLookLastX = e.clientX;
+                    mobileLookLastY = e.clientY;
+                    return;
+                }
+                // Moitié gauche = Joystick virtuel de déplacement
+                if (joystickPointerId === null) {
+                    onPointerDown(e);
+                }
+                return;
+            }
+
+            // Desktop : Si déjà verrouillé en FPS -> Clic gauche déclenche l'interaction visée
+            if (document.pointerLockElement === renderer.domElement) {
+                if (e.button === 0) {
+                    window.executeFpsTargetInteraction();
+                }
+            } else {
+                // Sinon on verrouille la souris pour plonger en FPS
+                window.requestFpsPointerLock();
+            }
+        });
+
+        canvasCont.addEventListener('pointermove', (e) => {
+            if (e.pointerType === 'touch') {
+                const tr = touchTrackers.get(e.pointerId);
+                if (tr && !tr.moved) {
+                    if (Math.hypot(e.clientX - tr.startX, e.clientY - tr.startY) > 12) {
+                        tr.moved = true;
+                    }
+                }
+                if (e.pointerId === mobileLookTouchId) {
+                    const dx = e.clientX - mobileLookLastX;
+                    const dy = e.clientY - mobileLookLastY;
+                    mobileLookLastX = e.clientX;
+                    mobileLookLastY = e.clientY;
+                    window.fps.yaw -= dx * 0.0054;
+                    window.fps.pitch = Math.max(-1.25, Math.min(1.25, window.fps.pitch - dy * 0.0046));
+                    e.preventDefault();
+                }
+            }
+        });
+
+        const clearMobileLook = (e) => {
+            if (e.pointerType === 'touch') {
+                const tr = touchTrackers.get(e.pointerId);
+                touchTrackers.delete(e.pointerId);
+                if (tr && !tr.moved && (performance.now() - tr.startTime) < 280) {
+                    // Un tap court et net sur un objet 3D déclenche directement son interaction!
+                    window.tryDirectTapInteraction(e.clientX, e.clientY);
+                }
+            }
+            if (e.pointerId === mobileLookTouchId) mobileLookTouchId = null;
+        };
+        canvasCont.addEventListener('pointerup', clearMobileLook);
+        canvasCont.addEventListener('pointercancel', clearMobileLook);
+
+        // Touches d'interaction FPS : [E] Interagir, [F] Prendre l'air + [Échap] Quitter AbleOS si aucune app ouverte
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.body.classList.contains('os-active')) {
+                const openWins = Array.from(document.querySelectorAll('.os-window')).filter(w => w.style.display && w.style.display !== 'none');
+                if (openWins.length > 0) {
+                    openWins.sort((a, b) => (parseInt(b.style.zIndex, 10) || 0) - (parseInt(a.style.zIndex, 10) || 0));
+                    if (typeof closeApp === 'function') closeApp(openWins[0].id);
+                    return;
+                } else if (typeof quitPC === 'function') {
+                    quitPC();
+                    return;
+                }
+            }
+            if (!window.isFpsRoomActive()) return;
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            const k = e.key.toLowerCase();
+            if (k === 'e') {
+                e.preventDefault();
+                window.executeFpsTargetInteraction();
+            } else if (k === 'l') {
+                if (typeof state !== 'undefined' && state && state.studioUnlocked && window.isFpsRoomActive && window.isFpsRoomActive()) {
+                    if (typeof window.travelToStudioLocation === 'function') window.travelToStudioLocation();
+                }
+            } else if (k === 'f') {
+                e.preventDefault();
+                window.exitFpsPointerLock();
+                if (typeof window.animateDoorCrackOpen === 'function') {
+                    window.animateDoorCrackOpen(() => {
+                        if (typeof window.triggerCinematic === 'function') window.triggerCinematic('escape');
+                    });
+                } else if (typeof window.triggerCinematic === 'function') {
+                    window.triggerCinematic('escape');
+                }
+            }
+        });
+
+        window.updateFpsCrosshairTarget = function() {
+            const now = performance.now();
+            if (now - window.fps.lastRaycastTime < 45) return; // ~22 Hz ultra-fluide & 0 surcharge CPU
+            window.fps.lastRaycastTime = now;
+
+            const crosshair = document.getElementById('fps-crosshair');
+            const promptEl = document.getElementById('fps-interact-prompt');
+            const keyEl = document.getElementById('fps-interact-key');
+            const titleEl = document.getElementById('fps-interact-title');
+            const subEl = document.getElementById('fps-interact-sub');
+            const mobBtn = document.getElementById('fps-mobile-interact-btn');
+            const mobLabel = document.getElementById('fps-mobile-interact-label');
+            const lookRest = document.getElementById('mobile-look-rest');
+            const touchMode = isTouchUIActive();
+
+            updateFpsLockUI();
+
+            if (!window.isFpsRoomActive() || window.fps.transition || (state && state.isSleeping)) {
+                window.fps.currentTarget = null;
+                if (promptEl) promptEl.classList.remove('visible');
+                if (crosshair) crosshair.classList.remove('targeting', 'targeting-buy', 'targeting-locked');
+                if (mobBtn) mobBtn.style.display = 'none';
+                return;
+            }
+
+            fpsRaycaster.setFromCamera(fpsCenterVec, camera);
+            const hits = fpsRaycaster.intersectObjects(scene.children, true).filter(hit => {
+                if (!hit.object.isMesh || !hit.object.visible) return false;
+                if (hit.distance > 6.5) return false;
+                let curr = hit.object.parent;
+                while (curr) {
+                    if (!curr.visible) return false;
+                    curr = curr.parent;
+                }
+                return true;
+            });
+
+            const foundTarget = resolveTargetFromHits(hits, 4.8);
             window.fps.currentTarget = foundTarget;
 
             if (foundTarget) {
@@ -15253,19 +15309,21 @@ const DEFAULT_STATE = {
                     }
                 }
                 if (promptEl && titleEl && subEl && keyEl) {
-                    keyEl.textContent = isMobile ? 'TAP' : 'E';
+                    keyEl.textContent = touchMode ? 'TAP' : 'E';
                     titleEl.textContent = foundTarget.title;
                     subEl.textContent = foundTarget.sub || '';
                     promptEl.classList.add('visible');
                 }
-                if (mobBtn && isMobile) {
+                if (mobBtn && touchMode) {
                     mobBtn.style.display = 'flex';
                     if (mobLabel) mobLabel.textContent = foundTarget.title;
                 }
+                if (lookRest) lookRest.style.opacity = '0';
             } else {
                 if (crosshair) crosshair.classList.remove('targeting', 'targeting-buy', 'targeting-locked');
                 if (promptEl) promptEl.classList.remove('visible');
                 if (mobBtn) mobBtn.style.display = 'none';
+                if (lookRest) lookRest.style.opacity = '0.68';
             }
         };
 
