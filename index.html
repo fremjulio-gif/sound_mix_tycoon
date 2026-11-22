@@ -25154,6 +25154,9 @@ document.addEventListener('mouseover', (e) => {
                 try {
                     if (_showcase3D.rafId) cancelAnimationFrame(_showcase3D.rafId);
                     if (_showcase3D.resizeObs) _showcase3D.resizeObs.disconnect();
+                    if (_showcase3D.srcTex && typeof _showcase3D.srcTex.dispose === 'function') {
+                        _showcase3D.srcTex.dispose();
+                    }
                     if (_showcase3D.scene) {
                         _showcase3D.scene.traverse(obj => {
                             if (obj.geometry && typeof obj.geometry.dispose === 'function') obj.geometry.dispose();
@@ -25161,6 +25164,11 @@ document.addEventListener('mouseover', (e) => {
                                 const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
                                 mats.forEach(m => {
                                     if (m && m.map && typeof m.map.dispose === 'function') m.map.dispose();
+                                    if (m && m.uniforms) {
+                                        Object.values(m.uniforms).forEach(u => {
+                                            if (u && u.value && typeof u.value.dispose === 'function') u.value.dispose();
+                                        });
+                                    }
                                     if (m && typeof m.dispose === 'function') m.dispose();
                                 });
                             }
@@ -25452,13 +25460,13 @@ document.addEventListener('mouseover', (e) => {
                         <div class="blive-cctv-corner br"></div>
 
                         <!-- OSD Haut-Gauche : REC CAM-04 -->
-                        <div class="absolute top-3.5 left-4 z-[4] flex items-center gap-2 font-mono text-[10px] font-bold tracking-[0.14em] text-white/90 pointer-events-none drop-shadow">
+                        <div class="absolute top-2.5 sm:top-3.5 left-3 sm:left-4 z-[4] flex items-center gap-1.5 sm:gap-2 font-mono text-[9px] sm:text-[10px] font-bold tracking-[0.06em] sm:tracking-[0.14em] text-white/90 pointer-events-none drop-shadow">
                             <span class="blive-rec-dot"></span>
-                            <span>REC · CAM-04 HALL</span>
+                            <span>REC · CAM-04<span class="hidden sm:inline"> HALL</span></span>
                         </div>
 
                         <!-- OSD Haut-Droite : Horloge Timelapse -->
-                        <div id="showcase-clock" class="absolute top-3.5 right-4 z-[4] font-mono text-[10px] sm:text-[11px] font-bold tracking-[0.12em] text-emerald-300/95 pointer-events-none tabular-nums drop-shadow">
+                        <div id="showcase-clock" class="absolute top-2.5 sm:top-3.5 right-3 sm:right-4 z-[4] font-mono text-[9px] sm:text-[11px] font-bold tracking-[0.05em] sm:tracking-[0.12em] text-emerald-300/95 pointer-events-none tabular-nums drop-shadow">
                             J${state.day || 1} · 20:00:00 [×24]
                         </div>
 
@@ -25503,365 +25511,505 @@ document.addEventListener('mouseover', (e) => {
                 });
             }
 
-            function _createCctvFloorTexture(accentHex) {
-                const c = document.createElement('canvas');
-                c.width = 512; c.height = 512;
-                const ctx = c.getContext('2d');
-                if (ctx) {
-                    ctx.fillStyle = '#090c13';
-                    ctx.fillRect(0, 0, 512, 512);
-                    for (let i = 0; i < 1600; i++) {
-                        ctx.fillStyle = (i % 3 === 0) ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.22)';
-                        ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
-                    }
-                    ctx.strokeStyle = 'rgba(148,163,184,0.08)';
-                    ctx.lineWidth = 2;
-                    for (let g = 0; g <= 512; g += 64) {
-                        ctx.beginPath(); ctx.moveTo(g, 0); ctx.lineTo(g, 512); ctx.stroke();
-                        ctx.beginPath(); ctx.moveTo(0, g); ctx.lineTo(512, g); ctx.stroke();
-                    }
-                    // Marquage corridor d'entrée au sol
-                    ctx.strokeStyle = accentHex;
-                    ctx.globalAlpha = 0.28;
-                    ctx.setLineDash([8, 8]);
+            function _buildCctvHallBackdrop(accentHex, venueId) {
+                const W = 480;
+                const H = 270;
+                const bg = document.createElement('canvas');
+                bg.width = W;
+                bg.height = H;
+                const ctx = bg.getContext('2d');
+                if (!ctx) return bg;
+
+                // 1. Sol béton sombre basse-lumière avec dallage architectural
+                ctx.fillStyle = '#090c13';
+                ctx.fillRect(0, 0, W, H);
+
+                // Texture grain béton subtile (déterministe pour netteté DVR)
+                for (let i = 0; i < 2400; i++) {
+                    const gx = (i * 73) % W;
+                    const gy = ((i * 197) + Math.floor(i / 7) * 13) % H;
+                    ctx.fillStyle = (i % 3 === 0) ? 'rgba(255,255,255,0.028)' : 'rgba(0,0,0,0.28)';
+                    ctx.fillRect(gx, gy, 2, 2);
+                }
+
+                // Joints de dalles béton (quadrillage architectural fin)
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.07)';
+                ctx.lineWidth = 1;
+                for (let x = 16; x < W - 16; x += 32) {
+                    ctx.beginPath(); ctx.moveTo(x + 0.5, 14); ctx.lineTo(x + 0.5, H - 14); ctx.stroke();
+                }
+                for (let y = 14; y < H - 14; y += 32) {
+                    ctx.beginPath(); ctx.moveTo(16, y + 0.5); ctx.lineTo(W - 16, y + 0.5); ctx.stroke();
+                }
+
+                // Marquage sécurité & flux fosse au sol
+                ctx.save();
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.14)';
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(102, 82, 276, 164);
+                ctx.restore();
+
+                // 2. Halo ambre Bar / Carré VIP (Mur Gauche)
+                const barGrad = ctx.createRadialGradient(48, 145, 6, 62, 145, 110);
+                barGrad.addColorStop(0, 'rgba(245, 158, 11, 0.24)');
+                barGrad.addColorStop(0.55, 'rgba(245, 158, 11, 0.08)');
+                barGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = barGrad;
+                ctx.fillRect(16, 55, 155, 180);
+
+                // Halo vert ENTRÉE (Mur Droit)
+                const doorGrad = ctx.createRadialGradient(458, 176, 4, 434, 176, 105);
+                doorGrad.addColorStop(0, 'rgba(52, 211, 153, 0.34)');
+                doorGrad.addColorStop(0.5, 'rgba(16, 185, 129, 0.11)');
+                doorGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = doorGrad;
+                ctx.fillRect(320, 96, 160, 160);
+
+                // 3. Murs porteurs béton & piliers industriels (ouverture droite pour ENTRÉE)
+                ctx.fillStyle = '#040509';
+                ctx.fillRect(0, 0, W, 14);            // Mur arrière scène (Haut)
+                ctx.fillRect(0, H - 14, W, 14);       // Mur fond de salle (Bas)
+                ctx.fillRect(0, 0, 16, H);            // Mur gauche (VIP/Bar)
+                ctx.fillRect(W - 18, 0, 18, 146);     // Mur droit haut
+                ctx.fillRect(W - 18, 206, 18, H - 206); // Mur droit bas
+
+                // Bordure intérieure murs + piliers béton
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.22)';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(16, 14, W - 34, H - 28);
+                ctx.fillStyle = '#181e2c';
+                [[16, 14], [16, H - 24], [W - 28, 14], [W - 28, H - 24], [16, 136], [W - 28, 100]].forEach(([px, py]) => {
+                    ctx.fillRect(px, py, 12, 10);
+                });
+
+                // 4. Zone Bar / Carré VIP (Gauche : x 18..76, y 84..206)
+                ctx.fillStyle = '#141118';
+                ctx.fillRect(18, 84, 56, 122);
+                ctx.strokeStyle = 'rgba(245, 158, 11, 0.48)';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(18, 84, 56, 122);
+
+                // Comptoir bar + néon ambre + tabourets hauts
+                ctx.fillStyle = '#1e1712';
+                ctx.fillRect(54, 90, 14, 110);
+                ctx.fillStyle = '#f59e0b';
+                ctx.fillRect(67, 92, 2, 106);
+                ctx.fillStyle = '#332924';
+                for (let sy = 98; sy <= 192; sy += 18) {
                     ctx.beginPath();
-                    ctx.moveTo(495, 290);
-                    ctx.lineTo(360, 290);
+                    ctx.arc(79, sy, 3.6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Banquette VIP haut-gauche
+                ctx.fillStyle = '#1c1926';
+                ctx.fillRect(22, 92, 24, 34);
+                ctx.fillRect(22, 164, 24, 34);
+
+                // 5. SAS Double Porte ENTRÉE & File de sécurité (Droite : x 418..478, y 146..206)
+                ctx.fillStyle = '#071712';
+                ctx.fillRect(460, 146, 20, 60);
+                // Battants de porte ouverts vers l'intérieur
+                ctx.strokeStyle = '#6ee7b7';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(462, 147); ctx.lineTo(444, 152);
+                ctx.moveTo(462, 205); ctx.lineTo(444, 200);
+                ctx.stroke();
+
+                // Potelets & ruban d'accès file
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(460, 150); ctx.lineTo(418, 150);
+                ctx.moveTo(460, 202); ctx.lineTo(418, 202);
+                ctx.stroke();
+                ctx.fillStyle = '#cbd5e1';
+                [[456, 150], [437, 150], [418, 150], [456, 202], [437, 202], [418, 202]].forEach(([sx, sy]) => {
+                    ctx.beginPath(); ctx.arc(sx, sy, 2.2, 0, Math.PI * 2); ctx.fill();
+                });
+
+                // Flèches discrètes au sol à l'entrée
+                ctx.strokeStyle = 'rgba(52, 211, 153, 0.35)';
+                ctx.lineWidth = 1.5;
+                [448, 434].forEach(ax => {
+                    ctx.beginPath();
+                    ctx.moveTo(ax + 5, 171); ctx.lineTo(ax, 176); ctx.lineTo(ax + 5, 181);
+                    ctx.stroke();
+                });
+
+                // Enseigne ENTRÉE au-dessus de la porte
+                ctx.fillStyle = 'rgba(5, 46, 22, 0.92)';
+                ctx.fillRect(422, 134, 40, 11);
+                ctx.strokeStyle = '#34d399';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(422, 134, 40, 11);
+                ctx.fillStyle = '#6ee7b7';
+                ctx.font = 'bold 7.5px ui-monospace, Menlo, monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('ENTRÉE', 442, 139.8);
+
+                ctx.fillStyle = 'rgba(245, 158, 11, 0.72)';
+                ctx.font = 'bold 7px ui-monospace, Menlo, monospace';
+                ctx.fillText('VIP BAR', 46, 77);
+
+                // 6. Plateforme Scène DJ (Haut Centre : x 112..368, y 14..68)
+                ctx.fillStyle = '#121622';
+                ctx.fillRect(112, 14, 256, 54);
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(112, 14, 256, 54);
+
+                // Escaliers latéraux scène
+                ctx.fillStyle = '#0d111b';
+                for (let st = 0; st < 3; st++) {
+                    ctx.fillRect(114, 52 + st * 5, 16, 4);
+                    ctx.fillRect(350, 52 + st * 5, 16, 4);
+                }
+
+                // Régie DJ / Platines
+                ctx.fillStyle = '#080a10';
+                ctx.fillRect(196, 35, 88, 18);
+                ctx.strokeStyle = accentHex;
+                ctx.lineWidth = 1;
+                ctx.strokeRect(196, 35, 88, 18);
+                // Deux jog-wheels platines
+                ctx.strokeStyle = 'rgba(226, 232, 240, 0.35)';
+                ctx.beginPath(); ctx.arc(216, 44, 5.5, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(264, 44, 5.5, 0, Math.PI * 2); ctx.stroke();
+
+                // Barrière Crash métallique Front-of-Stage (y = 75)
+                ctx.strokeStyle = '#64748b';
+                ctx.lineWidth = 2.4;
+                ctx.beginPath();
+                ctx.moveTo(100, 75);
+                ctx.lineTo(380, 75);
+                ctx.stroke();
+
+                return bg;
+            }
+
+            function _drawOverheadPerson(ctx, x, y, angle, scale, clothCol, hairCol, stageRimRgb, danceBob, hasPhone, phoneAlpha, armsUp) {
+                ctx.save();
+                ctx.translate(x, y);
+
+                // Ombre de contact douce déportée vers le bas-arrière
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.56)';
+                ctx.beginPath();
+                ctx.ellipse(0.6, 2.4, 5.8 * scale, 4.4 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.rotate(angle);
+
+                // Bras levés qui bougent au rythme (quand le set chauffe)
+                if (armsUp > 0.15) {
+                    const armReach = (4.2 + armsUp * 3.4) * scale;
+                    ctx.strokeStyle = clothCol;
+                    ctx.lineWidth = 2.1 * scale;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(4.2 * scale, -0.5 * scale);
+                    ctx.lineTo(3.8 * scale + Math.sin(danceBob) * 1.1, -armReach);
+                    ctx.moveTo(-4.2 * scale, -0.5 * scale);
+                    ctx.lineTo(-3.8 * scale + Math.cos(danceBob) * 1.1, -armReach * 0.9);
                     ctx.stroke();
                 }
-                const tex = new THREE.CanvasTexture(c);
-                tex.needsUpdate = true;
-                return tex;
-            }
 
-            function _createEntrySignTexture() {
-                const c = document.createElement('canvas');
-                c.width = 256; c.height = 64;
-                const ctx = c.getContext('2d');
-                if (ctx) {
-                    ctx.fillStyle = '#052e16';
-                    ctx.fillRect(0, 0, 256, 64);
-                    ctx.strokeStyle = '#34d399';
-                    ctx.lineWidth = 4;
-                    ctx.strokeRect(4, 4, 248, 56);
-                    ctx.fillStyle = '#6ee7b7';
-                    ctx.font = 'bold 28px ui-monospace, Menlo, monospace';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('ENTRÉE', 128, 33);
-                }
-                const tex = new THREE.CanvasTexture(c);
-                tex.needsUpdate = true;
-                return tex;
-            }
+                // Téléphone tenu levé devant soi (écran lumineux blanc/cyan visible du dessus)
+                if (hasPhone && phoneAlpha > 0.05) {
+                    const px = 2.2 * scale;
+                    const py = -5.6 * scale;
+                    const pGlow = ctx.createRadialGradient(px, py, 0.4, px, py, 10 * scale);
+                    pGlow.addColorStop(0, `rgba(186, 230, 253, ${0.42 * phoneAlpha})`);
+                    pGlow.addColorStop(1, 'rgba(56, 189, 248, 0)');
+                    ctx.fillStyle = pGlow;
+                    ctx.beginPath();
+                    ctx.arc(px, py, 10 * scale, 0, Math.PI * 2);
+                    ctx.fill();
 
-            function _createLedStageTexture(titleText, accentHex) {
-                const c = document.createElement('canvas');
-                c.width = 512; c.height = 192;
-                const ctx = c.getContext('2d');
-                if (ctx) {
-                    const grad = ctx.createLinearGradient(0, 0, 512, 192);
-                    grad.addColorStop(0, '#090b12');
-                    grad.addColorStop(0.5, '#131726');
-                    grad.addColorStop(1, '#090b12');
-                    ctx.fillStyle = grad;
-                    ctx.fillRect(0, 0, 512, 192);
-                    ctx.strokeStyle = accentHex;
-                    ctx.lineWidth = 4;
-                    ctx.strokeRect(6, 6, 500, 180);
-                    ctx.fillStyle = accentHex;
-                    ctx.font = 'bold 20px ui-monospace, Menlo, monospace';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('BOUNCE LIVE // STAGE FEED', 256, 46);
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = '800 34px Outfit, sans-serif';
-                    const clean = String(titleText || 'SHOWCASE').toUpperCase().slice(0, 22);
-                    ctx.fillText(clean, 256, 102);
-                    for (let i = 0; i < 24; i++) {
-                        const bh = 12 + Math.abs(Math.sin(i * 0.6)) * 34;
-                        ctx.fillStyle = i % 2 === 0 ? accentHex : '#e2e8f0';
-                        ctx.fillRect(46 + i * 18, 170 - bh, 10, bh);
-                    }
+                    ctx.fillStyle = `rgba(240, 249, 255, ${0.92 * phoneAlpha})`;
+                    ctx.fillRect(px - 1.3 * scale, py - 0.8 * scale, 2.6 * scale, 1.6 * scale);
                 }
-                const tex = new THREE.CanvasTexture(c);
-                tex.needsUpdate = true;
-                return tex;
+
+                // Épaules / Veste clubwear vue du dessus (forme ovale réaliste, zéro gros cylindre)
+                ctx.fillStyle = clothCol;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 5.5 * scale, 3.0 * scale, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Rim-light directionnelle scène/projecteurs sur le bord supérieur des épaules
+                ctx.strokeStyle = `rgba(${stageRimRgb}, 0.58)`;
+                ctx.lineWidth = 1.05 * scale;
+                ctx.beginPath();
+                ctx.ellipse(0, -0.25 * scale, 5.3 * scale, 2.75 * scale, 0, Math.PI * 1.08, Math.PI * 1.92);
+                ctx.stroke();
+
+                // Tête légèrement décalée vers l'avant (+danse)
+                const headY = (-0.55 + Math.sin(danceBob) * 0.35) * scale;
+                ctx.fillStyle = '#07090f';
+                ctx.beginPath();
+                ctx.arc(0, headY + 0.5 * scale, 3.05 * scale, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = hairCol;
+                ctx.beginPath();
+                ctx.arc(0, headY, 2.75 * scale, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Reflet léger crâne / casquette sous les spots
+                ctx.fillStyle = 'rgba(226, 232, 240, 0.22)';
+                ctx.beginPath();
+                ctx.arc(-0.4 * scale, headY - 0.8 * scale, 1.05 * scale, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
             }
 
             function _startShowcase3DTimelapse(cfg) {
                 const canvas = document.getElementById('showcase-3d-canvas');
                 if (!canvas) return;
 
-                const rect = canvas.getBoundingClientRect();
-                const W = Math.max(280, Math.round(rect.width) || 640);
-                const H = Math.max(240, Math.round(rect.height) || 340);
+                const SRC_W = 480;
+                const SRC_H = 270;
+                const srcCanvas = document.createElement('canvas');
+                srcCanvas.width = SRC_W;
+                srcCanvas.height = SRC_H;
+                const srcCtx = srcCanvas.getContext('2d');
+                if (!srcCtx) return;
 
+                const floorBgCanvas = _buildCctvHallBackdrop(cfg.venue.accentHex, cfg.venue.id);
+
+                // Parse accent hex into RGB string for canvas gradients/rim-lights
+                const hexClean = String(cfg.venue.accentHex || '#38bdf8').replace('#', '');
+                const hr = parseInt(hexClean.slice(0, 2), 16) || 56;
+                const hg = parseInt(hexClean.slice(2, 4), 16) || 189;
+                const hb = parseInt(hexClean.slice(4, 6), 16) || 248;
+                const accentRgb = `${hr}, ${hg}, ${hb}`;
+
+                const rect = canvas.getBoundingClientRect();
+                const viewW = Math.max(280, Math.round(rect.width) || 640);
+                const viewH = Math.max(220, Math.round(rect.height) || 340);
+
+                // Stage 2: WebGL Brut DVR Fisheye & Low-Light Shader
                 let renderer = null;
+                let scene = null;
+                let camera = null;
+                let srcTex = null;
+                let shaderMat = null;
+                let glitchSpike = 0.0;
+
                 try {
-                    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+                    renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+                    renderer.setSize(viewW, viewH, false);
+
+                    scene = new THREE.Scene();
+                    camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+                    srcTex = new THREE.CanvasTexture(srcCanvas);
+                    srcTex.minFilter = THREE.LinearFilter;
+                    srcTex.magFilter = THREE.LinearFilter;
+                    srcTex.generateMipmaps = false;
+
+                    const vertexShader = `
+                        varying vec2 vUv;
+                        void main() {
+                            vUv = uv;
+                            gl_Position = vec4(position.xy, 0.0, 1.0);
+                        }
+                    `;
+
+                    const fragmentShader = `
+                        precision mediump float;
+                        varying vec2 vUv;
+                        uniform sampler2D uTex;
+                        uniform float uTime;
+                        uniform float uAspect;
+                        uniform float uGlitch;
+
+                        float hash12(vec2 p) {
+                            vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+                            p3 += dot(p3, p3.yzx + 33.33);
+                            return fract((p3.x + p3.y) * p3.z);
+                        }
+
+                        void main() {
+                            vec2 p = vUv * 2.0 - 1.0;
+
+                            // Fisheye dome aspect-compensated (garde l'ENTRÉE visible sur mobile portrait & desktop)
+                            float pa = clamp(uAspect / 1.777777, 0.88, 1.15);
+                            vec2 np = vec2(p.x * pa, p.y);
+                            float r2 = dot(np, np);
+                            float edgeNorm = mix(1.38, 1.66, clamp((uAspect - 1.15) / 0.80, 0.0, 1.0));
+                            float barrel = (1.0 + 0.38 * r2 + 0.14 * r2 * r2) / edgeNorm;
+
+                            vec2 warped = p * barrel;
+                            vec2 uv = warped * 0.5 + 0.5;
+
+                            // Glitches horizontaux périodiques DVR + spikes sur Flash Decision
+                            float tick = floor(uTime * 3.8);
+                            float autoG = step(0.955, hash12(vec2(tick, 7.13))) * 0.65;
+                            float gStrength = clamp(max(uGlitch, autoG), 0.0, 1.0);
+                            float rowBand = step(0.84, sin(uv.y * 30.0 + uTime * 34.0));
+                            float tearHash = (hash12(vec2(floor(uv.y * 42.0), tick)) - 0.5) * 2.0;
+                            uv.x += gStrength * rowBand * tearHash * 0.032;
+
+                            // Masque boîtier optique fisheye hors limites [0..1]
+                            float edgeFade = smoothstep(1.01, 0.96, max(abs(warped.x), abs(warped.y)));
+
+                            // Quantification basse résolution capteur DVR archive (~290x164)
+                            vec2 dvrRes = vec2(290.0, 164.0);
+                            vec2 qUv = floor(clamp(uv, 0.0, 1.0) * dvrRes) / dvrRes;
+                            vec2 sUv = mix(clamp(uv, 0.0, 1.0), qUv, 0.72);
+
+                            // Aberration chromatique radiale (lens dispersion)
+                            vec2 caDir = normalize(p + vec2(0.0001)) * (0.0028 + 0.0052 * r2 + gStrength * 0.009);
+                            float rCh = texture2D(uTex, clamp(sUv + caDir, 0.0, 1.0)).r;
+                            float gCh = texture2D(uTex, sUv).g;
+                            float bCh = texture2D(uTex, clamp(sUv - caDir, 0.0, 1.0)).b;
+                            vec3 col = vec3(rCh, gCh, bCh);
+
+                            // Color grading basse-lumière club : ombres béton froides + lumières vives conservées
+                            float lum = dot(col, vec3(0.299, 0.587, 0.114));
+                            float colorKeep = smoothstep(0.08, 0.42, lum) * 0.78 + 0.22;
+                            col = mix(vec3(lum), col, colorKeep);
+                            col = col * vec3(0.95, 0.99, 1.04) + vec3(0.015, 0.025, 0.035);
+
+                            // Grain haute sensibilité ISO animé
+                            float isoNoise = (hash12(floor(qUv * dvrRes) + fract(uTime * 19.3) * 89.0) - 0.5) * 0.12;
+                            col += isoNoise;
+
+                            // Scanlines entrelacées DVR + barre de balayage verticale lente
+                            float scan = 0.92 + 0.08 * sin(vUv.y * 280.0 + uTime * 15.0);
+                            float barSweep = smoothstep(0.06, 0.0, abs(fract(vUv.y - uTime * 0.16) - 0.5)) * 0.065;
+                            col = col * scan + barSweep;
+
+                            // Lignes de glitch blanches ponctuelles
+                            col += gStrength * rowBand * 0.14;
+
+                            // Forte vignettage optique fisheye + fondu boîtier noir
+                            float vig = 1.0 - smoothstep(0.55, 1.48, r2);
+                            col *= (0.28 + 0.72 * vig) * edgeFade;
+
+                            gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+                        }
+                    `;
+
+                    shaderMat = new THREE.ShaderMaterial({
+                        uniforms: {
+                            uTex: { value: srcTex },
+                            uTime: { value: 0.0 },
+                            uAspect: { value: viewW / Math.max(1, viewH) },
+                            uGlitch: { value: 0.0 }
+                        },
+                        vertexShader,
+                        fragmentShader,
+                        depthTest: false,
+                        depthWrite: false
+                    });
+
+                    const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), shaderMat);
+                    scene.add(quad);
                 } catch (e) {
                     renderer = null;
                 }
 
-                const [fw, fd] = cfg.venue.floorSize;
-                const scene = new THREE.Scene();
-                scene.background = new THREE.Color('#04060b');
-
-                // VRAIE CAMÉRA DE SURVEILLANCE CCTV HAUT D'ANGLE (Coin Plafond Gauche-Avant regardant la Scène + Porte ENTRÉE + Fosse)
-                const aspect = W / H;
-                const fov = aspect < 1.3 ? 58 : 50;
-                const camera = new THREE.PerspectiveCamera(fov, aspect, 0.2, 60);
-                const camBaseX = -fw * 0.44;
-                const camBaseY = 6.15 + fw * 0.12;
-                const camBaseZ = fd * 0.64;
-                const lookBaseX = fw * 0.10;
-                const lookBaseY = 0.50;
-                const lookBaseZ = -fd * 0.12;
-                camera.position.set(camBaseX, camBaseY, camBaseZ);
-                camera.lookAt(lookBaseX, lookBaseY, lookBaseZ);
-
-                if (renderer) {
-                    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-                    renderer.setSize(W, H, false);
+                // Fallback canvas 2D direct si WebGL indisponible
+                const fallbackCtx = !renderer ? canvas.getContext('2d') : null;
+                if (!renderer && fallbackCtx) {
+                    canvas.width = SRC_W;
+                    canvas.height = SRC_H;
                 }
 
-                // Éclairage atmosphérique CCTV (cool béton + projecteur scène vif)
-                scene.add(new THREE.AmbientLight(0x9fb3c8, 0.68));
-                const hallFillLight = new THREE.DirectionalLight(0xe2e8f0, 0.72);
-                hallFillLight.position.set(-6, 12, 8);
-                scene.add(hallFillLight);
-                const stagePointLight = new THREE.PointLight(cfg.venue.accent, 3.6, 24);
-                stagePointLight.position.set(0, 3.6, -fd * 0.34);
-                scene.add(stagePointLight);
+                let resizeObs = null;
+                if (renderer && typeof ResizeObserver !== 'undefined') {
+                    resizeObs = new ResizeObserver(entries => {
+                        for (const entry of entries) {
+                            const w = Math.max(240, Math.round(entry.contentRect.width));
+                            const h = Math.max(180, Math.round(entry.contentRect.height));
+                            renderer.setSize(w, h, false);
+                            if (shaderMat) shaderMat.uniforms.uAspect.value = w / Math.max(1, h);
+                        }
+                    });
+                    resizeObs.observe(canvas);
+                }
 
-                // Sol béton poli CCTV
-                const floorTex = _createCctvFloorTexture(cfg.venue.accentHex);
-                const floorMesh = new THREE.Mesh(
-                    new THREE.BoxGeometry(fw, 0.25, fd),
-                    new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.72, metalness: 0.18 })
-                );
-                floorMesh.position.y = -0.125;
-                scene.add(floorMesh);
+                // Pool de 175 silhouettes top-down qui arrivent par petites grappes (avant -> fond)
+                const MAX_CROWD = 175;
+                const clothPalette = [
+                    '#171c28', '#1e2433', '#231f2e', '#1a2726',
+                    '#2a2224', '#16202e', '#262b38', '#312b28'
+                ];
+                const hairPalette = ['#0d0f14', '#181412', '#261e18', '#090a0f', '#383029', '#cbd5e1'];
 
-                // Murs de la salle + Vraie Double Porte d'Entrée visible sur le mur Droit (+X)
-                const wallMat = new THREE.MeshStandardMaterial({ color: '#111624', roughness: 0.68, metalness: 0.22 });
-                const backWall = new THREE.Mesh(new THREE.BoxGeometry(fw, 3.4, 0.22), wallMat);
-                backWall.position.set(0, 1.7, -fd / 2 - 0.11);
-                scene.add(backWall);
-
-                const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.95, fd), wallMat);
-                leftWall.position.set(-fw / 2 - 0.11, 0.475, 0);
-                scene.add(leftWall);
-
-                // Mur droit (+X, face à la caméra CCTV!) coupé pour la Double Porte ENTRÉE
-                const doorZ = fd * 0.04;
-                const doorW = 1.95;
-                const rWallLen1 = Math.max(0.6, (doorZ - doorW / 2) - (-fd / 2));
-                const rWall1 = new THREE.Mesh(new THREE.BoxGeometry(0.22, 3.2, rWallLen1), wallMat);
-                rWall1.position.set(fw / 2 + 0.11, 1.6, -fd / 2 + rWallLen1 / 2);
-                scene.add(rWall1);
-
-                const rWallLen2 = Math.max(0.4, (fd / 2) - (doorZ + doorW / 2));
-                const rWall2 = new THREE.Mesh(new THREE.BoxGeometry(0.22, 3.2, rWallLen2), wallMat);
-                rWall2.position.set(fw / 2 + 0.11, 1.6, fd / 2 - rWallLen2 / 2);
-                scene.add(rWall2);
-
-                const rLintel = new THREE.Mesh(new THREE.BoxGeometry(0.24, 1.15, doorW + 0.12), wallMat);
-                rLintel.position.set(fw / 2 + 0.11, 2.62, doorZ);
-                scene.add(rLintel);
-
-                // Panneau lumineux "ENTRÉE" visible sous la caméra CCTV
-                const entryTex = _createEntrySignTexture();
-                const entrySign = new THREE.Mesh(
-                    new THREE.PlaneGeometry(1.15, 0.30),
-                    new THREE.MeshBasicMaterial({ map: entryTex, side: THREE.DoubleSide })
-                );
-                entrySign.position.set(fw / 2 - 0.03, 2.38, doorZ);
-                entrySign.rotation.y = -Math.PI / 2;
-                scene.add(entrySign);
-
-                // SAS Extérieur & Barrières de Sécurité à l'entrée
-                const sasFloor = new THREE.Mesh(
-                    new THREE.BoxGeometry(2.6, 0.12, 2.1),
-                    new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.85 })
-                );
-                sasFloor.position.set(fw / 2 + 1.35, -0.06, doorZ);
-                scene.add(sasFloor);
-
-                const postMat = new THREE.MeshStandardMaterial({ color: '#94a3b8', metalness: 0.8, roughness: 0.25 });
-                const postGeo = new THREE.CylinderGeometry(0.04, 0.06, 0.72, 8);
-                [-0.78, 0.78].forEach(dz => {
-                    const p1 = new THREE.Mesh(postGeo, postMat);
-                    p1.position.set(fw / 2 - 0.65, 0.36, doorZ + dz);
-                    const p2 = new THREE.Mesh(postGeo, postMat);
-                    p2.position.set(fw / 2 + 0.75, 0.36, doorZ + dz);
-                    scene.add(p1, p2);
-                });
-
-                // Scène DJ surélevée + Barrière Crash Métallique Front-of-Stage + Pont Lumière (Truss)
-                const stageW = fw * 0.58;
-                const stageD = 1.75;
-                const stageZ = -fd / 2 + stageD / 2 + 0.15;
-                const stageMesh = new THREE.Mesh(
-                    new THREE.BoxGeometry(stageW, 0.58, stageD),
-                    new THREE.MeshStandardMaterial({ color: '#141826', roughness: 0.45, metalness: 0.42 })
-                );
-                stageMesh.position.set(0, 0.29, stageZ);
-                scene.add(stageMesh);
-
-                // Barrière de sécurité devant la scène
-                const barrier = new THREE.Mesh(
-                    new THREE.BoxGeometry(stageW * 1.12, 0.46, 0.07),
-                    new THREE.MeshStandardMaterial({ color: '#64748b', metalness: 0.75, roughness: 0.3 })
-                );
-                barrier.position.set(0, 0.23, stageZ + stageD / 2 + 0.32);
-                scene.add(barrier);
-
-                // Console DJ + DJ Avatar + Écran LED + Truss + Twin Subwoofers
-                const deckMesh = new THREE.Mesh(
-                    new THREE.BoxGeometry(1.7, 0.52, 0.62),
-                    new THREE.MeshStandardMaterial({ color: '#090b10', roughness: 0.35, metalness: 0.7 })
-                );
-                deckMesh.position.set(0, 0.84, stageZ + 0.18);
-                scene.add(deckMesh);
-
-                const djGroup = new THREE.Group();
-                const djBody = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.21, 0.66, 12), new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.4 }));
-                djBody.position.y = 0.90;
-                const djHead = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), new THREE.MeshStandardMaterial({ color: '#f1c27d', roughness: 0.5 }));
-                djHead.position.y = 1.34;
-                djGroup.add(djBody, djHead);
-                djGroup.position.set(0, 0, stageZ - 0.18);
-                scene.add(djGroup);
-
-                const ledTex = _createLedStageTexture(cfg.proj.title, cfg.venue.accentHex);
-                const ledScreen = new THREE.Mesh(
-                    new THREE.PlaneGeometry(stageW * 0.82, 1.65),
-                    new THREE.MeshBasicMaterial({ map: ledTex })
-                );
-                ledScreen.position.set(0, 1.85, -fd / 2 + 0.08);
-                scene.add(ledScreen);
-
-                // Pont lumière supérieur (Truss)
-                const truss = new THREE.Mesh(
-                    new THREE.BoxGeometry(stageW * 1.15, 0.14, 0.14),
-                    new THREE.MeshStandardMaterial({ color: '#475569', metalness: 0.85, roughness: 0.25 })
-                );
-                truss.position.set(0, 3.25, stageZ + 0.45);
-                scene.add(truss);
-
-                const spkMat = new THREE.MeshStandardMaterial({ color: '#0e1118', roughness: 0.4, metalness: 0.6 });
-                const spkGeo = new THREE.BoxGeometry(0.75, 1.5, 0.75);
-                const spkL = new THREE.Mesh(spkGeo, spkMat);
-                spkL.position.set(-stageW / 2 - 0.55, 0.75, stageZ);
-                const spkR = new THREE.Mesh(spkGeo, spkMat);
-                spkR.position.set(stageW / 2 + 0.55, 0.75, stageZ);
-                scene.add(spkL, spkR);
-
-                // Bar / Carré VIP illuminé sur le mur gauche (-X)
-                const vipDeck = new THREE.Mesh(
-                    new THREE.BoxGeometry(1.55, 0.26, fd * 0.48),
-                    new THREE.MeshStandardMaterial({ color: '#1b140d', roughness: 0.5, metalness: 0.35 })
-                );
-                vipDeck.position.set(-fw / 2 + 0.85, 0.13, 0.35);
-                scene.add(vipDeck);
-                const vipBarStrip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.30, fd * 0.48), new THREE.MeshBasicMaterial({ color: 0xf59e0b }));
-                vipBarStrip.position.set(-fw / 2 + 1.63, 0.15, 0.35);
-                scene.add(vipBarStrip);
-
-                // Projecteurs volumétriques rotatifs
-                const beamGeo = new THREE.ConeGeometry(1.25, 4.4, 16, 1, true);
-                beamGeo.translate(0, -2.2, 0);
-                const beamMat = new THREE.MeshBasicMaterial({
-                    color: cfg.venue.accent,
-                    transparent: true,
-                    opacity: 0.15,
-                    side: THREE.DoubleSide,
-                    depthWrite: false,
-                    blending: THREE.AdditiveBlending
-                });
-                const beams = [-1.8, 0, 1.8].map((bx, bi) => {
-                    const b = new THREE.Mesh(beamGeo, beamMat);
-                    b.position.set(bx * (fw / 10), 3.2, stageZ + 0.45);
-                    b.rotation.x = 0.44;
-                    scene.add(b);
-                    return { mesh: b, phase: bi * 2.1 };
-                });
-
-                // Pool de 120 visiteurs 3D qui arrivent PETIT À PETIT (avant -> fond, par petites vagues!)
-                const MAX_CROWD = 120;
-                const bodyGeo = new THREE.CylinderGeometry(0.125, 0.155, 0.44, 10);
-                const headGeo = new THREE.SphereGeometry(0.12, 10, 10);
-                const flashGeo = new THREE.SphereGeometry(0.055, 6, 6);
-                const flashMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                const palette = [cfg.venue.accent, 0x38bdf8, 0xf472b6, 0xfbbf24, 0x34d399, 0xe2e8f0];
+                // Spots ordonnés Avant (près barrière y=88) -> Fond (y=244), regroupés par îlots d'amis (2-4 pers)
                 const crowd = [];
-
-                // Génération ordonnée Avant -> Fond (les premiers remplissent devant la barrière, puis la salle!)
-                const spots = [];
-                const pitMinZ = stageZ + stageD / 2 + 0.65;
-                const pitMaxZ = fd / 2 - 0.55;
-                for (let i = 0; i < MAX_CROWD; i++) {
-                    const isVip = (i % 8 === 0);
+                const numClumps = 52;
+                const clumps = [];
+                for (let cIdx = 0; cIdx < numClumps; cIdx++) {
+                    const rowT = cIdx / (numClumps - 1);
+                    const isVip = (cIdx % 7 === 1) && rowT < 0.72;
                     if (isVip) {
-                        spots.push({
-                            tx: -fw / 2 + 0.55 + Math.random() * 0.78,
-                            ty: 0.26,
-                            tz: -0.7 + Math.random() * 2.4
+                        clumps.push({
+                            cx: 86 + Math.random() * 24,
+                            cy: 92 + Math.random() * 106,
+                            isVip: true
                         });
                     } else {
-                        const rowFrac = Math.min(0.98, (i / MAX_CROWD) * 0.92 + Math.random() * 0.14);
-                        spots.push({
-                            tx: -fw * 0.34 + Math.random() * (fw * 0.72),
-                            ty: 0,
-                            tz: pitMinZ + rowFrac * (pitMaxZ - pitMinZ)
+                        clumps.push({
+                            cx: 112 + Math.random() * 254,
+                            cy: 85 + Math.pow(rowT, 0.92) * 155,
+                            isVip: false
                         });
                     }
                 }
 
                 for (let i = 0; i < MAX_CROWD; i++) {
-                    const g = new THREE.Group();
-                    const col = palette[i % palette.length];
-                    const bMat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.48, emissive: col, emissiveIntensity: 0.16 });
-                    const hMat = new THREE.MeshStandardMaterial({ color: 0xf1d0b5, roughness: 0.55 });
-                    const body = new THREE.Mesh(bodyGeo, bMat);
-                    body.position.y = 0.24;
-                    const head = new THREE.Mesh(headGeo, hMat);
-                    head.position.y = 0.54;
-                    const flash = new THREE.Mesh(flashGeo, flashMat);
-                    flash.position.set(0.15, 0.70, 0.04);
-                    flash.visible = false;
-                    g.add(body, head, flash);
+                    const clumpIdx = Math.min(numClumps - 1, Math.floor((i / MAX_CROWD) * numClumps));
+                    const clump = clumps[clumpIdx];
+                    const tx = Math.max(84, Math.min(404, clump.cx + (Math.random() - 0.5) * 18));
+                    const ty = Math.max(83, Math.min(248, clump.cy + (Math.random() - 0.5) * 13));
 
-                    // Courbe S naturelle en grappes de 2-3 amis (arrivée progressive 0.01 -> 0.88)
+                    // Courbe S naturelle en vagues de 2-4 amis (0.01 -> 0.87)
                     const groupBucket = Math.floor(i / 3) * 3;
                     const sFrac = groupBucket / MAX_CROWD;
                     const spawnTime = 0.01 + sFrac * 0.85 + Math.random() * 0.03;
 
-                    const sx = fw / 2 + 1.55 + Math.random() * 0.9;
-                    const sz = doorZ + (Math.random() - 0.5) * 0.65;
-                    g.position.set(sx, 0, sz);
-                    g.visible = false;
-                    scene.add(g);
+                    const sx = 486 + Math.random() * 14;
+                    const sy = 160 + Math.random() * 32;
+                    const wp1x = 424 + Math.random() * 16;
+                    const wp1y = 158 + Math.random() * 36;
 
                     crowd.push({
-                        group: g,
-                        flash,
-                        tx: spots[i].tx,
-                        ty: spots[i].ty,
-                        tz: spots[i].tz,
-                        wp1x: fw / 2 - 0.75 - Math.random() * 0.45,
-                        wp1z: doorZ + (Math.random() - 0.5) * 0.55,
+                        x: sx,
+                        y: sy,
                         sx,
-                        sz,
+                        sy,
+                        wp1x,
+                        wp1y,
+                        tx,
+                        ty,
+                        angle: Math.PI,
+                        cloth: clothPalette[i % clothPalette.length],
+                        hair: hairPalette[(i * 5) % hairPalette.length],
+                        scale: 0.88 + Math.random() * 0.24,
+                        phase: Math.random() * Math.PI * 2,
+                        speed: 0.042 + Math.random() * 0.024,
                         spawnTime,
                         passedDoor: false,
-                        phase: Math.random() * Math.PI * 2,
-                        speed: 0.045 + Math.random() * 0.025,
-                        active: false,
-                        leaving: false
+                        hasPhone: (i % 4 === 0),
+                        isVip: clump.isVip,
+                        active: false
                     });
                 }
+
+                // Brume atmosphérique lente
+                const hazePuffs = [
+                    { bx: 155, by: 120, r: 78, sp: 0.0005, ph: 0.0 },
+                    { bx: 295, by: 145, r: 88, sp: 0.0004, ph: 2.1 },
+                    { bx: 225, by: 185, r: 92, sp: 0.00045, ph: 4.3 }
+                ];
 
                 // Animation Timelapse CCTV + 2 Décisions Semi-Interactives
                 const DURATION_MS = 10500;
@@ -25901,7 +26049,7 @@ document.addEventListener('mouseover', (e) => {
                     const clockEl = document.getElementById('showcase-clock');
                     if (clockEl) clockEl.textContent = `J${state.day || 1} · ${String(hr).padStart(2, '0')}:${String(mn).padStart(2, '0')}:${String(sc).padStart(2, '0')} [×24]`;
 
-                    const smoothFill = Math.min(1.0, (activeCount / MAX_CROWD));
+                    const smoothFill = Math.min(1.0, activeCount / MAX_CROWD);
                     const displayPct = Math.round(Math.min(1.0, Math.max(smoothFill, liveFill * Math.min(1.0, tNorm * 1.05))) * 100);
                     const crowdCnt = Math.round((displayPct / 100) * cfg.venue.cap);
 
@@ -25928,6 +26076,7 @@ document.addEventListener('mouseover', (e) => {
 
                 const triggerFlashDecision = (which) => {
                     paused = true;
+                    glitchSpike = 1.0;
                     const slot = document.getElementById('showcase-flash-slot');
                     if (!slot) { paused = false; return; }
                     if (typeof playUIAudio === 'function') playUIAudio('toast', 0.7);
@@ -25963,6 +26112,7 @@ document.addEventListener('mouseover', (e) => {
                                 showToast("Pas assez de cash — saturation (-10%).", "error");
                                 if (typeof playError === 'function') playError();
                             }
+                            glitchSpike = 0.65;
                             slot.className = 'blive-flash-toast flex items-center justify-between gap-2 text-xs font-mono text-zinc-300';
                             slot.innerHTML = '<span>● Son stabilisé · Reprise du flux</span><span class="text-emerald-400 shrink-0">SIGNAL OK</span>';
                             paused = false;
@@ -25979,6 +26129,7 @@ document.addEventListener('mouseover', (e) => {
                                 showToast("💥 Larsen dans la salle — des gens sortent (-14%).", "error");
                                 if (typeof playError === 'function') playError();
                             }
+                            glitchSpike = 0.65;
                             slot.className = 'blive-flash-toast flex items-center justify-between gap-2 text-xs font-mono text-zinc-300';
                             slot.innerHTML = '<span>● Reprise du set jusqu\'à 02:00</span><span class="text-zinc-400 shrink-0">LIVE</span>';
                             paused = false;
@@ -26010,6 +26161,7 @@ document.addEventListener('mouseover', (e) => {
                             currentFillRatio = Math.min(1.0, currentFillRatio + 0.16);
                             if (typeof window.addRapperAffinity === 'function') window.addRapperAffinity(star, 20);
                             flashAffDelta += 20;
+                            glitchSpike = 0.75;
                             showToast(`🎤 ${star} monte sur scène ! La salle déborde (+16%) !`, "success");
                             if (typeof playSuccess === 'function') playSuccess();
                             slot.className = 'blive-flash-toast flex items-center justify-between gap-2 text-xs font-mono text-zinc-300';
@@ -26020,6 +26172,7 @@ document.addEventListener('mouseover', (e) => {
                         slot.querySelector('#flash2-solo').onclick = () => {
                             flashRepDelta += 12;
                             currentFillRatio = Math.min(1.0, currentFillRatio + 0.04);
+                            glitchSpike = 0.5;
                             showToast("🎛️ Set 100% Puriste salué (+12 REP).", "info");
                             if (typeof playBleep === 'function') playBleep();
                             slot.className = 'blive-flash-toast flex items-center justify-between gap-2 text-xs font-mono text-zinc-300';
@@ -26048,68 +26201,195 @@ document.addEventListener('mouseover', (e) => {
                         triggerFlashDecision(2);
                     }
 
-                    // Panoramique ultra-subtil de caméra CCTV motorisée
-                    const panAngle = Math.sin(now * 0.00038) * 0.65;
-                    camera.lookAt(lookBaseX + panAngle, lookBaseY, lookBaseZ);
+                    // ── STAGE 1 : Rendu 2D Overhead Architectural & Silhouettes ──
+                    srcCtx.drawImage(floorBgCanvas, 0, 0);
 
-                    // Pulsation enceintes & faisceaux lumineux
-                    const beat = Math.sin(now * 0.011);
-                    const beatPulse = 1 + Math.max(0, beat) * 0.08;
-                    spkL.scale.set(beatPulse, 1 + Math.max(0, beat) * 0.05, beatPulse);
-                    spkR.scale.set(beatPulse, 1 + Math.max(0, beat) * 0.05, beatPulse);
-                    djGroup.position.y = Math.abs(Math.sin(now * 0.008)) * 0.06;
+                    const beatVal = Math.max(0, Math.sin(now * 0.011));
+                    const stageIntensity = 0.45 + currentFillRatio * 0.55;
 
-                    beams.forEach(b => {
-                        b.mesh.rotation.z = Math.sin(now * 0.0022 + b.phase) * 0.42;
-                        b.mesh.rotation.x = 0.35 + Math.cos(now * 0.0017 + b.phase) * 0.18;
+                    // Bannière LED live sur scène (EQ dynamique + nom du projet)
+                    srcCtx.fillStyle = '#070910';
+                    srcCtx.fillRect(142, 16, 196, 15);
+                    srcCtx.strokeStyle = cfg.venue.accentHex;
+                    srcCtx.lineWidth = 1;
+                    srcCtx.strokeRect(142, 16, 196, 15);
+                    for (let eb = 0; eb < 24; eb++) {
+                        const bh = 2 + Math.abs(Math.sin(now * 0.014 + eb * 0.65)) * 10 * stageIntensity;
+                        srcCtx.fillStyle = eb % 3 === 0 ? '#ffffff' : cfg.venue.accentHex;
+                        srcCtx.globalAlpha = 0.45 + 0.4 * beatVal;
+                        srcCtx.fillRect(146 + eb * 8, 29 - bh, 5, bh);
+                    }
+                    srcCtx.globalAlpha = 1;
+                    srcCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                    srcCtx.font = 'bold 7.5px ui-monospace, Menlo, monospace';
+                    srcCtx.textAlign = 'center';
+                    srcCtx.textBaseline = 'middle';
+                    srcCtx.fillText(String(cfg.proj.title || 'SHOWCASE').toUpperCase().slice(0, 22), 240, 23.5);
+
+                    // Caissons Subwoofers gauche/droite pulsants
+                    const subPulse = beatVal * 2.1 * stageIntensity;
+                    [86, 376].forEach(sx => {
+                        srcCtx.fillStyle = '#0b0e16';
+                        srcCtx.fillRect(sx - subPulse * 0.4, 24 - subPulse * 0.4, 18 + subPulse * 0.8, 34 + subPulse * 0.8);
+                        srcCtx.strokeStyle = `rgba(${accentRgb}, ${0.35 + beatVal * 0.45})`;
+                        srcCtx.lineWidth = 1;
+                        srcCtx.strokeRect(sx, 24, 18, 34);
                     });
-                    beamMat.opacity = 0.10 + currentFillRatio * 0.16;
 
-                    // Arrivée NATURELLE petit à petit par la double porte (+X) -> SAS -> place dans la fosse
+                    // LEDs console DJ + DJ top-down sur scène
+                    for (let led = 0; led < 10; led++) {
+                        srcCtx.fillStyle = (led + Math.floor(now / 120)) % 3 === 0 ? cfg.venue.accentHex : '#e2e8f0';
+                        srcCtx.fillRect(202 + led * 8, 48, 4, 2);
+                    }
+                    _drawOverheadPerson(
+                        srcCtx,
+                        240 + Math.sin(now * 0.005) * 2.5,
+                        40,
+                        Math.PI / 2,
+                        1.08,
+                        '#334155',
+                        '#090b10',
+                        accentRgb,
+                        now * 0.012,
+                        false,
+                        0,
+                        0.45 + beatVal * 0.5
+                    );
+
+                    // 2 Agents de sécurité derrière la barrière crash + 1 Videur à l'ENTRÉE
+                    _drawOverheadPerson(srcCtx, 175, 71, Math.PI / 2, 1.0, '#1e293b', '#05070a', '148,163,184', 0, false, 0, 0);
+                    _drawOverheadPerson(srcCtx, 305, 71, Math.PI / 2, 1.0, '#1e293b', '#05070a', '148,163,184', 0, false, 0, 0);
+                    _drawOverheadPerson(srcCtx, 412, 160, 0, 1.04, '#111827', '#05070a', '52,211,153', 0, false, 0, 0);
+
+                    // Barman derrière le comptoir gauche
+                    _drawOverheadPerson(srcCtx, 42, 145 + Math.sin(now * 0.002) * 14, 0, 0.96, '#292018', '#0a090c', '245,158,11', now * 0.006, false, 0, 0);
+
+                    // Mise à jour & rendu des 175 visiteurs top-down (avant -> fond, flux par la porte ENTRÉE)
                     const maxCapCount = Math.max(2, Math.round(currentFillRatio * MAX_CROWD));
                     let activeInHall = 0;
 
-                    crowd.forEach((c, idx) => {
-                        const allowed = idx < maxCapCount;
+                    for (let i = 0; i < crowd.length; i++) {
+                        const c = crowd[i];
+                        const allowed = i < maxCapCount;
+
                         if (allowed && tNorm >= c.spawnTime) {
-                            c.group.visible = true;
                             c.active = true;
-                            c.leaving = false;
                             activeInHall++;
 
-                            if (!c.passedDoor) {
-                                c.group.position.x += (c.wp1x - c.group.position.x) * (c.speed * 1.35);
-                                c.group.position.z += (c.wp1z - c.group.position.z) * (c.speed * 1.35);
-                                if (Math.abs(c.wp1x - c.group.position.x) < 0.25 && Math.abs(c.wp1z - c.group.position.z) < 0.25) {
-                                    c.passedDoor = true;
-                                }
-                            } else {
-                                c.group.position.x += (c.tx - c.group.position.x) * c.speed;
-                                c.group.position.z += (c.tz - c.group.position.z) * c.speed;
+                            const targetX = c.passedDoor ? c.tx : c.wp1x;
+                            const targetY = c.passedDoor ? c.ty : c.wp1y;
+                            const dx = targetX - c.x;
+                            const dy = targetY - c.y;
+                            c.x += dx * (c.passedDoor ? c.speed : c.speed * 1.4);
+                            c.y += dy * (c.passedDoor ? c.speed : c.speed * 1.4);
+
+                            if (!c.passedDoor && Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+                                c.passedDoor = true;
                             }
 
-                            const distToSpot = Math.abs(c.tx - c.group.position.x) + Math.abs(c.tz - c.group.position.z);
-                            const stepBob = Math.abs(Math.sin(now * 0.015 + c.phase)) * 0.05;
-                            const danceBounce = distToSpot < 0.65 ? Math.abs(Math.sin(now * 0.012 + c.phase)) * 0.11 : stepBob;
-                            c.group.position.y = (distToSpot < 0.65 ? c.ty : 0) + danceBounce;
-                            c.flash.visible = (activeInHall / MAX_CROWD) >= 0.48 && distToSpot < 0.75 && Math.sin(now * 0.009 + c.phase * 3) > 0.72;
+                            const dist = Math.hypot(c.tx - c.x, c.ty - c.y);
+                            if (dist > 8) {
+                                c.angle = Math.atan2(dy, dx) + Math.PI / 2;
+                            } else {
+                                c.angle = Math.sin(now * 0.002 + c.phase) * 0.22;
+                            }
+
+                            if (c.x <= 474) {
+                                const inPit = dist < 12;
+                                const phoneOn = inPit && (activeInHall / MAX_CROWD) >= 0.44 && Math.sin(now * 0.007 + c.phase * 2.3) > 0.52;
+                                const dancePhase = now * 0.013 + c.phase;
+                                const armsUp = inPit ? Math.max(0, (currentFillRatio - 0.35) * 1.4 * Math.max(0, Math.sin(now * 0.008 + c.phase))) : 0;
+                                const rimCol = c.isVip ? '245, 158, 11' : accentRgb;
+
+                                _drawOverheadPerson(
+                                    srcCtx,
+                                    c.x,
+                                    c.y,
+                                    c.angle,
+                                    c.scale,
+                                    c.cloth,
+                                    c.hair,
+                                    rimCol,
+                                    dancePhase,
+                                    c.hasPhone,
+                                    phoneOn ? 1 : 0,
+                                    armsUp
+                                );
+                            }
                         } else if (c.active) {
-                            // Départ par la porte si une décision fait baisser l'affluence
-                            c.group.position.x += (c.sx - c.group.position.x) * 0.055;
-                            c.group.position.z += (c.sz - c.group.position.z) * 0.055;
-                            c.group.position.y = Math.abs(Math.sin(now * 0.015 + c.phase)) * 0.04;
-                            c.flash.visible = false;
-                            if (c.group.position.x > fw / 2 + 0.9) {
-                                c.group.visible = false;
+                            // Départ propre par la porte droite si baisse d'affluence
+                            const dx = c.sx - c.x;
+                            const dy = c.sy - c.y;
+                            c.x += dx * 0.06;
+                            c.y += dy * 0.06;
+                            c.angle = Math.atan2(dy, dx) + Math.PI / 2;
+
+                            if (c.x > 474) {
                                 c.active = false;
                                 c.passedDoor = false;
+                            } else {
+                                _drawOverheadPerson(srcCtx, c.x, c.y, c.angle, c.scale, c.cloth, c.hair, accentRgb, now * 0.01, false, 0, 0);
                             }
                         }
+                    }
+
+                    // Projecteurs volumétriques balayant la fosse & brume légère (composite additive)
+                    srcCtx.save();
+                    srcCtx.globalCompositeOperation = 'lighter';
+
+                    const spotXs = [155, 240, 325];
+                    spotXs.forEach((sx, si) => {
+                        const sweepX = sx + Math.sin(now * 0.0018 + si * 2.1) * 78;
+                        const spotGrad = srcCtx.createLinearGradient(sx, 36, sweepX, 232);
+                        const beamAlpha = (0.11 + currentFillRatio * 0.14 + beatVal * 0.06);
+                        spotGrad.addColorStop(0, `rgba(${accentRgb}, ${beamAlpha * 1.35})`);
+                        spotGrad.addColorStop(0.65, `rgba(${accentRgb}, ${beamAlpha * 0.45})`);
+                        spotGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                        srcCtx.fillStyle = spotGrad;
+                        srcCtx.beginPath();
+                        srcCtx.moveTo(sx - 6, 36);
+                        srcCtx.lineTo(sx + 6, 36);
+                        srcCtx.lineTo(sweepX + 44, 232);
+                        srcCtx.lineTo(sweepX - 44, 232);
+                        srcCtx.closePath();
+                        srcCtx.fill();
                     });
+
+                    // Léger flash stroboscopique sur pics de foule
+                    if (currentFillRatio > 0.65 && Math.sin(now * 0.025) > 0.94) {
+                        srcCtx.fillStyle = 'rgba(226, 232, 240, 0.07)';
+                        srcCtx.fillRect(0, 0, SRC_W, SRC_H);
+                    }
+
+                    // Brume dérivante de salle de concert
+                    hazePuffs.forEach(hp => {
+                        const hx = hp.bx + Math.sin(now * hp.sp + hp.ph) * 28;
+                        const hy = hp.by + Math.cos(now * hp.sp * 0.8 + hp.ph) * 14;
+                        const hg = srcCtx.createRadialGradient(hx, hy, 4, hx, hy, hp.r);
+                        hg.addColorStop(0, `rgba(${accentRgb}, 0.055)`);
+                        hg.addColorStop(0.5, 'rgba(148, 163, 184, 0.028)');
+                        hg.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                        srcCtx.fillStyle = hg;
+                        srcCtx.beginPath();
+                        srcCtx.arc(hx, hy, hp.r, 0, Math.PI * 2);
+                        srcCtx.fill();
+                    });
+
+                    srcCtx.restore();
 
                     updateHudDuringTimelapse(tNorm, currentFillRatio, activeInHall);
 
-                    if (renderer) renderer.render(scene, camera);
+                    // ── STAGE 2 : Post-traitement Shader Fisheye DVR ──
+                    if (glitchSpike > 0) glitchSpike = Math.max(0, glitchSpike - dt * 0.0028);
+
+                    if (renderer && shaderMat && srcTex) {
+                        srcTex.needsUpdate = true;
+                        shaderMat.uniforms.uTime.value = now * 0.001;
+                        shaderMat.uniforms.uGlitch.value = glitchSpike;
+                        renderer.render(scene, camera);
+                    } else if (fallbackCtx) {
+                        fallbackCtx.drawImage(srcCanvas, 0, 0, canvas.width, canvas.height);
+                    }
 
                     if (tNorm >= 1.0 && !paused) {
                         finished = true;
@@ -26131,8 +26411,9 @@ document.addEventListener('mouseover', (e) => {
                     renderer,
                     scene,
                     camera,
+                    srcTex,
                     rafId: requestAnimationFrame(stepLoop),
-                    resizeObs: null
+                    resizeObs
                 };
             }
 
