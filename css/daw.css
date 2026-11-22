@@ -1,0 +1,540 @@
+        
+        #meter-energy-fill.is-charging {
+            animation: energyChargePulse 1s ease-in-out infinite;
+            box-shadow: 0 0 15px #3b82f6, inset 0 0 10px #60a5fa;
+            background-color: #60a5fa !important;
+        }
+        @keyframes energyChargePulse {
+            0% { filter: brightness(1); opacity: 0.8; }
+            50% { filter: brightness(1.5); opacity: 1; }
+            100% { filter: brightness(1); opacity: 0.8; }
+        }
+        
+        /* CRT Scanlines for OS Windows */
+        .crt-bg {
+            position: relative;
+        }
+        .crt-bg::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.15) 50%
+            );
+            background-size: 100% 4px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .crt-bg > * {
+            position: relative;
+            z-index: 2;
+        }
+
+    
+        
+        
+
+        
+        
+
+        
+        .btn-juice {
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+            will-change: transform, filter, box-shadow;
+        }
+        .btn-juice:hover:not(:disabled) {
+            filter: brightness(1.15) contrast(1.1);
+            box-shadow: 0 0 12px rgba(255,255,255,0.15) !important;
+        }
+        .btn-juice:active:not(:disabled) {
+            transform: scale(0.96) !important;
+        }
+
+
+        /* ==========================================
+           GAME FEEL / JUICE CSS REFACTOR
+           ========================================== */
+        
+        /* 1. Floating Text */
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(0) scale(0.8); }
+            20% { opacity: 1; transform: translateY(-10px) scale(1.1); }
+            100% { opacity: 0; transform: translateY(-30px) scale(1); }
+        }
+        .floating-text {
+            position: absolute;
+            pointer-events: none;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
+            animation: floatUp 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            z-index: 9999;
+        }
+
+        /* 2. Review Tension (Flop & Banger) */
+        @keyframes violentShake {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            10% { transform: translate(-5px, -5px) rotate(-1deg); }
+            20% { transform: translate(5px, 5px) rotate(1deg); }
+            30% { transform: translate(-5px, 5px) rotate(0deg); }
+            40% { transform: translate(5px, -5px) rotate(1deg); }
+            50% { transform: translate(-5px, 0px) rotate(-1deg); }
+            60% { transform: translate(5px, 0px) rotate(0deg); }
+            70% { transform: translate(-2px, -2px) rotate(-0.5deg); }
+            80% { transform: translate(2px, 2px) rotate(0.5deg); }
+            90% { transform: translate(-1px, 1px) rotate(0deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        .screen-shake {
+            animation: violentShake 0.5s ease-in-out;
+            filter: sepia(1) hue-rotate(-50deg) saturate(3) !important;
+        }
+
+        @keyframes whiteFlash {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        .banger-flash::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100dvh;
+            background: white;
+            z-index: 10000;
+            pointer-events: none;
+            animation: whiteFlash 0.8s ease-out forwards;
+        }
+
+        /* 3. Micro-interactions */
+        button, .clickable {
+            transition: transform 0.05s ease, filter 0.15s ease, background-color 0.15s ease;
+        }
+        button:active, .clickable:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes windowOpen {
+            from { opacity: 0; transform: scale(0.98) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .os-window {
+            transform-origin: center;
+            animation: windowOpen 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            will-change: transform, opacity;
+        }
+
+    
+        /* =========================================
+           ABLESTUDIO PRO 11 - THEMING SYSTEM (SAFE OPACITY)
+           ========================================= */
+        
+        /* BASE THEME (Stock) - GUARANTEES OPACITY IF NO CLASS IS APPLIED */
+        #app-daw {
+            --daw-bg: #14141A;
+            --daw-panel: #1A1A22;
+            --daw-border: #2A2A35;
+            --daw-arr-bg: #1B1B22;
+            --daw-track-odd: rgba(255,255,255,0.02);
+            --daw-track-even: rgba(255,255,255,0.04);
+            --daw-text: #A1A1AA;
+            --daw-text-hl: #F4F4F5;
+            --daw-accent: #10B981;
+            --daw-playhead: #FFFFFF;
+            --daw-grid-line: rgba(255,255,255,0.03);
+            --daw-grid-bar: rgba(255,255,255,0.08);
+
+            background-color: var(--daw-bg) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            opacity: 1 !important;
+            color: var(--daw-text) !important;
+        }
+
+                /* VINTAGE ANALOG THEME */
+        #app-daw.theme-daw-vintage {
+            --daw-bg: #262320;
+            --daw-panel: #332D29;
+            --daw-border: #4A423A;
+            --daw-arr-bg: #2B2723;
+            --daw-track-odd: rgba(255,232,205,0.02);
+            --daw-track-even: rgba(255,232,205,0.05);
+            --daw-text: #B3A492;
+            --daw-text-hl: #FFE8CD;
+            --daw-accent: #D97736;
+            --daw-playhead: #FF3333;
+            --daw-grid-line: rgba(255,232,205,0.04);
+            --daw-grid-bar: rgba(255,232,205,0.1);
+        }
+
+        /* MONO MINIMAL THEME */
+        #app-daw.theme-daw-minimal {
+            --daw-bg: #E5E5E5;
+            --daw-panel: #F5F5F5;
+            --daw-border: #CCCCCC;
+            --daw-arr-bg: #EAEAEA;
+            --daw-track-odd: rgba(0,0,0,0.02);
+            --daw-track-even: rgba(0,0,0,0.05);
+            --daw-text: #555555;
+            --daw-text-hl: #111111;
+            --daw-accent: #000000;
+            --daw-playhead: #FF0000;
+            --daw-grid-line: rgba(0,0,0,0.05);
+            --daw-grid-bar: rgba(0,0,0,0.15);
+        }
+
+        /* SUNSET WAVE THEME */
+        #app-daw.theme-daw-sunset {
+            --daw-bg: #110722;
+            --daw-panel: #1A0A33;
+            --daw-border: #3A1366;
+            --daw-arr-bg: #15082B;
+            --daw-track-odd: rgba(255,0,127,0.03);
+            --daw-track-even: rgba(255,0,127,0.07);
+            --daw-text: #D4B3FF;
+            --daw-text-hl: #FFFFFF;
+            --daw-accent: #FF007F;
+            --daw-playhead: #00FFFF;
+            --daw-grid-line: rgba(0,255,255,0.05);
+            --daw-grid-bar: rgba(255,0,127,0.15);
+        }
+
+        #app-daw .window-content {
+            background-color: var(--daw-bg) !important;
+            padding: 24px !important;
+        }
+        
+        /* Panel Hierarchy */
+        #app-daw .window-header, 
+        #app-daw #daw-genres-details,
+        #app-daw .bg-\[\#18181b\],
+        #app-daw .daw-toolbar {
+            background-color: var(--daw-panel) !important;
+            border-color: var(--daw-border) !important;
+        }
+        
+        #app-daw .border-\[\#27272a\] {
+            border-color: var(--daw-border) !important;
+        }
+
+        /* Arrangement Container */
+        #app-daw #timeline-container {
+            background-color: var(--daw-arr-bg) !important;
+            background-image: 
+                linear-gradient(90deg, var(--daw-grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--daw-grid-bar) 1px, transparent 1px);
+            background-size: 12.5px 100%, 50px 100%;
+            background-position: left top;
+            background-repeat: repeat;
+        }
+
+        /* Alternating Track Backgrounds */
+        #app-daw .tl-track:nth-child(odd) {
+            background-color: var(--daw-track-odd);
+        }
+        #app-daw .tl-track:nth-child(even) {
+            background-color: var(--daw-track-even);
+        }
+        #app-daw .tl-track {
+            border-bottom: 1px solid var(--daw-border);
+            margin-bottom: 0 !important;
+            padding-top: 4px;
+            padding-bottom: 4px;
+        }
+
+        /* Animations */
+        @keyframes vuMeterBounce {
+            0% { transform: scaleY(0.1); }
+            50% { transform: scaleY(0.8); }
+            100% { transform: scaleY(0.3); }
+        }
+        .vu-bar-active {
+            transform-origin: bottom;
+            animation: vuMeterBounce 0.4s ease-in-out infinite alternate;
+        }
+        .vu-bar-idle {
+            transform-origin: bottom;
+            animation: vuMeterBounce 2s ease-in-out infinite alternate;
+            opacity: 0.3;
+        }
+        .btn-render-loading {
+            animation: renderPulse 1s infinite alternate;
+            pointer-events: none;
+            filter: brightness(1.5);
+        }
+        @keyframes renderPulse {
+            0% { opacity: 0.8; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1.02); }
+        }
+
+        /* Playhead */
+        #playhead-handle {
+            width: 0; 
+            height: 0; 
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid var(--daw-playhead);
+            cursor: ew-resize;
+            position: absolute;
+            top: 0;
+            left: -5px;
+            filter: drop-shadow(0 0 2px rgba(255,255,255,0.5));
+        }
+        #playhead-line {
+            width: 2px;
+            height: 100%;
+            background-color: var(--daw-playhead);
+            box-shadow: 0 0 4px var(--daw-playhead);
+        }
+        
+        /* Studio Customization Grid */
+        .theme-preview-card {
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .theme-preview-card:hover:not(.locked) {
+            transform: translateY(-2px);
+            border-color: #3b82f6;
+        }
+        .theme-preview-card.active {
+            border-color: #10b981;
+            box-shadow: 0 0 15px rgba(16,185,129,0.4);
+        }
+        .theme-preview-card.locked {
+            filter: grayscale(100%) opacity(0.5);
+            cursor: not-allowed;
+        }
+
+        /* UI Juice for AbleStudio Buttons */
+
+/* Sample Digger / Terminal Overrides */
+        
+                    @keyframes diggerMarquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
+                
+        /* CRT Scanlines for OS Windows */
+        .crt-bg {
+            position: relative;
+        }
+        .crt-bg::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.15) 50%
+            );
+            background-size: 100% 4px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .crt-bg > * {
+            position: relative;
+            z-index: 2;
+        }
+
+    
+        
+        
+
+        
+        
+
+        
+        .btn-juice {
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+            will-change: transform, filter, box-shadow;
+        }
+        .btn-juice:hover:not(:disabled) {
+            filter: brightness(1.15) contrast(1.1);
+            box-shadow: 0 0 12px rgba(255,255,255,0.15) !important;
+        }
+        .btn-juice:active:not(:disabled) {
+            transform: scale(0.96) !important;
+        }
+
+    
+        /* =========================================
+           ABLESTUDIO PRO 11 - THEMING SYSTEM (SAFE OPACITY)
+           ========================================= */
+        
+        /* BASE THEME (Stock) - GUARANTEES OPACITY IF NO CLASS IS APPLIED */
+        #app-daw {
+            --daw-bg: #14141A;
+            --daw-panel: #1A1A22;
+            --daw-border: #2A2A35;
+            --daw-arr-bg: #1B1B22;
+            --daw-track-odd: rgba(255,255,255,0.02);
+            --daw-track-even: rgba(255,255,255,0.04);
+            --daw-text: #A1A1AA;
+            --daw-text-hl: #F4F4F5;
+            --daw-accent: #10B981;
+            --daw-playhead: #FFFFFF;
+            --daw-grid-line: rgba(255,255,255,0.03);
+            --daw-grid-bar: rgba(255,255,255,0.08);
+
+            background-color: var(--daw-bg) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            opacity: 1 !important;
+            color: var(--daw-text) !important;
+        }
+
+                /* VINTAGE ANALOG THEME */
+        #app-daw.theme-daw-vintage {
+            --daw-bg: #262320;
+            --daw-panel: #332D29;
+            --daw-border: #4A423A;
+            --daw-arr-bg: #2B2723;
+            --daw-track-odd: rgba(255,232,205,0.02);
+            --daw-track-even: rgba(255,232,205,0.05);
+            --daw-text: #B3A492;
+            --daw-text-hl: #FFE8CD;
+            --daw-accent: #D97736;
+            --daw-playhead: #FF3333;
+            --daw-grid-line: rgba(255,232,205,0.04);
+            --daw-grid-bar: rgba(255,232,205,0.1);
+        }
+
+        /* MONO MINIMAL THEME */
+        #app-daw.theme-daw-minimal {
+            --daw-bg: #E5E5E5;
+            --daw-panel: #F5F5F5;
+            --daw-border: #CCCCCC;
+            --daw-arr-bg: #EAEAEA;
+            --daw-track-odd: rgba(0,0,0,0.02);
+            --daw-track-even: rgba(0,0,0,0.05);
+            --daw-text: #555555;
+            --daw-text-hl: #111111;
+            --daw-accent: #000000;
+            --daw-playhead: #FF0000;
+            --daw-grid-line: rgba(0,0,0,0.05);
+            --daw-grid-bar: rgba(0,0,0,0.15);
+        }
+
+        /* SUNSET WAVE THEME */
+        #app-daw.theme-daw-sunset {
+            --daw-bg: #110722;
+            --daw-panel: #1A0A33;
+            --daw-border: #3A1366;
+            --daw-arr-bg: #15082B;
+            --daw-track-odd: rgba(255,0,127,0.03);
+            --daw-track-even: rgba(255,0,127,0.07);
+            --daw-text: #D4B3FF;
+            --daw-text-hl: #FFFFFF;
+            --daw-accent: #FF007F;
+            --daw-playhead: #00FFFF;
+            --daw-grid-line: rgba(0,255,255,0.05);
+            --daw-grid-bar: rgba(255,0,127,0.15);
+        }
+
+        #app-daw .window-content {
+            background-color: var(--daw-bg) !important;
+            padding: 24px !important;
+        }
+        
+        /* Panel Hierarchy */
+        #app-daw .window-header, 
+        #app-daw #daw-genres-details,
+        #app-daw .bg-\[\#18181b\],
+        #app-daw .daw-toolbar {
+            background-color: var(--daw-panel) !important;
+            border-color: var(--daw-border) !important;
+        }
+        
+        #app-daw .border-\[\#27272a\] {
+            border-color: var(--daw-border) !important;
+        }
+
+        /* Arrangement Container */
+        #app-daw #timeline-container {
+            background-color: var(--daw-arr-bg) !important;
+            background-image: 
+                linear-gradient(90deg, var(--daw-grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--daw-grid-bar) 1px, transparent 1px);
+            background-size: 12.5px 100%, 50px 100%;
+            background-position: left top;
+            background-repeat: repeat;
+        }
+
+        /* Alternating Track Backgrounds */
+        #app-daw .tl-track:nth-child(odd) {
+            background-color: var(--daw-track-odd);
+        }
+        #app-daw .tl-track:nth-child(even) {
+            background-color: var(--daw-track-even);
+        }
+        #app-daw .tl-track {
+            border-bottom: 1px solid var(--daw-border);
+            margin-bottom: 0 !important;
+            padding-top: 4px;
+            padding-bottom: 4px;
+        }
+
+        /* Animations */
+        @keyframes vuMeterBounce {
+            0% { transform: scaleY(0.1); }
+            50% { transform: scaleY(0.8); }
+            100% { transform: scaleY(0.3); }
+        }
+        .vu-bar-active {
+            transform-origin: bottom;
+            animation: vuMeterBounce 0.4s ease-in-out infinite alternate;
+        }
+        .vu-bar-idle {
+            transform-origin: bottom;
+            animation: vuMeterBounce 2s ease-in-out infinite alternate;
+            opacity: 0.3;
+        }
+        .btn-render-loading {
+            animation: renderPulse 1s infinite alternate;
+            pointer-events: none;
+            filter: brightness(1.5);
+        }
+        @keyframes renderPulse {
+            0% { opacity: 0.8; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1.02); }
+        }
+
+        /* Playhead */
+        #playhead-handle {
+            width: 0; 
+            height: 0; 
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid var(--daw-playhead);
+            cursor: ew-resize;
+            position: absolute;
+            top: 0;
+            left: -5px;
+            filter: drop-shadow(0 0 2px rgba(255,255,255,0.5));
+        }
+        #playhead-line {
+            width: 2px;
+            height: 100%;
+            background-color: var(--daw-playhead);
+            box-shadow: 0 0 4px var(--daw-playhead);
+        }
+        
+        /* Studio Customization Grid */
+        .theme-preview-card {
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .theme-preview-card:hover:not(.locked) {
+            transform: translateY(-2px);
+            border-color: #3b82f6;
+        }
+        .theme-preview-card.active {
+            border-color: #10b981;
+            box-shadow: 0 0 15px rgba(16,185,129,0.4);
+        }
+        .theme-preview-card.locked {
+            filter: grayscale(100%) opacity(0.5);
+            cursor: not-allowed;
+        }
+
+        /* UI Juice for AbleStudio Buttons */
