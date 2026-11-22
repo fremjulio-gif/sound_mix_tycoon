@@ -4828,10 +4828,61 @@
 
         <div id="exhaustion-overlay" class="absolute inset-0 z-[900] opacity-0 hidden w-full h-full"></div>
 
-        <div id="sleep-overlay">
-            <div class="text-4xl animate-pulse mb-4">Zzz...</div>
-            <div class="text-xl tracking-widest uppercase">Récupération d'inspi</div>
-            <div id="sleep-progress-text" class="mt-4 text-sm text-gray-400">Réveil dans 15s...</div>
+        <div id="sleep-overlay" class="p-4">
+            <div class="gta-evt-dossier" style="--evt-rgb: 99, 102, 241; max-width: min(440px, calc(100vw - 24px));">
+                <div class="gta-evt-topbar">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="gta-evt-dot"></span>
+                        <span class="truncate">REPOS STUDIO · BILAN DE LA NUIT</span>
+                    </div>
+                    <span id="sleep-progress-text" class="shrink-0 text-indigo-300">Réveil 4s...</span>
+                </div>
+                <div class="p-5 flex flex-col gap-4 text-left">
+                    <div class="gta-evt-title-block" style="border-left-color:#818cf8;">
+                        <div class="text-[10px] font-mono uppercase tracking-[0.24em] text-indigo-300">RÉCUPÉRATION COMPLÈTE</div>
+                        <h3 class="text-xl font-extrabold tracking-[0.14em] uppercase text-white mt-0.5">NOUVELLE JOURNÉE</h3>
+                    </div>
+                    <div id="sleep-recap-body" class="grid grid-cols-2 gap-2 text-xs font-mono">
+                        <div class="bg-black/45 border border-white/10 rounded-lg p-2.5">
+                            <div class="text-[9px] text-zinc-500 uppercase">Énergie</div>
+                            <div class="text-emerald-400 font-bold text-sm mt-0.5">100% RESTAURÉE</div>
+                        </div>
+                        <div class="bg-black/45 border border-white/10 rounded-lg p-2.5">
+                            <div class="text-[9px] text-zinc-500 uppercase">Inspiration</div>
+                            <div class="text-indigo-300 font-bold text-sm mt-0.5">100% PLEINE</div>
+                        </div>
+                    </div>
+                    <button type="button" id="sleep-wake-now-btn" onclick="window.wakeUpNow && window.wakeUpNow()" class="gta-evt-choice text-center !py-2.5" style="--choice-rgb: 99, 102, 241;">
+                        <span class="text-xs font-extrabold tracking-[0.16em] uppercase text-white">Se réveiller maintenant →</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MICRO-ONBOARDING 3 ÉTAPES (Discret, non-bloquant, disparaît après 3 prods) -->
+        <div id="onboarding-guide-card" class="hidden fixed bottom-16 left-3 z-[3500] w-[275px] max-w-[calc(100vw-24px)] rounded-xl bg-[#0b0e16]/95 border border-sky-400/30 shadow-[0_14px_40px_rgba(0,0,0,0.75)] backdrop-blur-md p-3 text-left pointer-events-auto">
+            <div class="flex items-center justify-between gap-2 pb-1.5 mb-2 border-b border-white/10">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
+                    <span class="text-[9.5px] font-mono font-bold uppercase tracking-[0.18em] text-sky-300">GUIDE DÉMARRAGE</span>
+                </div>
+                <button type="button" onclick="window.dismissOnboarding && window.dismissOnboarding()" class="text-zinc-500 hover:text-white text-xs px-1 cursor-pointer" title="Masquer">✕</button>
+            </div>
+            <div id="onboarding-steps-list" class="space-y-1.5 text-[11px] text-zinc-300"></div>
+        </div>
+
+        <!-- CÉRÉMONIE BOUNCE AWARDS & FINS DE CARRIÈRE (DA CINÉMA / GTA 6 OR & OBSIDIENNE) -->
+        <div id="ceremony-overlay" class="gta-evt-backdrop fixed inset-0 z-[10000001] hidden flex-col items-center justify-center p-3 sm:p-4" style="--evt-rgb: 245, 158, 11;">
+            <div class="gta-evt-dossier wide" style="border-color: rgba(245,158,11,0.38);">
+                <div class="gta-evt-topbar">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="gta-evt-dot"></span>
+                        <span id="ceremony-eyebrow" class="truncate text-amber-300">BOUNCE AWARDS · CÉRÉMONIE OFFICIELLE</span>
+                    </div>
+                    <span id="ceremony-meta" class="shrink-0 text-amber-200/80">GALA LIVE</span>
+                </div>
+                <div id="ceremony-body" class="p-5 sm:p-6 flex flex-col gap-4"></div>
+            </div>
         </div>
 
 
@@ -4889,6 +4940,10 @@
                     </div>
                     
                     <p id="suspense-text" class="text-[10px] font-retro text-gray-400 tracking-widest text-center h-4"></p>
+
+                    <button type="button" id="btn-skip-review-suspense" onclick="window.skipReviewSuspense && window.skipReviewSuspense()" class="mt-6 px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-200 transition-all cursor-pointer">
+                        Passer l'attente ⏭
+                    </button>
                 </div>
 
                 <div id="review-phase-results" class="hidden flex-col" style="max-height: 90dvh; overflow-y: auto;">
@@ -4896,6 +4951,7 @@
                         <p id="review-track-name" class="text-xs font-retro text-[var(--text-muted)] mb-1 tracking-widest uppercase"></p>
                         <h2 class="text-xl font-retro text-white tracking-widest">📊 REVIEWS ARE IN</h2>
                     </div>
+                    <div id="review-score-breakdown" class="hidden px-4 md:px-6 pt-3 pb-1 flex flex-wrap gap-1.5 justify-center"></div>
                     <div id="review-list" class="space-y-3 p-4 md:p-6 overflow-y-auto"></div>
                     <div class="border-t border-white/10 px-4 md:px-6 py-4 flex items-center justify-between flex-shrink-0 bg-black/40">
                         <div>
@@ -6012,9 +6068,12 @@
                     <!-- CONSOLE DE MASTERING ANALOGIQUE 19" SSL / PULTEC / STUDER -->
                     <div id="daw-mastering-rack" class="bg-[#11131a] border border-amber-500/25 rounded-xl p-3 mt-2 shadow-[inset_0_2px_12px_rgba(0,0,0,0.85)]">
                         <div class="flex flex-wrap items-center justify-between gap-2 pb-2 mb-2.5 border-b border-white/10">
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
                                 <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_#f59e0b]"></span>
-                                <span class="text-[10px] font-mono font-bold tracking-widest text-amber-300 uppercase">SSL 4000G · Chaîne de Mastering Analogique 19"</span>
+                                <span class="text-[10px] font-mono font-bold tracking-widest text-amber-300 uppercase">SSL 4000G · Mastering 19"</span>
+                                <span id="daw-master-hint" class="text-[9px] font-mono text-zinc-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded">Profil : Standard</span>
+                                <span id="daw-flow-badge" class="hidden text-[9px] font-mono font-bold text-amber-200 bg-amber-500/20 border border-amber-400/50 px-2 py-0.5 rounded animate-pulse">⚡ FLOW STATE +15%</span>
+                                <span id="daw-compose-badge" class="hidden text-[9px] font-mono font-bold text-sky-200 bg-sky-500/15 border border-sky-400/40 px-2 py-0.5 rounded"></span>
                                 <span id="daw-live-room-buffs" class="text-[9px] font-mono text-purple-300 bg-purple-500/15 border border-purple-400/30 px-2 py-0.5 rounded hidden"></span>
                             </div>
                             <div class="flex items-center gap-2">
@@ -6058,9 +6117,14 @@
                                     <span class="text-[8px] font-mono text-cyan-400">-1.0 dBTP</span>
                                 </div>
                                 <button type="button" id="btn-m-lufs" onclick="window.cycleMasteringModule('lufs')" class="w-full py-1.5 px-2 rounded bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-[9px] font-mono font-bold text-cyan-200 uppercase tracking-wider transition-all cursor-pointer">
-                                    -8.5 LUFS MASTER ★
+                                    -14 LUFS STREAM
                                 </button>
                             </div>
+                        </div>
+                        <!-- PONT 3D ↔ DAW : PRÉPARATION STUDIO PHYSIQUE -->
+                        <div id="daw-studio3d-prep" class="mt-2.5 pt-2 border-t border-white/8 flex flex-wrap items-center justify-between gap-2 text-[9px] font-mono text-zinc-400">
+                            <span class="uppercase tracking-[0.16em] text-zinc-500">PREP 3D STUDIO :</span>
+                            <div id="daw-studio3d-pills" class="flex flex-wrap items-center gap-1.5"></div>
                         </div>
                     </div>
 
@@ -6849,16 +6913,22 @@
                 </div>
             </div>
 
-            <!-- Onglets segmentés Precision Minimalist -->
-            <div class="tech-tab-bar flex flex-shrink-0">
-                <button type="button" id="tab-empire-label" onclick="window.switchEmpireTab('label')" class="tech-tab-btn is-active flex-1">
+            <!-- Onglets segmentés Precision Minimalist (5 modules complets, scroll horizontal sur mobile) -->
+            <div class="tech-tab-bar flex flex-shrink-0 overflow-x-auto no-scrollbar">
+                <button type="button" id="tab-empire-label" onclick="window.switchEmpireTab('label')" class="tech-tab-btn is-active flex-1 whitespace-nowrap">
                     01 // LABEL HQ
                 </button>
-                <button type="button" id="tab-empire-sync" onclick="window.switchEmpireTab('sync')" class="tech-tab-btn flex-1">
-                    02 // SYNC &amp; PLACEMENTS
+                <button type="button" id="tab-empire-albums" onclick="window.switchEmpireTab('albums')" class="tech-tab-btn flex-1 whitespace-nowrap">
+                    02 // ALBUMS &amp; EP
                 </button>
-                <button type="button" id="tab-empire-vault" onclick="window.switchEmpireTab('vault')" class="tech-tab-btn flex-1">
-                    03 // MASTER VAULT
+                <button type="button" id="tab-empire-sync" onclick="window.switchEmpireTab('sync')" class="tech-tab-btn flex-1 whitespace-nowrap">
+                    03 // SYNC
+                </button>
+                <button type="button" id="tab-empire-network" onclick="window.switchEmpireTab('network')" class="tech-tab-btn flex-1 whitespace-nowrap">
+                    04 // RÉSEAU &amp; RIVAL
+                </button>
+                <button type="button" id="tab-empire-vault" onclick="window.switchEmpireTab('vault')" class="tech-tab-btn flex-1 whitespace-nowrap">
+                    05 // VAULT &amp; AWARDS
                 </button>
             </div>
 
@@ -6900,28 +6970,108 @@
                 <div id="label-roster-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             </div>
 
-            <!-- TAB 2 : SYNC & PLACEMENTS -->
+            <!-- TAB 2 : ALBUMS & EP (Projets 3 à 5 Tracks + Disques d'Or/Platine/Diamant 3D) -->
+            <div id="empire-view-albums" class="window-content hidden flex-1 overflow-y-auto p-4 md:p-5 tech-dot-grid custom-scrollbar">
+                <div class="tech-surface p-4 mb-4 flex flex-col gap-3">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div>
+                            <div class="text-[9.5px] font-mono text-sky-400 uppercase tracking-[0.2em]">DIR.02 // DISCOGRAPHIE &amp; SORTIES LP</div>
+                            <h3 class="text-sm md:text-base font-semibold text-white mt-0.5">Assembler un EP / Album (3 à 5 Masters)</h3>
+                            <p class="text-[11.5px] text-zinc-400 mt-0.5">Regroupe tes meilleurs titres, invite un rappeur proche en Executive Feature et grave ton disque d'Or / Platine / Diamant sur le mur 3D.</p>
+                        </div>
+                        <span id="album-selected-count" class="tech-pill signal shrink-0">0 / 5 SÉLECTIONNÉS</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 pt-2 border-t border-white/10">
+                        <input id="album-title-input" type="text" maxlength="26" placeholder="TITRE DE L'ALBUM (ex: 42E NUIT)" class="bg-[#060709] border border-white/15 rounded-md px-3 py-2 text-xs font-mono text-white uppercase tracking-wider focus:outline-none focus:border-sky-400">
+                        <select id="album-feat-select" class="bg-[#060709] border border-white/15 rounded-md px-3 py-2 text-xs font-mono text-zinc-200 focus:outline-none focus:border-sky-400">
+                            <option value="">Sans Executive Feature (Solo)</option>
+                        </select>
+                        <button type="button" onclick="window.releasePlayerAlbum()" class="tech-btn-primary py-2 px-3 text-[10px] font-mono uppercase tracking-wider">
+                            💿 Sortir l'Album · $500 Promo
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div>
+                        <div class="text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-400 mb-2">1. Sélectionne 3 à 5 Masters du Vault</div>
+                        <div id="album-track-picker" class="flex flex-col gap-2"></div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-400 mb-2">2. Discographie Sortie &amp; Certifications</div>
+                        <div id="album-released-list" class="flex flex-col gap-2.5"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3 : SYNC & PLACEMENTS -->
             <div id="empire-view-sync" class="window-content hidden flex-1 overflow-y-auto p-4 md:p-5 tech-dot-grid custom-scrollbar">
                 <div class="tech-surface p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <div class="text-[9.5px] font-mono text-sky-400 uppercase tracking-[0.2em]">DIR.02 // LICENCING &amp; SYNC</div>
+                        <div class="text-[9.5px] font-mono text-sky-400 uppercase tracking-[0.2em]">DIR.03 // LICENCING &amp; SYNC</div>
                         <h3 class="text-sm md:text-base font-semibold text-white mt-1">Briefs Cinéma, Jeux AAA &amp; Campagnes</h3>
-                        <p class="text-[11.5px] text-zinc-400 mt-1">Soumets un master compatible (genre + note) pour encaisser un placement immédiat en conservant tes droits.</p>
+                        <p class="text-[11.5px] text-zinc-400 mt-1">Soumets un master éligible (1 placement par master). Renouvellement des contrats possible 1× par jour.</p>
                     </div>
                     <button type="button" onclick="window.refreshSyncBriefs(true)" class="tech-btn-signal px-3.5 py-2 text-[10px] font-mono font-semibold uppercase tracking-wider shrink-0">
-                        ↻ Actualiser Briefs · $500
+                        ↻ Nouveaux Briefs · $500
                     </button>
                 </div>
                 <div id="sync-briefs-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             </div>
 
-            <!-- TAB 3 : VAULT & DISCOGRAPHIE INTERACTIVE -->
+            <!-- TAB 4 : RÉSEAU (AFFINITÉ RAPPEURS) & RIVALITÉ TOP 10 -->
+            <div id="empire-view-network" class="window-content hidden flex-1 overflow-y-auto p-4 md:p-5 tech-dot-grid custom-scrollbar">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <!-- Colonne Gauche : Carnet d'Affinité Rappeurs -->
+                    <div class="flex flex-col gap-3">
+                        <div class="tech-surface p-4">
+                            <div class="text-[9.5px] font-mono text-amber-400 uppercase tracking-[0.2em]">DIR.04A // AFFINITÉ RAPPEURS</div>
+                            <h3 class="text-sm md:text-base font-semibold text-white mt-0.5">Carnet d'Adresses &amp; Cercle Privé</h3>
+                            <p class="text-[11px] text-zinc-400 mt-1">Chaque collab réussie renforce ton lien. À <strong class="text-amber-300">60+ Affinité</strong>, appelle l'artiste en direct (1/jour) ou invite-le en <strong>Featuring Album (+1.2 Score)</strong>.</p>
+                        </div>
+                        <div id="empire-affinity-list" class="flex flex-col gap-2.5"></div>
+                    </div>
+
+                    <!-- Colonne Droite : Rivalité & Classement Top 10 Producteurs -->
+                    <div class="flex flex-col gap-3">
+                        <div id="empire-rival-hero" class="tech-surface p-4"></div>
+                        <div class="tech-surface p-3.5">
+                            <div class="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                                <span class="text-[10px] font-mono uppercase tracking-[0.18em] text-sky-300">TOP 10 PRODUCTEURS · LIVE</span>
+                                <span class="text-[9px] font-mono text-zinc-500">COURONNE #1 = +10% GAINS</span>
+                            </div>
+                            <div id="empire-top10-list" class="flex flex-col gap-1.5"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5 : VAULT, TROPHÉES & CÉRÉMONIES BOUNCE AWARDS -->
             <div id="empire-view-vault" class="window-content hidden flex-1 overflow-y-auto p-4 md:p-5 tech-dot-grid custom-scrollbar">
+                <!-- Bannière Cérémonies & Trophées -->
+                <div id="empire-awards-banner" class="tech-surface p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3 border-amber-400/25">
+                    <div class="min-w-0">
+                        <div class="text-[9.5px] font-mono text-amber-400 uppercase tracking-[0.2em]">DIR.05 // BOUNCE AWARDS &amp; HÉRITAGE</div>
+                        <h3 class="text-sm md:text-base font-semibold text-white mt-0.5">Vitrine des Trophées &amp; Cérémonie</h3>
+                        <div id="empire-awards-sub" class="text-[11px] font-mono text-zinc-400 mt-0.5">Prochaine cérémonie officielle tous les 14 jours in-game.</div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 shrink-0">
+                        <button type="button" id="btn-launch-ceremony" onclick="window.openBounceAwardsCeremony(false)" class="tech-btn-signal px-3.5 py-2 text-[10px] font-mono font-semibold uppercase tracking-wider">
+                            🏆 Lancer Cérémonie
+                        </button>
+                        <button type="button" id="btn-launch-ending" onclick="window.openCareerEndingModal()" class="hidden tech-btn-primary px-3.5 py-2 text-[10px] font-mono uppercase tracking-wider">
+                            👑 Fin de Carrière
+                        </button>
+                    </div>
+                </div>
+                <div id="empire-trophies-shelf" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-4"></div>
+
                 <div class="tech-surface p-4 mb-4 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div class="flex-1 min-w-0">
-                        <div class="text-[9.5px] font-mono text-sky-400 uppercase tracking-[0.2em]">DIR.03 // MASTER ARCHIVE</div>
+                        <div class="text-[9.5px] font-mono text-sky-400 uppercase tracking-[0.2em]">MASTER ARCHIVE</div>
                         <h3 id="vault-now-playing-title" class="text-sm md:text-base font-semibold text-white mt-1 truncate">Sélectionne un Master à écouter</h3>
-                        <div id="vault-now-playing-sub" class="text-[11px] font-mono text-zinc-400 mt-0.5">Les 4 meilleurs masters sont exposés sur le mur Hall of Fame du 42e étage.</div>
+                        <div id="vault-now-playing-sub" class="text-[11px] font-mono text-zinc-400 mt-0.5">Tes meilleurs albums &amp; masters sont gravés sur le mur Hall of Fame 3D.</div>
                     </div>
                     <div class="w-full md:w-64 h-14 bg-[#060709] border border-white/10 rounded-md p-1.5 flex flex-col justify-between shrink-0">
                         <canvas id="vault-wave-canvas" width="240" height="36" class="w-full h-9 rounded-sm"></canvas>
@@ -7228,7 +7378,21 @@ const DEFAULT_STATE = {
             isExporting: false, isSleeping: false, isEventActive: false,
             roomTier: 1, studioUnlocked: false, activeLocation: 'bedroom',
             avatarTier: 1, avatarVariant: 0, avatarTierPrompted: 1,
-            labelName: '42E RECORDS', signedArtists: [], artistRoyaltyMults: {}, labelSinglesCount: 0,
+            labelName: '42E RECORDS', signedArtists: [], artistRoyaltyMults: {}, artistLastSingleDay: {}, labelSinglesCount: 0,
+            completedSyncIds: [], placedSyncTrackKeys: [], lastSyncRefreshDay: 0,
+            albums: [],
+            rapperAffinity: {},
+            artistDirectCollabDay: {},
+            genreMarket: { day: 1, hotGenres: ['drill', 'afropop'], recentCounts: {} },
+            lastRentDay: 1,
+            awardsHistory: [],
+            trophies: [],
+            lastCeremonyDay: 0,
+            endingUnlocked: null,
+            prestigeCount: 0,
+            onboardingDismissed: false,
+            rivalState: { name: 'KROWN // 808', score: 1200, winsAgainst: 0, lastClashDay: 0 },
+            nightSummary: { lastMoney: 100, lastFollowers: 0, lastRep: 10 },
             isSitting: false,
             isReviewActive: false, // Ajout de l'état pour les revues
             lastRankId: 1, // Nouveau : ID de la dernière ligue atteinte
@@ -10066,9 +10230,17 @@ const DEFAULT_STATE = {
             window.syncCareerWallDiscs = function(overrideState) {
                 const st = overrideState || (typeof state !== 'undefined' ? state : null);
                 if (!window.careerWallDiscs || !st) return;
-                const tracks = Array.isArray(st.trackList)
+                const albumEntries = Array.isArray(st.albums)
+                    ? st.albums.slice().sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0)).map(a => ({
+                        title: `LP: ${a.title}`,
+                        genre: `${a.trackCount || 3} TRACKS · ${a.cert || 'ALBUM'}`,
+                        score: a.score
+                    }))
+                    : [];
+                const rawTracks = Array.isArray(st.trackList)
                     ? st.trackList.slice().sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0))
                     : [];
+                const tracks = [...albumEntries, ...rawTracks];
                 const hits = tracks.filter(t => (Number(t.score) || 0) >= 7).length;
                 const rep = Number(st.rep) || 0;
                 const artistName = st.username || 'ARTISTE';
@@ -17127,16 +17299,7 @@ function calculateLevelData(isSilentInit = false) {
     );
 
     const level = Math.max(1, Math.floor(avgMastery) || 1);
-    // Determine current rank with catch-up: pick highest rank whose follower threshold is met
-    let currentRank = getCurrentRank();
-    try {
-        const safeFollowers = Number(state?.followers) || 0;
-        // find highest rank by minFol descending where followers >= minFol
-        const sortedDesc = (PLAYER_RANKS || []).slice().sort((a,b)=> (b.minFol||0) - (a.minFol||0));
-        for (const r of sortedDesc) {
-            if (safeFollowers >= (Number(r.minFol) || 0)) { currentRank = r; break; }
-        }
-    } catch(e){}
+    const currentRank = getCurrentRank();
     const nextRank = PLAYER_RANKS.find(r => r.id === currentRank?.id + 1);
     
     
@@ -17258,31 +17421,38 @@ function calculateLevelData(isSilentInit = false) {
 
 function getRankContext(s) {
     const safeFollowers = Number(s?.followers) || 0;
-    // Tri décroissant pour trouver le rang le plus élevé débloqué
-    const sortedRanks = PLAYER_RANKS.slice().sort((a, b) => (b.minFol || 0) - (a.minFol || 0));
-    
-    let currentRank = sortedRanks[sortedRanks.length - 1]; // Fallback au plus bas
+    const safeRep = Number(s?.rep) || 0;
+    const safeTracks = Number(s?.stats?.tracks) || 0;
+    // Tri décroissant pour trouver le rang le plus élevé dont TOUS les prérequis (fans, rep, tracks) sont atteints
+    const sortedRanks = PLAYER_RANKS.slice().sort((a, b) => (b.id || 0) - (a.id || 0));
+
+    let currentRank = sortedRanks[sortedRanks.length - 1];
     let currentIndex = sortedRanks.length - 1;
 
     for (let i = 0; i < sortedRanks.length; i++) {
-        if (safeFollowers >= (Number(sortedRanks[i].minFol) || 0)) {
-            currentRank = sortedRanks[i];
+        const r = sortedRanks[i];
+        if (
+            safeFollowers >= (Number(r.minFol) || 0) &&
+            safeRep >= (Number(r.minRep) || 0) &&
+            safeTracks >= (Number(r.minTracks) || 0)
+        ) {
+            currentRank = r;
             currentIndex = i;
             break;
         }
     }
-    
-    // Inversion de l'index pour trouver précédent/suivant car le tableau est trié en descendant
+
     const prevRank = currentIndex < sortedRanks.length - 1 ? sortedRanks[currentIndex + 1] : null;
     const nextRank = currentIndex > 0 ? sortedRanks[currentIndex - 1] : null;
-    
+
     let progress = 100;
     if (nextRank) {
-        const currentMin = currentRank.minFol || 0;
-        const nextMin = nextRank.minFol;
-        progress = Math.min(100, Math.max(0, ((safeFollowers - currentMin) / (nextMin - currentMin)) * 100));
+        const fP = nextRank.minFol > 0 ? Math.min(1, safeFollowers / nextRank.minFol) : 1;
+        const rP = nextRank.minRep > 0 ? Math.min(1, safeRep / nextRank.minRep) : 1;
+        const tP = nextRank.minTracks > 0 ? Math.min(1, safeTracks / nextRank.minTracks) : 1;
+        progress = Math.round(Math.min(fP, rP, tP) * 100);
     }
-    
+
     return { currentRank, prevRank, nextRank, progress, currentVal: safeFollowers, nextVal: nextRank ? nextRank.minFol : 'MAX' };
 }
 
@@ -18829,51 +18999,86 @@ function triggerRankUp(oldRank, newRank) {
             // Formule standard : La4 (A4) = 440Hz
             return 440 * Math.pow(2, (keyNumber - 9 + (octave - 4) * 12) / 12);
         }
-const UIAudioFiles = {
-    generic: './audio/u_ui_generic.wav',
-    switch: './audio/u_ui_switch.wav',
-    toast: './audio/u_ui_toast.wav',
-    succes: './audio/u_ui_succes.wav',
-    erreur: './audio/u_ui_erreur.wav',
-    hover: './audio/u_ui_hover.wav',
-    stat: './audio/u_ui_stat.wav',
-    transaction: './audio/u_ui_transaction.wav',
-    open: './audio/u_ui_open.wav'
-};
+// =========================================================================
+// MOTEUR FOLEY WEBAUDIO PROCÉDURAL (ZERO 404 · SON STUDIO TACTILE PROPRE)
+// =========================================================================
 const UIAudioBuffers = {};
 
 async function preloadUIAudio() {
     if (!audioCtxUI) initAudio();
-    if (!audioCtxUI) return;
-    
-    const promises = Object.entries(UIAudioFiles).map(async ([key, path]) => {
-        try {
-            const response = await fetch(path);
-            const arrayBuffer = await response.arrayBuffer();
-            const audioBuffer = await audioCtxUI.decodeAudioData(arrayBuffer);
-            UIAudioBuffers[key] = audioBuffer;
-        } catch (err) {
-            console.error(`Failed to load audio: ${path}`, err);
-        }
-    });
-    await Promise.all(promises);
+    // Plus de fetch 404 sur ./audio/u_ui_*.wav : tous les effets UI sont synthétisés en WebAudio pur!
 }
 
 function playUIAudio(key, volume = 1.0) {
-    if (!audioCtxUI || audioCtxUI.state === 'suspended') return;
-    const buffer = UIAudioBuffers[key];
-    if (!buffer) return;
-    
-    const source = audioCtxUI.createBufferSource();
-    source.buffer = buffer;
-    
-    const gainNode = audioCtxUI.createGain();
-    gainNode.gain.value = volume * (window.sfxVolume !== undefined ? window.sfxVolume : 1.0);
-    
-    source.connect(gainNode);
-    gainNode.connect(audioCtxUI.destination);
-    
-    source.start(0);
+    try {
+        if (!audioCtxUI) initAudio();
+        if (!audioCtxUI) return;
+        if (audioCtxUI.state === 'suspended') {
+            if (key === 'hover') return; // Ne force pas resume sur un simple survol
+            audioCtxUI.resume().catch(() => {});
+        }
+        const sfxVol = (window.sfxVolume !== undefined ? Number(window.sfxVolume) : 0.5);
+        const masterVol = (typeof state !== 'undefined' && state && state.masterVolume !== undefined) ? Number(state.masterVolume) : 1.0;
+        const v = Math.max(0.001, Math.min(1, volume * sfxVol * masterVol));
+        if (v <= 0.002) return;
+
+        const now = audioCtxUI.currentTime;
+        const makeVoice = (type, fStart, fEnd, dur, peakGain, delay = 0) => {
+            const osc = audioCtxUI.createOscillator();
+            const g = audioCtxUI.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(fStart, now + delay);
+            if (fEnd !== fStart) osc.frequency.exponentialRampToValueAtTime(Math.max(20, fEnd), now + delay + dur);
+            g.gain.setValueAtTime(0.0001, now + delay);
+            g.gain.linearRampToValueAtTime(peakGain * v, now + delay + 0.008);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + delay + dur);
+            osc.connect(g);
+            g.connect(audioCtxUI.destination);
+            osc.start(now + delay);
+            osc.stop(now + delay + dur + 0.02);
+        };
+
+        switch (key) {
+            case 'hover':
+                makeVoice('sine', 1650, 1200, 0.028, 0.035);
+                break;
+            case 'generic':
+            case 'switch':
+                makeVoice('triangle', 740, 420, 0.045, 0.11);
+                makeVoice('sine', 1480, 980, 0.022, 0.045);
+                break;
+            case 'open':
+                makeVoice('sine', 340, 620, 0.09, 0.09);
+                makeVoice('triangle', 680, 960, 0.08, 0.04, 0.03);
+                break;
+            case 'toast':
+                makeVoice('sine', 880, 880, 0.09, 0.08);
+                makeVoice('sine', 1318.5, 1318.5, 0.13, 0.05, 0.045);
+                break;
+            case 'stat':
+                makeVoice('triangle', 987.8, 1318.5, 0.06, 0.07);
+                break;
+            case 'transaction':
+                makeVoice('sine', 1046.5, 1046.5, 0.12, 0.12, 0);
+                makeVoice('triangle', 1567.98, 1567.98, 0.22, 0.11, 0.065);
+                makeVoice('sine', 2093.0, 2093.0, 0.24, 0.06, 0.11);
+                break;
+            case 'succes':
+                // Accord chaleureux Rhodes Maj9 (C5 - E5 - G5 - D6)
+                makeVoice('triangle', 523.25, 523.25, 0.22, 0.11, 0);
+                makeVoice('triangle', 659.25, 659.25, 0.24, 0.09, 0.05);
+                makeVoice('sine', 783.99, 783.99, 0.28, 0.09, 0.10);
+                makeVoice('sine', 1174.66, 1174.66, 0.34, 0.06, 0.14);
+                break;
+            case 'erreur':
+                // Tape-stop sourd & mat (jamais agressif)
+                makeVoice('sawtooth', 220, 125, 0.16, 0.09, 0);
+                makeVoice('triangle', 165, 92, 0.22, 0.10, 0.09);
+                break;
+            default:
+                makeVoice('triangle', 640, 480, 0.05, 0.08);
+        }
+    } catch (e) {}
 }
 
 document.addEventListener('mouseover', (e) => {
@@ -23075,6 +23280,7 @@ document.addEventListener('mouseover', (e) => {
                     setTimeout(() => { el.classList.remove('pr-note-created'); }, 220);
                 });
             });
+            if (typeof window.syncMasteringRackUI === 'function') window.syncMasteringRackUI();
         }
 
         // Supprime des notes avec animation
@@ -23653,62 +23859,161 @@ document.addEventListener('mouseover', (e) => {
             ];
 
             const SYNC_BRIEF_POOL = [
-                { id: 'sync_cyber', client: 'CYBERPUNK 2088 · JEU AAA', desc: 'Trailer mondial E3 — Cherche un master puissant & futuriste.', genres: ['Synthwave', 'Trap', 'Electro'], minScore: 8.2, rewardMoney: 14500, rewardFans: 4200, rewardRep: 18 },
-                { id: 'sync_nike',  client: 'NIKE AIR MAX · CAMPAGNE MONDIALE', desc: 'Spot TV 60s — Rythmique percutante et basse 808 chirurgicale.', genres: ['Plug', 'Trap', 'Drill'], minScore: 8.5, rewardMoney: 19000, rewardFans: 6500, rewardRep: 24 },
-                { id: 'sync_netflix', client: 'NETFLIX ORIGINAL « 42e ÉTAGE »', desc: 'Générique de fin nocturne — Ambiance feutrée et mélodique.', genres: ['Bossa Lo-Fi', 'Lo-Fi', 'Boom Bap', 'Synthwave'], minScore: 7.8, rewardMoney: 11200, rewardFans: 3100, rewardRep: 15 },
-                { id: 'sync_boiler', client: 'BOILER ROOM · FESTIVAL HEADLINER', desc: 'Hymne club — Master ultra-dynamique validé sur système 18 pouces.', genres: ['ALL'], minScore: 9.0, rewardMoney: 26000, rewardFans: 9000, rewardRep: 32 }
+                { id: 'sync_cyber',   client: 'CYBERPUNK 2088 · JEU AAA', desc: 'Trailer mondial — Cherche un master puissant, sombre & incisif.', genres: ['Trap 808', 'Drum & Bass', 'Phonk'], minScore: 8.2, rewardMoney: 14500, rewardFans: 4200, rewardRep: 18 },
+                { id: 'sync_nike',    client: 'NIKE AIR MAX · CAMPAGNE MONDIALE', desc: 'Spot TV 60s — Rythmique percutante et basse 808 chirurgicale.', genres: ['UK Drill', 'Plug', 'Trap 808'], minScore: 8.5, rewardMoney: 19000, rewardFans: 6500, rewardRep: 24 },
+                { id: 'sync_netflix', client: 'NETFLIX ORIGINAL « 42e ÉTAGE »', desc: 'Générique de fin nocturne — Ambiance feutrée et mélodique.', genres: ['Bossa Lo-Fi', 'Old School', 'New Jazz'], minScore: 7.8, rewardMoney: 11200, rewardFans: 3100, rewardRep: 15 },
+                { id: 'sync_boiler',  client: 'BOILER ROOM · FESTIVAL HEADLINER', desc: 'Hymne club — Master ultra-dynamique validé sur système 18 pouces.', genres: ['ALL'], minScore: 9.0, rewardMoney: 26000, rewardFans: 9000, rewardRep: 32 },
+                { id: 'sync_afro',    client: 'CANAL+ · DOCUMENTAIRE CULTURE', desc: 'Bande originale estivale & percussions solaires.', genres: ['Afro-Pop', 'Amapiano', '2 Step'], minScore: 7.6, rewardMoney: 10500, rewardFans: 3800, rewardRep: 14 },
+                { id: 'sync_porsche', client: 'PORSCHE ELECTRIC · SPOT CINÉMA', desc: 'Design sonore futuriste haute précision et tension rythmique.', genres: ['Drum & Bass', '2 Step', 'New Jazz'], minScore: 8.4, rewardMoney: 17500, rewardFans: 5200, rewardRep: 22 },
+                { id: 'sync_gta',     client: 'VICE RADIO · STATION IN-GAME', desc: 'Rotation radio nocturne — Banger de rue certifié.', genres: ['UK Drill', 'Old School', 'Phonk', 'Plug'], minScore: 8.0, rewardMoney: 15800, rewardFans: 5800, rewardRep: 20 },
+                { id: 'sync_luxury',  client: 'FASHION WEEK PARIS · DÉFILÉ HAUTE COUTURE', desc: 'Catwalk principal — Signature sonore avant-gardiste.', genres: ['ALL'], minScore: 8.8, rewardMoney: 22000, rewardFans: 7200, rewardRep: 26 }
             ];
 
-            window.masteringChainState = {
-                eq: 1,   // 0: OFF, 1: WARM TUBE +2dB ★, 2: AIR +4dB
-                comp: 1, // 0: 2:1 SOFT, 1: 4:1 PUNCH ANALOG ★, 2: 10:1 SLAM
-                tape: 1, // 0: CLEAN DIGITAL, 1: TAPE SATURATION ★
-                lufs: 1  // 0: -14 LUFS STREAM, 1: -8.5 LUFS MASTER ★, 2: -4 LUFS CLIP
+            window._activeSyncBriefIds = ['sync_cyber', 'sync_nike', 'sync_netflix', 'sync_boiler'];
+
+            function _getTrackSyncKey(t) {
+                return t ? (t.id || `${t.title || 'UNTITLED'}::${t.date || 0}::${t.score || 0}`) : '';
+            }
+
+            function _isTrackEligibleForSyncBrief(t, brief, placedKeys) {
+                if (!t || !brief) return false;
+                const key = _getTrackSyncKey(t);
+                if (Array.isArray(placedKeys) && placedKeys.includes(key)) return false;
+                const sc = Number(t.score) || 0;
+                if (sc < brief.minScore) return false;
+                if (brief.genres.includes('ALL')) return true;
+                const tg = String(t.genre || '').toLowerCase();
+                const tid = String(t.genreId || '').toLowerCase();
+                return brief.genres.some(g => {
+                    const gl = g.toLowerCase();
+                    return tg === gl || tg.includes(gl) || gl.includes(tg) || (tid && gl.includes(tid));
+                });
+            }
+
+            // Profils de Mastering optimaux par style musical (finit le pré-réglage auto-opti!)
+            const GENRE_MASTERING_PROFILES = {
+                heavy:   { label: 'BASS / CLUB',   eq: 1, comp: 1, tape: 1, lufs: 1, genres: ['drill', 'trap808', 'phonk'] },
+                warm:    { label: 'ANALOG CHAUD',  eq: 1, comp: 0, tape: 1, lufs: 0, genres: ['bossalofi', 'oldschool', 'newjazz', 'amapiano'] },
+                air:     { label: 'AIR / POP',     eq: 2, comp: 1, tape: 0, lufs: 1, genres: ['afropop', '2step', 'plug', 'dnb'] }
             };
 
-            window.getMasteringChainBonus = function() {
-                const m = window.masteringChainState || { eq: 1, comp: 1, tape: 1, lufs: 1 };
-                let scoreBonus = 0;
-                let royaltyMult = 0;
-                if (m.eq === 1) { scoreBonus += 0.3; royaltyMult += 0.05; }
-                else if (m.eq === 2) { scoreBonus += 0.25; royaltyMult += 0.04; }
-                if (m.comp === 1) { scoreBonus += 0.35; royaltyMult += 0.07; }
-                else if (m.comp === 0) { scoreBonus += 0.15; }
-                if (m.tape === 1) { scoreBonus += 0.35; royaltyMult += 0.06; }
-                if (m.lufs === 1) { scoreBonus += 0.4; royaltyMult += 0.07; }
-                else if (m.lufs === 0) { scoreBonus += 0.2; }
-                else if (m.lufs === 2) { scoreBonus -= 0.2; royaltyMult += 0.02; } // Clipping léger
+            window.getGenreMasteringProfile = function(genreId) {
+                const g = String(genreId || (typeof currentDawGenre !== 'undefined' ? currentDawGenre : 'drill')).toLowerCase();
+                for (const key in GENRE_MASTERING_PROFILES) {
+                    if (GENRE_MASTERING_PROFILES[key].genres.includes(g)) return GENRE_MASTERING_PROFILES[key];
+                }
+                return GENRE_MASTERING_PROFILES.heavy;
+            };
+
+            // Démarrage neutre (le joueur règle sa chaîne selon le style pour décrocher la synergie max!)
+            window.masteringChainState = {
+                eq: 0,   // 0: BYPASS, 1: WARM TUBE +2dB, 2: SILK AIR +4dB
+                comp: 0, // 0: 2:1 SOFT GLUE, 1: 4:1 PUNCH ANALOG, 2: 10:1 HARD SLAM
+                tape: 0, // 0: CLEAN DIGITAL, 1: TAPE SATURATION
+                lufs: 0  // 0: -14 LUFS STREAM, 1: -8.5 LUFS MASTER, 2: -4 LUFS DISTO
+            };
+
+            window.getPianoRollCompositionBonus = function() {
+                const notes = Array.isArray(window.prNotes) ? window.prNotes : [];
+                if (notes.length < 4) return { scoreBonus: 0, cashMult: 0, label: '', count: notes.length };
+                const uniquePitches = new Set(notes.map(n => n.note)).size;
+                if (notes.length >= 8 && uniquePitches >= 3) {
+                    return { scoreBonus: 1.1, cashMult: 0.18, label: `Piano Roll Master (${notes.length} notes)`, count: notes.length };
+                }
+                if (notes.length >= 4 && uniquePitches >= 2) {
+                    return { scoreBonus: 0.6, cashMult: 0.10, label: `Mélodie Piano Roll (${notes.length} notes)`, count: notes.length };
+                }
+                return { scoreBonus: 0.25, cashMult: 0.05, label: `Esquisse Piano Roll (${notes.length} notes)`, count: notes.length };
+            };
+
+            window.getActiveDawPadsCount = function() {
+                const activeNodes = document.querySelectorAll('#app-daw [id^="pad-"].active');
+                return activeNodes ? activeNodes.length : 0;
+            };
+
+            window.getMasteringChainBonus = function(genreId) {
+                const m = window.masteringChainState || { eq: 0, comp: 0, tape: 0, lufs: 0 };
+                const prof = window.getGenreMasteringProfile(genreId);
+                let matches = 0;
+                if (m.eq === prof.eq) matches++;
+                if (m.comp === prof.comp) matches++;
+                if (m.tape === prof.tape) matches++;
+                if (m.lufs === prof.lufs) matches++;
+
+                let scoreBonus = matches * 0.32;
+                let royaltyMult = matches * 0.05;
+                let isPerfect = (matches === 4);
+                if (isPerfect) {
+                    scoreBonus += 0.32; // Total +1.60 sur synergie parfaite
+                    royaltyMult += 0.05; // Total +25% royalties
+                }
+                if (m.lufs === 2) { scoreBonus -= 0.25; } // Disto clipping léger
+                if (m.comp === 2) { scoreBonus -= 0.10; } // Sur-compression
                 if (window.activeStudioLocation === 'pro_studio') {
                     scoreBonus += 0.2; // Bonus acoustique Control Room 42e
                 }
                 return {
                     scoreBonus: Math.max(0, Math.round(scoreBonus * 10) / 10),
-                    royaltyMult: Math.max(0, royaltyMult),
-                    summary: 'Pultec EQP-1A + SSL G-Comp + Studer A800'
+                    royaltyMult: Math.max(0, Math.round(royaltyMult * 100) / 100),
+                    matches,
+                    isPerfect,
+                    profileLabel: prof.label,
+                    summary: isPerfect ? `SYNERGIE ${prof.label} 4/4` : `${prof.label} (${matches}/4)`
                 };
             };
 
             window.syncMasteringRackUI = function() {
                 const m = window.masteringChainState;
                 if (!m) return;
-                const eqLabels = ['BYPASS (0 dB)', 'WARM TUBE +2dB ★', 'SILK AIR +4dB'];
-                const compLabels = ['2:1 SOFT GLUE', '4:1 PUNCH ANALOG ★', '10:1 HARD SLAM'];
-                const tapeLabels = ['CLEAN DIGITAL', 'TAPE SATURATION ★'];
-                const lufsLabels = ['-14 LUFS STREAM', '-8.5 LUFS MASTER ★', '-4 LUFS DISTO'];
+                const prof = window.getGenreMasteringProfile();
+                const eqLabels   = ['BYPASS (0 dB)', 'WARM TUBE +2dB', 'SILK AIR +4dB'];
+                const compLabels = ['2:1 SOFT GLUE', '4:1 PUNCH ANALOG', '10:1 HARD SLAM'];
+                const tapeLabels = ['CLEAN DIGITAL', 'TAPE SATURATION'];
+                const lufsLabels = ['-14 LUFS STREAM', '-8.5 LUFS MASTER', '-4 LUFS DISTO'];
 
                 const bEq = document.getElementById('btn-m-eq');
                 const bComp = document.getElementById('btn-m-comp');
                 const bTape = document.getElementById('btn-m-tape');
                 const bLufs = document.getElementById('btn-m-lufs');
-                if (bEq) bEq.textContent = eqLabels[m.eq] || eqLabels[1];
-                if (bComp) bComp.textContent = compLabels[m.comp] || compLabels[1];
-                if (bTape) bTape.textContent = tapeLabels[m.tape] || tapeLabels[1];
-                if (bLufs) bLufs.textContent = lufsLabels[m.lufs] || lufsLabels[1];
+                if (bEq)   bEq.textContent   = (eqLabels[m.eq] || eqLabels[0]) + (m.eq === prof.eq ? ' ★' : '');
+                if (bComp) bComp.textContent = (compLabels[m.comp] || compLabels[0]) + (m.comp === prof.comp ? ' ★' : '');
+                if (bTape) bTape.textContent = (tapeLabels[m.tape] || tapeLabels[0]) + (m.tape === prof.tape ? ' ★' : '');
+                if (bLufs) bLufs.textContent = (lufsLabels[m.lufs] || lufsLabels[0]) + (m.lufs === prof.lufs ? ' ★' : '');
 
                 const bonus = window.getMasteringChainBonus();
+                const hintEl = document.getElementById('daw-master-hint');
+                if (hintEl) {
+                    hintEl.textContent = `Cible ${bonus.profileLabel} · ${bonus.matches}/4`;
+                    hintEl.className = bonus.isPerfect
+                        ? 'text-[9px] font-mono font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-400/40 px-2 py-0.5 rounded'
+                        : 'text-[9px] font-mono text-zinc-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded';
+                }
+
                 const badge = document.getElementById('daw-master-bonus-badge');
                 if (badge) {
-                    badge.textContent = `BONUS MASTER : +${bonus.scoreBonus.toFixed(1)} SCORE • +${Math.round(bonus.royaltyMult * 100)}% $`;
+                    badge.textContent = `MASTER : +${bonus.scoreBonus.toFixed(1)} SCORE • +${Math.round(bonus.royaltyMult * 100)}% $`;
+                }
+
+                // Flow State badge live
+                const flowEl = document.getElementById('daw-flow-badge');
+                if (flowEl && typeof state !== 'undefined' && state) {
+                    flowEl.classList.toggle('hidden', !state.flowStateActive);
+                }
+
+                // Piano Roll + Pads live badge
+                const compEl = document.getElementById('daw-compose-badge');
+                if (compEl) {
+                    const prB = window.getPianoRollCompositionBonus();
+                    const padCnt = window.getActiveDawPadsCount();
+                    const parts = [];
+                    if (prB.scoreBonus > 0) parts.push(`🎹 +${prB.scoreBonus.toFixed(1)}`);
+                    if (padCnt >= 4) parts.push(`🥁 Pads +0.4`);
+                    if (parts.length > 0) {
+                        compEl.textContent = parts.join(' · ');
+                        compEl.classList.remove('hidden');
+                    } else {
+                        compEl.classList.add('hidden');
+                    }
                 }
 
                 const buffsEl = document.getElementById('daw-live-room-buffs');
@@ -23723,6 +24028,23 @@ document.addEventListener('mouseover', (e) => {
                     } else {
                         buffsEl.classList.add('hidden');
                     }
+                }
+
+                // Pont 3D ↔ DAW : Préparation physique du Studio
+                const prepPills = document.getElementById('daw-studio3d-pills');
+                if (prepPills) {
+                    const isPro = (window.activeStudioLocation === 'pro_studio' || (typeof state !== 'undefined' && state && state.studioUnlocked));
+                    const items = [
+                        { ok: Boolean(window._subBassCheckBuff), label: '🔊 Sub 18" (+0.4)', tip: 'Clique SUB 18" BASS CHECK ou l\'enceinte en 3D' },
+                        { ok: Boolean(window._liveVocalTakeBuff), label: '🎙️ Micro U87 (+0.5)', tip: 'Interagis avec le micro dans le Studio 3D [E]' },
+                        { ok: Boolean(window._liveDrumGrooveBuff), label: '🥁 Live Room (+0.6)', tip: isPro ? 'Joue sur la batterie en Live Room 3D [E]' : 'Débloqué au Studio Pro 42e' },
+                        { ok: (window.getPianoRollCompositionBonus().scoreBonus > 0), label: '🎹 Piano Roll (+1.1)', tip: 'Compose au moins 4 notes dans le Piano Roll' }
+                    ];
+                    prepPills.innerHTML = items.map(it => `
+                        <span title="${it.tip}" class="px-1.5 py-0.5 rounded border ${it.ok ? 'bg-emerald-500/15 border-emerald-400/45 text-emerald-300' : 'bg-white/[0.03] border-white/10 text-zinc-500'}">
+                            ${it.ok ? '✓ ' : '○ '}${it.label}
+                        </span>
+                    `).join('');
                 }
             };
 
@@ -23993,13 +24315,13 @@ document.addEventListener('mouseover', (e) => {
 
             window.switchEmpireTab = function(tab) {
                 window._activeEmpireTab = tab || 'label';
-                ['label', 'sync', 'vault'].forEach(t => {
+                ['label', 'albums', 'sync', 'network', 'vault'].forEach(t => {
                     const btn = document.getElementById('tab-empire-' + t);
                     const view = document.getElementById('empire-view-' + t);
                     const active = (t === window._activeEmpireTab);
                     if (view) view.classList.toggle('hidden', !active);
                     if (btn) {
-                        btn.className = active ? 'tech-tab-btn is-active flex-1' : 'tech-tab-btn flex-1';
+                        btn.className = active ? 'tech-tab-btn is-active flex-1 whitespace-nowrap' : 'tech-tab-btn flex-1 whitespace-nowrap';
                     }
                 });
                 if (window._activeEmpireTab !== 'vault') window.stopVaultPreview();
@@ -24040,59 +24362,83 @@ document.addEventListener('mouseover', (e) => {
                 if (typeof state === 'undefined' || !state) return;
                 const art = LABEL_ARTIST_ROSTER.find(a => a.id === artistId);
                 if (!art) return;
+                state.artistLastSingleDay = state.artistLastSingleDay || {};
+                const today = state.day || 1;
+                if (state.artistLastSingleDay[artistId] === today) {
+                    showToast(`${art.name} a déjà sorti un single aujourd'hui (1/jour par artiste). Reviens demain !`, "info");
+                    if (typeof playBleep === 'function') playBleep();
+                    return;
+                }
                 if ((state.energy || 0) < 15 || (state.inspi || 0) < 10) {
                     showToast("Il te faut au moins 15% NRJ et 10% INSPI pour produire un single Label.", "warning");
                     return;
                 }
                 state.energy = Math.max(0, state.energy - 15);
                 state.inspi = Math.max(0, state.inspi - 10);
+                state.artistLastSingleDay[artistId] = today;
                 state.artistRoyaltyMults = state.artistRoyaltyMults || {};
-                state.artistRoyaltyMults[artistId] = Math.round(((Number(state.artistRoyaltyMults[artistId]) || 1.0) + 0.35) * 100) / 100;
+                const prevMult = Number(state.artistRoyaltyMults[artistId]) || 1.0;
+                const nextMult = Math.min(3.5, Math.round((prevMult + 0.30) * 100) / 100);
+                state.artistRoyaltyMults[artistId] = nextMult;
                 state.labelSinglesCount = (Number(state.labelSinglesCount) || 0) + 1;
-                const instantDrop = Math.round(art.baseDaily * 1.4);
+                const instantDrop = Math.round(art.baseDaily * 1.25 * Math.min(2.0, nextMult));
                 logMoney(instantDrop, `Sortie Single Label (${art.name})`);
-                logFollower(1200);
+                logFollower(1000);
                 state.rep = (Number(state.rep) || 0) + 8;
                 if (typeof updateHUD === 'function') updateHUD();
                 window.renderEmpireApp();
                 if (typeof saveGame === 'function') saveGame();
                 try { if (typeof playSuccess === 'function') playSuccess(); } catch(e) {}
-                showToast(`💿 Nouveau Single produit pour ${art.name} ! (+$${instantDrop} immédiat & Royalties/jour +35%)`, "success");
+                const capNote = nextMult >= 3.5 ? ' (Catalogue au pic ×3.5 !)' : ` (Royalties ×${nextMult.toFixed(2)})`;
+                showToast(`💿 Single produit pour ${art.name} ! +$${instantDrop} & +1000 Fans${capNote}`, "success");
             };
 
             window.refreshSyncBriefs = function(paid) {
                 if (paid && typeof state !== 'undefined' && state) {
+                    const today = state.day || 1;
+                    if (state.lastSyncRefreshDay === today) {
+                        showToast("Tu as déjà renouvelé les briefs Sync aujourd'hui. Reviens demain !", "info");
+                        return;
+                    }
                     if ((state.money || 0) < 500) {
                         showToast("Fonds insuffisants ($500 requis).", "error");
                         return;
                     }
-                    logMoney(-500, "Rafraîchissement Briefs Sync");
+                    logMoney(-500, "Renouvellement Briefs Sync");
+                    state.lastSyncRefreshDay = today;
                 }
-                window._completedSyncIds = [];
+                // Sélectionne 4 nouveaux briefs non encore complétés (ou rotation du pool de 8)
+                const done = (typeof state !== 'undefined' && state && Array.isArray(state.completedSyncIds)) ? state.completedSyncIds : [];
+                const remaining = SYNC_BRIEF_POOL.filter(b => !done.includes(b.id));
+                const source = remaining.length >= 4 ? remaining : SYNC_BRIEF_POOL;
+                const shuffled = [...source].sort(() => Math.random() - 0.5);
+                window._activeSyncBriefIds = shuffled.slice(0, 4).map(b => b.id);
+                if (typeof saveGame === 'function') saveGame();
                 window.renderEmpireApp();
-                if (paid) showToast("🎬 Nouveaux contrats de Synchronisation reçus !", "info");
+                if (paid) showToast("🎬 4 nouveaux contrats de Synchronisation reçus !", "info");
             };
 
             window.submitTrackToSyncBrief = function(briefId) {
                 if (typeof state === 'undefined' || !state) return;
                 const brief = SYNC_BRIEF_POOL.find(b => b.id === briefId);
                 if (!brief) return;
+                state.completedSyncIds = Array.isArray(state.completedSyncIds) ? state.completedSyncIds : [];
+                state.placedSyncTrackKeys = Array.isArray(state.placedSyncTrackKeys) ? state.placedSyncTrackKeys : [];
+                if (state.completedSyncIds.includes(briefId)) return;
+
                 const tracks = Array.isArray(state.trackList) ? state.trackList : [];
-                const matching = tracks.filter(t => {
-                    const sc = Number(t.score) || 0;
-                    const gMatch = brief.genres.includes('ALL') || brief.genres.some(g => g.toLowerCase() === String(t.genre || '').toLowerCase());
-                    return sc >= brief.minScore && gMatch;
-                }).sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
+                const matching = tracks
+                    .filter(t => _isTrackEligibleForSyncBrief(t, brief, state.placedSyncTrackKeys))
+                    .sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
 
                 if (matching.length === 0) {
-                    showToast(`Aucun master éligible dans ton Vault (Requis: ${brief.genres.join(' / ')} avec note ≥ ${brief.minScore}/10).`, "warning");
+                    showToast(`Aucun master libre éligible dans ton Vault (Requis: ${brief.genres.join(' / ')} · Note ≥ ${brief.minScore}/10 · Non déjà placé).`, "warning");
                     if (typeof playError === 'function') playError();
                     return;
                 }
                 const best = matching[0];
-                window._completedSyncIds = window._completedSyncIds || [];
-                if (window._completedSyncIds.includes(briefId)) return;
-                window._completedSyncIds.push(briefId);
+                state.completedSyncIds.push(briefId);
+                state.placedSyncTrackKeys.push(_getTrackSyncKey(best));
 
                 logMoney(brief.rewardMoney, `Sync Deal : ${brief.client}`);
                 logFollower(brief.rewardFans);
@@ -24101,7 +24447,461 @@ document.addEventListener('mouseover', (e) => {
                 window.renderEmpireApp();
                 if (typeof saveGame === 'function') saveGame();
                 try { if (typeof fireConfetti === 'function') fireConfetti('store'); if (typeof playCashSound === 'function') playCashSound(); } catch(e) {}
-                showToast(`🎬 PLACEMENT VALIDÉ ! « ${best.title} » (${best.score}/10) signé chez ${brief.client} (+$${brief.rewardMoney} & +${brief.rewardFans} Fans)`, "success");
+                showToast(`🎬 PLACEMENT VALIDÉ ! « ${best.title} » (${best.score}/10) signé chez ${brief.client} (+$${brief.rewardMoney.toLocaleString()} & +${brief.rewardFans} Fans)`, "success");
+            };
+
+            // =========================================================================
+            // CHANTIER 4A : AFFINITÉ RAPPEURS (CARNET D'ADRESSES, APPEL DIRECT & FEATS)
+            // =========================================================================
+            window.getRapperAffinity = function(name) {
+                if (!name || typeof state === 'undefined' || !state) return 0;
+                state.rapperAffinity = state.rapperAffinity || {};
+                return Math.max(0, Math.min(100, Number(state.rapperAffinity[name]) || 0));
+            };
+
+            window.getRapperAffinityMeta = function(score) {
+                const s = Math.max(0, Math.min(100, Number(score) || 0));
+                if (s >= 90) return { tier: 4, label: 'FRÈRE DE SON ★', acceptBonus: 30, featBonus: 1.2, color: '#fbbf24', pillCls: 'live' };
+                if (s >= 60) return { tier: 3, label: 'CERCLE PRIVÉ',   acceptBonus: 25, featBonus: 0.9, color: '#38bdf8', pillCls: 'signal' };
+                if (s >= 25) return { tier: 2, label: 'PARTENAIRE',     acceptBonus: 15, featBonus: 0.5, color: '#34d399', pillCls: 'live' };
+                return              { tier: 1, label: 'CONTACT',        acceptBonus: 0,  featBonus: 0,   color: '#94a3b8', pillCls: '' };
+            };
+
+            window.addRapperAffinity = function(name, delta) {
+                if (!name || typeof state === 'undefined' || !state) return 0;
+                state.rapperAffinity = state.rapperAffinity || {};
+                const prev = Number(state.rapperAffinity[name]) || 0;
+                const next = Math.max(0, Math.min(100, prev + (Number(delta) || 0)));
+                state.rapperAffinity[name] = next;
+                const prevTier = window.getRapperAffinityMeta(prev).tier;
+                const nextTier = window.getRapperAffinityMeta(next).tier;
+                if (nextTier > prevTier && typeof showToast === 'function') {
+                    const meta = window.getRapperAffinityMeta(next);
+                    showToast(`🤝 Affinité avec ${name} → ${meta.label} (${next}/100) !`, "success");
+                }
+                return next;
+            };
+
+            window.callRapperForDirectCollab = function(name) {
+                if (!name || typeof state === 'undefined' || !state) return;
+                const aff = window.getRapperAffinity(name);
+                if (aff < 60) {
+                    showToast(`Atteins 60/100 d'affinité avec ${name} pour l'appeler en direct.`, "warning");
+                    return;
+                }
+                state.artistDirectCollabDay = state.artistDirectCollabDay || {};
+                const today = state.day || 1;
+                if (state.artistDirectCollabDay[name] === today) {
+                    showToast(`${name} est déjà en studio aujourd'hui. Rappelle-le demain !`, "info");
+                    return;
+                }
+                state.artistDirectCollabDay[name] = today;
+                const isKnown = (typeof rappersConnus !== 'undefined' && rappersConnus.includes(name));
+                if (typeof triggerRandomEvent === 'function') {
+                    triggerRandomEvent(isKnown ? 'collab_known' : 'collab', name);
+                }
+            };
+
+            // =========================================================================
+            // CHANTIER 4B : PROJETS EP / ALBUM (3 À 5 TRACKS + DISQUES D'OR 3D)
+            // =========================================================================
+            window._selectedAlbumTrackKeys = [];
+
+            window.toggleAlbumTrackPick = function(trackKey) {
+                const idx = window._selectedAlbumTrackKeys.indexOf(trackKey);
+                if (idx >= 0) {
+                    window._selectedAlbumTrackKeys.splice(idx, 1);
+                } else {
+                    if (window._selectedAlbumTrackKeys.length >= 5) {
+                        showToast("Maximum 5 masters par EP/Album.", "info");
+                        return;
+                    }
+                    window._selectedAlbumTrackKeys.push(trackKey);
+                }
+                if (typeof playBleep === 'function') playBleep();
+                window.renderEmpireApp();
+            };
+
+            window.releasePlayerAlbum = function() {
+                if (typeof state === 'undefined' || !state) return;
+                const tracks = Array.isArray(state.trackList) ? state.trackList : [];
+                const picked = tracks.filter(t => window._selectedAlbumTrackKeys.includes(_getTrackSyncKey(t)));
+                if (picked.length < 3) {
+                    showToast("Sélectionne au moins 3 masters du Vault pour sortir un EP/Album.", "warning");
+                    if (typeof playError === 'function') playError();
+                    return;
+                }
+                if ((state.money || 0) < 500) {
+                    showToast("Il faut $500 de budget promo/pressing pour lancer l'album.", "error");
+                    if (typeof playError === 'function') playError();
+                    return;
+                }
+                const titleInput = document.getElementById('album-title-input');
+                const featSelect = document.getElementById('album-feat-select');
+                const albumTitle = (titleInput && titleInput.value.trim()) ? titleInput.value.trim().toUpperCase() : `PROJET VOL.${(state.albums?.length || 0) + 1}`;
+                const featArtist = featSelect ? featSelect.value : '';
+                const featAff = featArtist ? window.getRapperAffinity(featArtist) : 0;
+                const featBonus = featArtist ? window.getRapperAffinityMeta(featAff).featBonus : 0;
+
+                const avgRaw = picked.reduce((s, t) => s + (Number(t.score) || 0), 0) / picked.length;
+                const uniqueGenres = new Set(picked.map(t => String(t.genre || '').toLowerCase())).size;
+                const cohesionBonus = uniqueGenres <= 2 ? 0.5 : (uniqueGenres === 3 ? 0.3 : 0.15);
+                const finalAlbumScore = Math.min(10, Math.round((avgRaw + cohesionBonus + featBonus) * 10) / 10);
+
+                let cert = 'ARGENT', mult = 1.0;
+                if (finalAlbumScore >= 9.4)      { cert = 'DIAMANT';    mult = 2.6; }
+                else if (finalAlbumScore >= 8.8) { cert = '2× PLATINE'; mult = 2.0; }
+                else if (finalAlbumScore >= 8.2) { cert = 'PLATINE';    mult = 1.55; }
+                else if (finalAlbumScore >= 7.4) { cert = 'OR';         mult = 1.25; }
+
+                logMoney(-500, `Promo Album : ${albumTitle}`);
+                const firstWeekSales = Math.round((1200 + (state.followers || 0) * 0.35 + picked.length * 600) * (finalAlbumScore / 7) * mult);
+                const albumCash = Math.round((1800 + picked.length * 750) * (finalAlbumScore / 7) * mult * Math.min(2.0, state.multiplier || 1));
+                const albumFans = Math.round(firstWeekSales * 0.45);
+                const albumRep = Math.round(18 * mult);
+
+                state.albums = Array.isArray(state.albums) ? state.albums : [];
+                state.albums.unshift({
+                    id: `alb_${Date.now()}`,
+                    title: albumTitle,
+                    trackCount: picked.length,
+                    featArtist: featArtist || null,
+                    score: finalAlbumScore,
+                    cert,
+                    sales: firstWeekSales,
+                    cash: albumCash,
+                    day: state.day || 1
+                });
+
+                logMoney(albumCash, `Sortie Album « ${albumTitle} » (${cert})`);
+                logFollower(albumFans);
+                state.rep = (Number(state.rep) || 0) + albumRep;
+                if (featArtist) window.addRapperAffinity(featArtist, 12);
+
+                window._selectedAlbumTrackKeys = [];
+                if (titleInput) titleInput.value = '';
+                if (typeof window.syncCareerWallDiscs === 'function') window.syncCareerWallDiscs();
+                if (typeof fireConfetti === 'function') fireConfetti('banger');
+                if (typeof playSuccess === 'function') playSuccess();
+                if (typeof updateHUD === 'function') updateHUD();
+                window.renderEmpireApp();
+                if (typeof saveGame === 'function') saveGame();
+                showToast(`💿 ALBUM « ${albumTitle} » CERTIFIÉ ${cert} (${finalAlbumScore}/10) · ${firstWeekSales.toLocaleString('fr-FR')} ventes Sem. 1 · +$${albumCash.toLocaleString('fr-FR')} !`, "success");
+            };
+
+            // =========================================================================
+            // CHANTIER 4C : RIVALITÉ PRODUCTEUR & CLASSEMENT TOP 10 VIVANT
+            // =========================================================================
+            const INDUSTRY_TOP10_PRODS = [
+                { name: 'KROWN // 808', isRival: true, style: 'Trap / Dark Drill', base: 1400 },
+                { name: 'METRO VEX',    style: 'Cinematic 808', base: 4200 },
+                { name: 'SORA BEATS',   style: 'Afro / Amapiano', base: 3100 },
+                { name: 'NOVA SSL',     style: 'Plug / New Jazz', base: 2450 },
+                { name: 'KAZE 909',     style: 'Drum & Bass / 2 Step', base: 1850 },
+                { name: 'DANTE TAPE',   style: 'Old School / Lo-Fi', base: 1250 },
+                { name: 'YUKI PHONK',   style: 'Phonk / Club', base: 920 },
+                { name: 'LÉO VINYL',    style: 'Bossa Lo-Fi', base: 640 },
+                { name: 'BASSLINE Z',   style: 'UK Drill', base: 380 }
+            ];
+
+            window.getPlayerProducerPower = function() {
+                const st = typeof state !== 'undefined' ? state : {};
+                const foll = Number(st.followers) || 0;
+                const rep = Number(st.rep) || 0;
+                const bangers = Number(st.stats && st.stats.bangers) || 0;
+                const albums = Array.isArray(st.albums) ? st.albums.length : 0;
+                const trophies = Array.isArray(st.trophies) ? st.trophies.length : 0;
+                return Math.round(foll * 0.08 + rep * 18 + bangers * 110 + albums * 420 + trophies * 350);
+            };
+
+            window.getProducerLeaderboard = function() {
+                const st = typeof state !== 'undefined' ? state : {};
+                const day = Number(st.day) || 1;
+                const rScore = (st.rivalState && Number(st.rivalState.score)) ? Number(st.rivalState.score) : (1400 + day * 45);
+                const list = INDUSTRY_TOP10_PRODS.map(p => ({
+                    name: p.name,
+                    style: p.style,
+                    isRival: Boolean(p.isRival),
+                    isPlayer: false,
+                    score: p.isRival ? Math.round(rScore) : Math.round(p.base + day * 18)
+                }));
+                list.push({
+                    name: (st.username || 'TOI').toUpperCase(),
+                    style: (st.labelName || '42E RECORDS'),
+                    isRival: false,
+                    isPlayer: true,
+                    score: window.getPlayerProducerPower()
+                });
+                return list.sort((a, b) => b.score - a.score).slice(0, 10);
+            };
+
+            window.isPlayerRankOneProducer = function() {
+                const lb = window.getProducerLeaderboard();
+                return Boolean(lb.length > 0 && lb[0].isPlayer);
+            };
+
+            window.challengeRivalProducer = function() {
+                if (typeof state === 'undefined' || !state) return;
+                state.rivalState = state.rivalState || { name: 'KROWN // 808', score: 1400, winsAgainst: 0, lastClashDay: 0 };
+                const today = state.day || 1;
+                if (state.rivalState.lastClashDay === today) {
+                    showToast("Tu as déjà défié KROWN // 808 aujourd'hui. Laisse la poussière retomber jusqu'à demain !", "info");
+                    return;
+                }
+                if ((state.energy || 0) < 20) {
+                    showToast("Il te faut 20% d'énergie pour défier KROWN // 808 en Beat Battle !", "warning");
+                    return;
+                }
+                state.energy = Math.max(0, state.energy - 20);
+                state.rivalState.lastClashDay = today;
+
+                const myPow = window.getPlayerProducerPower();
+                const rivPow = Number(state.rivalState.score) || 1400;
+                const winProb = Math.max(25, Math.min(85, Math.round(50 + ((myPow - rivPow) / Math.max(800, rivPow)) * 35)));
+
+                if (Math.random() * 100 <= winProb) {
+                    const cashWin = 1200 + Math.floor(Math.random() * 1300);
+                    const fansWin = 1500 + Math.floor(Math.random() * 1500);
+                    state.rivalState.score = Math.max(600, Math.round(rivPow * 0.86));
+                    state.rivalState.winsAgainst = (state.rivalState.winsAgainst || 0) + 1;
+                    logMoney(cashWin, `Beat Battle gagné vs ${state.rivalState.name}`);
+                    logFollower(fansWin);
+                    state.rep = (Number(state.rep) || 0) + 18;
+                    if (typeof fireConfetti === 'function') fireConfetti('banger');
+                    if (typeof playSuccess === 'function') playSuccess();
+                    showToast(`⚔️ VICTOIRE BEAT BATTLE contre ${state.rivalState.name} ! +$${cashWin} · +${fansWin} Fans · +18 REP !`, "success");
+                } else {
+                    state.rivalState.score = Math.round(rivPow * 1.08);
+                    state.rep = Math.max(0, (Number(state.rep) || 0) - 8);
+                    if (typeof playError === 'function') playError();
+                    showToast(`⚔️ ${state.rivalState.name} a remporté le clash (${winProb}% de chances). -8 REP — prépare un plus gros master !`, "error");
+                }
+                if (typeof updateHUD === 'function') updateHUD();
+                window.renderEmpireApp();
+                if (typeof saveGame === 'function') saveGame();
+            };
+
+            // =========================================================================
+            // CHANTIER 4D : CÉRÉMONIES BOUNCE AWARDS & 3 FINS DE CARRIÈRE + PRESTIGE
+            // =========================================================================
+            window.closeCeremonyOverlay = function() {
+                const ov = document.getElementById('ceremony-overlay');
+                if (ov) {
+                    ov.classList.add('hidden');
+                    ov.classList.remove('flex');
+                }
+                if (typeof state !== 'undefined' && state) state.isEventActive = false;
+            };
+
+            window.openBounceAwardsCeremony = function(isAuto = false) {
+                if (typeof state === 'undefined' || !state) return;
+                const today = state.day || 1;
+                if (!isAuto && (today - (state.lastCeremonyDay || 0)) < 7 && (state.awardsHistory?.length || 0) > 0) {
+                    const left = 7 - (today - (state.lastCeremonyDay || 0));
+                    showToast(`Prochaine édition des Bounce Awards disponible dans ${left} jour(s) in-game !`, "info");
+                    return;
+                }
+                state.isEventActive = true;
+                if (typeof window.enforceFpsModalPriority === 'function') window.enforceFpsModalPriority();
+                state.lastCeremonyDay = today;
+
+                const edition = (state.awardsHistory?.length || 0) + 1;
+                const tracks = Array.isArray(state.trackList) ? state.trackList : [];
+                const albums = Array.isArray(state.albums) ? state.albums : [];
+                const bestTrack = tracks.slice().sort((a, b) => (b.score || 0) - (a.score || 0))[0];
+                const bestAlbum = albums.slice().sort((a, b) => (b.score || 0) - (a.score || 0))[0];
+                const maxAff = Object.values(state.rapperAffinity || {}).reduce((m, v) => Math.max(m, Number(v) || 0), 0);
+
+                const categories = [
+                    {
+                        id: 'beatmaker_year',
+                        title: 'Beatmaker de l\'Année',
+                        icon: '🎛️',
+                        won: ((state.stats?.bangers || 0) >= 3 && (bestTrack?.score || 0) >= 8.2),
+                        detail: bestTrack ? `Meilleur master : « ${bestTrack.title} » (${bestTrack.score}/10)` : 'Produis au moins 3 Bangers (8.2+/10)',
+                        cash: 2500, rep: 25
+                    },
+                    {
+                        id: 'album_year',
+                        title: 'Album / Projet de l\'Année',
+                        icon: '💿',
+                        won: Boolean(bestAlbum && bestAlbum.score >= 8.0),
+                        detail: bestAlbum ? `« ${bestAlbum.title} » · ${bestAlbum.cert} (${bestAlbum.score}/10)` : 'Sors un EP/Album noté ≥ 8.0/10 dans Empire OS',
+                        cash: 4500, rep: 35
+                    },
+                    {
+                        id: 'industry_mogul',
+                        title: 'Roi de l\'Industrie',
+                        icon: '👑',
+                        won: ((state.signedArtists?.length || 0) >= 1 || (state.completedSyncIds?.length || 0) >= 1 || window.isPlayerRankOneProducer()),
+                        detail: `Label ${(state.signedArtists?.length || 0)} artistes · ${(state.completedSyncIds?.length || 0)} Sync Deals`,
+                        cash: 3500, rep: 30
+                    },
+                    {
+                        id: 'soundnet_public',
+                        title: 'Prix du Public & Réseau',
+                        icon: '🔥',
+                        won: ((state.followers || 0) >= 8000 || maxAff >= 60),
+                        detail: `${(state.followers || 0).toLocaleString('fr-FR')} Fans · Affinité max ${maxAff}/100`,
+                        cash: 2000, rep: 20
+                    }
+                ];
+
+                let totalCash = 0, totalRep = 0, wins = 0;
+                state.trophies = Array.isArray(state.trophies) ? state.trophies : [];
+                categories.forEach(c => {
+                    if (c.won) {
+                        wins++;
+                        totalCash += c.cash;
+                        totalRep += c.rep;
+                        if (!state.trophies.some(t => t.id === c.id && t.edition === edition)) {
+                            state.trophies.push({ id: c.id, title: c.title, icon: c.icon, edition, day: today });
+                        }
+                    }
+                });
+
+                state.awardsHistory = Array.isArray(state.awardsHistory) ? state.awardsHistory : [];
+                state.awardsHistory.push({ edition, day: today, wins });
+                if (totalCash > 0) logMoney(totalCash, `Bounce Awards #${edition} (${wins} Trophée${wins > 1 ? 's' : ''})`);
+                if (totalRep > 0) state.rep = (Number(state.rep) || 0) + totalRep;
+
+                const ov = document.getElementById('ceremony-overlay');
+                const body = document.getElementById('ceremony-body');
+                const meta = document.getElementById('ceremony-meta');
+                if (meta) meta.textContent = `ÉDITION #${edition} · JOUR ${today}`;
+                if (body) {
+                    body.innerHTML = `
+                        <div class="gta-evt-title-block">
+                            <div class="text-[10px] font-mono uppercase tracking-[0.26em] text-amber-400">SOIRÉE OFFICIELLE · PALAIS DU SON</div>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold tracking-[0.14em] uppercase text-white mt-0.5">BOUNCE AWARDS #${edition}</h2>
+                        </div>
+                        <p class="text-xs sm:text-sm text-zinc-300">
+                            ${wins > 0
+                                ? `Triomphe sur tapis rouge ! Tu repars avec <strong class="text-amber-300">${wins} trophée${wins > 1 ? 's' : ''} officiel${wins > 1 ? 's' : ''}</strong> (+$${totalCash.toLocaleString('fr-FR')} · +${totalRep} REP).`
+                                : `Tu étais nominé cette saison, mais la concurrence a pris les statuettes. Sors un Album ou signe un artiste pour dominer la prochaine édition !`}
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            ${categories.map(c => `
+                                <div class="rounded-xl p-3.5 border ${c.won ? 'bg-amber-500/12 border-amber-400/50 shadow-[0_0_24px_rgba(245,158,11,0.14)]' : 'bg-black/45 border-white/10 opacity-75'}">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="text-xs font-extrabold uppercase tracking-wider text-white">${c.icon} ${c.title}</span>
+                                        <span class="gta-evt-badge" style="${c.won ? 'background:rgba(245,158,11,0.22);border-color:rgba(245,158,11,0.6);color:#fde68a;' : ''}">${c.won ? '★ REMPORTÉ' : 'NOMINÉ'}</span>
+                                    </div>
+                                    <div class="text-[11px] font-mono text-zinc-400 mt-1.5">${c.detail}</div>
+                                    ${c.won ? `<div class="text-[10px] font-mono text-emerald-400 font-bold mt-1.5">+$${c.cash.toLocaleString('fr-FR')} · +${c.rep} REP</div>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button type="button" onclick="window.closeCeremonyOverlay()" class="gta-evt-choice text-center !py-3" style="--choice-rgb: 245, 158, 11;">
+                            <span class="text-xs font-extrabold uppercase tracking-[0.18em] text-amber-200">Retourner au Studio →</span>
+                        </button>
+                    `;
+                }
+                if (ov) { ov.classList.remove('hidden'); ov.classList.add('flex'); }
+                if (wins > 0) {
+                    if (typeof fireConfetti === 'function') fireConfetti('banger');
+                    if (typeof playSuccess === 'function') playSuccess();
+                } else if (typeof playBleep === 'function') {
+                    playBleep();
+                }
+                if (typeof updateHUD === 'function') updateHUD();
+                window.renderEmpireApp();
+                if (typeof saveGame === 'function') saveGame();
+            };
+
+            window.openCareerEndingModal = function() {
+                if (typeof state === 'undefined' || !state) return;
+                const align = Number(state.echoAlignment) || 0;
+                let ending = {
+                    id: 'mogul',
+                    badge: 'FIN LÉGENDAIRE · EMPIRE',
+                    title: 'EMPEREUR DU 42E ÉTAGE',
+                    accent: '245, 158, 11',
+                    desc: `Avec ton label ${state.labelName || '42E RECORDS'}, tes albums certifiés et ton Studio Pro dominant la skyline, tu es devenu le producteur exécutif le plus influent de la décennie.`
+                };
+                if (align >= 25) {
+                    ending = {
+                        id: 'purist',
+                        badge: 'FIN LÉGENDAIRE · PURISTE',
+                        title: 'ICÔNE UNDERGROUND PURISTE',
+                        accent: '16, 185, 129',
+                        desc: `Tu as refusé de céder aux raccourcis algorithmiques. Tes masters analogiques, tes prises live et ton intégrité artistique inspirent toute une génération de beatmakers.`
+                    };
+                } else if (align <= -25) {
+                    ending = {
+                        id: 'algorithm',
+                        badge: 'FIN LÉGENDAIRE · NEURAL',
+                        title: 'FANTÔME DE L\'ALGORITHME IA',
+                        accent: '56, 189, 248',
+                        desc: `En symbiose totale avec Echo AI, tu as piraté les charts mondiaux et industrialisé le tube parfait. Personne ne sait où s'arrête l'humain et où commence la machine.`
+                    };
+                }
+                state.endingUnlocked = ending.id;
+                state.isEventActive = true;
+                const ov = document.getElementById('ceremony-overlay');
+                const body = document.getElementById('ceremony-body');
+                const meta = document.getElementById('ceremony-meta');
+                if (ov) ov.style.setProperty('--evt-rgb', ending.accent);
+                if (meta) meta.textContent = `PRESTIGE #${(state.prestigeCount || 0) + 1}`;
+                if (body) {
+                    body.innerHTML = `
+                        <div class="gta-evt-title-block">
+                            <div class="text-[10px] font-mono uppercase tracking-[0.26em] text-amber-300">${ending.badge}</div>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold tracking-[0.14em] uppercase text-white mt-0.5">${ending.title}</h2>
+                        </div>
+                        <p class="text-sm text-zinc-200 leading-relaxed">${ending.desc}</p>
+                        <div class="grid grid-cols-3 gap-2.5 text-center font-mono">
+                            <div class="bg-black/45 border border-white/10 rounded-xl p-3">
+                                <div class="text-[9px] text-zinc-500 uppercase">Trophées</div>
+                                <div class="text-lg font-bold text-amber-300">${(state.trophies?.length || 0)} 🏆</div>
+                            </div>
+                            <div class="bg-black/45 border border-white/10 rounded-xl p-3">
+                                <div class="text-[9px] text-zinc-500 uppercase">Albums</div>
+                                <div class="text-lg font-bold text-sky-300">${(state.albums?.length || 0)} 💿</div>
+                            </div>
+                            <div class="bg-black/45 border border-white/10 rounded-xl p-3">
+                                <div class="text-[9px] text-zinc-500 uppercase">Followers</div>
+                                <div class="text-lg font-bold text-emerald-300">${formatNum(state.followers || 0)}</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <button type="button" onclick="window.closeCeremonyOverlay()" class="gta-evt-choice text-center !py-3" style="--choice-rgb: 16, 185, 129;">
+                                <div class="text-xs font-extrabold uppercase tracking-wider text-emerald-300">Continuer en Mode Libre</div>
+                                <div class="text-[9.5px] font-mono text-zinc-400 mt-0.5">Conserver ton empire actuel</div>
+                            </button>
+                            <button type="button" onclick="window.startPrestigeNewEra()" class="gta-evt-choice text-center !py-3" style="--choice-rgb: 245, 158, 11;">
+                                <div class="text-xs font-extrabold uppercase tracking-wider text-amber-300">Nouvelle Ère · Prestige</div>
+                                <div class="text-[9.5px] font-mono text-zinc-400 mt-0.5">Repartir Jour 1 avec +0.15 Mix &amp; Trophées</div>
+                            </button>
+                        </div>
+                    `;
+                }
+                if (ov) { ov.classList.remove('hidden'); ov.classList.add('flex'); }
+                if (typeof fireConfetti === 'function') fireConfetti('banger');
+                if (typeof playSuccess === 'function') playSuccess();
+                if (typeof saveGame === 'function') saveGame();
+            };
+
+            window.startPrestigeNewEra = function() {
+                if (typeof state === 'undefined' || !state) return;
+                const keepUser = state.username;
+                const keepChar = state.activeCharacter;
+                const keepTrophies = Array.isArray(state.trophies) ? state.trophies : [];
+                const keepPrestige = (Number(state.prestigeCount) || 0) + 1;
+                const keepPermMix = Math.min(1.0, (parseFloat(state.permanentMixBonus) || 0) + 0.15);
+                const fresh = JSON.parse(JSON.stringify(DEFAULT_STATE));
+                fresh.username = keepUser;
+                fresh.activeCharacter = keepChar;
+                fresh.trophies = keepTrophies;
+                fresh.prestigeCount = keepPrestige;
+                fresh.permanentMixBonus = Math.round(keepPermMix * 100) / 100;
+                fresh.money = 500 * keepPrestige;
+                fresh.onboardingDismissed = true;
+                state = fresh;
+                window.closeCeremonyOverlay();
+                if (typeof saveGame === 'function') saveGame();
+                if (typeof updateHUD === 'function') updateHUD();
+                showToast(`👑 NOUVELLE ÈRE PRESTIGE #${keepPrestige} ! Bonus permanent +${fresh.permanentMixBonus.toFixed(2)} Qualité Mix conservé.`, "success");
             };
 
             // --- VAULT : LECTEUR AUDIO DE MASTERS & VISUALISEUR D'ONDE ---
@@ -24234,11 +25034,13 @@ document.addEventListener('mouseover', (e) => {
                                     <p class="text-[11px] text-zinc-400 bg-[#06070a] border border-white/5 rounded-md px-3 py-2 leading-relaxed">« ${art.quote} »</p>
                                 `}
                                 <div class="flex gap-2">
-                                    ${isSigned ? `
-                                        <button type="button" onclick="window.produceLabelArtistSingle('${art.id}')" class="tech-btn-primary flex-1 py-2 px-3 font-mono text-[10px] uppercase tracking-wider">
-                                            Produire Single · -15 NRJ / +35%
-                                        </button>
-                                    ` : `
+                                    ${isSigned ? (() => {
+                                        const doneToday = Boolean(st.artistLastSingleDay && st.artistLastSingleDay[art.id] === (st.day || 1));
+                                        return `
+                                        <button type="button" ${doneToday ? 'disabled' : ''} onclick="window.produceLabelArtistSingle('${art.id}')" class="${doneToday ? 'tech-btn-ghost opacity-60 cursor-not-allowed' : 'tech-btn-primary'} flex-1 py-2 px-3 font-mono text-[10px] uppercase tracking-wider">
+                                            ${doneToday ? '✓ Single Sorti Aujourd\'hui' : 'Produire Single · -15 NRJ / +30%'}
+                                        </button>`;
+                                    })() : `
                                         <button type="button" onclick="window.signLabelArtist('${art.id}')" class="tech-btn-signal flex-1 py-2 px-3 font-mono font-semibold text-[10px] uppercase tracking-wider">
                                             + Signer sur le Label · $${art.signCost}
                                         </button>
@@ -24249,20 +25051,79 @@ document.addEventListener('mouseover', (e) => {
                     }).join('');
                 }
 
-                // 2. Rendu SYNC & PLACEMENTS (Scan Éligibilité Vault Live + Icônes Vectorielles + Gros Payout)
+                // 2. Rendu ALBUMS & EP (Sélecteur 3-5 Masters + Executive Feature + Discographie)
+                const albPicker = document.getElementById('album-track-picker');
+                const albList = document.getElementById('album-released-list');
+                const albCountPill = document.getElementById('album-selected-count');
+                const albFeatSel = document.getElementById('album-feat-select');
+                if (albCountPill) albCountPill.textContent = `${window._selectedAlbumTrackKeys.length} / 5 SÉLECTIONNÉS`;
+                if (albFeatSel) {
+                    const prevVal = albFeatSel.value;
+                    const closeRappers = Object.entries(st.rapperAffinity || {})
+                        .filter(([, score]) => Number(score) >= 60)
+                        .sort((a, b) => Number(b[1]) - Number(a[1]));
+                    albFeatSel.innerHTML = `<option value="">Sans Executive Feature (Solo)</option>` +
+                        closeRappers.map(([name, sc]) => {
+                            const meta = window.getRapperAffinityMeta(sc);
+                            return `<option value="${name}" ${prevVal === name ? 'selected' : ''}>★ Feat. ${name} (+${meta.featBonus} Score · Aff. ${sc})</option>`;
+                        }).join('');
+                }
+                if (albPicker) {
+                    const sortedT = [...playerTracks].sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
+                    if (sortedT.length === 0) {
+                        albPicker.innerHTML = '<div class="tech-surface p-5 text-center text-xs font-mono text-zinc-500">Exporte au moins 3 masters dans AbleStudio pour assembler un EP/Album.</div>';
+                    } else {
+                        albPicker.innerHTML = sortedT.map(t => {
+                            const tk = _getTrackSyncKey(t);
+                            const sel = window._selectedAlbumTrackKeys.includes(tk);
+                            return `
+                                <button type="button" onclick="window.toggleAlbumTrackPick('${tk.replace(/'/g, "\\'")}')" class="tech-card ${sel ? 'is-active' : ''} p-2.5 flex items-center justify-between gap-2 text-left cursor-pointer">
+                                    <div class="min-w-0">
+                                        <div class="text-xs font-semibold text-white uppercase tracking-wider truncate">${sel ? '✓ ' : '○ '}${t.title || 'UNTITLED'}</div>
+                                        <div class="text-[10px] font-mono text-zinc-400">${t.genre || 'Mix'} · Jour ${t.date || 1}</div>
+                                    </div>
+                                    <span class="tech-pill ${sel ? 'live' : ''}">${Number(t.score || 0).toFixed(1)}/10</span>
+                                </button>
+                            `;
+                        }).join('');
+                    }
+                }
+                if (albList) {
+                    const albums = Array.isArray(st.albums) ? st.albums : [];
+                    if (albums.length === 0) {
+                        albList.innerHTML = '<div class="tech-surface p-5 text-center text-xs font-mono text-zinc-500">Aucun EP/Album sorti pour le moment. Tes disques certifiés s\'affichent en 3D sur le mur du studio !</div>';
+                    } else {
+                        albList.innerHTML = albums.map(a => `
+                            <div class="tech-card is-active p-3.5 flex flex-col gap-2">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="min-w-0">
+                                        <div class="flex flex-wrap items-center gap-1.5">
+                                            <span class="text-sm font-bold text-white uppercase tracking-wider truncate">💿 ${a.title}</span>
+                                            <span class="tech-pill signal">${a.cert}</span>
+                                        </div>
+                                        <div class="text-[10.5px] font-mono text-zinc-400 mt-0.5">${a.trackCount} Tracks${a.featArtist ? ` · Feat. ${a.featArtist}` : ''} · Jour ${a.day || 1}</div>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <div class="text-sm font-mono font-bold text-emerald-400">${Number(a.score || 0).toFixed(1)}/10</div>
+                                        <div class="text-[9.5px] font-mono text-zinc-400">${(a.sales || 0).toLocaleString('fr-FR')} ventes</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+
+                // 3. Rendu SYNC & PLACEMENTS (Matching 100% cohérent + Anti-exploit persistant)
                 const syncGrid = document.getElementById('sync-briefs-grid');
                 if (syncGrid) {
-                    const done = window._completedSyncIds || [];
-                    syncGrid.innerHTML = SYNC_BRIEF_POOL.map((b, i) => {
+                    const done = Array.isArray(st.completedSyncIds) ? st.completedSyncIds : [];
+                    const placed = Array.isArray(st.placedSyncTrackKeys) ? st.placedSyncTrackKeys : [];
+                    const activeIds = Array.isArray(window._activeSyncBriefIds) ? window._activeSyncBriefIds : SYNC_BRIEF_POOL.slice(0, 4).map(b => b.id);
+                    const shownBriefs = SYNC_BRIEF_POOL.filter(b => activeIds.includes(b.id));
+                    syncGrid.innerHTML = shownBriefs.map((b, i) => {
                         const isDone = done.includes(b.id);
                         const idxTag = String(i + 1).padStart(2, '0');
-                        const matchingMasters = playerTracks.filter(t => {
-                            const sc = Number(t.score) || 0;
-                            if (sc < b.minScore) return false;
-                            if (b.genres.includes('ALL')) return true;
-                            const tg = String(t.genre || '').toLowerCase();
-                            return b.genres.some(g => tg.includes(g.toLowerCase()) || g.toLowerCase().includes(tg));
-                        }).length;
+                        const matchingMasters = playerTracks.filter(t => _isTrackEligibleForSyncBrief(t, b, placed)).length;
                         const eligPill = isDone
                             ? `<span class="tech-pill live">✓ ENCAISSÉ</span>`
                             : (matchingMasters > 0
@@ -24296,7 +25157,111 @@ document.addEventListener('mouseover', (e) => {
                     }).join('');
                 }
 
-                // 3. Rendu VAULT & DISCOGRAPHIE (Disque Certification Vectoriel + Jauge Score 10 Segments)
+                // 4. Rendu RÉSEAU (AFFINITÉ RAPPEURS) & RIVALITÉ TOP 10
+                const affList = document.getElementById('empire-affinity-list');
+                if (affList) {
+                    const entries = Object.entries(st.rapperAffinity || {}).sort((a, b) => Number(b[1]) - Number(a[1]));
+                    if (entries.length === 0) {
+                        affList.innerHTML = '<div class="tech-surface p-5 text-center text-xs font-mono text-zinc-500">Réussis des Collaborations ou règle des litiges à l\'amiable pour bâtir ton carnet d\'affinité rappeurs !</div>';
+                    } else {
+                        affList.innerHTML = entries.map(([name, rawScore]) => {
+                            const sc = Math.max(0, Math.min(100, Number(rawScore) || 0));
+                            const meta = window.getRapperAffinityMeta(sc);
+                            const isKnown = (typeof rappersConnus !== 'undefined' && rappersConnus.includes(name));
+                            const canCall = sc >= 60;
+                            const calledToday = Boolean(st.artistDirectCollabDay && st.artistDirectCollabDay[name] === (st.day || 1));
+                            return `
+                                <div class="tech-card ${canCall ? 'is-active' : ''} p-3.5 flex flex-col gap-2.5">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="min-w-0">
+                                            <div class="flex flex-wrap items-center gap-1.5">
+                                                <span class="text-sm font-bold text-white truncate">${name}</span>
+                                                ${isKnown ? '<span class="tech-pill signal">★ VIP</span>' : ''}
+                                                <span class="tech-pill ${meta.pillCls}">${meta.label}</span>
+                                            </div>
+                                            <div class="text-[10px] font-mono text-zinc-400 mt-0.5">+${meta.acceptBonus}% acceptation collab${meta.featBonus > 0 ? ` · +${meta.featBonus} Score Feat Album` : ''}</div>
+                                        </div>
+                                        <span class="text-sm font-mono font-bold shrink-0" style="color:${meta.color};">${sc}/100</span>
+                                    </div>
+                                    <div class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                        <div class="h-full rounded-full transition-all duration-300" style="width:${sc}%; background:${meta.color};"></div>
+                                    </div>
+                                    ${canCall ? `
+                                        <button type="button" ${calledToday ? 'disabled' : ''} onclick="window.callRapperForDirectCollab('${name.replace(/'/g, "\\'")}')" class="${calledToday ? 'tech-btn-ghost opacity-60 cursor-not-allowed' : 'tech-btn-signal'} w-full py-1.5 px-3 font-mono text-[10px] uppercase tracking-wider">
+                                            ${calledToday ? '✓ Déjà appelé aujourd\'hui' : '📞 Appeler en Session Collab (Direct)'}
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                }
+
+                const rivalHero = document.getElementById('empire-rival-hero');
+                const top10El = document.getElementById('empire-top10-list');
+                if (rivalHero) {
+                    const riv = st.rivalState || { name: 'KROWN // 808', score: 1400, winsAgainst: 0, lastClashDay: 0 };
+                    const myPow = window.getPlayerProducerPower();
+                    const clashedToday = riv.lastClashDay === (st.day || 1);
+                    const isRank1 = window.isPlayerRankOneProducer();
+                    rivalHero.innerHTML = `
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <div class="text-[9.5px] font-mono text-rose-400 uppercase tracking-[0.2em]">DIR.04B // RIVALITÉ DIRECTE</div>
+                                <h3 class="text-base font-bold text-white mt-0.5 flex items-center gap-2">⚔️ ${riv.name} ${isRank1 ? '<span class="tech-pill live">👑 TU ES #1</span>' : ''}</h3>
+                                <p class="text-[11px] font-mono text-zinc-400 mt-0.5">Puissance Rival : <strong class="text-rose-300">${Math.round(riv.score || 1400)}</strong> · Ta Puissance : <strong class="text-emerald-300">${myPow}</strong></p>
+                            </div>
+                            <span class="tech-pill shrink-0">${riv.winsAgainst || 0} VICTOIRES</span>
+                        </div>
+                        <button type="button" ${clashedToday ? 'disabled' : ''} onclick="window.challengeRivalProducer()" class="${clashedToday ? 'tech-btn-ghost opacity-60 cursor-not-allowed' : 'tech-btn-primary'} w-full mt-3 py-2 px-3 font-mono text-[10px] uppercase tracking-wider">
+                            ${clashedToday ? '✓ Beat Battle déjà disputé aujourd\'hui' : '⚔️ Défier en Beat Battle (-20 NRJ · Cash & REP)'}
+                        </button>
+                    `;
+                }
+                if (top10El) {
+                    const lb = window.getProducerLeaderboard();
+                    top10El.innerHTML = lb.map((row, idx) => `
+                        <div class="flex items-center justify-between px-2.5 py-1.5 rounded-md border ${row.isPlayer ? 'bg-sky-500/15 border-sky-400/45' : (row.isRival ? 'bg-rose-500/10 border-rose-500/30' : 'bg-[#06070a] border-white/5')}">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <span class="text-[11px] font-mono font-bold w-5 ${idx === 0 ? 'text-amber-300' : 'text-zinc-500'}">#${idx + 1}</span>
+                                <div class="min-w-0">
+                                    <div class="text-xs font-semibold ${row.isPlayer ? 'text-sky-200' : (row.isRival ? 'text-rose-200' : 'text-zinc-200')} truncate">${row.name}</div>
+                                    <div class="text-[9.5px] font-mono text-zinc-500 truncate">${row.style}</div>
+                                </div>
+                            </div>
+                            <span class="text-xs font-mono font-bold ${idx === 0 ? 'text-amber-300' : 'text-zinc-300'} shrink-0">${row.score.toLocaleString('fr-FR')} PTS</span>
+                        </div>
+                    `).join('');
+                }
+
+                // 5. Rendu VITRINE TROPHÉES & CÉRÉMONIES (Onglet Vault & Awards)
+                const awardsSub = document.getElementById('empire-awards-sub');
+                const trophiesShelf = document.getElementById('empire-trophies-shelf');
+                const btnEnding = document.getElementById('btn-launch-ending');
+                const trophies = Array.isArray(st.trophies) ? st.trophies : [];
+                if (awardsSub) {
+                    const nextDay = Math.max((st.lastCeremonyDay || 0) + 14, 14);
+                    awardsSub.textContent = `${trophies.length} Trophée(s) remportés · Prochaine cérémonie auto : Jour ${nextDay}`;
+                }
+                if (btnEnding) {
+                    const canEnd = Boolean(st.studioUnlocked && trophies.length >= 1);
+                    btnEnding.classList.toggle('hidden', !canEnd);
+                }
+                if (trophiesShelf) {
+                    if (trophies.length === 0) {
+                        trophiesShelf.innerHTML = '<div class="col-span-full tech-surface p-3 text-center text-[11px] font-mono text-zinc-500">Aucun trophée Bounce Awards pour l\'instant. Lance ta première Cérémonie ci-dessus !</div>';
+                    } else {
+                        trophiesShelf.innerHTML = trophies.slice(-8).map(tr => `
+                            <div class="tech-card is-active p-2.5 text-center">
+                                <div class="text-xl">${tr.icon || '🏆'}</div>
+                                <div class="text-[10px] font-bold text-amber-200 uppercase tracking-wider mt-1 truncate">${tr.title}</div>
+                                <div class="text-[9px] font-mono text-zinc-400">Édition #${tr.edition} · J${tr.day}</div>
+                            </div>
+                        `).join('');
+                    }
+                }
+
+                // 6. Rendu VAULT & DISCOGRAPHIE (Disque Certification Vectoriel + Jauge Score 10 Segments)
                 const vaultList = document.getElementById('vault-tracks-list');
                 if (vaultList) {
                     const tracks = playerTracks.length > 0
@@ -24390,13 +25355,14 @@ document.addEventListener('mouseover', (e) => {
                     money: 120000, rep: 100, followers: 65000, energy: 96, inspi: 95, hype: 94,
                     roomTier: 3, studioUnlocked: true, activeLocation: 'pro_studio',
                     labelName: '42E RECORDS', signedArtists: ['kaelen', 'nora'], labelSinglesCount: 4,
+                    rapperAffinity: { 'Joule': 92, 'Zandame': 72, 'Disiznot': 45, 'Rosmii': 30 },
                     ownedFurniture: ['rug', 'sofa', 'table', 'tv', 'rack_lamp', 'led_panel_l', 'led_panel_r', 'synth', 'guitar'],
                     stats: { tracks: 55, bangers: 44, flops: 2, totalEarned: 340000 },
                     trackList: [
-                        { title: '42E ETAGE', genre: 'Synthwave', score: 9.9, money: 85000, fans: 24000, date: 'J56' },
-                        { title: 'ANALOG DREAMS', genre: 'Plug', score: 9.6, money: 64000, fans: 18000, date: 'J48' },
-                        { title: 'NUIT SUR PARIS', genre: 'Trap', score: 9.4, money: 52000, fans: 14000, date: 'J39' },
-                        { title: 'TAPE SATURATION', genre: 'Bossa Lo-Fi', score: 9.1, money: 38000, fans: 9000, date: 'J28' }
+                        { id: 'dev_t1', title: '42E ETAGE', genre: 'UK Drill', genreId: 'drill', score: 9.9, money: 85000, fans: 24000, date: 'J56' },
+                        { id: 'dev_t2', title: 'ANALOG DREAMS', genre: 'Plug', genreId: 'plug', score: 9.6, money: 64000, fans: 18000, date: 'J48' },
+                        { id: 'dev_t3', title: 'NUIT SUR PARIS', genre: 'Trap 808', genreId: 'trap808', score: 9.4, money: 52000, fans: 14000, date: 'J39' },
+                        { id: 'dev_t4', title: 'TAPE SATURATION', genre: 'Bossa Lo-Fi', genreId: 'bossalofi', score: 9.1, money: 38000, fans: 9000, date: 'J28' }
                     ]
                 }
             };
@@ -24812,18 +25778,85 @@ document.addEventListener('mouseover', (e) => {
         );
     }
 
+    // ==========================================
+    // MARCHÉ DYNAMIQUE DES GENRES (HOT DEMAND vs SATURATION)
+    // ==========================================
+    function ensureGenreMarket() {
+        if (!state) return { day: 1, hotGenres: ['drill', 'afropop'], recentCounts: {} };
+        if (!state.genreMarket || typeof state.genreMarket !== 'object') {
+            state.genreMarket = { day: state.day || 1, hotGenres: ['drill', 'afropop'], recentCounts: {} };
+        }
+        const gm = state.genreMarket;
+        gm.recentCounts = gm.recentCounts || {};
+        if (!Array.isArray(gm.hotGenres) || gm.hotGenres.length === 0 || gm.day !== (state.day || 1)) {
+            rotateDailyGenreMarket();
+        }
+        return state.genreMarket;
+    }
+
+    function rotateDailyGenreMarket() {
+        if (!state || !Array.isArray(DAW_GENRES)) return;
+        const gm = state.genreMarket || (state.genreMarket = { day: 1, hotGenres: [], recentCounts: {} });
+        const tracks = (state.stats && state.stats.tracks) || 0;
+        const allUnl = isAllDawGenresUnlocked();
+        const unlocked = DAW_GENRES.filter(g => allUnl || tracks >= g.unlockAt);
+        const pool = (unlocked.length >= 2 ? unlocked : DAW_GENRES).map(g => g.id);
+        // Shuffle Fisher-Yates pour 2 genres "En Demande" du jour
+        for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        gm.day = state.day || 1;
+        gm.hotGenres = pool.slice(0, Math.min(2, pool.length));
+        // Refroidissement quotidien de la saturation (-1 par jour)
+        gm.recentCounts = gm.recentCounts || {};
+        for (const k in gm.recentCounts) {
+            gm.recentCounts[k] = Math.max(0, (Number(gm.recentCounts[k]) || 0) - 1);
+            if (gm.recentCounts[k] === 0) delete gm.recentCounts[k];
+        }
+    }
+
+    function getGenreMarketStatus(genreId) {
+        const gm = ensureGenreMarket();
+        const gid = String(genreId || '').toLowerCase();
+        const count = Number(gm.recentCounts && gm.recentCounts[gid]) || 0;
+        if (count >= 3) {
+            return { state: 'saturated', cashMult: 0.80, fansMult: 0.85, tag: '📉', label: 'SATURÉ (-20%)' };
+        }
+        if (Array.isArray(gm.hotGenres) && gm.hotGenres.includes(gid)) {
+            return { state: 'hot', cashMult: 1.25, fansMult: 1.20, tag: '🔥', label: 'EN DEMANDE (+25%)' };
+        }
+        return { state: 'normal', cashMult: 1.0, fansMult: 1.0, tag: '', label: 'STABLE' };
+    }
+
+    function recordGenreMarketExport(genreId) {
+        const gm = ensureGenreMarket();
+        const gid = String(genreId || '').toLowerCase();
+        gm.recentCounts = gm.recentCounts || {};
+        // Diminue légèrement les autres genres quand tu varies!
+        for (const k in gm.recentCounts) {
+            if (k !== gid) {
+                gm.recentCounts[k] = Math.max(0, (Number(gm.recentCounts[k]) || 0) - 1);
+                if (gm.recentCounts[k] === 0) delete gm.recentCounts[k];
+            }
+        }
+        gm.recentCounts[gid] = Math.min(5, (Number(gm.recentCounts[gid]) || 0) + 1);
+    }
+
+    window.getGenreMarketStatus = getGenreMarketStatus;
+    window.rotateDailyGenreMarket = rotateDailyGenreMarket;
+
     function updateDawGenres() {
         const container = document.getElementById('daw-genres-container');
         if (!container || !DAW_GENRES) return;
-        
+
         const currentTracks = (state && state.stats && typeof state.stats.tracks === 'number') ? state.stats.tracks : 0;
         const allUnlocked = isAllDawGenresUnlocked();
-        
+
         container.innerHTML = DAW_GENRES.map(g => {
             const isUnlocked = allUnlocked || currentTracks >= g.unlockAt;
-            
+
             if (!isUnlocked) {
-                // CORRECTION : Plus de onclick="selectDawGenre" ici. Le clic est purement et simplement inactif.
                 return `<div class="relative group locked disabled" title="Nécessite ${g.unlockAt} Tracks produits">
                             <button class="btn-daw-pad w-full py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest opacity-50 grayscale flex items-center justify-center gap-2 cursor-not-allowed locked disabled" disabled>
                                 <span class="drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] text-sm">🔒</span> ???
@@ -24831,13 +25864,16 @@ document.addEventListener('mouseover', (e) => {
                             <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/90 border border-[#27272a] text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">Débloqué à ${g.unlockAt} Tracks</div>
                         </div>`;
             }
-            
+
             const isActive = currentDawGenre === g.id;
-            const btnClass = isActive ? 'btn-daw-pad btn-juice selected border-[#10b981]' : 'btn-daw-pad btn-juice';
-            
-            // CORRECTION : HTML allégé, le nom du genre est passé en argument à la fonction pour gérer l'affichage
-            return `<button class="${btnClass} w-full py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest" data-val="${g.id}" onclick="selectDawGenre('${g.id}', '${g.name}', event)">${g.name}</button>`;
+            const mkt = getGenreMarketStatus(g.id);
+            const mktRing = mkt.state === 'hot' ? 'border-amber-400/50' : (mkt.state === 'saturated' ? 'border-rose-500/35 opacity-80' : '');
+            const btnClass = isActive ? 'btn-daw-pad btn-juice selected border-[#10b981]' : `btn-daw-pad btn-juice ${mktRing}`;
+            const tagHtml = mkt.tag ? `<span class="ml-1 text-[10px]" title="${mkt.label}">${mkt.tag}</span>` : '';
+
+            return `<button class="${btnClass} w-full py-3 md:py-2 text-[10px] md:text-[9px] rounded tracking-widest" data-val="${g.id}" title="${g.name} · Marché : ${mkt.label}" onclick="selectDawGenre('${g.id}', '${g.name}', event)">${g.name}${tagHtml}</button>`;
         }).join('');
+        if (typeof window.syncMasteringRackUI === 'function') window.syncMasteringRackUI();
     }
 
     // ==========================================
@@ -25461,18 +26497,61 @@ document.addEventListener('mouseover', (e) => {
         // ==========================================
         // ACTION DORMIR (LA STRUGGLE)
         // ==========================================
+        let _activeSleepInt = null;
+        window.wakeUpNow = function() {
+            if (!state || !state.isSleeping) return;
+            if (_activeSleepInt) { clearInterval(_activeSleepInt); _activeSleepInt = null; }
+            state.energy = 100;
+            state.inspi = 100;
+            if (typeof checkDailyQuests === 'function') checkDailyQuests('high_energy', 100);
+            updateHUD();
+            wakeUp();
+        };
+
         function goSleep() {
             if (state.isExporting) { showToast("Tu peux pas dormir en plein mix, frérot !", "error"); playError(); return; }
+            if (state.isSleeping) return;
             if (typeof window.exitFpsPointerLock === 'function') window.exitFpsPointerLock();
             state.isSleeping = true;
             const lids = document.getElementById('fps-eyelids');
-            if (lids) setTimeout(() => lids.classList.add('closed'), 260);
-            // Restore full creative inspiration when going to sleep
+            if (lids) setTimeout(() => lids.classList.add('closed'), 220);
+
+            // Restore full creative inspiration & prepare Bilan de la Nuit
+            const prevRecap = state.nightSummary || { lastMoney: state.money, lastFollowers: state.followers, lastRep: state.rep };
+            const deltaMoney = Math.round((Number(state.money) || 0) - (Number(prevRecap.lastMoney) || 0));
+            const deltaFans = Math.round((Number(state.followers) || 0) - (Number(prevRecap.lastFollowers) || 0));
+            const labelDaily = (typeof window.getLabelDailyRoyalties === 'function') ? window.getLabelDailyRoyalties() : 0;
+            const rentAmt = (typeof window.getCurrentWeeklyRent === 'function') ? window.getCurrentWeeklyRent() : 150;
+            const daysUntilRent = Math.max(1, 7 - ((state.day || 1) - (state.lastRentDay || 1)));
+
+            const recapBody = document.getElementById('sleep-recap-body');
+            if (recapBody) {
+                recapBody.innerHTML = `
+                    <div class="bg-black/45 border border-white/10 rounded-lg p-2.5">
+                        <div class="text-[9px] text-zinc-500 uppercase">Énergie &amp; Inspi</div>
+                        <div class="text-emerald-400 font-bold text-xs mt-0.5">100% RESTAURÉES</div>
+                    </div>
+                    <div class="bg-black/45 border border-white/10 rounded-lg p-2.5">
+                        <div class="text-[9px] text-zinc-500 uppercase">Bilan Cash Session</div>
+                        <div class="${deltaMoney >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-xs mt-0.5">${deltaMoney >= 0 ? '+' : ''}$${deltaMoney.toLocaleString('fr-FR')}</div>
+                    </div>
+                    <div class="bg-black/45 border border-white/10 rounded-lg p-2.5">
+                        <div class="text-[9px] text-zinc-500 uppercase">Nouveaux Fans</div>
+                        <div class="text-sky-300 font-bold text-xs mt-0.5">${deltaFans >= 0 ? '+' : ''}${deltaFans.toLocaleString('fr-FR')}</div>
+                    </div>
+                    <div class="bg-black/45 border border-white/10 rounded-lg p-2.5">
+                        <div class="text-[9px] text-zinc-500 uppercase">Royalties / Bail</div>
+                        <div class="text-amber-300 font-bold text-xs mt-0.5">+$${labelDaily}/j · Bail $${rentAmt} (${daysUntilRent}j)</div>
+                    </div>
+                `;
+            }
+            state.nightSummary = { lastMoney: state.money || 0, lastFollowers: state.followers || 0, lastRep: state.rep || 0 };
+
             try { state.inspi = 100; } catch(e) {}
-            MusicSystem.crossfadeTo('sleep', 3.0); // <-- AJOUT ICI (Fondu lent de 3s)
+            MusicSystem.crossfadeTo('sleep', 2.0);
             const overlay = document.getElementById('sleep-overlay'), progText = document.getElementById('sleep-progress-text');
             overlay.classList.add('active');
-            
+
             if (currentRoomAvatar) {
                 currentRoomAvatar.userData.preSleepPos = currentRoomAvatar.position.clone();
                 currentRoomAvatar.userData.preSleepRot = currentRoomAvatar.rotation.clone();
@@ -25485,7 +26564,7 @@ document.addEventListener('mouseover', (e) => {
                     visualAvatar.rotation.set(Math.PI / 2, 0, 0);
                     visualAvatar.rotation.order = 'YXZ';
                 }
-                
+
                 restlessTargetOffsetX = 0; restlessTargetOffsetY = 0; restlessTargetOffsetZ = 0;
                 restlessTargetPosX = 0; restlessTargetPosZ = 0;
 
@@ -25493,25 +26572,31 @@ document.addEventListener('mouseover', (e) => {
                 currentRoomAvatar.traverse(child => { if (child.isMesh && child.material) { child.material.transparent = true; child.material.opacity = 0.8; } });
             }
 
-
-            playTone(200, 'sine', 1, 0.05);
+            playTone(220, 'sine', 0.6, 0.04);
             let ticks = 0;
-            const maxTicks = 150, playerLevel = Math.floor(state.rep / 50) + 1, rechargePerTick = 0.2 + (playerLevel * 0.1);
-            const sleepInt = setInterval(() => {
+            const maxTicks = 40; // 4 secondes fluides (au lieu de 15s!) avec bouton Réveil Immédiat
+            const missingEnergy = Math.max(0, 100 - (Number(state.energy) || 0));
+            const rechargePerTick = Math.max(2.5, missingEnergy / maxTicks);
+            if (_activeSleepInt) clearInterval(_activeSleepInt);
+            _activeSleepInt = setInterval(() => {
                 ticks++;
-                state.energy = Math.min(100, state.energy + rechargePerTick);
-                
-                // On vérifie la quête uniquement quand l'énergie augmente
+                state.energy = Math.min(100, (Number(state.energy) || 0) + rechargePerTick);
+
                 if (state.energy >= 90 && typeof checkDailyQuests === 'function') {
                     checkDailyQuests('high_energy', Math.floor(state.energy));
                 }
-                
-                updateHUD();
-            
-                const timeLeft = Math.ceil(15 - (ticks / 10));
-                progText.innerText = `Réveil dans ${timeLeft}s...`;
 
-                if (ticks >= maxTicks) { clearInterval(sleepInt); wakeUp(); }
+                updateHUD();
+
+                const timeLeft = Math.max(0, Math.ceil((maxTicks - ticks) / 10));
+                if (progText) progText.innerText = timeLeft > 0 ? `Réveil ${timeLeft}s...` : 'Frais !';
+
+                if (ticks >= maxTicks) {
+                    clearInterval(_activeSleepInt);
+                    _activeSleepInt = null;
+                    state.energy = 100;
+                    wakeUp();
+                }
             }, 100);
         }
 
@@ -25570,10 +26655,11 @@ document.addEventListener('mouseover', (e) => {
             targetPosition = null; // Annule tout déplacement en cours (freeze l'avatar)
             
 
-            // Calculs aléatoires demandés
-            const energyGain = Math.floor(Math.random() * (20 - 5 + 1)) + 5; // Entre 5 et 20
-            const durationSec = Math.floor(Math.random() * (15 - 3 + 1)) + 3; // Entre 3s et 15s
+            // Pause chill dynamique et réactive (3 à 5s) + bonus Inspi garanti
+            const energyGain = Math.floor(Math.random() * 8) + 14; // 14 à 21 NRJ
+            const durationSec = Math.floor(Math.random() * 3) + 3; // 3 à 5 secondes max
             const durationMs = durationSec * 1000;
+            state.inspi = Math.min(100, (Number(state.inspi) || 0) + 10);
 
             if (state.energy < 50) {
                 showToast(`Petite pause chill... T'as l'air crevé ! (${durationSec}s)`, "info");
@@ -25705,22 +26791,36 @@ document.addEventListener('mouseover', (e) => {
         }
 
         function startOpenMicMiniGame() {
+            state.isEventActive = true;
+            if (typeof window.enforceFpsModalPriority === 'function') window.enforceFpsModalPriority();
             const overlay = document.createElement('div');
-            overlay.className = 'fixed inset-0 bg-black/90 z-[99999] flex flex-col items-center justify-center p-4 backdrop-blur-md font-retro';
+            overlay.className = 'gta-evt-backdrop fixed inset-0 z-[999999] flex flex-col items-center justify-center p-3 sm:p-4';
+            overlay.style.setProperty('--evt-rgb', '16, 185, 129');
             overlay.innerHTML = `
-                <div class="bg-[#18181b] border border-[var(--accent)] rounded-2xl w-full max-w-md p-6 text-center shadow-2xl relative">
-                    <h3 class="text-xl font-bold text-white mb-4 tracking-widest uppercase">🎤 OPEN MIC LOCAL</h3>
-                    <p class="text-gray-400 text-xs mb-6">Attends que le curseur soit dans la zone verte centrale et clique sur "DROP THE BEAT" !</p>
-                    
-                    <!-- Jauge -->
-                    <div class="relative w-full h-8 bg-zinc-800 rounded-full border border-zinc-700 overflow-hidden mb-8">
-                        <!-- Zone verte (40% à 60%) -->
-                        <div class="absolute left-[40%] right-[40%] top-0 bottom-0 bg-emerald-500/40 border-l border-r border-emerald-400"></div>
-                        <!-- Curseur -->
-                        <div id="openmic-cursor" class="absolute left-0 top-0 bottom-0 w-2 bg-white shadow-[0_0_10px_#fff] transition-all duration-75"></div>
+                <div class="gta-evt-dossier">
+                    <div class="gta-evt-topbar">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="gta-evt-dot"></span>
+                            <span class="truncate">SORTIE SCÈNE · OPEN MIC</span>
+                        </div>
+                        <span class="shrink-0 text-emerald-400">TIMING LIVE</span>
                     </div>
-                    
-                    <button id="openmic-btn" class="btn-action w-full py-4 rounded-xl text-sm font-bold tracking-widest shadow-lg">DROP THE BEAT</button>
+                    <div class="p-5 sm:p-6 flex flex-col gap-4">
+                        <div class="gta-evt-title-block">
+                            <div class="text-[10px] font-mono uppercase tracking-[0.26em] text-emerald-400">PERFORMANCE SCÈNE</div>
+                            <h3 class="text-2xl font-extrabold tracking-[0.12em] uppercase text-white mt-0.5">OPEN MIC LOCAL</h3>
+                        </div>
+                        <p class="text-xs sm:text-sm text-zinc-300">Attends que le curseur passe dans la <strong class="text-emerald-300">zone verte centrale</strong> puis clique sur <strong>DROP THE BEAT</strong> !</p>
+
+                        <div class="relative w-full h-9 bg-zinc-900 rounded-xl border border-white/15 overflow-hidden shadow-inner">
+                            <div class="absolute left-[40%] right-[40%] top-0 bottom-0 bg-emerald-500/35 border-l-2 border-r-2 border-emerald-400"></div>
+                            <div id="openmic-cursor" class="absolute left-0 top-0 bottom-0 w-2 bg-white shadow-[0_0_12px_#fff]"></div>
+                        </div>
+
+                        <button id="openmic-btn" class="gta-evt-choice text-center !py-3.5" style="--choice-rgb: 16, 185, 129;">
+                            <span class="text-sm font-extrabold tracking-[0.18em] uppercase text-emerald-300">DROP THE BEAT</span>
+                        </button>
+                    </div>
                 </div>
             `;
             document.body.appendChild(overlay);
@@ -25750,7 +26850,6 @@ document.addEventListener('mouseover', (e) => {
                 if (!active) return;
                 active = false;
 
-                // Succès entre 40% et 60%
                 if (cursorPosition >= 40 && cursorPosition <= 60) {
                     logFollower(500);
                     state.rep = Math.max(0, state.rep + 10);
@@ -25763,6 +26862,7 @@ document.addEventListener('mouseover', (e) => {
                     if (typeof playError === 'function') playError();
                 }
 
+                state.isEventActive = false;
                 overlay.remove();
                 updateHUD();
                 saveGame();
@@ -25770,26 +26870,40 @@ document.addEventListener('mouseover', (e) => {
         }
 
         function startVinylMarketEvent() {
+            state.isEventActive = true;
+            if (typeof window.enforceFpsModalPriority === 'function') window.enforceFpsModalPriority();
             const overlay = document.createElement('div');
-            overlay.className = 'fixed inset-0 bg-black/90 z-[99999] flex flex-col items-center justify-center p-4 backdrop-blur-md font-retro';
+            overlay.className = 'gta-evt-backdrop fixed inset-0 z-[999999] flex flex-col items-center justify-center p-3 sm:p-4';
+            overlay.style.setProperty('--evt-rgb', '245, 158, 11');
             overlay.innerHTML = `
-                <div class="bg-[#18181b] border border-[var(--accent)] rounded-2xl w-full max-w-lg p-6 text-center shadow-2xl relative">
-                    <button id="close-vinyl-market" class="absolute top-4 right-4 text-gray-500 hover:text-[var(--retro-red)] transition-colors">✖</button>
-                    <h3 class="text-xl font-bold text-white mb-4 tracking-widest uppercase">💿 MARCHÉ AUX VINYLES</h3>
-                    <p class="text-gray-400 text-xs mb-6">Choisis un bac ou une pochette mystère. Son prix sera révélé à l'achat (entre 30$ et 150$).</p>
-                    
-                    <div class="grid grid-cols-3 gap-4 mb-6">
-                        <div class="vinyl-crate cursor-pointer border border-zinc-700 bg-zinc-800/40 p-4 rounded-xl hover:border-[var(--accent)] transition-all flex flex-col items-center" data-idx="1">
-                            <span class="text-4xl mb-2">📦</span>
-                            <span class="text-[10px] text-gray-300">Bac Vintage</span>
+                <div class="gta-evt-dossier">
+                    <div class="gta-evt-topbar">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="gta-evt-dot"></span>
+                            <span class="truncate">SORTIE DIGGING · VINYLES RARES</span>
                         </div>
-                        <div class="vinyl-crate cursor-pointer border border-zinc-700 bg-zinc-800/40 p-4 rounded-xl hover:border-[var(--accent)] transition-all flex flex-col items-center" data-idx="2">
-                            <span class="text-4xl mb-2">📁</span>
-                            <span class="text-[10px] text-gray-300">Pochette Mystère</span>
+                        <button id="close-vinyl-market" class="text-zinc-400 hover:text-white transition-colors cursor-pointer">✕</button>
+                    </div>
+                    <div class="p-5 sm:p-6 flex flex-col gap-4">
+                        <div class="gta-evt-title-block">
+                            <div class="text-[10px] font-mono uppercase tracking-[0.26em] text-amber-400">CRATE DIGGING</div>
+                            <h3 class="text-2xl font-extrabold tracking-[0.12em] uppercase text-white mt-0.5">MARCHÉ AUX VINYLES</h3>
                         </div>
-                        <div class="vinyl-crate cursor-pointer border border-zinc-700 bg-zinc-800/40 p-4 rounded-xl hover:border-[var(--accent)] transition-all flex flex-col items-center" data-idx="3">
-                            <span class="text-4xl mb-2">💿</span>
-                            <span class="text-[10px] text-gray-300">Édition Limitée</span>
+                        <p class="text-xs sm:text-sm text-zinc-300">Choisis un bac mystère (<strong class="text-amber-300">$30 – $150</strong>). Donne <strong class="text-emerald-400">+1.5 Score</strong> sur tes 3 prochains exports !</p>
+
+                        <div class="grid grid-cols-3 gap-2.5">
+                            <button type="button" class="vinyl-crate gta-evt-choice flex flex-col items-center text-center !p-3.5" style="--choice-rgb: 245, 158, 11;" data-idx="1">
+                                <span class="text-3xl mb-1.5">📦</span>
+                                <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-white">Bac Vintage</span>
+                            </button>
+                            <button type="button" class="vinyl-crate gta-evt-choice flex flex-col items-center text-center !p-3.5" style="--choice-rgb: 245, 158, 11;" data-idx="2">
+                                <span class="text-3xl mb-1.5">📁</span>
+                                <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-white">Mystère</span>
+                            </button>
+                            <button type="button" class="vinyl-crate gta-evt-choice flex flex-col items-center text-center !p-3.5" style="--choice-rgb: 245, 158, 11;" data-idx="3">
+                                <span class="text-3xl mb-1.5">💿</span>
+                                <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-white">Collector</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -25797,6 +26911,7 @@ document.addEventListener('mouseover', (e) => {
             document.body.appendChild(overlay);
 
             overlay.querySelector('#close-vinyl-market').onclick = () => {
+                state.isEventActive = false;
                 overlay.remove();
             };
 
@@ -25814,6 +26929,7 @@ document.addEventListener('mouseover', (e) => {
                     showToast(`💿 Achat réussi pour ${price}$ ! Boost Vinyle activé : +1.5 au score des 3 prochains exports.`, "success");
                     if (typeof playSuccess === 'function') playSuccess();
 
+                    state.isEventActive = false;
                     overlay.remove();
                     updateHUD();
                     saveGame();
@@ -25945,6 +27061,20 @@ document.addEventListener('mouseover', (e) => {
             merged.ownedFurniture = Array.isArray(merged.ownedFurniture) ? merged.ownedFurniture : [];
             merged.dailyQuests = Array.isArray(merged.dailyQuests) ? merged.dailyQuests : [];
             merged.activeDoorBoosts = merged.activeDoorBoosts && typeof merged.activeDoorBoosts === 'object' ? merged.activeDoorBoosts : { vinylCharges: 0, proStudioCharges: 0 };
+            merged.artistLastSingleDay = merged.artistLastSingleDay && typeof merged.artistLastSingleDay === 'object' ? merged.artistLastSingleDay : {};
+            merged.completedSyncIds = Array.isArray(merged.completedSyncIds) ? merged.completedSyncIds : [];
+            merged.placedSyncTrackKeys = Array.isArray(merged.placedSyncTrackKeys) ? merged.placedSyncTrackKeys : [];
+            merged.albums = Array.isArray(merged.albums) ? merged.albums : [];
+            merged.rapperAffinity = merged.rapperAffinity && typeof merged.rapperAffinity === 'object' ? merged.rapperAffinity : {};
+            if (String(merged.username || '').toUpperCase() === 'DEV_STUDIO' && Object.keys(merged.rapperAffinity).length === 0) {
+                merged.rapperAffinity = { 'Joule': 92, 'Zandame': 72, 'Disiznot': 45, 'Rosmii': 30 };
+            }
+            merged.artistDirectCollabDay = merged.artistDirectCollabDay && typeof merged.artistDirectCollabDay === 'object' ? merged.artistDirectCollabDay : {};
+            merged.genreMarket = merged.genreMarket && typeof merged.genreMarket === 'object' ? merged.genreMarket : { day: 1, hotGenres: ['drill', 'afropop'], recentCounts: {} };
+            merged.awardsHistory = Array.isArray(merged.awardsHistory) ? merged.awardsHistory : [];
+            merged.trophies = Array.isArray(merged.trophies) ? merged.trophies : [];
+            merged.rivalState = merged.rivalState && typeof merged.rivalState === 'object' ? merged.rivalState : { name: 'KROWN // 808', score: 1200, winsAgainst: 0, lastClashDay: 0 };
+            merged.nightSummary = merged.nightSummary && typeof merged.nightSummary === 'object' ? merged.nightSummary : { lastMoney: merged.money || 100, lastFollowers: merged.followers || 0, lastRep: merged.rep || 10 };
             
             merged.ownedSamples = Array.isArray(merged.ownedSamples) ? merged.ownedSamples : [];
             merged.clearedSamples = Array.isArray(merged.clearedSamples) ? merged.clearedSamples : [];
@@ -26710,8 +27840,10 @@ document.addEventListener('mouseover', (e) => {
                 showToast("❌ CLIPPING DÉTECTÉ ! -5 REP", "error");
                 playError();
             } else if (lufs >= -14) {
-                state.multiplier = Math.min(3.0, state.multiplier + 0.1); // +10% (max 3.0)
-                showToast("✅ LUFS parfait ! +10% multiplicateur permanent", "success");
+                const res = (typeof addPlayerMultiplier === 'function') ? addPlayerMultiplier(0.1, 'Master LUFS') : { multAdded: 0.1 };
+                if (res.multAdded > 0) {
+                    showToast("✅ LUFS parfait ! +10% multiplicateur permanent", "success");
+                }
                 playSuccess();
                 if (typeof fireConfetti === 'function') fireConfetti('achievement');
             } else {
@@ -27435,7 +28567,44 @@ document.addEventListener('mouseover', (e) => {
             if(widgetClock) widgetClock.innerHTML = timeStrWidget;
             
             document.getElementById('widget-clock-date').innerText = `Virtual Day ${state.day}`;
+            if (typeof window.updateOnboardingGuide === 'function') window.updateOnboardingGuide();
         }
+
+        // ==========================================
+        // MICRO-ONBOARDING 3 ÉTAPES (NON-INTRUSIF)
+        // ==========================================
+        window.dismissOnboarding = function() {
+            if (state) state.onboardingDismissed = true;
+            const card = document.getElementById('onboarding-guide-card');
+            if (card) card.classList.add('hidden');
+            if (typeof saveGame === 'function') saveGame();
+        };
+
+        window.updateOnboardingGuide = function() {
+            const card = document.getElementById('onboarding-guide-card');
+            const list = document.getElementById('onboarding-steps-list');
+            if (!card || !list || !state) return;
+            const loginHidden = document.getElementById('login-screen')?.classList.contains('hidden');
+            const tracks = Number(state.stats && state.stats.tracks) || 0;
+            const bangers = Number(state.stats && state.stats.bangers) || 0;
+            if (window.isBooting || !loginHidden || state.onboardingDismissed || tracks >= 3 || state.studioUnlocked) {
+                card.classList.add('hidden');
+                return;
+            }
+            const dawOpen = document.getElementById('app-daw')?.style.display === 'flex' || tracks >= 1;
+            const steps = [
+                { done: dawOpen,     text: 'Ouvre AbleStudio sur le PC (touche [E])' },
+                { done: tracks >= 1, text: 'Règle BPM + Voix et exporte ta 1ère prod' },
+                { done: bangers >= 1 || (state.ownedFurniture?.length || 0) >= 1, text: 'Décroche un Banger (7+/10) ou achète un meuble' }
+            ];
+            list.innerHTML = steps.map((s, idx) => `
+                <div class="flex items-start gap-2 ${s.done ? 'text-emerald-400 line-through opacity-75' : 'text-zinc-200'}">
+                    <span class="font-mono text-[10px] mt-0.5 shrink-0">${s.done ? '✓' : `${idx + 1}.`}</span>
+                    <span class="leading-snug">${s.text}</span>
+                </div>
+            `).join('');
+            card.classList.remove('hidden');
+        };
 
         
                 // ==========================================
@@ -27597,12 +28766,64 @@ document.addEventListener('mouseover', (e) => {
             }
         };
 
+        // ==========================================
+        // LOYER HEBDOMADAIRE STUDIO & BAIL PENTHOUSE 42E (CHILL × TYCOON)
+        // ==========================================
+        window.getCurrentWeeklyRent = function() {
+            if (!state) return 150;
+            if (state.studioUnlocked || window.activeStudioLocation === 'pro_studio') return 1500;
+            const t = Number(state.roomTier) || 1;
+            if (t >= 3) return 500;
+            if (t === 2) return 300;
+            return 150;
+        };
+
         function dailyReset() {
             easterEgg3AM = false;
             if (state.rep > 0) {
                 const gain = Math.floor(state.rep * 0.1) + Math.floor(Math.random() * 5);
                 logFollower(gain);
             }
+            // Rotation quotidienne du marché des genres (🔥 HOT vs 📉 SATURÉ)
+            if (typeof rotateDailyGenreMarket === 'function') {
+                rotateDailyGenreMarket();
+                if (typeof updateDawGenres === 'function') updateDawGenres();
+            }
+
+            // Progression organique du Producteur Rival (KROWN // 808)
+            if (state.rivalState) {
+                state.rivalState.score = Math.round((Number(state.rivalState.score) || 1400) + 35 + Math.random() * 30);
+            }
+
+            // Loyer hebdomadaire / Bail 42e Étage (jamais de game-over brutal : tension tycoon équilibrée)
+            const curDay = Number(state.day) || 1;
+            state.lastRentDay = Number(state.lastRentDay) || 1;
+            const daysSinceRent = curDay - state.lastRentDay;
+            const rentAmt = window.getCurrentWeeklyRent();
+            if (daysSinceRent === 6) {
+                showToast(`🧾 Rappel Bail Studio : $${rentAmt.toLocaleString('fr-FR')} seront prélevés demain.`, "info");
+            } else if (daysSinceRent >= 7) {
+                state.lastRentDay = curDay;
+                if ((Number(state.money) || 0) >= rentAmt) {
+                    logMoney(-rentAmt, state.studioUnlocked ? 'Bail Penthouse 42e Étage' : 'Loyer Studio Hebdo');
+                    showToast(`🏢 Bail Studio réglé : -$${rentAmt.toLocaleString('fr-FR')}`, "info");
+                } else {
+                    const paid = Math.max(0, Math.floor(Number(state.money) || 0));
+                    if (paid > 0) logMoney(-paid, 'Acompte Loyer Studio');
+                    state.hype = Math.max(0, (Number(state.hype) || 50) - 5);
+                    showToast(`⚠️ Loyer en retard ($${rentAmt} dus) : acompte versé (-5% Hype). Relance des prods !`, "warning");
+                }
+            }
+
+            // Cérémonie officielle des Bounce Awards tous les 14 jours
+            if (curDay >= 14 && (curDay - (Number(state.lastCeremonyDay) || 0)) >= 14 && !state.isEventActive) {
+                setTimeout(() => {
+                    if (!state.isEventActive && typeof window.openBounceAwardsCeremony === 'function') {
+                        window.openBounceAwardsCeremony(true);
+                    }
+                }, 1600);
+            }
+
             refreshSocial();
             refreshStats();
             // Decrement challenge daysRemaining and auto-generate when expired
@@ -28062,6 +29283,7 @@ document.addEventListener('mouseover', (e) => {
             const pad = document.getElementById(`pad-${idx}`);
             pad.classList.toggle('active');
             if (pad.classList.contains('active')) { playKick(); simulateVuMeter(12); }
+            if (typeof window.syncMasteringRackUI === 'function') window.syncMasteringRackUI();
         }
 
         function calculateSuccess(genreId, bpm, voice) {
@@ -28136,7 +29358,7 @@ document.addEventListener('mouseover', (e) => {
             const genre = currentDawGenre;
             const bpm   = parseInt(document.getElementById('daw-bpm').value, 10);
             const voice = currentDawVoice;
-            const activePads = 8;
+            const activePads = (typeof window.getActiveDawPadsCount === 'function') ? window.getActiveDawPadsCount() : 0;
             const pluginIndex = document.getElementById('daw-plugin').value;
 
             const trackTitle = document.getElementById('track-title-input').value.trim() || `UNTITLED_${state.stats.tracks + 1}`;
@@ -28464,33 +29686,74 @@ document.addEventListener('mouseover', (e) => {
                     }, 1200);
                 }
 
-                // Flow State bonus multiplier application
+                // Flow State bonus multiplier application (REPAIRED: +15% Cash, +15% Fans, +0.4 Score!)
                 let flowStateApplied = false;
+                let flowScoreBonus = 0;
                 if (state.flowStateActive) {
-                    moneyGain = Math.floor(moneyGain * 1.05);
-                    follGain = Math.floor(follGain * 1.05);
+                    moneyGain = Math.floor(moneyGain * 1.15);
+                    follGain = Math.floor(follGain * 1.15);
+                    flowScoreBonus = 0.4;
                     flowStateApplied = true;
-                    state.flowStateActive = false; // consume flow state
+                    state.flowStateActive = false;
                 }
 
-                // Track recent exports to check for next Flow State trigger
+                // Déclenchement réaliste du Flow State : 2 Bangers d'affilée OU 3 exports en <= 180 min in-game
                 state.recentExports = state.recentExports || [];
                 state.recentExports.push(getTotalMins());
                 if (state.recentExports.length > 5) state.recentExports.shift();
-                
-                if (state.recentExports.length >= 3) {
-                    const len = state.recentExports.length;
-                    const timeDiff = state.recentExports[len - 1] - state.recentExports[len - 3];
-                    if (timeDiff <= 10) {
-                        state.flowStateActive = true;
-                        setTimeout(() => {
-                            showToast("⚡ Flow State activé ! Prochain export : +5% de gains !", "success");
-                        }, 800);
-                    }
+                state.stats.consecutiveBangers = (result.score === 3) ? ((state.stats.consecutiveBangers || 0) + 1) : 0;
+
+                const rapidTriplet = state.recentExports.length >= 3 &&
+                    (state.recentExports[state.recentExports.length - 1] - state.recentExports[state.recentExports.length - 3]) <= 180;
+                if (!flowStateApplied && (state.stats.consecutiveBangers >= 2 || rapidTriplet)) {
+                    state.flowStateActive = true;
+                    setTimeout(() => {
+                        showToast("⚡ FLOW STATE ACTIVÉ ! Prochain export : +15% Cash/Fans & +0.4 Score !", "success");
+                    }, 800);
                 }
 
                 if (flowStateApplied) {
-                    critique += "\n[Flow State] Multiplicateur +5% appliqué aux gains !";
+                    critique += "\n[Flow State] In The Zone : +15% Cash/Fans & +0.4 Score !";
+                }
+
+                // Marché dynamique des Genres (🔥 HOT vs 📉 SATURÉ)
+                const marketStatus = (typeof getGenreMarketStatus === 'function') ? getGenreMarketStatus(genre) : { state: 'normal', cashMult: 1, fansMult: 1 };
+                if (marketStatus.state === 'hot') {
+                    moneyGain = Math.floor(moneyGain * marketStatus.cashMult);
+                    follGain = Math.floor(follGain * marketStatus.fansMult);
+                    critique += "\n[Marché 🔥] Style très recherché aujourd'hui : +25% Cash & +20% Fans !";
+                } else if (marketStatus.state === 'saturated') {
+                    moneyGain = Math.floor(moneyGain * marketStatus.cashMult);
+                    follGain = Math.floor(follGain * marketStatus.fansMult);
+                    critique += "\n[Marché 📉] Style saturé par tes sorties récentes (-20% Cash). Varie tes prods !";
+                }
+                if (typeof recordGenreMarketExport === 'function') recordGenreMarketExport(genre);
+
+                // Bonus Couronne #1 Top 10 Producteurs
+                const isTop1Prod = (typeof window.isPlayerRankOneProducer === 'function' && window.isPlayerRankOneProducer());
+                if (isTop1Prod) {
+                    moneyGain = Math.floor(moneyGain * 1.10);
+                    follGain = Math.floor(follGain * 1.10);
+                    critique += "\n[Couronne #1] Leader du Top 10 Producteurs : +10% Cash & Fans !";
+                }
+
+                // Bonus Piano Roll & Drum Pads RÉELLEMENT connectés à l'export
+                const prBonus = (typeof window.getPianoRollCompositionBonus === 'function')
+                    ? window.getPianoRollCompositionBonus()
+                    : { scoreBonus: 0, cashMult: 0, label: '' };
+                if (prBonus.scoreBonus > 0) {
+                    moneyGain = Math.floor(moneyGain * (1 + prBonus.cashMult));
+                    critique += `\n[Piano Roll] ${prBonus.label} (+${prBonus.scoreBonus.toFixed(1)} score, +${Math.round(prBonus.cashMult * 100)}% cash) !`;
+                }
+                let padsScoreBonus = 0;
+                if (pads >= 4 && pads <= 12) {
+                    padsScoreBonus = 0.4;
+                    moneyGain = Math.floor(moneyGain * 1.08);
+                    critique += `\n[Drum Pads] Groove calibré (${pads} pads actifs · +0.4 score, +8% cash) !`;
+                } else if (pads > 12) {
+                    padsScoreBonus = 0.2;
+                    moneyGain += 25;
+                    critique += `\n[Drum Pads] Pattern dense (${pads} pads · +0.2 score).`;
                 }
 
                 if (state.earlyGameBoost) {
@@ -28507,8 +29770,6 @@ document.addEventListener('mouseover', (e) => {
                 }
 
                 moneyGain = Math.floor(moneyGain * state.multiplier);
-                
-                if (pads > 8) { moneyGain += 20; }
 
                 if (pluginId) {
                     const usedCrack = cracks.find(c => c.id === pluginId);
@@ -28601,14 +29862,27 @@ document.addEventListener('mouseover', (e) => {
                 }
 
                 // --- CHAÎNE DE MASTERING ANALOGIQUE 19" SSL / PULTEC / STUDER & LIVE ROOM BUFFS ---
+                let masterBonusObj = { scoreBonus: 0, royaltyMult: 0, summary: '' };
                 if (typeof window.getMasteringChainBonus === 'function') {
-                    const mBonus = window.getMasteringChainBonus();
+                    const mBonus = window.getMasteringChainBonus(genre);
                     if (mBonus && mBonus.scoreBonus > 0) {
+                        masterBonusObj = mBonus;
                         finalTrackScore += mBonus.scoreBonus;
                         moneyGain = Math.floor(moneyGain * (1 + mBonus.royaltyMult));
                         critique += `\n[SSL Mastering 19"] ${mBonus.summary} (+${mBonus.scoreBonus.toFixed(1)} score, +${Math.round(mBonus.royaltyMult * 100)}% royalties) !`;
                     }
                 }
+                if (flowScoreBonus > 0) finalTrackScore += flowScoreBonus;
+                if (prBonus.scoreBonus > 0) finalTrackScore += prBonus.scoreBonus;
+                if (padsScoreBonus > 0) finalTrackScore += padsScoreBonus;
+                const permMixB = parseFloat(state.permanentMixBonus) || 0;
+                if (permMixB > 0) {
+                    finalTrackScore += permMixB;
+                    critique += `\n[Maîtrise Mix] Bonus qualité permanent (+${permMixB.toFixed(2)} score) !`;
+                }
+                const hadLiveDrum = Boolean(window._liveDrumGrooveBuff);
+                const hadLiveVocal = Boolean(window._liveVocalTakeBuff);
+                const hadSubCheck = Boolean(window._subBassCheckBuff);
                 if (window._liveDrumGrooveBuff) {
                     window._liveDrumGrooveBuff = false;
                     finalTrackScore += 0.6;
@@ -28625,6 +29899,31 @@ document.addEventListener('mouseover', (e) => {
                     critique += "\n[Sub 18\" Augspurger] Bas-spectre calibré en Club Mode (+0.4 score) !";
                 }
                 if (typeof window.syncMasteringRackUI === 'function') window.syncMasteringRackUI();
+
+                // Construction du Breakdown Visuel Post-Export (clair & pédagogique)
+                const gObj = (typeof DAW_GENRES !== 'undefined') ? DAW_GENRES.find(x => x.id === genre) : null;
+                const bpmDiff = gObj ? Math.abs(bpm - gObj.targetBpm) : 0;
+                const voiceOk = gObj ? (voice === gObj.targetVoice) : true;
+                const scoreBreakdown = [
+                    {
+                        label: gObj ? (bpmDiff <= gObj.tol ? `BPM ${bpm} ✓` : (bpmDiff <= 10 ? `BPM ~ (${gObj.targetBpm} idéal)` : `BPM ✕ (${gObj.targetBpm} cible)`)) : `BPM ${bpm}`,
+                        tone: gObj ? (bpmDiff <= gObj.tol ? 'good' : (bpmDiff <= 10 ? 'warn' : 'bad')) : 'good'
+                    },
+                    {
+                        label: voiceOk ? 'VOIX ✓' : 'VOIX ✕ (mauvais type)',
+                        tone: voiceOk ? 'good' : 'bad'
+                    }
+                ];
+                if (masterBonusObj.scoreBonus > 0) scoreBreakdown.push({ label: `MASTER +${masterBonusObj.scoreBonus.toFixed(1)}`, tone: masterBonusObj.isPerfect ? 'good' : 'info' });
+                if (prBonus.scoreBonus > 0) scoreBreakdown.push({ label: `PIANO ROLL +${prBonus.scoreBonus.toFixed(1)}`, tone: 'good' });
+                if (padsScoreBonus > 0) scoreBreakdown.push({ label: `PADS +${padsScoreBonus.toFixed(1)}`, tone: 'good' });
+                if (flowStateApplied) scoreBreakdown.push({ label: 'FLOW STATE +15%', tone: 'good' });
+                if (marketStatus.state === 'hot') scoreBreakdown.push({ label: 'MARCHÉ 🔥 +25%', tone: 'good' });
+                else if (marketStatus.state === 'saturated') scoreBreakdown.push({ label: 'SATURÉ 📉 -20%', tone: 'warn' });
+                if (hadLiveDrum || hadLiveVocal || hadSubCheck) {
+                    const b3d = (hadLiveDrum ? 0.6 : 0) + (hadLiveVocal ? 0.5 : 0) + (hadSubCheck ? 0.4 : 0);
+                    scoreBreakdown.push({ label: `STUDIO 3D +${b3d.toFixed(1)}`, tone: 'info' });
+                }
 
                 // On met à jour toastMsg et finalTrackScore avec un max de 10 (arrondi à 1 décimale)
                 finalTrackScore = Math.min(10, Math.round(finalTrackScore * 10) / 10);
@@ -28688,12 +29987,15 @@ document.addEventListener('mouseover', (e) => {
                 }
 
                 // Stockage des gains pour application à la fermeture de la review
+                const genreObjForList = (typeof DAW_GENRES !== 'undefined') ? DAW_GENRES.find(x => x.id === genre) : null;
+                const displayGenreName = genreObjForList ? genreObjForList.name : (genre || 'UK Drill').toUpperCase();
                 window.pendingReviewData = {
                     money: moneyGain,
                     rep: repGain,
                     fans: follGain,
                     toast: { msg: toastMsg, type: 'review' },
-                    track: { title: trackTitle, genre: (genre || 'drill').toUpperCase(), score: finalTrackScore, voice: voice },
+                    track: { title: trackTitle, genre: displayGenreName, genreId: genre, score: finalTrackScore, voice: voice },
+                    breakdown: scoreBreakdown,
                     extraToasts: deferredToasts
                 };
                 
@@ -28708,8 +30010,10 @@ document.addEventListener('mouseover', (e) => {
             if (typeof window.syncMasteringRackUI === 'function') window.syncMasteringRackUI();
                 
                 state.trackList.push({
+                    id: `trk_${Date.now()}_${Math.floor(Math.random()*999)}`,
                     title: trackTitle,
-                    genre: (genre || 'drill').toUpperCase(),
+                    genre: displayGenreName,
+                    genreId: genre,
                     score: finalTrackScore,
                     money: moneyGain,
                     fans: follGain,
@@ -29062,14 +30366,38 @@ document.addEventListener('mouseover', (e) => {
         }
 
         function getScaledPrice(basePrice) {
-            const now = performance.now();
-            if (!window._scaledPriceLevelTs || (now - window._scaledPriceLevelTs) > 250) {
-                const levelData = typeof calculateLevelData === 'function' ? calculateLevelData(true) : null;
-                window._scaledPriceLevel = levelData ? levelData.level : 1;
-                window._scaledPriceLevelTs = now;
-            }
-            return Math.floor(basePrice * (1 + ((window._scaledPriceLevel || 1) - 1) * 0.15));
+            // Scaling équilibré par ligue (×1.0 -> ×1.30 max) au lieu de +15%/niveau punitif
+            const rankId = (typeof getCurrentRank === 'function' && getCurrentRank()) ? (getCurrentRank().id || 1) : 1;
+            const rankMult = [1.0, 1.0, 1.08, 1.18, 1.30][Math.min(4, Math.max(1, rankId))] || 1.0;
+            return Math.floor(basePrice * rankMult);
         }
+
+        function addPlayerMultiplier(delta, sourceLabel = 'Upgrade') {
+            const add = Number(delta) || 0;
+            if (add <= 0) return { multAdded: 0, overflowBonus: 0 };
+            const cur = parseFloat(state.multiplier) || 1.0;
+            const headroom = Math.max(0, 3.0 - cur);
+            const multAdded = Math.min(add, headroom);
+            const overflow = Math.max(0, add - multAdded);
+            state.multiplier = Math.round((cur + multAdded) * 100) / 100;
+            let overflowBonus = 0;
+            if (overflow > 0) {
+                // Convertit proprement tout excédent au-delà du plafond ×3.0 en Qualité Mix permanente (+0.05..+1.0) + Fans
+                const prevPerm = parseFloat(state.permanentMixBonus) || 0;
+                const gainScore = Math.min(1.0 - prevPerm, Math.round(overflow * 1.2 * 100) / 100);
+                if (gainScore > 0) {
+                    state.permanentMixBonus = Math.round((prevPerm + gainScore) * 100) / 100;
+                    overflowBonus = gainScore;
+                }
+                const bonusFans = Math.round(overflow * 2500);
+                if (bonusFans > 0 && typeof logFollower === 'function') logFollower(bonusFans);
+                if (typeof showToast === 'function') {
+                    showToast(`⚡ Multiplicateur au max (×3.0) : ${sourceLabel} converti en ${gainScore > 0 ? `+${gainScore.toFixed(2)} Qualité Mix & ` : ''}+${bonusFans} Fans !`, "success");
+                }
+            }
+            return { multAdded, overflowBonus };
+        }
+        window.addPlayerMultiplier = addPlayerMultiplier;
 
         function buyFurniture(id) {
             try {
@@ -29132,7 +30460,7 @@ document.addEventListener('mouseover', (e) => {
 
                 if (item.effect) {
                     if (item.effect.type === 'multiplier') {
-                        state.multiplier = Math.min(3.0, (parseFloat(state.multiplier) || 1.0) + item.effect.value);
+                        addPlayerMultiplier(item.effect.value, item.name);
                     } else if (typeof applyFurniturePerk === 'function') {
                         applyFurniturePerk(item.effect);
                     }
@@ -29223,11 +30551,13 @@ document.addEventListener('mouseover', (e) => {
         function buyLegit(price, mult) {
             if (state.money >= price) {
                 logMoney(-price, 'AudioStore: Plugin');
-                state.multiplier = Math.min(3.0, (parseFloat(state.multiplier) || 1.0) + mult);
+                const res = addPlayerMultiplier(mult, 'Plugin AudioStore');
                 state.plugins = (parseInt(state.plugins, 10) || 0) + 1;
                 checkAchievement('inge_son_certifie', () => state.plugins >= 1);
-                showToast(`Achat confirmé ! Multiplicateur +${mult}`, "success");
-                fireConfetti('store'); // <-- DÉCLENCHEUR ICI
+                if (res.multAdded > 0) {
+                    showToast(`Achat confirmé ! Multiplicateur +${res.multAdded.toFixed(2)}`, "success");
+                }
+                fireConfetti('store');
                 playSuccess(); saveGame(); updateHUD();
             } else {
                 showToast("Fonds insuffisants.", "error"); playError();
@@ -30039,7 +31369,7 @@ document.addEventListener('mouseover', (e) => {
             return btn;
         }
 
-        function triggerRandomEvent(forcedType) {
+        function triggerRandomEvent(forcedType, forcedRapperName = null) {
             state.isEventActive = true;
             if (typeof window.enforceFpsModalPriority === 'function') window.enforceFpsModalPriority();
             const overlay = document.getElementById('event-overlay');
@@ -30069,11 +31399,16 @@ document.addEventListener('mouseover', (e) => {
             const eventType = forcedType || (rand < 0.45 ? 'collab' : rand < 0.80 ? 'vol' : 'badbuzz');
 
             if (eventType === 'collab' || eventType === 'collab_known') {
-                const isKnown = (eventType === 'collab_known') ? true : (Math.random() < 0.2);
-                const rapper = pickRapper(isKnown);
+                const isKnown = (eventType === 'collab_known') ? true : (forcedRapperName ? rappersConnus.includes(forcedRapperName) : (Math.random() < 0.2));
+                const rapper = forcedRapperName || pickRapper(isKnown);
                 const starMult = isKnown ? 1.8 : 1.0;
                 const repReward = isKnown ? 15 : 10;
                 const effectiveMult = (state.multiplier || 1.0) * starMult;
+                const affScore = (typeof window.getRapperAffinity === 'function') ? window.getRapperAffinity(rapper) : 0;
+                const affMeta = (typeof window.getRapperAffinityMeta === 'function') ? window.getRapperAffinityMeta(affScore) : { label: 'CONTACT', acceptBonus: 0 };
+                const p1 = Math.min(95, 80 + (affMeta.acceptBonus || 0));
+                const p2 = Math.min(90, 50 + (affMeta.acceptBonus || 0));
+                const p3 = Math.min(75, 20 + (affMeta.acceptBonus || 0));
 
                 overlay.style.setProperty('--evt-rgb', isKnown ? '245, 158, 11' : '16, 185, 129');
                 if (eyebrow) eyebrow.textContent = isKnown ? 'DOSSIER INDUSTRIE · VIP' : 'DOSSIER INDUSTRIE · PROD';
@@ -30086,6 +31421,9 @@ document.addEventListener('mouseover', (e) => {
 
                 if (artistSlot) {
                     artistSlot.classList.remove('hidden');
+                    const affText = affScore > 0
+                        ? ` · Affinité ${affScore}/100 (${affMeta.label}${affMeta.acceptBonus ? ` +${affMeta.acceptBonus}%` : ''})`
+                        : '';
                     artistSlot.innerHTML = _renderEventArtistCard({
                         name: rapper,
                         isStar: isKnown,
@@ -30093,9 +31431,9 @@ document.addEventListener('mouseover', (e) => {
                         badgeStyle: isKnown
                             ? 'background:rgba(245,158,11,0.18); border-color:rgba(245,158,11,0.55); color:#fde68a;'
                             : 'background:rgba(16,185,129,0.16); border-color:rgba(16,185,129,0.45); color:#6ee7b7;',
-                        subtext: isKnown
-                            ? `Cachet majoré ×1.8 · Réputation +${repReward} REP si signé`
-                            : `Circuit indépendant · Réputation +${repReward} REP si signé`
+                        subtext: (isKnown
+                            ? `Cachet ×1.8 · +${repReward} REP`
+                            : `Circuit indé · +${repReward} REP`) + affText
                     });
                 }
 
@@ -30115,11 +31453,11 @@ document.addEventListener('mouseover', (e) => {
                     badgeStyle: 'background:rgba(16,185,129,0.16); border-color:rgba(16,185,129,0.45); color:#6ee7b7;',
                     rightMain: `$${mp3Min.toLocaleString('fr-FR')} – $${mp3Max.toLocaleString('fr-FR')}`,
                     rightSub: `+${repReward} REP`,
-                    probPct: 80,
-                    probLabel: '80% ACCEPTATION',
+                    probPct: p1,
+                    probLabel: `${p1}% ACCEPTATION`,
                     probColor: '#34d399',
                     choiceRgb: '16, 185, 129',
-                    onClick: () => resolveCollabEvent(rapper, 80, 150 + Math.random() * 150, isKnown)
+                    onClick: () => resolveCollabEvent(rapper, p1, 150 + Math.random() * 150, isKnown)
                 });
 
                 const btn2 = _buildGtaChoiceCard({
@@ -30128,11 +31466,11 @@ document.addEventListener('mouseover', (e) => {
                     badgeStyle: 'background:rgba(245,158,11,0.16); border-color:rgba(245,158,11,0.45); color:#fcd34d;',
                     rightMain: `$${wavMin.toLocaleString('fr-FR')} – $${wavMax.toLocaleString('fr-FR')}`,
                     rightSub: `+${repReward} REP`,
-                    probPct: 50,
-                    probLabel: '50% ACCEPTATION',
+                    probPct: p2,
+                    probLabel: `${p2}% ACCEPTATION`,
                     probColor: '#fbbf24',
                     choiceRgb: '245, 158, 11',
-                    onClick: () => resolveCollabEvent(rapper, 50, 400 + Math.random() * 400, isKnown)
+                    onClick: () => resolveCollabEvent(rapper, p2, 400 + Math.random() * 400, isKnown)
                 });
 
                 const btn3 = _buildGtaChoiceCard({
@@ -30141,11 +31479,11 @@ document.addEventListener('mouseover', (e) => {
                     badgeStyle: 'background:rgba(244,63,94,0.16); border-color:rgba(244,63,94,0.45); color:#fda4af;',
                     rightMain: `$${stmMin.toLocaleString('fr-FR')} – $${stmMax.toLocaleString('fr-FR')}`,
                     rightSub: `+${repReward} REP`,
-                    probPct: 20,
-                    probLabel: '20% ACCEPTATION',
+                    probPct: p3,
+                    probLabel: `${p3}% ACCEPTATION`,
                     probColor: '#fb7185',
                     choiceRgb: '244, 63, 94',
-                    onClick: () => resolveCollabEvent(rapper, 20, 1000 + Math.random() * 1500, isKnown)
+                    onClick: () => resolveCollabEvent(rapper, p3, 1000 + Math.random() * 1500, isKnown)
                 });
 
                 choicesDiv.append(btn1, btn2, btn3);
@@ -30288,36 +31626,41 @@ document.addEventListener('mouseover', (e) => {
             if (Math.random() * 100 <= chance) {
                 const starMult = isKnown ? 1.8 : 1.0;
                 const repGain = isKnown ? 15 : 10;
+                const affGain = isKnown ? 35 : 25;
                 const finalPrice = Math.floor(rawPrice * (state.multiplier || 1.0) * starMult);
                 logMoney(finalPrice, `Collab${isKnown ? ' ★' : ''}: ${rapper}`);
                 state.rep += repGain;
+                const newAff = (typeof window.addRapperAffinity === 'function') ? window.addRapperAffinity(rapper, affGain) : 0;
                 const starTag = isKnown ? ' ★' : '';
                 const succesCollab = [
-                    `${rapper}${starTag} a validé direct ! +$${finalPrice} | +${repGain} REP`,
-                    `Virement reçu de ${rapper}${starTag}. Le mix part ce soir ! +$${finalPrice} | +${repGain} REP`
+                    `${rapper}${starTag} a validé direct ! +$${finalPrice} | +${repGain} REP | Affinité ${newAff}/100`,
+                    `Virement reçu de ${rapper}${starTag}. Le mix part ce soir ! +$${finalPrice} | +${repGain} REP | Affinité ${newAff}/100`
                 ];
                 showToast(succesCollab[Math.floor(Math.random() * succesCollab.length)], "success");
                 playSuccess();
             } else {
-                showToast(`${rapper} t'a lu et t'a ghosté. C'était trop cher pour lui.`, "info");
+                if (typeof window.addRapperAffinity === 'function') window.addRapperAffinity(rapper, 5);
+                showToast(`${rapper} t'a lu et t'a ghosté. C'était trop cher pour lui (+5 Affinité contact).`, "info");
                 playError();
             }
+            if (typeof window.renderEmpireApp === 'function') window.renderEmpireApp();
             closeRandomEvent();
         }
 
         function resolveTheftEvent(action, voleur) {
             if (action === 'plainte') {
-                state.rep = Math.floor(state.rep * 0.10);
+                // Pénalité équilibrée (-20 REP fixe au lieu de -90% de toute la carrière!)
+                state.rep = Math.max(0, (Number(state.rep) || 0) - 20);
                 if (Math.random() > 0.5) {
                     const winAmt = Math.floor(1000 + Math.random() * 1000);
                     logMoney(winAmt, `Procès gagné contre ${voleur}`);
                     checkAchievement('avocat_du_diable', () => true);
-                    showToast(`Procès gagné ! +$${winAmt} (Mais -90% REP pour avoir balancé)`, "success");
+                    showToast(`Procès gagné ! +$${winAmt} (-20 REP dans la rue pour avoir balancé)`, "success");
                     playSuccess();
                 } else {
                     const lossAmt = Math.floor(300 + Math.random() * 300);
                     logMoney(-lossAmt, `Frais d'avocats perdus`);
-                    showToast(`Procès perdu... Les frais t'ont coûté $${lossAmt}.`, "error");
+                    showToast(`Procès perdu... Les frais t'ont coûté $${lossAmt} (-20 REP).`, "error");
                     playError();
                 }
             }
@@ -30334,7 +31677,8 @@ document.addEventListener('mouseover', (e) => {
                 logMoney(-lossAmt, `Arrangement avec ${voleur}`);
                 checkAchievement('prix_de_la_paix', () => true);
                 state.rep += 10;
-                showToast(`Arrangement trouvé. -$${lossAmt} mais tu passes pour un mec réglo (+10 REP)`, "info");
+                if (typeof window.addRapperAffinity === 'function') window.addRapperAffinity(voleur, 15);
+                showToast(`Arrangement trouvé avec ${voleur}. -$${lossAmt} mais tu passes pour un mec réglo (+10 REP, +15 Affinité)`, "info");
                 playBleep();
             }
             closeRandomEvent();
@@ -30453,7 +31797,7 @@ document.addEventListener('mouseover', (e) => {
                     if (!pool) continue;
                     if (usedTypes.includes(pool.type)) continue;
                     usedTypes.push(pool.type);
-                    const individualScore = Math.min(10, Math.max(1, trackScore + Math.floor(Math.random() * 5) - 2));
+                    const individualScore = Math.round(Math.min(10, Math.max(1, trackScore + Math.floor(Math.random() * 5) - 2)) * 10) / 10;
                     const name = pool.names[Math.floor(Math.random() * pool.names.length)];
                     const comments = getReviewerComment(pool.type, individualScore);
                     let comment = comments[Math.floor(Math.random() * comments.length)];
@@ -30488,52 +31832,50 @@ document.addEventListener('mouseover', (e) => {
 
                 playTone(300, 'sine', 0.4, 0.05);
 
-                // Animation erratique de la barre de progression
+                // Animation erratique de la barre de progression + Skip Suspense
                 let currentProgress = 0;
-                
-                const updateSuspenseProgress = () => {
-                    if (currentProgress < 100 && state.isReviewActive) {
-                        // Progression erratique : pas régulier, avec des pauses et des sauts
-                        const randJump = Math.floor(Math.random() * 15) + 5; // Saut de 5 à 20%
-                        currentProgress = Math.min(95, currentProgress + randJump);
-                        
-                        if (progressBar) progressBar.style.width = `${currentProgress}%`;
-                        
-                        // Changement de texte au fur et à mesure
-                        const textIdx = Math.floor((currentProgress / 100) * suspenseSteps.length);
-                        const stepText = suspenseSteps[Math.min(suspenseSteps.length - 1, textIdx)];
-                        suspenseText.innerText = stepText;
-                        
-                        // Petit son de tension
-                        playTone(150 + (currentProgress * 3), 'sine', 0.1, 0.05);
-                        
-                        // Relance le prochain step avec un délai aléatoire (tension)
-                        const nextDelay = Math.random() * 800 + 300; // entre 300ms et 1100ms
-                        setTimeout(updateSuspenseProgress, nextDelay);
-                    }
-                };
+                let _suspenseRevealed = false;
+                let _suspenseRevealTimer = null;
 
-                // Lancement de l'animation de progression
-                setTimeout(updateSuspenseProgress, 200);
-
-                // Révélation des résultats après 5s
-                setTimeout(() => {
+                const revealReviewResults = (instant = false) => {
+                    if (_suspenseRevealed) return;
+                    _suspenseRevealed = true;
+                    if (_suspenseRevealTimer) { clearTimeout(_suspenseRevealTimer); _suspenseRevealTimer = null; }
                     currentProgress = 100;
                     if (progressBar) progressBar.style.width = '100%';
 
-                    // Transition entre les deux phases
                     phaseSuspense.style.display = 'none';
                     phaseSuspense.classList.add('hidden');
+                    phaseResults.classList.remove('hidden');
+                    phaseResults.style.display = 'flex';
+
+                    // Affiche le Breakdown Visuel Post-Export
+                    const bdEl = document.getElementById('review-score-breakdown');
+                    const bdItems = (window.pendingReviewData && Array.isArray(window.pendingReviewData.breakdown)) ? window.pendingReviewData.breakdown : [];
+                    if (bdEl) {
+                        if (bdItems.length > 0) {
+                            const toneStyles = {
+                                good: 'bg-emerald-500/15 border-emerald-400/45 text-emerald-300',
+                                warn: 'bg-amber-500/15 border-amber-400/45 text-amber-300',
+                                bad:  'bg-rose-500/15 border-rose-400/45 text-rose-300',
+                                info: 'bg-sky-500/15 border-sky-400/45 text-sky-300'
+                            };
+                            bdEl.innerHTML = bdItems.map(it => `<span class="px-2 py-0.5 rounded border text-[9.5px] font-mono font-bold uppercase tracking-wider ${toneStyles[it.tone] || toneStyles.info}">${it.label}</span>`).join('');
+                            bdEl.classList.remove('hidden');
+                        } else {
+                            bdEl.classList.add('hidden');
+                        }
+                    }
 
                     const typeColors = { critique: 'text-[var(--retro-blue)]', internaute: 'text-[var(--retro-green)]', rappeur: 'text-[var(--retro-orange)]' };
                     const typeLabels = { critique: '📰 CRITIQUE', internaute: '💬 INTERNAUTE', rappeur: '🎤 RAPPEUR' };
 
-                    // Affiche les reviews une par une
                     reviewList.innerHTML = '';
+                    const cardDelay = instant ? 80 : 650;
                     reviews.forEach((r, i) => {
                         setTimeout(() => {
                             const div = document.createElement('div');
-                            div.className = 'bg-black/40 border border-white/10 rounded-lg p-4 opacity-0 transition-opacity duration-500';
+                            div.className = 'bg-black/40 border border-white/10 rounded-lg p-4 opacity-0 transition-opacity duration-300';
                             div.innerHTML = `
                                 <div class="flex justify-between items-center mb-2">
                                     <span class="text-[10px] font-retro ${typeColors[r.type]}">${typeLabels[r.type]}</span>
@@ -30544,81 +31886,90 @@ document.addEventListener('mouseover', (e) => {
                                     <span class="text-2xl font-bold font-retro flex-shrink-0 ${r.score >= 7 ? 'text-[var(--retro-green)]' : r.score >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]'}">${r.score}/10</span>
                                 </div>`;
                             reviewList.appendChild(div);
-                            setTimeout(() => div.style.opacity = '1', 50);
-                            playTone(300 + (r.score * 40), 'sine', 0.15, 0.06);
-                        }, i * 800);
+                            setTimeout(() => div.style.opacity = '1', 30);
+                            playTone(300 + (r.score * 40), 'sine', 0.12, 0.05);
+                        }, i * cardDelay);
                     });
 
-                // Score final après toutes les reviews et affichage du toast
-    setTimeout(() => {
-        const avgColor = avg >= 7 ? 'text-[var(--retro-green)]' : avg >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]';
-        avgEl.className = `text-5xl font-bold font-retro ${avgColor}`;
-        avgEl.innerText = `${avg}/10`;
-        
-        if (avg >= 7.0) playSuccess();
-        else if (avg >= 4.0) playBleep();
-        else playError();
-    
-        if (avg >= 7.0) fireConfetti('banger');
+                    // Score final après toutes les reviews et affichage du toast
+                    setTimeout(() => {
+                        const avgColor = avg >= 7 ? 'text-[var(--retro-green)]' : avg >= 4 ? 'text-[var(--retro-orange)]' : 'text-[var(--retro-red)]';
+                        avgEl.className = `text-5xl font-bold font-retro ${avgColor}`;
+                        avgEl.innerText = `${avg}/10`;
 
-        // Apply pending export results at the exact moment the results are shown
-        if (window.pendingExportResults) {
-            const res = window.pendingExportResults;
-            if (res.hypeChange) {
-                state.hype = Math.min(100, Math.max(0, (state.hype || 50) + res.hypeChange));
-            }
-            if (res.floatingText && typeof spawnFloatingText === 'function') {
-                spawnFloatingText(res.floatingText.elementId, res.floatingText.text, res.floatingText.color);
-            }
-            if (res.effect) {
-                const osMain = document.getElementById('os-main') || document.body;
-                if (osMain) {
-                    osMain.classList.add(res.effect);
-                    setTimeout(() => osMain.classList.remove(res.effect), res.effect === 'banger-flash' ? 800 : 500);
-                }
-            }
-            updateHUD();
-            window.pendingExportResults = null;
-        }
-        
-        // NEW: Diss Track QTE Trigger (Flop <= 4/10)
-        if (parseFloat(avg) <= 4.0) {
-            // Trembler la fenêtre de review
-            const reviewOverlay = document.getElementById('review-overlay');
-            if (reviewOverlay) {
-                reviewOverlay.classList.add('screen-shake');
-                setTimeout(() => reviewOverlay.classList.remove('screen-shake'), 1000);
-            }
-            
-            // Son d'alarme/siren
-            playTone(220, 'sawtooth', 0.35, 0.15);
-            setTimeout(() => playTone(330, 'sawtooth', 0.35, 0.15), 180);
-            setTimeout(() => playTone(220, 'sawtooth', 0.35, 0.15), 360);
-            
-            const dissBtn = document.getElementById('review-diss-btn');
-            if (dissBtn) {
-                dissBtn.classList.remove('hidden');
-                dissBtn.style.display = 'block';
-                
-                // Disparaît après 3s si non cliqué
-                window.dissTrackTimer = setTimeout(() => {
-                    dissBtn.classList.add('hidden');
-                    dissBtn.style.display = 'none';
-                    showToast("Trop tard pour répondre. Ton flop est gravé dans le marbre.", "error");
-                }, 3000);
-            }
-        }
+                        if (avg >= 7.0) playSuccess();
+                        else if (avg >= 4.0) playBleep();
+                        else playError();
 
-        if (toastData) {
-            showToast(toastData.msg, toastData.type);
-        }
-    }, reviews.length * 800 + 300);
+                        if (avg >= 7.0) fireConfetti('banger');
 
+                        if (window.pendingExportResults) {
+                            const res = window.pendingExportResults;
+                            if (res.hypeChange) {
+                                state.hype = Math.min(100, Math.max(0, (state.hype || 50) + res.hypeChange));
+                            }
+                            if (res.floatingText && typeof spawnFloatingText === 'function') {
+                                spawnFloatingText(res.floatingText.elementId, res.floatingText.text, res.floatingText.color);
+                            }
+                            if (res.effect) {
+                                const osMain = document.getElementById('os-main') || document.body;
+                                if (osMain) {
+                                    osMain.classList.add(res.effect);
+                                    setTimeout(() => osMain.classList.remove(res.effect), res.effect === 'banger-flash' ? 800 : 500);
+                                }
+                            }
+                            updateHUD();
+                            window.pendingExportResults = null;
+                        }
 
-            phaseResults.style.display = 'flex';
-            phaseResults.classList.remove('hidden');
+                        if (parseFloat(avg) <= 4.0) {
+                            const reviewOverlay = document.getElementById('review-overlay');
+                            if (reviewOverlay) {
+                                reviewOverlay.classList.add('screen-shake');
+                                setTimeout(() => reviewOverlay.classList.remove('screen-shake'), 1000);
+                            }
+                            playTone(220, 'sawtooth', 0.35, 0.15);
+                            setTimeout(() => playTone(330, 'sawtooth', 0.35, 0.15), 180);
+                            setTimeout(() => playTone(220, 'sawtooth', 0.35, 0.15), 360);
 
-        }, 5000);
+                            const dissBtn = document.getElementById('review-diss-btn');
+                            if (dissBtn) {
+                                dissBtn.classList.remove('hidden');
+                                dissBtn.style.display = 'block';
+                                window.dissTrackTimer = setTimeout(() => {
+                                    dissBtn.classList.add('hidden');
+                                    dissBtn.style.display = 'none';
+                                    showToast("Trop tard pour répondre. Ton flop est gravé dans le marbre.", "error");
+                                }, 3000);
+                            }
+                        }
+                        if (toastData) {
+                            showToast(toastData.msg, toastData.type);
+                        }
+                    }, reviews.length * cardDelay + (instant ? 120 : 350));
+                };
+
+                window.skipReviewSuspense = () => {
+                    if (typeof playBleep === 'function') playBleep();
+                    revealReviewResults(true);
+                };
+
+                const updateSuspenseProgress = () => {
+                    if (!_suspenseRevealed && currentProgress < 100 && state.isReviewActive) {
+                        const randJump = Math.floor(Math.random() * 15) + 5;
+                        currentProgress = Math.min(95, currentProgress + randJump);
+                        if (progressBar) progressBar.style.width = `${currentProgress}%`;
+                        const textIdx = Math.floor((currentProgress / 100) * suspenseSteps.length);
+                        const stepText = suspenseSteps[Math.min(suspenseSteps.length - 1, textIdx)];
+                        suspenseText.innerText = stepText;
+                        playTone(150 + (currentProgress * 3), 'sine', 0.1, 0.04);
+                        const nextDelay = Math.random() * 700 + 250;
+                        setTimeout(updateSuspenseProgress, nextDelay);
+                    }
+                };
+
+                setTimeout(updateSuspenseProgress, 180);
+                _suspenseRevealTimer = setTimeout(() => revealReviewResults(false), 3800);
     } catch (err) {
         console.error("Error in showTrackReview:", err);
         showToast("Erreur lors de l'affichage des critiques : " + err.message, "error");
