@@ -319,6 +319,7 @@ import { THREE } from '../core/libs.js';
         );
 
         window.isFpsRoomActive = function() {
+            if (window.activeStudioLocation === 'city') return false;
             const roomUi = document.getElementById('room-ui');
             const pcUi = document.getElementById('pc-ui-layer');
             const loginUi = document.getElementById('login-screen');
@@ -907,6 +908,7 @@ import { THREE } from '../core/libs.js';
             document.getElementById('room-ui').style.display = 'flex';
             document.body.classList.remove('os-active');
             playTone(300, 'sawtooth', 0.1, 0.05);
+            if (window.activeStudioLocation === 'city') return;
 
             if (typeof window.startFpsCameraTransition === 'function' && currentRoomAvatar) {
                 const isPro = (window.activeStudioLocation === 'pro_studio');
@@ -2492,6 +2494,9 @@ function initInteractions() {
                 if (typeof state !== 'undefined' && state && state.studioUnlocked && window.isFpsRoomActive && window.isFpsRoomActive()) {
                     if (typeof window.travelToStudioLocation === 'function') window.travelToStudioLocation();
                 }
+            } else if (k === 'g') {
+                e.preventDefault();
+                if (typeof window.enterCityWorld === 'function') window.enterCityWorld();
             } else if (k === 'f') {
                 e.preventDefault();
                 window.exitFpsPointerLock();

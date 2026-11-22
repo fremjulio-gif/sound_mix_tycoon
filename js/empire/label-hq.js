@@ -122,6 +122,7 @@
                 const clean = (val || '').trim().toUpperCase().slice(0, 22) || '42E RECORDS';
                 state.labelName = clean;
                 state.labelNamed = true;
+                if (typeof window.refreshCityDynamicSigns === 'function') window.refreshCityDynamicSigns();
                 if (typeof window.renderEmpireApp === 'function') window.renderEmpireApp();
                 if (typeof saveGame === 'function') saveGame();
                 showToast(`🏢 Nom du Label mis à jour : ${clean}`, "info");
@@ -133,6 +134,7 @@
                 state.rivalState = state.rivalState || { name: clean, score: 1400, winsAgainst: 0, lastClashDay: 0 };
                 state.rivalState.name = clean;
                 state.rivalNamed = true;
+                if (typeof window.refreshCityDynamicSigns === 'function') window.refreshCityDynamicSigns();
                 if (typeof saveGame === 'function') saveGame();
                 if (typeof window.renderEmpireApp === 'function') window.renderEmpireApp();
                 showToast(`⚔️ Nom du Pire Ennemi mis à jour : ${clean}`, "info");
@@ -221,6 +223,7 @@
                         if (typeof playBleep === 'function') playBleep();
                         showToast(`⚔️ Rivalité déclarée contre ${clean} !`, "info");
                     }
+                    if (typeof window.refreshCityDynamicSigns === 'function') window.refreshCityDynamicSigns();
                     if (typeof window.closeCeremonyOverlay === 'function') window.closeCeremonyOverlay();
                     if (typeof window.renderEmpireApp === 'function') window.renderEmpireApp();
                     if (typeof saveGame === 'function') saveGame();

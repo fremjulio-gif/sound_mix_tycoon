@@ -15,6 +15,7 @@
         <link rel="stylesheet" href="./css/base.css">
         <link rel="stylesheet" href="./css/empire-showcase.css">
         <link rel="stylesheet" href="./css/daw.css">
+        <link rel="stylesheet" href="./css/city.css">
 </head>
 
         
@@ -381,6 +382,10 @@
                         <span class="font-bold text-white text-[11px]">🎛️ Studio d'enregistrement pro</span>
                         <span class="text-[10px] text-pink-500">-40% NRJ | -200$</span>
                     </button>
+                    <button id="door-city-world-btn" class="w-full py-3.5 rounded-lg flex justify-between items-center px-4 bg-gradient-to-r from-sky-500/20 to-cyan-500/15 border border-sky-400/50 hover:border-sky-300 transition-all cursor-pointer" onclick="closeMiniGameMenu(); window.enterCityWorld && window.enterCityWorld();">
+                        <span class="font-bold text-sky-200 text-[11px] tracking-wide">🌆 Sortir en Ville (Monde Ouvert 3D)</span>
+                        <span class="text-[9px] font-mono uppercase tracking-widest text-sky-300 px-2 py-0.5 rounded bg-black/50">[G]</span>
+                    </button>
                     <button class="w-full btn-minimal py-3 rounded-lg flex justify-between items-center px-4 hover:border-blue-400" onclick="launchDoorMiniGame('street')">
                         <span class="font-bold text-white text-[11px]">🚶 Aller traîner en ville</span>
                         <span class="text-[10px] text-blue-400">-5% NRJ | Gratuit</span>
@@ -452,6 +457,10 @@
                         <span>👕 STYLE</span>
                     </button>
                 </div>
+                <button id="btn-enter-city" onclick="window.enterCityWorld && window.enterCityWorld()" class="mt-1 w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/30 border border-sky-400/45 text-[9px] font-retro tracking-widest text-sky-200 uppercase cursor-pointer transition-colors">
+                    <span>🌆 VILLE</span>
+                    <span class="text-[8px] px-1 py-0.5 rounded bg-black/50 text-white/75 border border-white/15">G</span>
+                </button>
                 <button id="btn-switch-studio-room" onclick="window.travelToStudioLocation && window.travelToStudioLocation()" class="hidden mt-1 w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/30 border border-amber-400/45 text-[9px] font-retro tracking-widest text-amber-200 uppercase cursor-pointer transition-colors">
                     <span id="btn-switch-studio-label">🏢 STUDIO PRO 42e</span>
                     <span class="text-[9px] px-1.5 py-0.5 rounded bg-black/50 text-amber-300 border border-amber-400/30">L</span>
@@ -2318,6 +2327,93 @@
 
     <div>
 </div>
+    <!-- PALIER 1 : OPEN-WORLD CITY HUD & GPS FAST TRAVEL -->
+    <div id="city-hud" class="hidden" aria-label="Interface Ville Ouverte">
+        <div class="city-top-row">
+            <div class="city-card city-top-left">
+                <div class="city-district-row">
+                    <span id="city-district-dot" class="city-district-dot"></span>
+                    <span id="city-district-name" class="city-district-name">BOULEVARD 808</span>
+                </div>
+                <div class="city-speed-row">
+                    <div class="flex items-baseline">
+                        <span id="city-speedo-val" class="city-speedo-val">0</span>
+                        <span class="city-speedo-unit">KM/H</span>
+                    </div>
+                    <span class="text-[8px] font-mono uppercase tracking-widest text-slate-400">[V] Changer</span>
+                </div>
+                <div class="city-vehicle-bar" role="group" aria-label="Locomotion">
+                    <button type="button" class="city-veh-btn" data-city-veh="foot" title="À pied">
+                        <span>🚶</span><span class="city-veh-lock-tag hidden">🔒</span>
+                    </button>
+                    <button type="button" class="city-veh-btn" data-city-veh="scooter" title="Trottinette">
+                        <span>🛴</span><span class="city-veh-lock-tag hidden">🔒</span>
+                    </button>
+                    <button type="button" class="city-veh-btn" data-city-veh="bike" title="Vélo BMX">
+                        <span>🚲</span><span class="city-veh-lock-tag hidden">🔒</span>
+                    </button>
+                    <button type="button" class="city-veh-btn" data-city-veh="car" title="Coupé 42e">
+                        <span>🏎️</span><span class="city-veh-lock-tag hidden">🔒</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="city-card city-minimap-wrap">
+                <canvas id="city-minimap" width="128" height="128"></canvas>
+                <div class="city-radar-actions">
+                    <button type="button" id="city-btn-gps" class="city-mini-btn">🗺️ GPS</button>
+                    <button type="button" id="city-btn-return-studio" class="city-mini-btn warn">🏠 STUDIO [G]</button>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" id="city-interact-banner" class="city-card">
+            <span class="city-key-badge">E</span>
+            <div class="text-left min-w-0">
+                <div id="city-interact-title" class="text-xs font-black text-white truncate tracking-wide">Lieu</div>
+                <div id="city-interact-sub" class="text-[10px] font-mono text-sky-300 truncate">Appuie sur E pour entrer</div>
+            </div>
+        </button>
+
+        <div class="city-card city-controls-hint">
+            <span>ZQSD / Flèches : Conduire</span>
+            <span>·</span>
+            <span>Espace : Boost</span>
+            <span>·</span>
+            <span>V : Véhicule</span>
+            <span>·</span>
+            <span>E : Entrer</span>
+            <span>·</span>
+            <span>G : Studio</span>
+        </div>
+
+        <div id="city-touch-controls">
+            <div id="city-touch-joy" aria-label="Joystick directionnel">
+                <div id="city-touch-knob"></div>
+            </div>
+            <div class="city-touch-actions">
+                <button type="button" id="city-btn-enter" class="city-touch-btn enter hidden">ENTRER</button>
+                <div class="city-touch-row">
+                    <button type="button" id="city-btn-veh-cycle" class="city-touch-btn">VEH</button>
+                    <button type="button" id="city-btn-boost" class="city-touch-btn boost">BOOST</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="city-gps-modal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="city-gps-title">
+        <div class="city-gps-card">
+            <div class="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-white/10">
+                <div>
+                    <h3 id="city-gps-title" class="text-sm font-black tracking-wider text-white uppercase">🗺️ GPS Ville Ouverte</h3>
+                    <p class="text-[10px] font-mono text-slate-400">6 Lieux Clés · Mix Grand Paris × US</p>
+                </div>
+                <button type="button" id="city-gps-close" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 border border-white/15 text-xs font-mono text-slate-300 cursor-pointer">✕</button>
+            </div>
+            <div id="city-gps-list" class="flex flex-col gap-2"></div>
+        </div>
+    </div>
+
     <script type="module" src="./js/main.js"></script>
 </body>
 </html>
