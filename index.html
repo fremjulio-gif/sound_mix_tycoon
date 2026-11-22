@@ -11862,7 +11862,14 @@ const DEFAULT_STATE = {
                 // Force le rafraîchissement immédiat de l'écran PC 3D et des hologrammes Studio+ progressifs
                 window._pcLiveLastTs = 0;
                 if (typeof window.updateLivePcScreen === 'function') window.updateLivePcScreen(performance.now() * 0.001);
-                if (typeof syncFurniture3DVisibility === 'function') {
+                if (window.activeStudioLocation === 'pro_studio') {
+                    window.roomTierLightMult = 0.45;
+                    window.currentRoomVisualTier = 3;
+                    if (window.bedroomWorldGroups) {
+                        window.bedroomWorldGroups.forEach(g => { if (g) g.visible = false; });
+                    }
+                    if (window.proStudioGroup) window.proStudioGroup.visible = true;
+                } else if (typeof syncFurniture3DVisibility === 'function') {
                     try { syncFurniture3DVisibility(); } catch(e) {}
                 }
             }
@@ -12131,13 +12138,13 @@ const DEFAULT_STATE = {
             // Marche 1 (Largeur 4.6m en X × 5.6m en Z, hauteur 12cm)
             const podStep1 = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.12, 5.6), psGunmetalMat);
             podStep1.position.set(0, 0.06, 0); podStep1.receiveShadow = true; podiumGroup.add(podStep1);
-            const podLed1 = new THREE.Mesh(new THREE.BoxGeometry(4.84, 0.022, 5.64), psAmberLedMat);
-            podLed1.position.set(0, 0.115, 0); podiumGroup.add(podLed1);
+            const podLed1 = new THREE.Mesh(new THREE.BoxGeometry(4.84, 0.018, 5.64), psAmberLedMat);
+            podLed1.position.set(0, 0.106, 0); podiumGroup.add(podLed1);
             // Marche 2 Supérieure (Largeur 4.3m en X × 5.1m en Z, hauteur totale +24cm, y = -0.76)
             const podStep2 = new THREE.Mesh(new THREE.BoxGeometry(4.3, 0.12, 5.1), psPodiumCarpetMat);
             podStep2.position.set(0.15, 0.18, 0); podStep2.receiveShadow = true; podiumGroup.add(podStep2);
-            const podLed2 = new THREE.Mesh(new THREE.BoxGeometry(4.34, 0.022, 5.14), psVioletLedMat);
-            podLed2.position.set(0.15, 0.235, 0); podiumGroup.add(podLed2);
+            const podLed2 = new THREE.Mesh(new THREE.BoxGeometry(4.34, 0.018, 5.14), psVioletLedMat);
+            podLed2.position.set(0.15, 0.226, 0); podiumGroup.add(podLed2);
             proStudioGroup.add(podiumGroup);
 
             // 2 MURS ACOUSTIQUES INCLINÉS À PANS COUPÉS (35°) ENCADRANT LA BAIE VITRÉE SKYLINE + MONITEURS MAIN AUGSPURGER ENCASTRÉS
@@ -13373,6 +13380,16 @@ const DEFAULT_STATE = {
         function syncFurniture3DVisibility() {
             if (typeof FURNITURE_CATALOG === 'undefined') return;
             window.activeMysticMaterials = [];
+
+            // Dans le Studio Pro (42e étage), aucun meuble ni hologramme de la chambre ne doit être visible
+            if (window.activeStudioLocation === 'pro_studio') {
+                FURNITURE_CATALOG.forEach(item => {
+                    const obj = getFurniture3DObject(item.sceneObject);
+                    if (obj) obj.visible = false;
+                });
+                if (window.pixarLamp) window.pixarLamp.visible = false;
+                return;
+            }
             
             const activeRoomTier = window.currentRoomVisualTier || 1;
             const playerCash = (typeof state !== 'undefined' && state) ? (Number(state.money) || 0) : 0;
@@ -18731,20 +18748,13 @@ document.addEventListener('mouseover', (e) => {
         shoulderBridge.castShadow = true;
         torso.add(shoulderBridge);
 
-        // Volumes anatomiques pectoraux / buste
+        // Volumes anatomiques subtils du buste (féminin uniquement ; le torse masculin en V est déjà sculpté par upperChest)
         if (isFemale) {
             [-1, 1].forEach(side => {
-                const bustLobe = new THREE.Mesh(new THREE.SphereGeometry(0.074, 20, 18), clothesMat);
-                bustLobe.scale.set(0.95, 0.88, 0.82);
-                bustLobe.position.set(side * 0.068, 0.285, 0.088);
+                const bustLobe = new THREE.Mesh(new THREE.SphereGeometry(0.068, 20, 18), clothesMat);
+                bustLobe.scale.set(0.96, 0.88, 0.72);
+                bustLobe.position.set(side * 0.058, 0.285, 0.082);
                 torso.add(bustLobe);
-            });
-        } else {
-            [-1, 1].forEach(side => {
-                const pec = new THREE.Mesh(new THREE.SphereGeometry(0.086, 20, 16), sIdx === 3 ? (new THREE.MeshPhysicalMaterial({ color: varSpec.shirt || '#ffffff', roughness: 0.65, bumpMap: pbr.fabricBump, bumpScale: 0.003 })) : clothesMat);
-                pec.scale.set(1.08, 0.78, 0.55);
-                pec.position.set(side * 0.078, 0.31, 0.095);
-                torso.add(pec);
             });
         }
 
@@ -18930,66 +18940,69 @@ document.addEventListener('mouseover', (e) => {
             buckle.position.set(0, 0.04, 0.118);
             torso.add(buckle);
 
-            // Plastron de chemise habillée & boutonnière centrale
-            const shirtFront = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.130, 0.36, 20, 1, false, -Math.PI * 0.26, Math.PI * 0.52), shirtMat);
-            shirtFront.scale.set(1.05, 1, 0.92);
-            shirtFront.position.set(0, 0.24, 0.006);
+            // Plastron de chemise habillée au centre de la veste ouverte & boutonnière
+            const shirtFront = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.196, 0.176, 0.36, 24, 1, false, -Math.PI * 0.14, Math.PI * 0.28),
+                shirtMat
+            );
+            shirtFront.scale.set(1.15, 1, 0.785);
+            shirtFront.position.set(0, 0.24, 0.002);
             torso.add(shirtFront);
 
-            const placket = new THREE.Mesh(new THREE.BoxGeometry(0.024, 0.34, 0.008), shirtMat);
-            placket.position.set(0, 0.24, 0.138);
+            const placket = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.34, 0.008), shirtMat);
+            placket.position.set(0, 0.24, 0.149);
             torso.add(placket);
 
             for (let b = 0; b < 4; b++) {
                 const stud = new THREE.Mesh(new THREE.CylinderGeometry(0.0055, 0.0055, 0.006, 12), metalMat);
                 stud.rotation.x = Math.PI / 2;
-                stud.position.set(0, 0.14 + b * 0.068, 0.142);
+                stud.position.set(0, 0.14 + b * 0.068, 0.153);
                 torso.add(stud);
             }
 
             // Col de chemise structuré
             [-1, 1].forEach(side => {
-                const collarLeaf = new THREE.Mesh(new THREE.BoxGeometry(0.068, 0.038, 0.012), shirtMat);
-                collarLeaf.position.set(side * 0.046, 0.422, 0.095);
+                const collarLeaf = new THREE.Mesh(new THREE.BoxGeometry(0.064, 0.036, 0.012), shirtMat);
+                collarLeaf.position.set(side * 0.042, 0.422, 0.105);
                 collarLeaf.rotation.set(0.22, -side * 0.42, -side * 0.28);
                 torso.add(collarLeaf);
             });
 
-            // Revers crantés du blazer (Notched Lapels)
+            // Revers crantés du blazer (Notched Lapels) encadrant l'ouverture en V de la chemise
             [-1, 1].forEach(side => {
-                const upperLapel = new THREE.Mesh(new THREE.BoxGeometry(0.052, 0.14, 0.014), clothesMat);
-                upperLapel.position.set(side * 0.072, 0.34, 0.130);
-                upperLapel.rotation.set(-0.08, -side * 0.22, side * 0.24);
+                const upperLapel = new THREE.Mesh(new THREE.BoxGeometry(0.048, 0.15, 0.014), clothesMat);
+                upperLapel.position.set(side * 0.068, 0.34, 0.144);
+                upperLapel.rotation.set(-0.08, -side * 0.22, side * 0.20);
                 torso.add(upperLapel);
 
-                const lowerLapel = new THREE.Mesh(new THREE.BoxGeometry(0.048, 0.18, 0.014), clothesMat);
-                lowerLapel.position.set(side * 0.058, 0.21, 0.134);
-                lowerLapel.rotation.set(-0.04, -side * 0.18, -side * 0.14);
+                const lowerLapel = new THREE.Mesh(new THREE.BoxGeometry(0.044, 0.18, 0.014), clothesMat);
+                lowerLapel.position.set(side * 0.052, 0.20, 0.148);
+                lowerLapel.rotation.set(-0.04, -side * 0.18, -side * 0.12);
                 torso.add(lowerLapel);
             });
 
             // Pin's Or 24K "42e Records" sur le revers gauche
-            const lapelPin = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.008, 16), metalMat);
+            const lapelPin = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.008, 16), metalMat);
             lapelPin.rotation.x = Math.PI / 2;
-            lapelPin.position.set(-0.076, 0.35, 0.140);
+            lapelPin.position.set(-0.072, 0.35, 0.153);
             torso.add(lapelPin);
 
             // Pochette en soie (Pocket Square) dans la poche poitrine
-            const pocketWelt = new THREE.Mesh(new THREE.BoxGeometry(0.058, 0.010, 0.010), clothesMat);
-            pocketWelt.position.set(-0.118, 0.305, 0.126);
+            const pocketWelt = new THREE.Mesh(new THREE.BoxGeometry(0.056, 0.010, 0.010), clothesMat);
+            pocketWelt.position.set(-0.122, 0.305, 0.136);
             pocketWelt.rotation.y = -0.25;
             torso.add(pocketWelt);
 
-            const pochette = new THREE.Mesh(new THREE.ConeGeometry(0.024, 0.036, 4), accentMat);
-            pochette.position.set(-0.118, 0.322, 0.125);
+            const pochette = new THREE.Mesh(new THREE.ConeGeometry(0.022, 0.034, 4), accentMat);
+            pochette.position.set(-0.122, 0.322, 0.135);
             pochette.rotation.set(0.1, 0.5, -0.18);
             torso.add(pochette);
 
             // 2 Boutons d'or sur le pan droit du blazer
             [0.18, 0.11].forEach(by => {
-                const btn = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.007, 16), metalMat);
+                const btn = new THREE.Mesh(new THREE.CylinderGeometry(0.0085, 0.0085, 0.007, 16), metalMat);
                 btn.rotation.x = Math.PI / 2;
-                btn.position.set(0.068, by, 0.138);
+                btn.position.set(0.064, by, 0.151);
                 torso.add(btn);
             });
         }
@@ -19000,7 +19013,7 @@ document.addEventListener('mouseover', (e) => {
         const createArm = (xSign) => {
             const armGroup = new THREE.Group();
             armGroup.name = xSign < 0 ? "Arm_L" : "Arm_R";
-            armGroup.position.set(xSign * (isFemale ? 0.212 : 0.242), 1.04, -0.008);
+            armGroup.position.set(xSign * (isFemale ? 0.184 : 0.212), 1.04, -0.006);
 
             // Épaule / Deltoïde
             const deltoid = new THREE.Mesh(new THREE.SphereGeometry(isFemale ? 0.060 : 0.068, 20, 16), sleeveMat);
@@ -19011,14 +19024,14 @@ document.addEventListener('mouseover', (e) => {
 
             // Bras supérieur (Biceps / Triceps)
             const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(isFemale ? 0.055 : 0.062, isFemale ? 0.046 : 0.052, 0.22, 20), sleeveMat);
-            upperArm.position.set(xSign * 0.016, -0.12, 0);
-            upperArm.rotation.z = xSign * 0.10;
+            upperArm.position.set(xSign * 0.010, -0.12, 0);
+            upperArm.rotation.z = xSign * 0.05;
             upperArm.castShadow = true;
             armGroup.add(upperArm);
 
             // Groupe Coude + Avant-bras + Montre + Main (légère flexion naturelle vers l'avant)
             const elbowGroup = new THREE.Group();
-            elbowGroup.position.set(xSign * 0.028, -0.225, 0);
+            elbowGroup.position.set(xSign * 0.018, -0.225, 0);
             elbowGroup.rotation.x = -0.26;
             elbowGroup.rotation.z = -xSign * 0.06;
             armGroup.add(elbowGroup);
@@ -19671,17 +19684,20 @@ document.addEventListener('mouseover', (e) => {
             }
             scn.background = window._avatarStudioBgCache[bgKey];
 
-            const rnd = new THREE.WebGLRenderer({
-                antialias: true,
-                alpha: false,
-                preserveDrawingBuffer: true
-            });
-            rnd.setSize(size, size);
-            rnd.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
-            if (typeof THREE.ACESFilmicToneMapping !== 'undefined') {
-                rnd.toneMapping = THREE.ACESFilmicToneMapping;
-                rnd.toneMappingExposure = 1.16;
+            if (!window._sharedAvatarRenderer) {
+                window._sharedAvatarRenderer = new THREE.WebGLRenderer({
+                    antialias: true,
+                    alpha: false,
+                    preserveDrawingBuffer: true
+                });
+                if (typeof THREE.ACESFilmicToneMapping !== 'undefined') {
+                    window._sharedAvatarRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+                    window._sharedAvatarRenderer.toneMappingExposure = 1.16;
+                }
             }
+            const rnd = window._sharedAvatarRenderer;
+            rnd.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+            rnd.setSize(size, size, false);
 
             // Éclairage Studio 3-Points + Catchlight oculaire
             // 1. Key Light chaude (Softbox principale à 45°)
@@ -19723,7 +19739,6 @@ document.addEventListener('mouseover', (e) => {
             rnd.render(scn, cam);
 
             const dataUrl = rnd.domElement.toDataURL('image/png', 0.96);
-            rnd.dispose();
             return dataUrl;
         }
         window.generateAvatarImage = generateAvatarImage;
