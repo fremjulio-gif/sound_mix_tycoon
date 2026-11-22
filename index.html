@@ -4043,6 +4043,193 @@
             transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
+        /* =====================================================================
+           BOUNCE LIVE · DA VISUELLE DÉDIÉE (CONCERT CLUB + CAMÉRA CCTV LIVE)
+           ===================================================================== */
+        .blive-backdrop {
+            background:
+                radial-gradient(ellipse 72% 60% at 50% 42%, rgba(var(--blive-rgb, 168, 85, 247), 0.18) 0%, rgba(3, 4, 8, 0.94) 68%),
+                rgba(3, 4, 8, 0.92) !important;
+            backdrop-filter: blur(22px) saturate(140%);
+            -webkit-backdrop-filter: blur(22px) saturate(140%);
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .blive-shell {
+            position: relative;
+            width: 100%;
+            max-width: min(720px, calc(100vw - 20px));
+            max-height: 92dvh;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            border-radius: 22px;
+            background: linear-gradient(165deg, rgba(14, 16, 24, 0.97) 0%, rgba(7, 8, 13, 0.99) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow:
+                0 36px 96px rgba(0, 0, 0, 0.92),
+                0 0 60px rgba(var(--blive-rgb, 168, 85, 247), 0.16),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            color: #f4f4f5;
+            display: flex;
+            flex-direction: column;
+            animation: bliveIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .blive-shell::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 10%; right: 10%; height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(var(--blive-rgb, 168, 85, 247), 0.9), transparent);
+            pointer-events: none;
+        }
+        @keyframes bliveIn {
+            from { opacity: 0; transform: translateY(14px) scale(0.965); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .blive-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            background: rgba(6, 7, 12, 0.65);
+        }
+        .blive-brand-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            background: rgba(var(--blive-rgb, 168, 85, 247), 0.16);
+            border: 1px solid rgba(var(--blive-rgb, 168, 85, 247), 0.42);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: #f8fafc;
+        }
+        .blive-venue-card {
+            position: relative;
+            width: 100%;
+            text-align: left;
+            padding: 13px 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .blive-venue-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(var(--v-rgb, 168, 85, 247), 0.55);
+            background: rgba(var(--v-rgb, 168, 85, 247), 0.07);
+        }
+        .blive-venue-card.is-selected {
+            border-color: rgba(var(--v-rgb, 168, 85, 247), 0.88);
+            background: linear-gradient(150deg, rgba(var(--v-rgb, 168, 85, 247), 0.18) 0%, rgba(12, 14, 22, 0.96) 100%);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 24px rgba(var(--v-rgb, 168, 85, 247), 0.18);
+        }
+        .blive-pill {
+            flex: 1;
+            padding: 7px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            background: rgba(255, 255, 255, 0.03);
+            color: #a1a1aa;
+            transition: all 0.18s ease;
+            cursor: pointer;
+            text-align: center;
+        }
+        .blive-pill.is-active {
+            background: rgba(var(--blive-rgb, 168, 85, 247), 0.22);
+            border-color: rgba(var(--blive-rgb, 168, 85, 247), 0.72);
+            color: #ffffff;
+            box-shadow: 0 0 16px rgba(var(--blive-rgb, 168, 85, 247), 0.22);
+        }
+        .blive-cta {
+            position: relative;
+            border-radius: 14px;
+            padding: 13px 18px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #ffffff;
+            background: linear-gradient(135deg, rgba(var(--blive-rgb, 168, 85, 247), 0.95) 0%, rgba(var(--blive-rgb, 168, 85, 247), 0.68) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            box-shadow: 0 12px 30px rgba(var(--blive-rgb, 168, 85, 247), 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            transition: transform 0.16s ease, filter 0.16s ease;
+            cursor: pointer;
+        }
+        .blive-cta:hover { filter: brightness(1.12); transform: translateY(-1px); }
+        .blive-cta:active { transform: scale(0.98); }
+
+        /* --- MONITEUR CCTV SURVEILLANCE --- */
+        .blive-cctv-frame {
+            position: relative;
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #040608;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 18px 46px rgba(0, 0, 0, 0.72), inset 0 0 24px rgba(0, 0, 0, 0.85);
+        }
+        .blive-cctv-scanlines {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.028) 0px, rgba(255, 255, 255, 0.028) 1px, transparent 1px, transparent 3px),
+                radial-gradient(ellipse at center, rgba(16, 185, 129, 0.03) 48%, rgba(0, 0, 0, 0.68) 100%);
+            z-index: 2;
+        }
+        .blive-cctv-corner {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-color: rgba(255, 255, 255, 0.42);
+            pointer-events: none;
+            z-index: 3;
+        }
+        .blive-cctv-corner.tl { top: 8px; left: 8px; border-top: 2px solid; border-left: 2px solid; }
+        .blive-cctv-corner.tr { top: 8px; right: 8px; border-top: 2px solid; border-right: 2px solid; }
+        .blive-cctv-corner.bl { bottom: 8px; left: 8px; border-bottom: 2px solid; border-left: 2px solid; }
+        .blive-cctv-corner.br { bottom: 8px; right: 8px; border-bottom: 2px solid; border-right: 2px solid; }
+        .blive-rec-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 9999px;
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.95);
+            animation: bliveRecBlink 1s steps(2, start) infinite;
+        }
+        @keyframes bliveRecBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+        .blive-cctv-eq {
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 11px;
+        }
+        .blive-cctv-eq span {
+            width: 2.5px;
+            background: #34d399;
+            border-radius: 1px;
+            animation: techEqPulse var(--eq-dur, 0.8s) ease-in-out infinite alternate;
+            animation-delay: var(--eq-del, 0s);
+        }
+        .blive-flash-toast {
+            border-radius: 14px;
+            padding: 11px 13px;
+            background: rgba(12, 15, 24, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+        }
+
 
         /* --- SAMPLE DIGGER UI --- */
         #sample-digger-window {
@@ -4885,18 +5072,18 @@
             </div>
         </div>
 
-        <!-- BOUNCE LIVE · SHOWCASE & LISTENING PARTY (SCÈNE 3D ISOMÉTRIQUE TIMELAPSE · TOUS LES 10 JOURS) -->
-        <div id="showcase-overlay" class="gta-evt-backdrop fixed inset-0 z-[10000002] hidden flex-col items-center justify-center p-2.5 sm:p-4" style="--evt-rgb: 168, 85, 247;">
-            <div class="gta-evt-dossier wide" style="max-width: min(740px, calc(100vw - 20px)); border-color: rgba(168, 85, 247, 0.42);">
-                <div class="gta-evt-topbar">
+        <!-- BOUNCE LIVE · SHOWCASE & LISTENING PARTY (DA DÉDIÉE JUICY + CAMÉRA CCTV 3D) -->
+        <div id="showcase-overlay" class="blive-backdrop fixed inset-0 z-[10000002] hidden flex-col items-center justify-center p-2.5 sm:p-4" style="--blive-rgb: 168, 85, 247;">
+            <div class="blive-shell">
+                <div class="blive-topbar">
                     <div class="flex items-center gap-2 min-w-0">
-                        <span class="gta-evt-dot"></span>
-                        <span id="showcase-eyebrow" class="truncate text-purple-300">BOUNCE LIVE · SHOWCASE</span>
+                        <span id="showcase-eyebrow" class="blive-brand-pill">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            BOUNCE LIVE
+                        </span>
+                        <span id="showcase-meta-tag" class="text-[11px] font-mono text-zinc-400 truncate">ÉDITION #1</span>
                     </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                        <span id="showcase-meta-tag" class="text-purple-200/80">SAISON LIVE</span>
-                        <button type="button" id="showcase-close-x" onclick="window.closeBounceShowcase && window.closeBounceShowcase()" class="text-zinc-400 hover:text-white px-1.5 cursor-pointer" title="Fermer">✕</button>
-                    </div>
+                    <button type="button" id="showcase-close-x" onclick="window.closeBounceShowcase && window.closeBounceShowcase()" class="w-7 h-7 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 text-zinc-300 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer shrink-0" title="Fermer">✕</button>
                 </div>
                 <div id="showcase-body" class="p-4 sm:p-5 flex flex-col gap-3.5"></div>
             </div>
@@ -24932,31 +25119,31 @@ document.addEventListener('mouseover', (e) => {
             // =========================================================================
             const SHOWCASE_VENUES = [
                 {
-                    id: 'backroom', name: 'Backroom Disquaire', cost: 300, cap: 40, idealPop: 35, ticketRev: 18,
+                    id: 'backroom', icon: '💿', name: 'Backroom', cost: 300, cap: 40, idealPop: 35, ticketRev: 18, bars: 1,
                     accent: 0x34d399, accentHex: '#34d399', rgb: '52, 211, 153',
-                    floorSize: [7.5, 6.2], tag: 'INTIME · SAFE', desc: 'Arrière-salle vinyles pour lancer ton nom.'
+                    floorSize: [7.6, 6.4]
                 },
                 {
-                    id: 'loft', name: 'Galerie Loft & Bar', cost: 1200, cap: 120, idealPop: 75, ticketRev: 26,
+                    id: 'loft', icon: '🍸', name: 'Loft & Bar', cost: 1200, cap: 120, idealPop: 75, ticketRev: 26, bars: 2,
                     accent: 0x38bdf8, accentHex: '#38bdf8', rgb: '56, 189, 248',
-                    floorSize: [9.5, 7.6], tag: 'INDÉ & MÉDIAS', desc: 'Lieu branché avec presse musicale & A&R.'
+                    floorSize: [9.4, 7.6]
                 },
                 {
-                    id: 'warehouse', name: 'Warehouse Industriel', cost: 3800, cap: 350, idealPop: 145, ticketRev: 34,
+                    id: 'warehouse', icon: '🏭', name: 'Warehouse', cost: 3800, cap: 350, idealPop: 145, ticketRev: 34, bars: 3,
                     accent: 0xa855f7, accentHex: '#a855f7', rgb: '168, 85, 247',
-                    floorSize: [11.5, 9.0], tag: 'GROS SON · RISQUÉ', desc: 'Hangar brut, caissons massifs et gros cachet.'
+                    floorSize: [11.2, 8.8]
                 },
                 {
-                    id: 'rooftop42', name: 'Rooftop / Arène 42e', cost: 10000, cap: 800, idealPop: 240, ticketRev: 44,
+                    id: 'rooftop42', icon: '👑', name: 'Arène 42e', cost: 10000, cap: 800, idealPop: 240, ticketRev: 44, bars: 4,
                     accent: 0xf59e0b, accentHex: '#f59e0b', rgb: '245, 158, 11',
-                    floorSize: [13.5, 10.6], tag: 'MÉGA-SHOWCASE · HAUT RISQUE', desc: 'Scène monumentale. Jackpot si plein, crash si vide.'
+                    floorSize: [13.0, 10.2]
                 }
             ];
 
             const SHOWCASE_PROMOS = {
-                standard: { label: 'Standard', cost: 0, bonus: 0, desc: 'Bouche-à-oreille' },
-                soundnet: { label: 'Promo SoundNet', cost: 400, bonus: 16, desc: '+15% affluence' },
-                vip:      { label: 'VIP Open Bar', cost: 1000, bonus: 28, desc: '+25% foule & +REP' }
+                standard: { label: 'Standard', cost: 0, bonus: 0, tag: '$0' },
+                soundnet: { label: 'SoundNet', cost: 400, bonus: 16, tag: '+$400' },
+                vip:      { label: 'VIP Bar', cost: 1000, bonus: 28, tag: '+$1k' }
             };
 
             let _showcaseSession = null;
@@ -25096,42 +25283,48 @@ document.addEventListener('mouseover', (e) => {
 
                 const curVenue = SHOWCASE_VENUES.find(v => v.id === _showcaseSession.venueId) || SHOWCASE_VENUES[0];
                 const curPromo = SHOWCASE_PROMOS[_showcaseSession.promoId] || SHOWCASE_PROMOS.standard;
-                if (ov) ov.style.setProperty('--evt-rgb', curVenue.rgb);
+                if (ov) ov.style.setProperty('--blive-rgb', curVenue.rgb);
 
                 const proj = _getSelectedShowcaseProject();
                 const drawPow = _computeShowcaseDrawPower(proj.score, proj.isAlbum, Boolean(_showcaseSession.guestName), _showcaseSession.promoId);
                 const totalCost = curVenue.cost + curPromo.cost;
 
                 const projOptions = [
-                    ...(_showcaseSession.albums || []).map(a => `<option value="alb:${a.id}" ${_showcaseSession.projectKey === `alb:${a.id}` ? 'selected' : ''}>💿 [ALBUM +20%] ${a.title} (${Number(a.score || 0).toFixed(1)}/10)</option>`),
-                    ...(_showcaseSession.tracks || []).map((t, i) => `<option value="trk:${i}" ${_showcaseSession.projectKey === `trk:${i}` ? 'selected' : ''}>🎵 ${t.title} · ${t.genre || 'Mix'} (${Number(t.score || 0).toFixed(1)}/10)</option>`),
-                    `<option value="solo" ${_showcaseSession.projectKey === 'solo' ? 'selected' : ''}>🎛️ Set Freestyle Solo (6.5/10)</option>`
+                    ...(_showcaseSession.albums || []).map(a => `<option value="alb:${a.id}" ${_showcaseSession.projectKey === `alb:${a.id}` ? 'selected' : ''}>💿 ${a.title} (+20%)</option>`),
+                    ...(_showcaseSession.tracks || []).map((t, i) => `<option value="trk:${i}" ${_showcaseSession.projectKey === `trk:${i}` ? 'selected' : ''}>🎵 ${t.title} (${Number(t.score || 0).toFixed(1)}/10)</option>`),
+                    `<option value="solo" ${_showcaseSession.projectKey === 'solo' ? 'selected' : ''}>🎛️ Set Solo</option>`
                 ].join('');
 
                 const guestOptions = [
-                    `<option value="" ${!_showcaseSession.guestName ? 'selected' : ''}>Solo (Sans Guest Rappeur)</option>`,
-                    ...(_showcaseSession.closeRappers || []).map(([name, sc]) => `<option value="${name}" ${_showcaseSession.guestName === name ? 'selected' : ''}>★ Guest: ${name} (Aff. ${sc} · +25% foule)</option>`)
+                    `<option value="" ${!_showcaseSession.guestName ? 'selected' : ''}>Sans Guest</option>`,
+                    ...(_showcaseSession.closeRappers || []).map(([name, sc]) => `<option value="${name}" ${_showcaseSession.guestName === name ? 'selected' : ''}>★ ${name} (+25%)</option>`)
                 ].join('');
 
                 const venueCardsHtml = SHOWCASE_VENUES.map(v => {
                     const isSel = v.id === _showcaseSession.venueId;
                     const ratio = drawPow / v.idealPop;
-                    let riskBadge = { text: 'ADAPTÉ', style: 'background:rgba(16,185,129,0.18);border-color:rgba(16,185,129,0.5);color:#6ee7b7;' };
-                    if (ratio < 0.58) riskBadge = { text: 'DANGEREUX', style: 'background:rgba(244,63,94,0.18);border-color:rgba(244,63,94,0.5);color:#fda4af;' };
-                    else if (ratio < 0.85) riskBadge = { text: 'AMBITIEUX', style: 'background:rgba(245,158,11,0.18);border-color:rgba(245,158,11,0.5);color:#fcd34d;' };
+                    let dot = { label: 'SAFE', color: '#34d399' };
+                    if (ratio < 0.58) dot = { label: 'DANGER', color: '#fb7185' };
+                    else if (ratio < 0.85) dot = { label: 'RISQUÉ', color: '#fbbf24' };
+
+                    const segs = Array.from({ length: 4 }, (_, si) =>
+                        `<span class="flex-1 h-1 rounded-full ${si < v.bars ? '' : 'opacity-20'}" style="background:${si < v.bars ? v.accentHex : '#ffffff'};"></span>`
+                    ).join('');
+
                     return `
-                        <button type="button" data-venue="${v.id}" class="gta-evt-choice flex flex-col gap-1.5 ${isSel ? 'ring-2 ring-white/60' : 'opacity-80'}" style="--choice-rgb:${v.rgb}; ${isSel ? `background:linear-gradient(155deg, rgba(${v.rgb},0.18), rgba(10,12,18,0.98)); border-color:rgba(${v.rgb},0.75);` : ''}">
-                            <div class="flex items-start justify-between gap-2 w-full">
-                                <div class="min-w-0">
-                                    <div class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-white truncate">${v.name}</div>
-                                    <div class="text-[9.5px] font-mono text-zinc-400 mt-0.5">${v.cap} places · ${v.tag}</div>
+                        <button type="button" data-venue="${v.id}" class="blive-venue-card ${isSel ? 'is-selected' : ''} flex flex-col gap-2" style="--v-rgb:${v.rgb};">
+                            <div class="flex items-center justify-between gap-2 w-full">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="text-base leading-none">${v.icon}</span>
+                                    <span class="text-sm font-extrabold tracking-wide text-white truncate">${v.name}</span>
                                 </div>
-                                <div class="text-right shrink-0">
-                                    <div class="text-sm font-mono font-extrabold" style="color:${v.accentHex};">$${v.cost.toLocaleString('fr-FR')}</div>
-                                    <span class="gta-evt-badge mt-0.5" style="${riskBadge.style}">${riskBadge.text}</span>
-                                </div>
+                                <span class="text-[9.5px] font-mono font-bold uppercase tracking-wider shrink-0" style="color:${dot.color};">● ${dot.label}</span>
                             </div>
-                            <div class="text-[11px] text-zinc-300/85 leading-snug">${v.desc}</div>
+                            <div class="flex items-center gap-1 w-full">${segs}</div>
+                            <div class="flex items-baseline justify-between gap-2 w-full">
+                                <span class="text-[11px] font-mono text-zinc-400">${v.cap} places</span>
+                                <span class="text-sm font-mono font-extrabold" style="color:${v.accentHex};">$${v.cost.toLocaleString('fr-FR')}</span>
+                            </div>
                         </button>
                     `;
                 }).join('');
@@ -25139,12 +25332,8 @@ document.addEventListener('mouseover', (e) => {
                 const promoHtml = Object.entries(SHOWCASE_PROMOS).map(([pid, p]) => {
                     const active = pid === _showcaseSession.promoId;
                     return `
-                        <button type="button" data-promo="${pid}" class="flex-1 py-2 px-2.5 rounded-lg border text-left transition-all cursor-pointer ${active ? 'bg-white/12 border-white/50 text-white' : 'bg-black/45 border-white/10 text-zinc-400 hover:border-white/30'}">
-                            <div class="flex items-center justify-between gap-1 text-[10.5px] font-mono font-bold uppercase">
-                                <span>${p.label}</span>
-                                <span class="text-emerald-300">${p.cost > 0 ? `+$${p.cost}` : 'Gratuit'}</span>
-                            </div>
-                            <div class="text-[9.5px] font-mono text-zinc-400 mt-0.5">${p.desc}</div>
+                        <button type="button" data-promo="${pid}" class="blive-pill whitespace-nowrap text-[10px] sm:text-[11px] ${active ? 'is-active' : ''}">
+                            ${p.label} <span class="opacity-75 font-mono ml-0.5">${p.tag}</span>
                         </button>
                     `;
                 }).join('');
@@ -25152,37 +25341,32 @@ document.addEventListener('mouseover', (e) => {
                 const canAfford = (Number(state.money) || 0) >= totalCost;
 
                 body.innerHTML = `
-                    <div class="gta-evt-title-block">
-                        <div class="text-[10px] font-mono uppercase tracking-[0.26em]" style="color:${curVenue.accentHex};">FESTIVAL × LISTENING PARTY · ÉDITION #${_showcaseSession.edition}</div>
-                        <h2 class="text-xl sm:text-2xl font-extrabold tracking-[0.14em] uppercase text-white mt-0.5">PRÉPARE TON SHOWCASE</h2>
+                    <div class="flex items-center justify-between gap-2">
+                        <h2 class="text-lg sm:text-xl font-extrabold tracking-[0.08em] uppercase text-white">CHOISIS TA SALLE</h2>
+                        <span class="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono font-bold text-emerald-400">$${Math.round(Number(state.money) || 0).toLocaleString('fr-FR')}</span>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${venueCardsHtml}</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">${venueCardsHtml}</div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        <div class="bg-black/45 border border-white/10 rounded-lg p-2.5">
-                            <label class="block text-[9px] font-mono uppercase tracking-wider text-zinc-400 mb-1">1. Master / Album à lancer</label>
-                            <select id="showcase-project-select" class="w-full bg-[#07090f] border border-white/15 rounded px-2.5 py-1.5 text-xs font-mono text-white focus:outline-none">${projOptions}</select>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div class="bg-black/40 border border-white/10 rounded-xl px-3 py-2 flex items-center justify-between gap-2">
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-zinc-400 shrink-0">🎵 Son</span>
+                            <select id="showcase-project-select" class="flex-1 min-w-0 bg-transparent text-xs font-semibold text-white text-right focus:outline-none cursor-pointer">${projOptions}</select>
                         </div>
-                        <div class="bg-black/45 border border-white/10 rounded-lg p-2.5">
-                            <label class="block text-[9px] font-mono uppercase tracking-wider text-zinc-400 mb-1">2. Guest Rappeur (Affinité ≥ 60)</label>
-                            <select id="showcase-guest-select" class="w-full bg-[#07090f] border border-white/15 rounded px-2.5 py-1.5 text-xs font-mono text-white focus:outline-none">${guestOptions}</select>
+                        <div class="bg-black/40 border border-white/10 rounded-xl px-3 py-2 flex items-center justify-between gap-2">
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-zinc-400 shrink-0">★ Guest</span>
+                            <select id="showcase-guest-select" class="flex-1 min-w-0 bg-transparent text-xs font-semibold text-white text-right focus:outline-none cursor-pointer">${guestOptions}</select>
                         </div>
                     </div>
 
-                    <div>
-                        <div class="text-[9px] font-mono uppercase tracking-wider text-zinc-400 mb-1.5">3. Promotion &amp; Accueil</div>
-                        <div class="flex flex-col sm:flex-row gap-2">${promoHtml}</div>
-                    </div>
+                    <div class="flex items-center gap-2">${promoHtml}</div>
 
-                    <div class="flex flex-col sm:flex-row gap-2 pt-1">
-                        <button type="button" id="showcase-launch-btn" class="gta-evt-choice flex-1 text-center !py-3 ${!canAfford ? 'opacity-55' : ''}" style="--choice-rgb:${curVenue.rgb};">
-                            <div class="text-xs sm:text-sm font-extrabold uppercase tracking-[0.14em] text-white">🎬 Ouvrir les Portes · Timelapse ($${totalCost.toLocaleString('fr-FR')})</div>
-                            <div class="text-[9.5px] font-mono text-zinc-400 mt-0.5">Attention : un lieu trop grand qui reste vide coûte cher en Réputation &amp; Hype !</div>
+                    <div class="flex items-center gap-2.5 pt-0.5">
+                        <button type="button" id="showcase-launch-btn" class="blive-cta flex-1 text-xs sm:text-sm ${!canAfford ? 'opacity-50' : ''}">
+                            OUVRIR LES PORTES · $${totalCost.toLocaleString('fr-FR')}
                         </button>
-                        <button type="button" id="showcase-skip-btn" class="gta-evt-choice sm:w-44 text-center !py-3" style="--choice-rgb: 148, 163, 184;">
-                            <div class="text-xs font-bold uppercase tracking-wider text-zinc-300">Passer la Saison</div>
-                            <div class="text-[9px] font-mono text-zinc-500 mt-0.5">Reporter à +10 jours</div>
+                        <button type="button" id="showcase-skip-btn" class="px-3.5 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-400 hover:text-white transition-colors cursor-pointer shrink-0">
+                            Passer
                         </button>
                     </div>
                 `;
@@ -25251,37 +25435,61 @@ document.addEventListener('mouseover', (e) => {
 
                 body.innerHTML = `
                     <div class="flex items-center justify-between gap-2">
-                        <div>
-                            <div class="text-[9.5px] font-mono uppercase tracking-[0.22em]" style="color:${venue.accentHex};">${venue.name} · ${proj.isAlbum ? 'LISTENING PARTY' : 'LIVE SHOWCASE'}</div>
-                            <div class="text-sm sm:text-base font-extrabold uppercase tracking-wider text-white truncate">${proj.title}${_showcaseSession.guestName ? ` · Feat. ${_showcaseSession.guestName}` : ''}</div>
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="text-base leading-none">${venue.icon}</span>
+                            <span class="text-sm sm:text-base font-extrabold uppercase tracking-wider text-white truncate">${venue.name} · ${proj.title}</span>
                         </div>
-                        <span id="showcase-fill-pill" class="gta-evt-badge shrink-0" style="background:rgba(${venue.rgb},0.22);border-color:rgba(${venue.rgb},0.65);color:#ffffff;">0% REMPLISSAGE</span>
+                        <span id="showcase-fill-pill" class="px-2.5 py-1 rounded-full text-[11px] font-mono font-extrabold shrink-0" style="background:rgba(${venue.rgb},0.20); border:1px solid rgba(${venue.rgb},0.55); color:#ffffff;">0%</span>
                     </div>
 
-                    <div class="relative w-full h-[250px] sm:h-[310px] rounded-xl overflow-hidden border border-white/15 bg-[#05060b] shadow-inner">
+                    <!-- MONITEUR CAMÉRA DE SURVEILLANCE CCTV HAUT-D'ANGLE -->
+                    <div class="blive-cctv-frame h-[290px] sm:h-[360px]">
                         <canvas id="showcase-3d-canvas" class="w-full h-full block"></canvas>
+                        <div class="blive-cctv-scanlines"></div>
+                        <div class="blive-cctv-corner tl"></div>
+                        <div class="blive-cctv-corner tr"></div>
+                        <div class="blive-cctv-corner bl"></div>
+                        <div class="blive-cctv-corner br"></div>
 
-                        <!-- HUD Timelapse Superposé -->
-                        <div class="absolute top-2.5 left-2.5 flex items-center gap-2 pointer-events-none">
-                            <span class="px-2 py-1 rounded bg-black/75 border border-white/15 font-mono text-[10px] font-bold text-white flex items-center gap-1.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-                                <span id="showcase-clock">20:00</span>
-                            </span>
-                            <span id="showcase-crowd-count" class="px-2 py-1 rounded bg-black/75 border border-white/15 font-mono text-[10px] text-zinc-200 tabular-nums">0 / ${venue.cap}</span>
+                        <!-- OSD Haut-Gauche : REC CAM-04 -->
+                        <div class="absolute top-3.5 left-4 z-[4] flex items-center gap-2 font-mono text-[10px] font-bold tracking-[0.14em] text-white/90 pointer-events-none drop-shadow">
+                            <span class="blive-rec-dot"></span>
+                            <span>REC · CAM-04 HALL</span>
                         </div>
 
-                        <div id="showcase-reaction-bubble" class="absolute bottom-3.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/80 border border-white/20 text-[10px] sm:text-[10.5px] font-mono text-zinc-100 text-center max-w-[92%] leading-snug pointer-events-none shadow-lg">
-                            Les portes viennent d'ouvrir...
+                        <!-- OSD Haut-Droite : Horloge Timelapse -->
+                        <div id="showcase-clock" class="absolute top-3.5 right-4 z-[4] font-mono text-[10px] sm:text-[11px] font-bold tracking-[0.12em] text-emerald-300/95 pointer-events-none tabular-nums drop-shadow">
+                            J${state.day || 1} · 20:00:00 [×24]
                         </div>
 
-                        <div class="absolute bottom-0 left-0 right-0 h-1.5 bg-black/70 pointer-events-none">
-                            <div id="showcase-fill-bar" class="h-full transition-all duration-150" style="width:2%; background:${venue.accentHex}; box-shadow:0 0 12px ${venue.accentHex};"></div>
+                        <!-- OSD Bas-Gauche : Compteur Public Live -->
+                        <div class="absolute bottom-4 left-4 z-[4] flex flex-col gap-1 pointer-events-none">
+                            <div id="showcase-crowd-count" class="font-mono text-xs font-extrabold text-white tabular-nums drop-shadow">0 / ${venue.cap}</div>
+                            <div class="w-28 sm:w-36 h-1.5 bg-white/15 rounded-full overflow-hidden">
+                                <div id="showcase-fill-bar" class="h-full rounded-full transition-all duration-150" style="width:2%; background:${venue.accentHex}; box-shadow:0 0 10px ${venue.accentHex};"></div>
+                            </div>
+                        </div>
+
+                        <!-- Réaction Rapide Centrée -->
+                        <div id="showcase-reaction-bubble" class="hidden sm:block absolute bottom-4 left-1/2 -translate-x-1/2 z-[4] px-3 py-1 rounded-full bg-black/70 border border-white/15 text-[10px] font-mono text-zinc-200 whitespace-nowrap pointer-events-none">
+                            Ouverture des portes...
+                        </div>
+
+                        <!-- OSD Bas-Droite : Audio Live -->
+                        <div class="absolute bottom-4 right-4 z-[4] flex items-center gap-1.5 font-mono text-[9.5px] text-emerald-300/90 pointer-events-none">
+                            <span>MIC</span>
+                            <div class="blive-cctv-eq">
+                                <span style="--eq-dur:0.45s;--eq-del:0.0s"></span>
+                                <span style="--eq-dur:0.65s;--eq-del:0.1s"></span>
+                                <span style="--eq-dur:0.52s;--eq-del:0.2s"></span>
+                                <span style="--eq-dur:0.75s;--eq-del:0.05s"></span>
+                            </div>
                         </div>
                     </div>
 
-                    <div id="showcase-flash-slot" class="bg-black/45 border border-white/10 rounded-xl p-3 text-xs font-mono text-zinc-300 flex items-center justify-between gap-2">
-                        <span>📡 Régie Live · Ouverture des portes et contrôle de la file d'attente...</span>
-                        <span class="text-zinc-500 shrink-0">TIMELAPSE 3D</span>
+                    <div id="showcase-flash-slot" class="blive-flash-toast flex items-center justify-between gap-2 text-xs font-mono text-zinc-400">
+                        <span class="truncate">● Flux entrée en direct</span>
+                        <span class="text-emerald-400 shrink-0">SIGNAL OK</span>
                     </div>
                 `;
 
@@ -25293,6 +25501,58 @@ document.addEventListener('mouseover', (e) => {
                     totalCost,
                     baseFill
                 });
+            }
+
+            function _createCctvFloorTexture(accentHex) {
+                const c = document.createElement('canvas');
+                c.width = 512; c.height = 512;
+                const ctx = c.getContext('2d');
+                if (ctx) {
+                    ctx.fillStyle = '#090c13';
+                    ctx.fillRect(0, 0, 512, 512);
+                    for (let i = 0; i < 1600; i++) {
+                        ctx.fillStyle = (i % 3 === 0) ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.22)';
+                        ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
+                    }
+                    ctx.strokeStyle = 'rgba(148,163,184,0.08)';
+                    ctx.lineWidth = 2;
+                    for (let g = 0; g <= 512; g += 64) {
+                        ctx.beginPath(); ctx.moveTo(g, 0); ctx.lineTo(g, 512); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(0, g); ctx.lineTo(512, g); ctx.stroke();
+                    }
+                    // Marquage corridor d'entrée au sol
+                    ctx.strokeStyle = accentHex;
+                    ctx.globalAlpha = 0.28;
+                    ctx.setLineDash([8, 8]);
+                    ctx.beginPath();
+                    ctx.moveTo(495, 290);
+                    ctx.lineTo(360, 290);
+                    ctx.stroke();
+                }
+                const tex = new THREE.CanvasTexture(c);
+                tex.needsUpdate = true;
+                return tex;
+            }
+
+            function _createEntrySignTexture() {
+                const c = document.createElement('canvas');
+                c.width = 256; c.height = 64;
+                const ctx = c.getContext('2d');
+                if (ctx) {
+                    ctx.fillStyle = '#052e16';
+                    ctx.fillRect(0, 0, 256, 64);
+                    ctx.strokeStyle = '#34d399';
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(4, 4, 248, 56);
+                    ctx.fillStyle = '#6ee7b7';
+                    ctx.font = 'bold 28px ui-monospace, Menlo, monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('ENTRÉE', 128, 33);
+                }
+                const tex = new THREE.CanvasTexture(c);
+                tex.needsUpdate = true;
+                return tex;
             }
 
             function _createLedStageTexture(titleText, accentHex) {
@@ -25334,210 +25594,277 @@ document.addEventListener('mouseover', (e) => {
 
                 const rect = canvas.getBoundingClientRect();
                 const W = Math.max(280, Math.round(rect.width) || 640);
-                const H = Math.max(220, Math.round(rect.height) || 300);
+                const H = Math.max(240, Math.round(rect.height) || 340);
 
                 let renderer = null;
                 try {
                     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
                 } catch (e) {
-                    // Fallback sûr si contexte WebGL saturé : exécute directement le bilan sans crash
                     renderer = null;
                 }
 
                 const [fw, fd] = cfg.venue.floorSize;
                 const scene = new THREE.Scene();
-                scene.background = new THREE.Color('#06080f');
+                scene.background = new THREE.Color('#04060b');
 
+                // VRAIE CAMÉRA DE SURVEILLANCE CCTV HAUT D'ANGLE (Coin Plafond Gauche-Avant regardant la Scène + Porte ENTRÉE + Fosse)
                 const aspect = W / H;
-                const viewHalf = Math.max(fw, fd) * 0.64;
-                const camera = new THREE.OrthographicCamera(
-                    -viewHalf * aspect, viewHalf * aspect,
-                    viewHalf, -viewHalf,
-                    0.1, 80
-                );
-                camera.position.set(15, 13.5, 15);
-                camera.lookAt(0, 0.45, 0);
+                const fov = aspect < 1.3 ? 58 : 50;
+                const camera = new THREE.PerspectiveCamera(fov, aspect, 0.2, 60);
+                const camBaseX = -fw * 0.44;
+                const camBaseY = 6.15 + fw * 0.12;
+                const camBaseZ = fd * 0.64;
+                const lookBaseX = fw * 0.10;
+                const lookBaseY = 0.50;
+                const lookBaseZ = -fd * 0.12;
+                camera.position.set(camBaseX, camBaseY, camBaseZ);
+                camera.lookAt(lookBaseX, lookBaseY, lookBaseZ);
 
                 if (renderer) {
                     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
                     renderer.setSize(W, H, false);
                 }
 
-                // Lumières de la salle isométrique
-                scene.add(new THREE.AmbientLight(0xdbeafe, 0.72));
-                const keyLight = new THREE.DirectionalLight(0xffffff, 1.05);
-                keyLight.position.set(8, 16, 10);
-                scene.add(keyLight);
-                const stagePointLight = new THREE.PointLight(cfg.venue.accent, 3.2, 22);
+                // Éclairage atmosphérique CCTV (cool béton + projecteur scène vif)
+                scene.add(new THREE.AmbientLight(0x9fb3c8, 0.68));
+                const hallFillLight = new THREE.DirectionalLight(0xe2e8f0, 0.72);
+                hallFillLight.position.set(-6, 12, 8);
+                scene.add(hallFillLight);
+                const stagePointLight = new THREE.PointLight(cfg.venue.accent, 3.6, 24);
                 stagePointLight.position.set(0, 3.6, -fd * 0.34);
                 scene.add(stagePointLight);
 
-                // Sol principal & Grille néon
-                const floorMat = new THREE.MeshStandardMaterial({ color: '#0c101b', roughness: 0.78, metalness: 0.2 });
-                const floorMesh = new THREE.Mesh(new THREE.BoxGeometry(fw, 0.25, fd), floorMat);
+                // Sol béton poli CCTV
+                const floorTex = _createCctvFloorTexture(cfg.venue.accentHex);
+                const floorMesh = new THREE.Mesh(
+                    new THREE.BoxGeometry(fw, 0.25, fd),
+                    new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.72, metalness: 0.18 })
+                );
                 floorMesh.position.y = -0.125;
                 scene.add(floorMesh);
 
-                const grid = new THREE.GridHelper(Math.max(fw, fd) * 0.92, 12, cfg.venue.accent, 0x1e293b);
-                grid.position.y = 0.01;
-                scene.add(grid);
-
-                // Murs architecturaux L-Cutaway (-Z et -X uniquement pour vue isométrique dégagée)
-                const wallMat = new THREE.MeshStandardMaterial({ color: '#111625', roughness: 0.65, metalness: 0.25 });
-                const backWall = new THREE.Mesh(new THREE.BoxGeometry(fw, 3.1, 0.22), wallMat);
-                backWall.position.set(0, 1.55, -fd / 2 - 0.11);
+                // Murs de la salle + Vraie Double Porte d'Entrée visible sur le mur Droit (+X)
+                const wallMat = new THREE.MeshStandardMaterial({ color: '#111624', roughness: 0.68, metalness: 0.22 });
+                const backWall = new THREE.Mesh(new THREE.BoxGeometry(fw, 3.4, 0.22), wallMat);
+                backWall.position.set(0, 1.7, -fd / 2 - 0.11);
                 scene.add(backWall);
 
-                const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.22, 3.1, fd), wallMat);
-                leftWall.position.set(-fw / 2 - 0.11, 1.55, 0);
+                const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.95, fd), wallMat);
+                leftWall.position.set(-fw / 2 - 0.11, 0.475, 0);
                 scene.add(leftWall);
 
-                // Liserés néon muraux
-                const neonMat = new THREE.MeshBasicMaterial({ color: cfg.venue.accent });
-                const backStrip = new THREE.Mesh(new THREE.BoxGeometry(fw, 0.08, 0.08), neonMat);
-                backStrip.position.set(0, 2.95, -fd / 2 + 0.02);
-                scene.add(backStrip);
+                // Mur droit (+X, face à la caméra CCTV!) coupé pour la Double Porte ENTRÉE
+                const doorZ = fd * 0.04;
+                const doorW = 1.95;
+                const rWallLen1 = Math.max(0.6, (doorZ - doorW / 2) - (-fd / 2));
+                const rWall1 = new THREE.Mesh(new THREE.BoxGeometry(0.22, 3.2, rWallLen1), wallMat);
+                rWall1.position.set(fw / 2 + 0.11, 1.6, -fd / 2 + rWallLen1 / 2);
+                scene.add(rWall1);
 
-                // Scène DJ surélevée (-Z) + Écran LED Live + Twin Enceintes pulsantes
-                const stageW = fw * 0.56;
-                const stageD = 1.75;
-                const stageMesh = new THREE.Mesh(
-                    new THREE.BoxGeometry(stageW, 0.55, stageD),
-                    new THREE.MeshStandardMaterial({ color: '#151928', roughness: 0.45, metalness: 0.4 })
+                const rWallLen2 = Math.max(0.4, (fd / 2) - (doorZ + doorW / 2));
+                const rWall2 = new THREE.Mesh(new THREE.BoxGeometry(0.22, 3.2, rWallLen2), wallMat);
+                rWall2.position.set(fw / 2 + 0.11, 1.6, fd / 2 - rWallLen2 / 2);
+                scene.add(rWall2);
+
+                const rLintel = new THREE.Mesh(new THREE.BoxGeometry(0.24, 1.15, doorW + 0.12), wallMat);
+                rLintel.position.set(fw / 2 + 0.11, 2.62, doorZ);
+                scene.add(rLintel);
+
+                // Panneau lumineux "ENTRÉE" visible sous la caméra CCTV
+                const entryTex = _createEntrySignTexture();
+                const entrySign = new THREE.Mesh(
+                    new THREE.PlaneGeometry(1.15, 0.30),
+                    new THREE.MeshBasicMaterial({ map: entryTex, side: THREE.DoubleSide })
                 );
-                stageMesh.position.set(0, 0.275, -fd / 2 + stageD / 2 + 0.15);
+                entrySign.position.set(fw / 2 - 0.03, 2.38, doorZ);
+                entrySign.rotation.y = -Math.PI / 2;
+                scene.add(entrySign);
+
+                // SAS Extérieur & Barrières de Sécurité à l'entrée
+                const sasFloor = new THREE.Mesh(
+                    new THREE.BoxGeometry(2.6, 0.12, 2.1),
+                    new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.85 })
+                );
+                sasFloor.position.set(fw / 2 + 1.35, -0.06, doorZ);
+                scene.add(sasFloor);
+
+                const postMat = new THREE.MeshStandardMaterial({ color: '#94a3b8', metalness: 0.8, roughness: 0.25 });
+                const postGeo = new THREE.CylinderGeometry(0.04, 0.06, 0.72, 8);
+                [-0.78, 0.78].forEach(dz => {
+                    const p1 = new THREE.Mesh(postGeo, postMat);
+                    p1.position.set(fw / 2 - 0.65, 0.36, doorZ + dz);
+                    const p2 = new THREE.Mesh(postGeo, postMat);
+                    p2.position.set(fw / 2 + 0.75, 0.36, doorZ + dz);
+                    scene.add(p1, p2);
+                });
+
+                // Scène DJ surélevée + Barrière Crash Métallique Front-of-Stage + Pont Lumière (Truss)
+                const stageW = fw * 0.58;
+                const stageD = 1.75;
+                const stageZ = -fd / 2 + stageD / 2 + 0.15;
+                const stageMesh = new THREE.Mesh(
+                    new THREE.BoxGeometry(stageW, 0.58, stageD),
+                    new THREE.MeshStandardMaterial({ color: '#141826', roughness: 0.45, metalness: 0.42 })
+                );
+                stageMesh.position.set(0, 0.29, stageZ);
                 scene.add(stageMesh);
 
+                // Barrière de sécurité devant la scène
+                const barrier = new THREE.Mesh(
+                    new THREE.BoxGeometry(stageW * 1.12, 0.46, 0.07),
+                    new THREE.MeshStandardMaterial({ color: '#64748b', metalness: 0.75, roughness: 0.3 })
+                );
+                barrier.position.set(0, 0.23, stageZ + stageD / 2 + 0.32);
+                scene.add(barrier);
+
+                // Console DJ + DJ Avatar + Écran LED + Truss + Twin Subwoofers
                 const deckMesh = new THREE.Mesh(
                     new THREE.BoxGeometry(1.7, 0.52, 0.62),
                     new THREE.MeshStandardMaterial({ color: '#090b10', roughness: 0.35, metalness: 0.7 })
                 );
-                deckMesh.position.set(0, 0.81, -fd / 2 + 1.05);
+                deckMesh.position.set(0, 0.84, stageZ + 0.18);
                 scene.add(deckMesh);
 
-                // DJ Avatar stylisé derrière les platines
                 const djGroup = new THREE.Group();
                 const djBody = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.21, 0.66, 12), new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.4 }));
-                djBody.position.y = 0.88;
+                djBody.position.y = 0.90;
                 const djHead = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), new THREE.MeshStandardMaterial({ color: '#f1c27d', roughness: 0.5 }));
-                djHead.position.y = 1.32;
+                djHead.position.y = 1.34;
                 djGroup.add(djBody, djHead);
-                djGroup.position.set(0, 0, -fd / 2 + 0.68);
+                djGroup.position.set(0, 0, stageZ - 0.18);
                 scene.add(djGroup);
 
-                // Écran LED Stage Backdrop
                 const ledTex = _createLedStageTexture(cfg.proj.title, cfg.venue.accentHex);
                 const ledScreen = new THREE.Mesh(
                     new THREE.PlaneGeometry(stageW * 0.82, 1.65),
                     new THREE.MeshBasicMaterial({ map: ledTex })
                 );
-                ledScreen.position.set(0, 1.78, -fd / 2 + 0.08);
+                ledScreen.position.set(0, 1.85, -fd / 2 + 0.08);
                 scene.add(ledScreen);
 
-                // Twin Subwoofers gauche/droite qui pulsent au beat
-                const spkMat = new THREE.MeshStandardMaterial({ color: '#0f1219', roughness: 0.4, metalness: 0.6 });
+                // Pont lumière supérieur (Truss)
+                const truss = new THREE.Mesh(
+                    new THREE.BoxGeometry(stageW * 1.15, 0.14, 0.14),
+                    new THREE.MeshStandardMaterial({ color: '#475569', metalness: 0.85, roughness: 0.25 })
+                );
+                truss.position.set(0, 3.25, stageZ + 0.45);
+                scene.add(truss);
+
+                const spkMat = new THREE.MeshStandardMaterial({ color: '#0e1118', roughness: 0.4, metalness: 0.6 });
                 const spkGeo = new THREE.BoxGeometry(0.75, 1.5, 0.75);
                 const spkL = new THREE.Mesh(spkGeo, spkMat);
-                spkL.position.set(-stageW / 2 - 0.55, 0.75, -fd / 2 + 0.9);
+                spkL.position.set(-stageW / 2 - 0.55, 0.75, stageZ);
                 const spkR = new THREE.Mesh(spkGeo, spkMat);
-                spkR.position.set(stageW / 2 + 0.55, 0.75, -fd / 2 + 0.9);
+                spkR.position.set(stageW / 2 + 0.55, 0.75, stageZ);
                 scene.add(spkL, spkR);
 
-                // Carré VIP (-X côté gauche) avec bordure dorée
+                // Bar / Carré VIP illuminé sur le mur gauche (-X)
                 const vipDeck = new THREE.Mesh(
-                    new THREE.BoxGeometry(1.65, 0.24, fd * 0.46),
-                    new THREE.MeshStandardMaterial({ color: '#1d1610', roughness: 0.5, metalness: 0.35 })
+                    new THREE.BoxGeometry(1.55, 0.26, fd * 0.48),
+                    new THREE.MeshStandardMaterial({ color: '#1b140d', roughness: 0.5, metalness: 0.35 })
                 );
-                vipDeck.position.set(-fw / 2 + 0.95, 0.12, 0.4);
+                vipDeck.position.set(-fw / 2 + 0.85, 0.13, 0.35);
                 scene.add(vipDeck);
-                const vipTrim = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.28, fd * 0.46), new THREE.MeshBasicMaterial({ color: 0xf59e0b }));
-                vipTrim.position.set(-fw / 2 + 1.78, 0.14, 0.4);
-                scene.add(vipTrim);
-
-                // Entrée & Allée File d'Attente extérieure (+X)
-                const queueFloor = new THREE.Mesh(
-                    new THREE.BoxGeometry(2.6, 0.12, 1.7),
-                    new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.85 })
-                );
-                queueFloor.position.set(fw / 2 + 1.3, -0.06, fd * 0.18);
-                scene.add(queueFloor);
-
-                const gateMat = new THREE.MeshBasicMaterial({ color: cfg.venue.accent });
-                const gateLeft = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.9, 0.14), gateMat);
-                gateLeft.position.set(fw / 2, 0.95, fd * 0.18 - 0.78);
-                const gateRight = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.9, 0.14), gateMat);
-                gateRight.position.set(fw / 2, 0.95, fd * 0.18 + 0.78);
-                const gateTop = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 1.72), gateMat);
-                gateTop.position.set(fw / 2, 1.9, fd * 0.18);
-                scene.add(gateLeft, gateRight, gateTop);
+                const vipBarStrip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.30, fd * 0.48), new THREE.MeshBasicMaterial({ color: 0xf59e0b }));
+                vipBarStrip.position.set(-fw / 2 + 1.63, 0.15, 0.35);
+                scene.add(vipBarStrip);
 
                 // Projecteurs volumétriques rotatifs
-                const beamGeo = new THREE.ConeGeometry(1.15, 4.2, 16, 1, true);
-                beamGeo.translate(0, -2.1, 0);
+                const beamGeo = new THREE.ConeGeometry(1.25, 4.4, 16, 1, true);
+                beamGeo.translate(0, -2.2, 0);
                 const beamMat = new THREE.MeshBasicMaterial({
                     color: cfg.venue.accent,
                     transparent: true,
-                    opacity: 0.16,
+                    opacity: 0.15,
                     side: THREE.DoubleSide,
                     depthWrite: false,
                     blending: THREE.AdditiveBlending
                 });
                 const beams = [-1.8, 0, 1.8].map((bx, bi) => {
                     const b = new THREE.Mesh(beamGeo, beamMat);
-                    b.position.set(bx * (fw / 10), 3.1, -fd / 2 + 0.75);
-                    b.rotation.x = 0.42;
+                    b.position.set(bx * (fw / 10), 3.2, stageZ + 0.45);
+                    b.rotation.x = 0.44;
                     scene.add(b);
                     return { mesh: b, phase: bi * 2.1 };
                 });
 
-                // Pool de 92 visiteurs 3D stylisés (foule fluide sans lag)
-                const MAX_CROWD = 92;
-                const bodyGeo = new THREE.CylinderGeometry(0.13, 0.16, 0.46, 10);
-                const headGeo = new THREE.SphereGeometry(0.125, 10, 10);
-                const flashGeo = new THREE.SphereGeometry(0.06, 6, 6);
+                // Pool de 120 visiteurs 3D qui arrivent PETIT À PETIT (avant -> fond, par petites vagues!)
+                const MAX_CROWD = 120;
+                const bodyGeo = new THREE.CylinderGeometry(0.125, 0.155, 0.44, 10);
+                const headGeo = new THREE.SphereGeometry(0.12, 10, 10);
+                const flashGeo = new THREE.SphereGeometry(0.055, 6, 6);
                 const flashMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
                 const palette = [cfg.venue.accent, 0x38bdf8, 0xf472b6, 0xfbbf24, 0x34d399, 0xe2e8f0];
                 const crowd = [];
 
+                // Génération ordonnée Avant -> Fond (les premiers remplissent devant la barrière, puis la salle!)
+                const spots = [];
+                const pitMinZ = stageZ + stageD / 2 + 0.65;
+                const pitMaxZ = fd / 2 - 0.55;
+                for (let i = 0; i < MAX_CROWD; i++) {
+                    const isVip = (i % 8 === 0);
+                    if (isVip) {
+                        spots.push({
+                            tx: -fw / 2 + 0.55 + Math.random() * 0.78,
+                            ty: 0.26,
+                            tz: -0.7 + Math.random() * 2.4
+                        });
+                    } else {
+                        const rowFrac = Math.min(0.98, (i / MAX_CROWD) * 0.92 + Math.random() * 0.14);
+                        spots.push({
+                            tx: -fw * 0.34 + Math.random() * (fw * 0.72),
+                            ty: 0,
+                            tz: pitMinZ + rowFrac * (pitMaxZ - pitMinZ)
+                        });
+                    }
+                }
+
                 for (let i = 0; i < MAX_CROWD; i++) {
                     const g = new THREE.Group();
                     const col = palette[i % palette.length];
-                    const bMat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.45, emissive: col, emissiveIntensity: 0.18 });
+                    const bMat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.48, emissive: col, emissiveIntensity: 0.16 });
                     const hMat = new THREE.MeshStandardMaterial({ color: 0xf1d0b5, roughness: 0.55 });
                     const body = new THREE.Mesh(bodyGeo, bMat);
-                    body.position.y = 0.25;
+                    body.position.y = 0.24;
                     const head = new THREE.Mesh(headGeo, hMat);
-                    head.position.y = 0.57;
+                    head.position.y = 0.54;
                     const flash = new THREE.Mesh(flashGeo, flashMat);
-                    flash.position.set(0.16, 0.72, 0.05);
+                    flash.position.set(0.15, 0.70, 0.04);
                     flash.visible = false;
                     g.add(body, head, flash);
 
-                    const isVip = (i % 7 === 0);
-                    const tx = isVip
-                        ? (-fw / 2 + 0.55 + Math.random() * 0.85)
-                        : (-fw * 0.36 + Math.random() * (fw * 0.74));
-                    const tz = isVip
-                        ? (-0.7 + Math.random() * 2.2)
-                        : (-fd * 0.20 + Math.random() * (fd * 0.62));
-                    const ty = isVip ? 0.24 : 0;
+                    // Courbe S naturelle en grappes de 2-3 amis (arrivée progressive 0.01 -> 0.88)
+                    const groupBucket = Math.floor(i / 3) * 3;
+                    const sFrac = groupBucket / MAX_CROWD;
+                    const spawnTime = 0.01 + sFrac * 0.85 + Math.random() * 0.03;
 
-                    g.position.set(fw / 2 + 1.8 + Math.random() * 1.4, 0, fd * 0.18 + (Math.random() - 0.5) * 0.9);
+                    const sx = fw / 2 + 1.55 + Math.random() * 0.9;
+                    const sz = doorZ + (Math.random() - 0.5) * 0.65;
+                    g.position.set(sx, 0, sz);
                     g.visible = false;
                     scene.add(g);
+
                     crowd.push({
                         group: g,
                         flash,
-                        tx, ty, tz,
-                        qx: fw / 2 + 1.2 + (i % 6) * 0.32,
-                        qz: fd * 0.18 + (Math.random() - 0.5) * 0.8,
+                        tx: spots[i].tx,
+                        ty: spots[i].ty,
+                        tz: spots[i].tz,
+                        wp1x: fw / 2 - 0.75 - Math.random() * 0.45,
+                        wp1z: doorZ + (Math.random() - 0.5) * 0.55,
+                        sx,
+                        sz,
+                        spawnTime,
+                        passedDoor: false,
                         phase: Math.random() * Math.PI * 2,
-                        active: false
+                        speed: 0.045 + Math.random() * 0.025,
+                        active: false,
+                        leaving: false
                     });
                 }
 
-                // Animation Timelapse + Décisions Semi-Interactives
-                const DURATION_MS = 10200;
+                // Animation Timelapse CCTV + 2 Décisions Semi-Interactives
+                const DURATION_MS = 10500;
                 let elapsedMs = 0;
                 let lastTs = performance.now();
                 let paused = false;
@@ -25551,49 +25878,51 @@ document.addEventListener('mouseover', (e) => {
                 let lastBubbleAt = -1;
 
                 const bubblePoolLow = [
-                    "La salle sonne un peu creux...",
-                    "Il y a de l'écho dans les gradins...",
-                    "Lieu un peu grand pour ce soir ?"
+                    "Quelques curieux au compte-gouttes...",
+                    "La salle reste bien clairsemée...",
+                    "Écho dans le fond de la salle"
                 ];
                 const bubblePoolMid = [
-                    "L'ambiance commence à prendre devant la scène !",
-                    "Les basses tournent propre sur les caissons !",
-                    "Quelques journalistes SoundNet prennent des notes."
+                    "La fosse prend forme devant la scène",
+                    "Flux constant à l'entrée",
+                    "Les médias filment le set"
                 ];
                 const bubblePoolHigh = [
-                    "🔥 C'EST COMPLET ! File d'attente jusqu'au coin de la rue !",
-                    "📱 Les téléphones sortent sur tout le refrain !",
-                    `🎤 « ${cfg.proj.title} » retourne complètement la salle !`
+                    "File continue devant la porte ! 🔥",
+                    "Téléphones levés dans la fosse 📱",
+                    `Foule compacte · ${cfg.proj.title}`
                 ];
 
-                const updateHudDuringTimelapse = (tNorm, liveFill) => {
-                    const totalMins = Math.round(tNorm * 360); // 20:00 -> 02:00
-                    const hr = (20 + Math.floor(totalMins / 60)) % 24;
-                    const mn = totalMins % 60;
+                const updateHudDuringTimelapse = (tNorm, liveFill, activeCount) => {
+                    const totalSecs = Math.round(tNorm * 360 * 60); // 20:00:00 -> 02:00:00
+                    const hr = (20 + Math.floor(totalSecs / 3600)) % 24;
+                    const mn = Math.floor((totalSecs % 3600) / 60);
+                    const sc = totalSecs % 60;
                     const clockEl = document.getElementById('showcase-clock');
-                    if (clockEl) clockEl.textContent = `${String(hr).padStart(2, '0')}:${String(mn).padStart(2, '0')}`;
+                    if (clockEl) clockEl.textContent = `J${state.day || 1} · ${String(hr).padStart(2, '0')}:${String(mn).padStart(2, '0')}:${String(sc).padStart(2, '0')} [×24]`;
 
-                    const shownRatio = Math.min(1.0, liveFill * Math.min(1.0, 0.14 + tNorm * 0.96));
-                    const pct = Math.round(shownRatio * 100);
-                    const crowdCnt = Math.round(shownRatio * cfg.venue.cap);
+                    const smoothFill = Math.min(1.0, (activeCount / MAX_CROWD));
+                    const displayPct = Math.round(Math.min(1.0, Math.max(smoothFill, liveFill * Math.min(1.0, tNorm * 1.05))) * 100);
+                    const crowdCnt = Math.round((displayPct / 100) * cfg.venue.cap);
 
                     const cntEl = document.getElementById('showcase-crowd-count');
                     if (cntEl) cntEl.textContent = `${crowdCnt} / ${cfg.venue.cap}`;
                     const pillEl = document.getElementById('showcase-fill-pill');
                     if (pillEl) {
-                        pillEl.textContent = pct >= 85 ? `${pct}% · SOLD OUT 🔥` : `${pct}% REMPLISSAGE`;
+                        pillEl.textContent = displayPct >= 85 ? `${displayPct}% · SOLD OUT 🔥` : `${displayPct}%`;
                     }
                     const barEl = document.getElementById('showcase-fill-bar');
-                    if (barEl) barEl.style.width = `${Math.max(4, pct)}%`;
+                    if (barEl) barEl.style.width = `${Math.max(3, displayPct)}%`;
 
                     if (tNorm - lastBubbleAt >= 0.16) {
                         lastBubbleAt = tNorm;
                         const bub = document.getElementById('showcase-reaction-bubble');
                         if (bub) {
-                            const src = shownRatio >= 0.65 ? bubblePoolHigh : (shownRatio >= 0.35 ? bubblePoolMid : bubblePoolLow);
+                            const r = displayPct / 100;
+                            const src = r >= 0.65 ? bubblePoolHigh : (r >= 0.35 ? bubblePoolMid : bubblePoolLow);
                             bub.textContent = src[Math.floor(Math.random() * src.length)];
                         }
-                        if (typeof playTone === 'function') playTone(95 + pct * 1.4, 'sine', 0.08, 0.035);
+                        if (typeof playTone === 'function') playTone(95 + displayPct * 1.3, 'sine', 0.07, 0.03);
                     }
                 };
 
@@ -25605,21 +25934,20 @@ document.addEventListener('mouseover', (e) => {
 
                     if (which === 1) {
                         const canPayTech = (Number(state.money) || 0) >= 350;
-                        slot.className = 'bg-amber-500/10 border border-amber-400/50 rounded-xl p-3 flex flex-col gap-2';
+                        slot.className = 'blive-flash-toast border-amber-400/50 bg-amber-500/10 flex flex-col gap-2';
                         slot.innerHTML = `
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-300">⚡ IMPRÉVU RÉGIE · 22:05</span>
-                                <span class="text-[9.5px] font-mono text-zinc-400">DECISION LIVE 1/2</span>
+                            <div class="flex items-center justify-between gap-2 text-[10.5px] font-mono">
+                                <span class="font-bold text-amber-300 uppercase">⚡ SATURATION SUB 18"</span>
+                                <span class="text-zinc-400">RÉGIE LIVE</span>
                             </div>
-                            <p class="text-xs text-white font-medium">Les caissons Sub 18" saturent en plein drop ! La foule grimace au premier rang.</p>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <button type="button" id="flash1-pay" class="gta-evt-choice !py-2 !px-3 ${!canPayTech ? 'opacity-50' : ''}" style="--choice-rgb: 16, 185, 129;">
-                                    <div class="text-[11px] font-bold uppercase text-emerald-300">Ingé son d'urgence · -$350</div>
-                                    <div class="text-[9.5px] font-mono text-zinc-400">Son parfait · +14% affluence garantie</div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" id="flash1-pay" class="blive-pill !rounded-xl !py-2 !text-left !px-3 ${!canPayTech ? 'opacity-45' : ''}" style="border-color:rgba(52,211,153,0.45); color:#6ee7b7;">
+                                    <div class="font-extrabold">Ingé d'urgence · -$350</div>
+                                    <div class="text-[9.5px] font-mono text-zinc-400">+14% foule garantie</div>
                                 </button>
-                                <button type="button" id="flash1-risk" class="gta-evt-choice !py-2 !px-3" style="--choice-rgb: 245, 158, 11;">
-                                    <div class="text-[11px] font-bold uppercase text-amber-300">Improviser au gain (50/50)</div>
-                                    <div class="text-[9.5px] font-mono text-zinc-400">+10% foule OU -14% départs</div>
+                                <button type="button" id="flash1-risk" class="blive-pill !rounded-xl !py-2 !text-left !px-3" style="border-color:rgba(245,158,11,0.45); color:#fcd34d;">
+                                    <div class="font-extrabold">Improviser · 50/50</div>
+                                    <div class="text-[9.5px] font-mono text-zinc-400">+10% ou -14% foule</div>
                                 </button>
                             </div>
                         `;
@@ -25628,15 +25956,15 @@ document.addEventListener('mouseover', (e) => {
                                 logMoney(-350, 'Ingé son urgence Showcase');
                                 flashCashDelta -= 350;
                                 currentFillRatio = Math.min(1.0, currentFillRatio + 0.14);
-                                showToast("🎛️ Régie recalibrée en 10s ! La fosse repart à fond (+14%).", "success");
+                                showToast("🎛️ Son recalibré ! L'affluence repart à la hausse (+14%).", "success");
                                 if (typeof playSuccess === 'function') playSuccess();
                             } else {
                                 currentFillRatio = Math.max(0.05, currentFillRatio - 0.10);
-                                showToast("Pas assez de cash pour l'ingé son — baisse de son (-10%).", "error");
+                                showToast("Pas assez de cash — saturation (-10%).", "error");
                                 if (typeof playError === 'function') playError();
                             }
-                            slot.className = 'bg-black/45 border border-white/10 rounded-xl p-3 text-xs font-mono text-zinc-300 flex items-center justify-between gap-2';
-                            slot.innerHTML = '<span>📡 Régie Live · Son stabilisé, la soirée continue !</span><span class="text-emerald-400 shrink-0">LIVE</span>';
+                            slot.className = 'blive-flash-toast flex items-center justify-between gap-2 text-xs font-mono text-zinc-300';
+                            slot.innerHTML = '<span>● Son stabilisé · Reprise du flux</span><span class="text-emerald-400 shrink-0">SIGNAL OK</span>';
                             paused = false;
                             lastTs = performance.now();
                         };
@@ -25644,15 +25972,15 @@ document.addEventListener('mouseover', (e) => {
                             if (Math.random() < 0.5) {
                                 currentFillRatio = Math.min(1.0, currentFillRatio + 0.10);
                                 flashRepDelta += 6;
-                                showToast("🔥 Tu gères le mix au talent ! +10% affluence & +6 REP.", "success");
+                                showToast("🔥 Sauvé au talent ! +10% foule & +6 REP.", "success");
                                 if (typeof playSuccess === 'function') playSuccess();
                             } else {
                                 currentFillRatio = Math.max(0.05, currentFillRatio - 0.14);
-                                showToast("💥 Larsen brutal dans les retours... Des gens quittent la salle (-14%).", "error");
+                                showToast("💥 Larsen dans la salle — des gens sortent (-14%).", "error");
                                 if (typeof playError === 'function') playError();
                             }
-                            slot.className = 'bg-black/45 border border-white/10 rounded-xl p-3 text-xs font-mono text-zinc-300 flex items-center justify-between gap-2';
-                            slot.innerHTML = '<span>📡 Régie Live · Reprise du set jusqu\'à 02:00...</span><span class="text-zinc-400 shrink-0">LIVE</span>';
+                            slot.className = 'blive-flash-toast flex items-center justify-between gap-2 text-xs font-mono text-zinc-300';
+                            slot.innerHTML = '<span>● Reprise du set jusqu\'à 02:00</span><span class="text-zinc-400 shrink-0">LIVE</span>';
                             paused = false;
                             lastTs = performance.now();
                         };
@@ -25661,21 +25989,20 @@ document.addEventListener('mouseover', (e) => {
                             ? rappersConnus.filter(n => n !== cfg.guestName)
                             : ['Zandame', 'Joule', 'Disiznot'];
                         const star = pool[Math.floor(Math.random() * pool.length)];
-                        slot.className = 'bg-sky-500/10 border border-sky-400/50 rounded-xl p-3 flex flex-col gap-2';
+                        slot.className = 'blive-flash-toast border-sky-400/50 bg-sky-500/10 flex flex-col gap-2';
                         slot.innerHTML = `
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-300">★ VISITE SURPRISE · 00:05</span>
-                                <span class="text-[9.5px] font-mono text-zinc-400">DECISION LIVE 2/2</span>
+                            <div class="flex items-center justify-between gap-2 text-[10.5px] font-mono">
+                                <span class="font-bold text-sky-300 uppercase">★ ${star} À L'ENTRÉE</span>
+                                <span class="text-zinc-400">CAM-04 PORTE</span>
                             </div>
-                            <p class="text-xs text-white font-medium"><strong class="text-amber-300">${star}</strong> vient d'arriver devant la file d'attente ! Que fais-tu ?</p>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <button type="button" id="flash2-vip" class="gta-evt-choice !py-2 !px-3" style="--choice-rgb: 245, 158, 11;">
-                                    <div class="text-[11px] font-bold uppercase text-amber-300">Ouvrir le Carré VIP &amp; Scène</div>
-                                    <div class="text-[9.5px] font-mono text-zinc-400">+16% foule &amp; +20 Affinité ${star}</div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" id="flash2-vip" class="blive-pill !rounded-xl !py-2 !text-left !px-3" style="border-color:rgba(245,158,11,0.5); color:#fde68a;">
+                                    <div class="font-extrabold">Inviter sur Scène</div>
+                                    <div class="text-[9.5px] font-mono text-zinc-400">+16% foule · +20 Affinité</div>
                                 </button>
-                                <button type="button" id="flash2-solo" class="gta-evt-choice !py-2 !px-3" style="--choice-rgb: 56, 189, 248;">
-                                    <div class="text-[11px] font-bold uppercase text-sky-300">Garder le Focus Set Solo</div>
-                                    <div class="text-[9.5px] font-mono text-zinc-400">+12 REP Puriste &amp; +4% foule</div>
+                                <button type="button" id="flash2-solo" class="blive-pill !rounded-xl !py-2 !text-left !px-3" style="border-color:rgba(56,189,248,0.45); color:#7dd3fc;">
+                                    <div class="font-extrabold">Rester en Solo</div>
+                                    <div class="text-[9.5px] font-mono text-zinc-400">+12 REP · +4% foule</div>
                                 </button>
                             </div>
                         `;
@@ -25683,20 +26010,20 @@ document.addEventListener('mouseover', (e) => {
                             currentFillRatio = Math.min(1.0, currentFillRatio + 0.16);
                             if (typeof window.addRapperAffinity === 'function') window.addRapperAffinity(star, 20);
                             flashAffDelta += 20;
-                            showToast(`🎤 ${star} prend le micro sur scène ! Explosion dans la fosse (+16% foule) !`, "success");
+                            showToast(`🎤 ${star} monte sur scène ! La salle déborde (+16%) !`, "success");
                             if (typeof playSuccess === 'function') playSuccess();
-                            slot.className = 'bg-black/45 border border-white/10 rounded-xl p-3 text-xs font-mono text-zinc-300 flex items-center justify-between gap-2';
-                            slot.innerHTML = `<span>🔥 ${star} retourne la scène avec toi ! Dernier rush avant 02:00...</span><span class="text-amber-300 shrink-0">FULL HYPE</span>`;
+                            slot.className = 'blive-flash-toast flex items-center justify-between gap-2 text-xs font-mono text-zinc-300';
+                            slot.innerHTML = `<span>🔥 ${star} en feat surprise !</span><span class="text-amber-300 shrink-0">HYPE MAX</span>`;
                             paused = false;
                             lastTs = performance.now();
                         };
                         slot.querySelector('#flash2-solo').onclick = () => {
                             flashRepDelta += 12;
                             currentFillRatio = Math.min(1.0, currentFillRatio + 0.04);
-                            showToast(`🎛️ Set 100% maître de ta DA. La presse salue ton intégrité (+12 REP).`, "info");
+                            showToast("🎛️ Set 100% Puriste salué (+12 REP).", "info");
                             if (typeof playBleep === 'function') playBleep();
-                            slot.className = 'bg-black/45 border border-white/10 rounded-xl p-3 text-xs font-mono text-zinc-300 flex items-center justify-between gap-2';
-                            slot.innerHTML = '<span>🎛️ Final solo chirurgical jusqu\'à 02:00...</span><span class="text-sky-300 shrink-0">PURISTE</span>';
+                            slot.className = 'blive-flash-toast flex items-center justify-between gap-2 text-xs font-mono text-zinc-300';
+                            slot.innerHTML = '<span>🎛️ Final solo jusqu\'à 02:00...</span><span class="text-sky-300 shrink-0">SOLO</span>';
                             paused = false;
                             lastTs = performance.now();
                         };
@@ -25721,8 +26048,11 @@ document.addEventListener('mouseover', (e) => {
                         triggerFlashDecision(2);
                     }
 
-                    // Mise à jour 3D de la foule, enceintes et projecteurs
-                    const visualTargetCount = Math.max(2, Math.round(currentFillRatio * Math.min(1.0, 0.14 + tNorm * 0.96) * MAX_CROWD));
+                    // Panoramique ultra-subtil de caméra CCTV motorisée
+                    const panAngle = Math.sin(now * 0.00038) * 0.65;
+                    camera.lookAt(lookBaseX + panAngle, lookBaseY, lookBaseZ);
+
+                    // Pulsation enceintes & faisceaux lumineux
                     const beat = Math.sin(now * 0.011);
                     const beatPulse = 1 + Math.max(0, beat) * 0.08;
                     spkL.scale.set(beatPulse, 1 + Math.max(0, beat) * 0.05, beatPulse);
@@ -25733,33 +26063,51 @@ document.addEventListener('mouseover', (e) => {
                         b.mesh.rotation.z = Math.sin(now * 0.0022 + b.phase) * 0.42;
                         b.mesh.rotation.x = 0.35 + Math.cos(now * 0.0017 + b.phase) * 0.18;
                     });
-                    beamMat.opacity = 0.10 + currentFillRatio * 0.14;
+                    beamMat.opacity = 0.10 + currentFillRatio * 0.16;
+
+                    // Arrivée NATURELLE petit à petit par la double porte (+X) -> SAS -> place dans la fosse
+                    const maxCapCount = Math.max(2, Math.round(currentFillRatio * MAX_CROWD));
+                    let activeInHall = 0;
 
                     crowd.forEach((c, idx) => {
-                        const shouldBeIn = idx < visualTargetCount;
-                        if (shouldBeIn) {
+                        const allowed = idx < maxCapCount;
+                        if (allowed && tNorm >= c.spawnTime) {
                             c.group.visible = true;
                             c.active = true;
-                            c.group.position.x += (c.tx - c.group.position.x) * 0.055;
-                            c.group.position.z += (c.tz - c.group.position.z) * 0.055;
+                            c.leaving = false;
+                            activeInHall++;
+
+                            if (!c.passedDoor) {
+                                c.group.position.x += (c.wp1x - c.group.position.x) * (c.speed * 1.35);
+                                c.group.position.z += (c.wp1z - c.group.position.z) * (c.speed * 1.35);
+                                if (Math.abs(c.wp1x - c.group.position.x) < 0.25 && Math.abs(c.wp1z - c.group.position.z) < 0.25) {
+                                    c.passedDoor = true;
+                                }
+                            } else {
+                                c.group.position.x += (c.tx - c.group.position.x) * c.speed;
+                                c.group.position.z += (c.tz - c.group.position.z) * c.speed;
+                            }
+
                             const distToSpot = Math.abs(c.tx - c.group.position.x) + Math.abs(c.tz - c.group.position.z);
-                            const bounce = distToSpot < 0.8 ? Math.abs(Math.sin(now * 0.012 + c.phase)) * 0.11 : 0;
-                            c.group.position.y = c.ty + bounce;
-                            c.flash.visible = currentFillRatio >= 0.55 && Math.sin(now * 0.009 + c.phase * 3) > 0.72;
+                            const stepBob = Math.abs(Math.sin(now * 0.015 + c.phase)) * 0.05;
+                            const danceBounce = distToSpot < 0.65 ? Math.abs(Math.sin(now * 0.012 + c.phase)) * 0.11 : stepBob;
+                            c.group.position.y = (distToSpot < 0.65 ? c.ty : 0) + danceBounce;
+                            c.flash.visible = (activeInHall / MAX_CROWD) >= 0.48 && distToSpot < 0.75 && Math.sin(now * 0.009 + c.phase * 3) > 0.72;
                         } else if (c.active) {
-                            // Visiteur qui quitte la salle si affluence baisse!
-                            c.group.position.x += (c.qx - c.group.position.x) * 0.05;
-                            c.group.position.z += (c.qz - c.group.position.z) * 0.05;
-                            c.group.position.y = 0;
+                            // Départ par la porte si une décision fait baisser l'affluence
+                            c.group.position.x += (c.sx - c.group.position.x) * 0.055;
+                            c.group.position.z += (c.sz - c.group.position.z) * 0.055;
+                            c.group.position.y = Math.abs(Math.sin(now * 0.015 + c.phase)) * 0.04;
                             c.flash.visible = false;
                             if (c.group.position.x > fw / 2 + 0.9) {
                                 c.group.visible = false;
                                 c.active = false;
+                                c.passedDoor = false;
                             }
                         }
                     });
 
-                    updateHudDuringTimelapse(tNorm, currentFillRatio);
+                    updateHudDuringTimelapse(tNorm, currentFillRatio, activeInHall);
 
                     if (renderer) renderer.render(scene, camera);
 
@@ -25799,13 +26147,13 @@ document.addEventListener('mouseover', (e) => {
                 const totalSpent = res.totalCost + Math.abs(res.flashCashDelta || 0);
                 const netProfit = ticketRevenue - totalSpent;
 
-                let verdict = { label: 'SALLE VIDE · FLOP', color: '#fb7185', rgb: '244, 63, 94', hypeDelta: -20, repDelta: -10, fansMult: 0.8, summary: 'Les portes n\'ont pas attiré grand monde. SoundNet se moque d\'une salle bien trop grande pour ta hype actuelle.' };
+                let verdict = { label: 'SALLE VIDE', color: '#fb7185', rgb: '244, 63, 94', hypeDelta: -20, repDelta: -10, fansMult: 0.8 };
                 if (finalPct >= 85) {
-                    verdict = { label: '🔥 SOLD OUT LÉGENDAIRE', color: '#34d399', rgb: '16, 185, 129', hypeDelta: 25, repDelta: 25, fansMult: 9.5, summary: 'Émeute devant l\'entrée ! Toute l\'industrie a parlé de ton set jusque tard dans la nuit.' };
+                    verdict = { label: '🔥 SOLD OUT', color: '#34d399', rgb: '16, 185, 129', hypeDelta: 25, repDelta: 25, fansMult: 9.5 };
                 } else if (finalPct >= 50) {
-                    verdict = { label: '✅ SOIRÉE RÉUSSIE', color: '#38bdf8', rgb: '56, 189, 248', hypeDelta: 12, repDelta: 12, fansMult: 6.0, summary: 'Public chaud et retours très solides de la presse et des A&R présents.' };
+                    verdict = { label: '✅ RÉUSSITE', color: '#38bdf8', rgb: '56, 189, 248', hypeDelta: 12, repDelta: 12, fansMult: 6.0 };
                 } else if (finalPct >= 30) {
-                    verdict = { label: '⚠️ SOIRÉE MITIGÉE', color: '#fbbf24', rgb: '245, 158, 11', hypeDelta: -5, repDelta: 2, fansMult: 2.5, summary: 'Quelques curieux mais une fosse clairsemée. Tu couvres à peine les frais.' };
+                    verdict = { label: '⚠️ MITIGÉ', color: '#fbbf24', rgb: '245, 158, 11', hypeDelta: -5, repDelta: 2, fansMult: 2.5 };
                 }
 
                 const promoRepBonus = (_showcaseSession?.promoId === 'vip' && finalPct >= 50) ? 8 : 0;
@@ -25850,47 +26198,47 @@ document.addEventListener('mouseover', (e) => {
                 }
 
                 const ov = document.getElementById('showcase-overlay');
-                if (ov) ov.style.setProperty('--evt-rgb', verdict.rgb);
+                if (ov) ov.style.setProperty('--blive-rgb', verdict.rgb);
                 const body = document.getElementById('showcase-body');
                 if (body) {
                     body.innerHTML = `
-                        <div class="gta-evt-title-block">
-                            <div class="text-[10px] font-mono uppercase tracking-[0.26em]" style="color:${verdict.color};">${res.venue.name} · BILAN FINAL</div>
-                            <h2 class="text-xl sm:text-2xl font-extrabold tracking-[0.12em] uppercase text-white mt-0.5">${verdict.label}</h2>
+                        <div class="flex items-center justify-between gap-3 bg-black/45 border border-white/10 rounded-2xl p-4">
+                            <div>
+                                <div class="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-400">${res.venue.name} · BILAN</div>
+                                <h2 class="text-2xl sm:text-3xl font-extrabold uppercase tracking-wider mt-0.5" style="color:${verdict.color};">${verdict.label}</h2>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <div class="text-2xl sm:text-3xl font-mono font-black text-white leading-none">${finalPct}%</div>
+                                <div class="text-[10px] font-mono text-zinc-400 mt-1">${peakCrowd} / ${res.venue.cap} pers.</div>
+                            </div>
                         </div>
-
-                        <p class="text-xs sm:text-sm text-zinc-300 leading-relaxed">${verdict.summary}</p>
 
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono">
-                            <div class="bg-black/45 border border-white/10 rounded-lg p-2.5">
-                                <div class="text-[9px] text-zinc-500 uppercase">Affluence</div>
-                                <div class="text-base font-bold text-white mt-0.5">${finalPct}%</div>
-                                <div class="text-[9.5px] text-zinc-400">${peakCrowd} / ${res.venue.cap} pers.</div>
-                            </div>
-                            <div class="bg-black/45 border border-white/10 rounded-lg p-2.5">
+                            <div class="bg-black/45 border border-white/10 rounded-xl p-3 text-center">
                                 <div class="text-[9px] text-zinc-500 uppercase">Profit Net</div>
-                                <div class="text-base font-bold ${netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'} mt-0.5">${netProfit >= 0 ? '+' : ''}$${netProfit.toLocaleString('fr-FR')}</div>
-                                <div class="text-[9.5px] text-zinc-400">Recette $${ticketRevenue.toLocaleString('fr-FR')}</div>
+                                <div class="text-base font-extrabold ${netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'} mt-0.5">${netProfit >= 0 ? '+' : ''}$${netProfit.toLocaleString('fr-FR')}</div>
                             </div>
-                            <div class="bg-black/45 border border-white/10 rounded-lg p-2.5">
-                                <div class="text-[9px] text-zinc-500 uppercase">Fans &amp; Hype</div>
-                                <div class="text-base font-bold text-sky-300 mt-0.5">+${fansGain.toLocaleString('fr-FR')}</div>
-                                <div class="text-[9.5px] ${verdict.hypeDelta >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${verdict.hypeDelta >= 0 ? '+' : ''}${verdict.hypeDelta}% Hype</div>
+                            <div class="bg-black/45 border border-white/10 rounded-xl p-3 text-center">
+                                <div class="text-[9px] text-zinc-500 uppercase">Fans</div>
+                                <div class="text-base font-extrabold text-sky-300 mt-0.5">+${fansGain.toLocaleString('fr-FR')}</div>
                             </div>
-                            <div class="bg-black/45 border border-white/10 rounded-lg p-2.5">
+                            <div class="bg-black/45 border border-white/10 rounded-xl p-3 text-center">
+                                <div class="text-[9px] text-zinc-500 uppercase">Hype</div>
+                                <div class="text-base font-extrabold ${verdict.hypeDelta >= 0 ? 'text-emerald-400' : 'text-rose-400'} mt-0.5">${verdict.hypeDelta >= 0 ? '+' : ''}${verdict.hypeDelta}%</div>
+                            </div>
+                            <div class="bg-black/45 border border-white/10 rounded-xl p-3 text-center">
                                 <div class="text-[9px] text-zinc-500 uppercase">Réputation</div>
-                                <div class="text-base font-bold ${totalRepDelta >= 0 ? 'text-amber-300' : 'text-rose-400'} mt-0.5">${totalRepDelta >= 0 ? '+' : ''}${totalRepDelta} REP</div>
-                                <div class="text-[9.5px] text-zinc-400">${res.proj.isAlbum && finalPct >= 50 ? 'Boost Album +' + (peakCrowd * 18) : 'Impact média'}</div>
+                                <div class="text-base font-extrabold ${totalRepDelta >= 0 ? 'text-amber-300' : 'text-rose-400'} mt-0.5">${totalRepDelta >= 0 ? '+' : ''}${totalRepDelta}</div>
                             </div>
                         </div>
 
-                        <div class="bg-black/50 border ${beatRival ? 'border-emerald-400/40' : 'border-white/10'} rounded-xl p-3 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
-                            <span class="text-zinc-300">⚔️ Même soir chez <strong class="text-rose-300">KROWN // 808</strong> : <strong>${rivalFillPct}%</strong></span>
-                            <span class="${beatRival ? 'text-emerald-300 font-bold' : 'text-zinc-400'}">${beatRival ? '🏆 Tu l\'as surclassé (+10 REP)' : 'Il a mieux rempli ce soir'}</span>
+                        <div class="bg-black/45 border ${beatRival ? 'border-emerald-400/40' : 'border-white/10'} rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-2 text-xs font-mono">
+                            <span class="text-zinc-300">TOI <strong class="text-white">${finalPct}%</strong> vs KROWN <strong class="text-rose-300">${rivalFillPct}%</strong></span>
+                            <span class="${beatRival ? 'text-emerald-300 font-bold' : 'text-zinc-400'}">${beatRival ? '🏆 +10 REP' : 'Égalité / Battu'}</span>
                         </div>
 
-                        <button type="button" onclick="window.closeBounceShowcase()" class="gta-evt-choice text-center !py-3" style="--choice-rgb:${verdict.rgb};">
-                            <span class="text-xs font-extrabold uppercase tracking-[0.18em] text-white">Fermer le Dossier · Retour Studio →</span>
+                        <button type="button" onclick="window.closeBounceShowcase()" class="blive-cta w-full text-xs sm:text-sm text-center">
+                            RETOUR AU STUDIO →
                         </button>
                     `;
                 }
