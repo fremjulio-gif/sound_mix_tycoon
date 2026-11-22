@@ -3893,6 +3893,156 @@
             }
         }
 
+        /* =====================================================================
+           CINÉMA / GTA 6 — DOSSIER INDUSTRIE (ÉVÈNEMENTS ALÉATOIRES UNIQUEMENT)
+           (Collaboration · Vol de Prod · Bad Buzz · QCM Plugin · LUFS · Page Blanche · Diss QTE)
+           ===================================================================== */
+        .gta-evt-backdrop {
+            background:
+                radial-gradient(ellipse 65% 55% at 50% 45%, rgba(var(--evt-rgb, 16, 185, 129), 0.14) 0%, rgba(4, 5, 8, 0.92) 70%),
+                rgba(4, 5, 8, 0.90) !important;
+            backdrop-filter: blur(18px) saturate(135%);
+            -webkit-backdrop-filter: blur(18px) saturate(135%);
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .gta-evt-dossier {
+            position: relative;
+            width: 100%;
+            max-width: min(520px, calc(100vw - 24px));
+            max-height: 90dvh;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            background: linear-gradient(168deg, rgba(16, 19, 27, 0.98) 0%, rgba(8, 10, 15, 0.99) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            box-shadow:
+                0 34px 96px rgba(0, 0, 0, 0.92),
+                0 0 42px rgba(var(--evt-rgb, 16, 185, 129), 0.14),
+                inset 0 1px 0 rgba(255, 255, 255, 0.10);
+            color: #f4f4f5;
+            display: flex;
+            flex-direction: column;
+            animation: gtaDossierIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .gta-evt-dossier.wide {
+            max-width: min(680px, calc(100vw - 24px));
+        }
+        .gta-evt-dossier::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, rgb(var(--evt-rgb, 16, 185, 129)) 0%, rgba(var(--evt-rgb, 16, 185, 129), 0.35) 55%, transparent 100%);
+            pointer-events: none;
+        }
+        @keyframes gtaDossierIn {
+            from { opacity: 0; transform: translateY(14px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .gta-evt-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 18px;
+            background: rgba(5, 6, 10, 0.78);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 9.5px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(226, 232, 240, 0.75);
+        }
+        .gta-evt-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 9999px;
+            background: rgb(var(--evt-rgb, 16, 185, 129));
+            box-shadow: 0 0 10px rgba(var(--evt-rgb, 16, 185, 129), 0.9);
+            animation: cinemaRecPulse 1.8s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        .gta-evt-title-block {
+            padding-left: 14px;
+            border-left: 3px solid rgb(var(--evt-rgb, 16, 185, 129));
+            text-align: left;
+        }
+        .gta-evt-artist-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            text-align: left;
+        }
+        .gta-evt-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: radial-gradient(circle at 30% 25%, rgba(var(--evt-rgb, 16, 185, 129), 0.32), rgba(10, 12, 18, 0.95));
+            border: 1px solid rgba(var(--evt-rgb, 16, 185, 129), 0.55);
+            box-shadow: 0 0 18px rgba(var(--evt-rgb, 16, 185, 129), 0.22);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-weight: 800;
+            font-size: 14px;
+            color: #ffffff;
+            flex-shrink: 0;
+        }
+        .gta-evt-choice {
+            position: relative;
+            width: 100%;
+            text-align: left;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: linear-gradient(155deg, rgba(22, 26, 36, 0.92) 0%, rgba(12, 15, 22, 0.96) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.11);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.18s ease, box-shadow 0.2s ease, background 0.18s ease;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .gta-evt-choice:hover {
+            transform: translateY(-2px);
+            border-color: rgba(var(--choice-rgb, var(--evt-rgb, 16, 185, 129)), 0.72);
+            background: linear-gradient(155deg, rgba(var(--choice-rgb, var(--evt-rgb, 16, 185, 129)), 0.14) 0%, rgba(14, 17, 26, 0.98) 100%);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), 0 0 22px rgba(var(--choice-rgb, var(--evt-rgb, 16, 185, 129)), 0.16);
+        }
+        .gta-evt-choice:active {
+            transform: scale(0.985);
+        }
+        .gta-evt-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.05);
+            color: #e4e4e7;
+        }
+        .gta-evt-prob-track {
+            width: 100%;
+            height: 4px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+        .gta-evt-prob-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
 
         /* --- SAMPLE DIGGER UI --- */
         #sample-digger-window {
@@ -4685,13 +4835,34 @@
         </div>
 
 
-        <div id="event-overlay" class="fixed inset-0 bg-black/90 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-xl hidden"> 
-            <div class="liquid-glass-heavy p-6 md:p-10 rounded-2xl w-[90%] max-w-lg border border-[var(--accent)] text-center shadow-[0_0_60px_rgba(0,0,0,0.8)] max-h-[90dvh] overflow-y-auto flex flex-col"> 
-                <h2 id="event-title" class="text-3xl font-retro mb-4 tracking-widest uppercase drop-shadow-lg shrink-0">ÉVÈNEMENT !</h2> 
-                <p id="event-desc" class="text-sm text-gray-200 mb-6 font-sans leading-relaxed shrink-0">Description de l'évènement ici...</p> 
-                <div id="event-choices" class="flex flex-col gap-3 w-full mt-auto"> 
-                    </div> 
-            </div> 
+        <div id="event-overlay" class="gta-evt-backdrop fixed inset-0 z-[999999] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 hidden p-3 sm:p-4" style="--evt-rgb: 16, 185, 129;">
+            <div id="event-dossier-card" class="gta-evt-dossier">
+                <!-- Bandeau Cinéma Supérieur -->
+                <div class="gta-evt-topbar">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="gta-evt-dot"></span>
+                        <span id="event-eyebrow" class="truncate">DOSSIER INDUSTRIE · ALERTE</span>
+                    </div>
+                    <span id="event-meta-tag" class="shrink-0 text-white/60">LIVE</span>
+                </div>
+
+                <div class="p-5 sm:p-6 flex flex-col gap-4">
+                    <!-- Bloc Titre Éditorial GTA 6 -->
+                    <div class="gta-evt-title-block">
+                        <div id="event-subtitle" class="text-[10px] font-mono uppercase tracking-[0.26em] text-zinc-400">INDUSTRY DISPATCH</div>
+                        <h2 id="event-title" class="text-2xl sm:text-3xl font-extrabold tracking-[0.14em] uppercase text-white leading-tight mt-0.5">ÉVÈNEMENT</h2>
+                    </div>
+
+                    <!-- Carte Identité Artiste (injectée dynamiquement) -->
+                    <div id="event-artist-slot" class="hidden"></div>
+
+                    <!-- Description narrative -->
+                    <p id="event-desc" class="text-[13px] sm:text-sm text-zinc-300 leading-relaxed text-left">Description de l'évènement ici...</p>
+
+                    <!-- Cartes de Décision Tactiles -->
+                    <div id="event-choices" class="flex flex-col gap-2.5 w-full"></div>
+                </div>
+            </div>
         </div>
 
 
@@ -4740,66 +4911,70 @@
             </div>
         </div>
 
-        <div id="qte-diss-overlay" class="fixed inset-0 bg-black/95 flex flex-col items-center justify-center hidden z-[10000000] px-4 font-retro uppercase tracking-widest text-white border-4 transition-opacity duration-300 qte-red-alert" style="opacity: 0; pointer-events: none;">
-            <div id="qte-heartbeat-glow" class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.25)_0%,transparent_70%)] pointer-events-none transition-all duration-300"></div>
+        <div id="qte-diss-overlay" class="gta-evt-backdrop fixed inset-0 flex flex-col items-center justify-center hidden z-[10000000] p-3 sm:p-4 text-white transition-opacity duration-300 qte-red-alert" style="opacity: 0; pointer-events: none; --evt-rgb: 239, 68, 68;">
+            <div id="qte-heartbeat-glow" class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.22)_0%,transparent_70%)] pointer-events-none transition-all duration-300"></div>
 
-            <div class="relative w-full max-w-2xl flex flex-col gap-6 p-6 rounded-2xl border border-red-500 bg-black/90 shadow-[0_0_30px_rgba(239, 68, 68, 0.3)] max-h-[95vh] overflow-y-auto">
-                <!-- Flashing Action Banner (Micro-Tutorial) -->
-                <div class="w-full bg-red-950/40 border border-red-500 p-2 rounded-lg text-center animate-pulse shrink-0">
-                    <span id="qte-instruction-text" class="text-[10px] text-red-400 font-bold tracking-wider">⚡ COMPOSE BIEN VITE TA DISSTRACK, T'ES ATTENDU !!</span>
+            <div class="gta-evt-dossier wide relative">
+                <!-- Bandeau Cinéma Alerte Rouge -->
+                <div class="gta-evt-topbar">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="gta-evt-dot"></span>
+                        <span class="text-rose-400 font-bold truncate">URGENCE · CLAPBACK DISSTRACK</span>
+                    </div>
+                    <span id="qte-timer-display" class="text-lg sm:text-xl font-bold font-mono text-rose-400 tracking-wider">15.00s</span>
                 </div>
 
-                <div class="flex justify-between items-center border-b border-red-500/30 pb-3">
-                    <span class="text-xs text-red-500 animate-pulse font-bold">⚡ CLAPBACK EMERGENCY ⚡</span>
-                    <span id="qte-timer-display" class="text-3xl font-bold text-red-400 drop-shadow-[0_0_8px_rgba(239, 68, 68, 0.8)]">15.00s</span>
-                </div>
+                <div class="p-4 sm:p-5 flex flex-col gap-4">
+                    <!-- En-tête éditorial + Instruction -->
+                    <div class="gta-evt-title-block">
+                        <div class="text-[9.5px] font-mono uppercase tracking-[0.26em] text-rose-400/90">CLASH EN DIRECT</div>
+                        <div id="qte-instruction-text" class="text-sm sm:text-base font-bold uppercase tracking-wider text-white mt-0.5">Compose vite ta disstrack, t'es attendu !!</div>
+                    </div>
 
-                <div class="grid grid-cols-3 gap-4 my-2">
-                    <div id="qte-pad-genre" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]" onclick="selectQTEPadSlot('genre')">
-                        <span class="text-2xl mb-1">🎹</span>
-                        <span id="qte-pad-genre-status" class="text-[9px] text-gray-400">🎹 GENRE : ❌ VIDE</span>
-                        <span id="qte-pad-genre-val" class="text-[10px] text-red-400 font-bold mt-1 text-center truncate w-full">VIDE</span>
-                    </div>
-                    <div id="qte-pad-voice" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]" onclick="selectQTEPadSlot('voice')">
-                        <span class="text-2xl mb-1">🎤</span>
-                        <span id="qte-pad-voice-status" class="text-[9px] text-gray-400">🎤 VOICE : ❌ VIDE</span>
-                        <span id="qte-pad-voice-val" class="text-[10px] text-red-400 font-bold mt-1 text-center truncate w-full">VIDE</span>
-                    </div>
-                    <div id="qte-pad-bpm" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-xl p-4 bg-white/5 cursor-pointer hover:bg-white/10 hover:border-red-500 transition-all min-h-[90px]" onclick="selectQTEPadSlot('bpm')">
-                        <span class="text-2xl mb-1">⏱️</span>
-                        <span id="qte-pad-bpm-status" class="text-[9px] text-gray-400">⏱️ BPM : ❌ VIDE</span>
-                        <span id="qte-pad-bpm-val" class="text-[10px] text-red-400 font-bold mt-1 text-center truncate w-full">VIDE</span>
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-3">
-                    <span class="text-[10px] text-gray-400">RÉGLAGES DAW / ABLESTUDIO :</span>
-                    <div class="grid grid-cols-3 gap-2 h-[180px] overflow-hidden">
-                        <!-- Column 1: Genre -->
-                        <div class="flex flex-col gap-1 border border-red-500/20 rounded-lg p-1.5 bg-black/50 overflow-y-auto">
-                            <span class="text-[8px] font-bold text-red-400 text-center border-b border-red-500/20 pb-1 mb-1">🎹 GENRES</span>
-                            <div id="qte-genre-col" class="flex flex-col gap-1"></div>
+                    <div class="grid grid-cols-3 gap-2.5 sm:gap-3">
+                        <div id="qte-pad-genre" class="gta-evt-choice !p-3 flex flex-col items-center justify-center text-center min-h-[82px]" onclick="selectQTEPadSlot('genre')">
+                            <span id="qte-pad-genre-status" class="text-[9px] font-mono uppercase tracking-wider text-zinc-400">GENRE · VIDE</span>
+                            <span id="qte-pad-genre-val" class="text-xs font-mono text-rose-400 font-bold mt-1.5 truncate w-full">VIDE</span>
                         </div>
-                        <!-- Column 2: Voix -->
-                        <div class="flex flex-col gap-1 border border-blue-500/20 rounded-lg p-1.5 bg-black/50 overflow-y-auto">
-                            <span class="text-[8px] font-bold text-blue-400 text-center border-b border-blue-500/20 pb-1 mb-1">🎤 VOIX / MOOD</span>
-                            <div id="qte-voice-col" class="flex flex-col gap-1"></div>
+                        <div id="qte-pad-voice" class="gta-evt-choice !p-3 flex flex-col items-center justify-center text-center min-h-[82px]" onclick="selectQTEPadSlot('voice')">
+                            <span id="qte-pad-voice-status" class="text-[9px] font-mono uppercase tracking-wider text-zinc-400">VOICE · VIDE</span>
+                            <span id="qte-pad-voice-val" class="text-xs font-mono text-rose-400 font-bold mt-1.5 truncate w-full">VIDE</span>
                         </div>
-                        <!-- Column 3: BPM -->
-                        <div class="flex flex-col gap-1 border border-yellow-500/20 rounded-lg p-1.5 bg-black/50 overflow-y-auto">
-                            <span class="text-[8px] font-bold text-yellow-400 text-center border-b border-yellow-500/20 pb-1 mb-1">⏱️ BPM</span>
-                            <div id="qte-bpm-col" class="flex flex-col gap-1"></div>
+                        <div id="qte-pad-bpm" class="gta-evt-choice !p-3 flex flex-col items-center justify-center text-center min-h-[82px]" onclick="selectQTEPadSlot('bpm')">
+                            <span id="qte-pad-bpm-status" class="text-[9px] font-mono uppercase tracking-wider text-zinc-400">BPM · VIDE</span>
+                            <span id="qte-pad-bpm-val" class="text-xs font-mono text-rose-400 font-bold mt-1.5 truncate w-full">VIDE</span>
                         </div>
                     </div>
-                </div>
 
-                <div id="qte-echo-banner" class="hidden flex flex-col items-center justify-center gap-2 border border-purple-500 bg-purple-950/40 p-3 rounded-lg text-center echo-glitch">
-                    <span class="text-[9px] text-purple-400 animate-pulse">🤖 ECHO A PIRATÉ LA TIMELINE !</span>
-                    <button id="qte-echo-hack-btn" class="btn-action w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-[10px] rounded-lg border border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.6)]" onclick="triggerQTEEchoHack()">👾 ECHO HACK: INJECTER SAMPLE VIRAL (ILLÉGAL)</button>
-                </div>
+                    <div class="flex flex-col gap-2">
+                        <span class="text-[9.5px] font-mono uppercase tracking-[0.2em] text-zinc-400">Réglages Studio Rapides</span>
+                        <div class="grid grid-cols-3 gap-2 h-[175px] overflow-hidden">
+                            <!-- Column 1: Genre -->
+                            <div class="flex flex-col gap-1 border border-white/10 rounded-lg p-1.5 bg-black/50 overflow-y-auto custom-scrollbar">
+                                <span class="text-[8.5px] font-mono font-bold text-rose-400 text-center border-b border-white/10 pb-1 mb-1 uppercase tracking-wider">Genres</span>
+                                <div id="qte-genre-col" class="flex flex-col gap-1"></div>
+                            </div>
+                            <!-- Column 2: Voix -->
+                            <div class="flex flex-col gap-1 border border-white/10 rounded-lg p-1.5 bg-black/50 overflow-y-auto custom-scrollbar">
+                                <span class="text-[8.5px] font-mono font-bold text-sky-400 text-center border-b border-white/10 pb-1 mb-1 uppercase tracking-wider">Voix</span>
+                                <div id="qte-voice-col" class="flex flex-col gap-1"></div>
+                            </div>
+                            <!-- Column 3: BPM -->
+                            <div class="flex flex-col gap-1 border border-white/10 rounded-lg p-1.5 bg-black/50 overflow-y-auto custom-scrollbar">
+                                <span class="text-[8.5px] font-mono font-bold text-amber-400 text-center border-b border-white/10 pb-1 mb-1 uppercase tracking-wider">BPM</span>
+                                <div id="qte-bpm-col" class="flex flex-col gap-1"></div>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="flex flex-col gap-2 mt-auto">
-                    <button id="qte-smash-btn" class="hidden btn-action w-full py-3 bg-red-600 text-xs font-bold rounded-xl border-2 border-red-400 shadow-[0_0_20px_rgba(239,68,68,0.8)] animate-pulse" onclick="smashQTERender()">🔥 SMASH TO RENDER! (<span id="qte-smash-count">0</span>/3)</button>
+                    <div id="qte-echo-banner" class="hidden flex flex-col items-center justify-center gap-2 border border-sky-400/40 bg-sky-950/35 p-3 rounded-lg text-center echo-glitch">
+                        <span class="text-[9.5px] font-mono uppercase tracking-wider text-sky-300 animate-pulse">ECHO AI // INJECTION TIMELINE DISPONIBLE</span>
+                        <button id="qte-echo-hack-btn" class="w-full py-2 px-3 rounded-lg bg-sky-400 hover:bg-sky-300 text-black font-mono font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer" onclick="triggerQTEEchoHack()">ECHO HACK : INJECTER SAMPLE VIRAL</button>
+                    </div>
+
+                    <div class="flex flex-col gap-2 mt-auto">
+                        <button id="qte-smash-btn" class="hidden w-full py-3 rounded-lg bg-rose-500 hover:bg-rose-400 text-white font-mono text-xs font-bold uppercase tracking-[0.18em] border border-rose-300/50 shadow-[0_0_24px_rgba(244,63,94,0.65)] animate-pulse cursor-pointer" onclick="smashQTERender()">SMASH TO RENDER (<span id="qte-smash-count">0</span>/3)</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -26389,53 +26564,72 @@ document.addEventListener('mouseover', (e) => {
 
         function startLufsWarMiniGame() {
             state.isEventActive = true;
+            if (typeof window.enforceFpsModalPriority === 'function') window.enforceFpsModalPriority();
+            document.getElementById('lufs-war-overlay')?.remove();
 
             const overlay = document.createElement('div');
             overlay.id = 'lufs-war-overlay';
             overlay.innerHTML = `
-                <div class="fixed inset-0 bg-black/90 flex items-center justify-center z-[1000] p-4">
-                    <div class="bg-[#18181b] rounded-2xl border border-white/20 w-full max-w-md p-6 shadow-2xl">
-                        <h2 class="text-2xl font-bold text-white mb-2 text-center">🔊 GUERRE DU LUFS</h2>
-                        <p class="text-gray-400 text-sm mb-6 text-center">
-                            Atteins <strong>-14 LUFS</strong> sans clipping.<br>
-                            Ajuste le <strong>gain</strong> et la <strong>compression</strong>.
-                        </p>
-
-                        <div class="space-y-4 mb-6">
-                            <div class="flex items-center gap-4">
-                                <span class="text-white font-bold w-16">GAIN</span>
-                                <input type="range" id="lufs-gain" min="-20" max="20" value="0" class="flex-1 h-2 bg-gray-700 rounded-lg">
-                                <span id="lufs-gain-val" class="text-white font-mono w-12 text-right">0dB</span>
+                <div class="gta-evt-backdrop fixed inset-0 flex items-center justify-center z-[999999] p-3 sm:p-4" style="--evt-rgb: 245, 158, 11;">
+                    <div class="gta-evt-dossier">
+                        <div class="gta-evt-topbar">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="gta-evt-dot"></span>
+                                <span class="truncate">DOSSIER STUDIO · MASTERING</span>
                             </div>
-                            <div class="flex items-center gap-4">
-                                <span class="text-white font-bold w-16">COMP</span>
-                                <input type="range" id="lufs-comp" min="1" max="10" value="4" class="flex-1 h-2 bg-gray-700 rounded-lg">
-                                <span id="lufs-comp-val" class="text-white font-mono w-12 text-right">4:1</span>
-                            </div>
+                            <span class="shrink-0 text-amber-400">CIBLE -14 LUFS</span>
                         </div>
 
-                        <!-- VU Meter -->
-                        <div class="mb-6">
-                            <div class="h-4 bg-gray-800 rounded-full relative overflow-hidden">
-                                <div id="lufs-meter" class="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 transition-all duration-200" style="width: 50%"></div>
-                                <div class="absolute inset-0 flex justify-center items-center pointer-events-none">
-                                    <span id="lufs-value" class="text-white font-bold text-sm drop-shadow-md">-14 LUFS</span>
+                        <div class="p-5 sm:p-6 flex flex-col gap-4">
+                            <div class="gta-evt-title-block">
+                                <div class="text-[10px] font-mono uppercase tracking-[0.26em] text-amber-400/90">SIGNAL CALIBRATION</div>
+                                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-[0.12em] uppercase text-white leading-tight mt-0.5">GUERRE DU LUFS</h2>
+                            </div>
+
+                            <p class="text-[13px] sm:text-sm text-zinc-300 leading-relaxed">
+                                Calibre ton master à <strong class="text-amber-300">-14 LUFS</strong> sans dépasser le seuil de clipping. Un master propre débloque <strong class="text-emerald-400">+10% multiplicateur</strong>.
+                            </p>
+
+                            <div class="space-y-3 bg-black/45 p-4 rounded-xl border border-white/10">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-400 w-14 shrink-0">GAIN</span>
+                                    <input type="range" id="lufs-gain" min="-20" max="20" value="0" class="flex-1 h-2 bg-zinc-800 rounded-lg accent-amber-400 cursor-pointer">
+                                    <span id="lufs-gain-val" class="text-white font-mono text-xs font-bold w-12 text-right tabular-nums">0dB</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-400 w-14 shrink-0">COMP</span>
+                                    <input type="range" id="lufs-comp" min="1" max="10" value="4" class="flex-1 h-2 bg-zinc-800 rounded-lg accent-amber-400 cursor-pointer">
+                                    <span id="lufs-comp-val" class="text-white font-mono text-xs font-bold w-12 text-right tabular-nums">4:1</span>
                                 </div>
                             </div>
-                            <div class="flex justify-between text-[10px] text-muted mt-1">
-                                <span>CLIPPING</span>
-                                <span>-14 LUFS</span>
-                                <span>TROP BAS</span>
-                            </div>
-                        </div>
 
-                        <div class="flex gap-4">
-                            <button onclick="validateLufsWar()" class="btn-action flex-1 py-3">
-                                ✅ Valider
-                            </button>
-                            <button onclick="closeLufsWar()" class="btn-minimal flex-1 py-3">
-                                ❌ Abandonner
-                            </button>
+                            <!-- VU Meter Précision -->
+                            <div class="bg-black/50 p-3.5 rounded-xl border border-white/10">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[9px] font-mono uppercase tracking-[0.2em] text-zinc-400">LOUDNESS METER</span>
+                                    <span id="lufs-value" class="font-mono font-extrabold text-sm tracking-wider tabular-nums">-14 LUFS</span>
+                                </div>
+                                <div class="h-3.5 bg-zinc-900 rounded-full relative overflow-hidden border border-white/10">
+                                    <div id="lufs-meter" class="h-full rounded-full transition-all duration-150" style="width: 50%; background-color: #fbbf24;"></div>
+                                    <div class="absolute top-0 bottom-0 w-0.5 bg-white/80 pointer-events-none" style="left: 44%;" title="Cible -14 LUFS"></div>
+                                </div>
+                                <div class="flex justify-between text-[9px] font-mono uppercase tracking-widest text-zinc-500 mt-1.5">
+                                    <span>-25 TROP BAS</span>
+                                    <span class="text-emerald-400/90">-14 OPTIMAL</span>
+                                    <span class="text-red-400/90">0 CLIPPING</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2.5 pt-1">
+                                <button onclick="validateLufsWar()" class="gta-evt-choice text-center !py-3" style="--choice-rgb: 16, 185, 129;">
+                                    <div class="text-xs font-extrabold tracking-[0.14em] uppercase text-emerald-300">Valider Master</div>
+                                    <div class="text-[9px] font-mono text-zinc-400 mt-0.5 uppercase tracking-wider">Tester le signal</div>
+                                </button>
+                                <button onclick="closeLufsWar()" class="gta-evt-choice text-center !py-3" style="--choice-rgb: 148, 163, 184;">
+                                    <div class="text-xs font-extrabold tracking-[0.14em] uppercase text-zinc-300">Abandonner</div>
+                                    <div class="text-[9px] font-mono text-zinc-500 mt-0.5 uppercase tracking-wider">Quitter session</div>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -26473,19 +26667,19 @@ document.addEventListener('mouseover', (e) => {
                 // Couleur du meter
                 if (isClipping) {
                     meter.style.backgroundColor = '#ef4444'; // Rouge (clipping)
-                    value.style.color = '#ef4444';
+                    value.style.color = '#f87171';
                 } else if (lufs >= -14) {
                     meter.style.backgroundColor = '#10b981'; // Vert (parfait)
-                    value.style.color = '#10b981';
+                    value.style.color = '#34d399';
                 } else if (lufs >= -20) {
                     meter.style.backgroundColor = '#fbbf24'; // Orange (proche)
                     value.style.color = '#fbbf24';
                 } else {
                     meter.style.backgroundColor = '#6b7280'; // Gris (trop bas)
-                    value.style.color = '#6b7280';
+                    value.style.color = '#a1a1aa';
                 }
 
-                value.textContent = `${Math.round(lufs)} LUFS`;
+                value.textContent = isClipping ? `${Math.round(lufs)} LUFS · CLIP!` : `${Math.round(lufs)} LUFS`;
             }
 
             gainSlider.addEventListener('input', () => {
@@ -26534,173 +26728,222 @@ document.addEventListener('mouseover', (e) => {
 
         function startBlankPageMiniGame() {
             state.isEventActive = true;
-    const overlay = document.createElement('div');
-    overlay.id = 'blank-page-overlay';
-    overlay.innerHTML = `
-        <div class="fixed inset-0 bg-black/95 flex flex-col items-center justify-center z-[1000] p-4 font-sans backdrop-blur-md">
-            <h2 class="text-xl md:text-3xl font-bold text-white mb-2 text-center font-retro tracking-widest uppercase">🎵 Syndrome de la Page Blanche</h2>
-            <p class="text-[var(--text-muted)] text-xs md:text-sm mb-4 text-center uppercase tracking-widest">Retrouve le flow. Clique sur les notes à temps.</p>
-            
-            <div id="blank-page-notes" class="relative w-full flex-1 max-h-[50vh] md:max-h-[400px] max-w-2xl bg-[#09090b] rounded-2xl overflow-hidden border border-white/10 mt-2 mb-4 shadow-inner cursor-crosshair"></div>
-            
-            <div class="w-full max-w-2xl bg-black/50 p-4 rounded-xl border border-white/10 flex flex-col gap-3">
-                <div class="flex justify-between items-center">
-                    <span class="text-white font-bold text-xs font-retro tracking-widest">TEMPS</span>
-                    <div class="flex-1 mx-4 h-3 bg-black rounded-full overflow-hidden border border-white/5">
-                        <div id="blank-page-timer" class="h-full bg-[var(--accent)] rounded-full transition-all duration-[1000ms] ease-linear" style="width: 100%"></div>
+            if (typeof window.enforceFpsModalPriority === 'function') window.enforceFpsModalPriority();
+            document.getElementById('blank-page-overlay')?.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'blank-page-overlay';
+            overlay.innerHTML = `
+                <div class="gta-evt-backdrop fixed inset-0 flex items-center justify-center z-[999999] p-3 sm:p-4" style="--evt-rgb: 167, 139, 250;">
+                    <div class="gta-evt-dossier wide">
+                        <div class="gta-evt-topbar">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="gta-evt-dot"></span>
+                                <span class="truncate">DOSSIER CRÉATIF · BLOCAGE</span>
+                            </div>
+                            <span class="shrink-0 text-violet-300">20 SEC · FLOW</span>
+                        </div>
+
+                        <div class="p-4 sm:p-6 flex flex-col gap-3.5">
+                            <div class="gta-evt-title-block">
+                                <div class="text-[10px] font-mono uppercase tracking-[0.26em] text-violet-300/90">INSPIRATION RECOVERY</div>
+                                <h2 class="text-xl sm:text-2xl font-extrabold tracking-[0.12em] uppercase text-white leading-tight mt-0.5">SYNDROME DE LA PAGE BLANCHE</h2>
+                            </div>
+
+                            <p class="text-xs sm:text-sm text-zinc-400">
+                                Retrouve le flow avant la fin du chrono. Clique sur chaque impulsion mélodique à temps pour enchaîner les combos.
+                            </p>
+
+                            <div id="blank-page-notes" class="relative w-full h-[38vh] min-h-[210px] max-h-[340px] bg-[#07080d] rounded-xl overflow-hidden border border-violet-400/20 shadow-inner cursor-crosshair" style="background-image: radial-gradient(rgba(167, 139, 250, 0.12) 1px, transparent 1px); background-size: 22px 22px;"></div>
+
+                            <div class="w-full bg-black/50 p-3.5 rounded-xl border border-white/10 flex flex-col gap-2.5">
+                                <div class="flex justify-between items-center gap-3">
+                                    <span class="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-zinc-400 shrink-0">TEMPS</span>
+                                    <div class="flex-1 h-2 bg-zinc-900 rounded-full overflow-hidden border border-white/10">
+                                        <div id="blank-page-timer" class="h-full bg-violet-400 rounded-full transition-all duration-[1000ms] ease-linear" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center font-mono text-xs tracking-widest">
+                                    <span class="text-zinc-400">COMBO <span id="blank-page-combo" class="text-white font-extrabold text-sm ml-1">x0</span></span>
+                                    <span class="text-zinc-400">SCORE <span id="blank-page-score" class="text-emerald-400 font-extrabold text-base ml-1 tabular-nums">0</span></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="flex justify-between items-center font-retro text-xs tracking-widest">
-                    <span class="text-gray-400">COMBO: <span id="blank-page-combo" class="text-white text-base">x0</span></span>
-                    <span class="text-gray-400">SCORE: <span id="blank-page-score" class="text-[var(--retro-green)] text-lg">0</span></span>
-                </div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(overlay);
+            `;
+            document.body.appendChild(overlay);
 
-    const notesContainer = document.getElementById('blank-page-notes');
-    const timer = document.getElementById('blank-page-timer');
-    const scoreEl = document.getElementById('blank-page-score');
-    const comboEl = document.getElementById('blank-page-combo');
-    
-    let score = 0;
-    let combo = 0;
-    let timeLeft = 20;
-    let spawnSpeed = 600;
-    const activeNotes = [];
+            const notesContainer = document.getElementById('blank-page-notes');
+            const timer = document.getElementById('blank-page-timer');
+            const scoreEl = document.getElementById('blank-page-score');
+            const comboEl = document.getElementById('blank-page-combo');
 
-    // Gamme Pentatonique Majeure (C Major Penta) - Impossible de faire une fausse note
-    const pentatonicScale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
+            let score = 0;
+            let combo = 0;
+            let timeLeft = 20;
+            let spawnSpeed = 600;
+            const activeNotes = [];
 
-    function spawnNote() {
-        if (timeLeft <= 0) return;
-        
-        const note = document.createElement('div');
-        note.className = 'absolute cursor-pointer flex items-center justify-center rounded-full bg-[var(--accent)]/20 border-2 border-[var(--accent)] shadow-[0_0_15px_rgba(129,140,248,0.5)] transition-transform duration-100 ease-out';
-        
-        // Taille adaptée au mobile/PC pour hitbox confortable
-        const size = (typeof isMobile !== 'undefined' && isMobile) ? 60 : 50;
-        note.style.width = `${size}px`;
-        note.style.height = `${size}px`;
-        note.style.left = `calc(${Math.random() * 80 + 10}% - ${size/2}px)`;
-        note.style.top = `calc(${Math.random() * 70 + 10}% - ${size/2}px)`;
-        note.style.transform = 'scale(0)';
-        
-        // Cercle interne (Bullseye effect)
-        const inner = document.createElement('div');
-        inner.className = 'w-1/3 h-1/3 bg-white rounded-full pointer-events-none';
-        note.appendChild(inner);
+            // Gamme Pentatonique Majeure (C Major Penta) - Impossible de faire une fausse note
+            const pentatonicScale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
 
-        notesContainer.appendChild(note);
-        activeNotes.push(note);
+            function spawnNote() {
+                if (timeLeft <= 0) return;
 
-        // Apparition "pop"
-        requestAnimationFrame(() => {
-            note.style.transform = 'scale(1)';
-        });
+                const note = document.createElement('div');
+                note.className = 'absolute cursor-pointer flex items-center justify-center rounded-full bg-violet-400/20 border-2 border-violet-400 shadow-[0_0_16px_rgba(167,139,250,0.55)] transition-transform duration-100 ease-out';
 
-        // Durée de vie de la note avant "miss" (se réduit avec le temps)
-        const lifeTime = Math.max(700, 1500 - (score * 30));
-        
-        note.timeout = setTimeout(() => {
-            if (note.parentElement) {
-                note.style.borderColor = 'var(--retro-red)';
+                // Taille adaptée au mobile/PC pour hitbox confortable
+                const size = (typeof isMobile !== 'undefined' && isMobile) ? 58 : 48;
+                note.style.width = `${size}px`;
+                note.style.height = `${size}px`;
+                note.style.left = `calc(${Math.random() * 80 + 10}% - ${size/2}px)`;
+                note.style.top = `calc(${Math.random() * 70 + 10}% - ${size/2}px)`;
                 note.style.transform = 'scale(0)';
-                combo = 0; // Break combo
-                comboEl.innerText = `x${combo}`;
-                comboEl.style.color = 'white';
-                setTimeout(() => note.remove(), 100);
+
+                // Cercle interne (Bullseye effect)
+                const inner = document.createElement('div');
+                inner.className = 'w-1/3 h-1/3 bg-white rounded-full pointer-events-none';
+                note.appendChild(inner);
+
+                notesContainer.appendChild(note);
+                activeNotes.push(note);
+
+                // Apparition "pop"
+                requestAnimationFrame(() => {
+                    note.style.transform = 'scale(1)';
+                });
+
+                // Durée de vie de la note avant "miss" (se réduit avec le temps)
+                const lifeTime = Math.max(700, 1500 - (score * 30));
+
+                note.timeout = setTimeout(() => {
+                    if (note.parentElement) {
+                        note.style.borderColor = '#ef4444';
+                        note.style.transform = 'scale(0)';
+                        combo = 0; // Break combo
+                        comboEl.innerText = `x${combo}`;
+                        comboEl.style.color = 'white';
+                        setTimeout(() => note.remove(), 100);
+                    }
+                }, lifeTime);
+
+                // Augmente la difficulté progressivement
+                spawnSpeed = Math.max(300, 700 - (score * 15));
+                if (timeLeft > 0) setTimeout(spawnNote, spawnSpeed);
             }
-        }, lifeTime);
 
-        // Augmente la difficulté progressivement
-        spawnSpeed = Math.max(300, 700 - (score * 15));
-        if (timeLeft > 0) setTimeout(spawnNote, spawnSpeed);
-    }
+            setTimeout(spawnNote, 500);
 
-    setTimeout(spawnNote, 500);
+            notesContainer.addEventListener('mousedown', (e) => {
+                const note = e.target.closest('div.absolute');
+                if (note && notesContainer.contains(note)) {
+                    clearTimeout(note.timeout);
+                    score += 10 + (combo * 2);
+                    combo++;
 
-    notesContainer.addEventListener('mousedown', (e) => {
-        const note = e.target.closest('div.absolute');
-        if (note && notesContainer.contains(note)) {
-            clearTimeout(note.timeout);
-            score += 10 + (combo * 2);
-            combo++;
-            
-            scoreEl.textContent = score;
-            comboEl.textContent = `x${combo}`;
-            
-            if (combo > 5) comboEl.style.color = 'var(--retro-orange)';
-            if (combo > 10) comboEl.style.color = 'var(--retro-green)';
+                    scoreEl.textContent = score;
+                    comboEl.textContent = `x${combo}`;
 
-            // Feedback auditif musical
-            const freq = pentatonicScale[Math.floor(Math.random() * pentatonicScale.length)];
-            if (typeof playTone === 'function') playTone(freq, 'sine', 0.1, 0.2);
-            
-            // Animation explosion
-            note.style.transform = 'scale(1.5)';
-            note.style.opacity = '0';
-            setTimeout(() => note.remove(), 150);
+                    if (combo > 5) comboEl.style.color = '#fbbf24';
+                    if (combo > 10) comboEl.style.color = '#34d399';
+
+                    // Feedback auditif musical
+                    const freq = pentatonicScale[Math.floor(Math.random() * pentatonicScale.length)];
+                    if (typeof playTone === 'function') playTone(freq, 'sine', 0.1, 0.2);
+
+                    // Animation explosion
+                    note.style.transform = 'scale(1.5)';
+                    note.style.opacity = '0';
+                    setTimeout(() => note.remove(), 150);
+                }
+            });
+            // Support Touch direct pour éviter le délai du mousedown sur mobile
+            notesContainer.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (target && target.closest) {
+                    const note = target.closest('div.absolute');
+                    if (note) note.dispatchEvent(new Event('mousedown', { bubbles: true }));
+                }
+            }, { passive: false });
+
+            const timerInterval = setInterval(() => {
+                timeLeft--;
+                timer.style.width = `${(timeLeft / 20) * 100}%`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    let inspiGain = Math.floor(score / 20);
+                    if (score > 150) {
+                        showToast(`🔥 Masterclass ! Flow retrouvé. +${inspiGain}% Inspiration`, "success");
+                        playSuccess();
+                        if (typeof fireConfetti === 'function') fireConfetti('store');
+                    } else if (score > 50) {
+                        showToast(`👍 Pas mal, quelques idées reviennent. +${inspiGain}% Inspiration`, "info");
+                        playBleep();
+                    } else {
+                        inspiGain = -10;
+                        showToast(`❌ Cerveau vide. Impossible de poser une note. -10% Inspi`, "error");
+                        playError();
+                    }
+                    state.inspi = Math.min(100, Math.max(0, state.inspi + inspiGain));
+                    state.isEventActive = false;
+                    overlay.remove();
+                    updateHUD();
+                }
+            }, 1000);
         }
-    });
-    // Support Touch direct pour éviter le délai du mousedown sur mobile
-    notesContainer.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        const target = document.elementFromPoint(touch.clientX, touch.clientY);
-        if (target && target.closest) {
-            const note = target.closest('div.absolute');
-            if (note) note.dispatchEvent(new Event('mousedown', { bubbles: true }));
-        }
-    }, { passive: false });
-
-    const timerInterval = setInterval(() => {
-        timeLeft--;
-        timer.style.width = `${(timeLeft / 20) * 100}%`;
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            let inspiGain = Math.floor(score / 20); 
-            if (score > 150) {
-                showToast(`🔥 Masterclass ! Flow retrouvé. +${inspiGain}% Inspiration`, "success");
-                playSuccess();
-                if (typeof fireConfetti === 'function') fireConfetti('store');
-            } else if (score > 50) {
-                showToast(`👍 Pas mal, quelques idées reviennent. +${inspiGain}% Inspiration`, "info");
-                playBleep();
-            } else {
-                inspiGain = -10;
-                showToast(`❌ Cerveau vide. Impossible de poser une note. -10% Inspi`, "error");
-                playError();
-            }
-            state.inspi = Math.min(100, Math.max(0, state.inspi + inspiGain));
-            state.isEventActive = false;
-            overlay.remove();
-            updateHUD();
-        }
-    }, 1000);
-};
 
         function startPluginQuiz() {
             state.isEventActive = true;
+            if (typeof window.enforceFpsModalPriority === 'function') window.enforceFpsModalPriority();
+            document.getElementById('plugin-quiz-overlay')?.remove();
 
-            const question = PLUGIN_QUIZ_QUESTIONS[Math.floor(Math.random() * PLUGIN_QUIZ_QUESTIONS.length)];
+            const rawQuestion = PLUGIN_QUIZ_QUESTIONS[Math.floor(Math.random() * PLUGIN_QUIZ_QUESTIONS.length)];
+            // Mélange Fisher-Yates des options afin que la bonne réponse ne soit jamais figée au même emplacement
+            const shuffledOptions = [...rawQuestion.options];
+            for (let i = shuffledOptions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+            }
+            const question = { question: rawQuestion.question, options: shuffledOptions };
 
             const overlay = document.createElement('div');
             overlay.id = 'plugin-quiz-overlay';
             overlay.innerHTML = `
-                <div class="fixed inset-0 bg-black/90 flex items-center justify-center z-[1000] p-4">
-                    <div class="bg-[#18181b] rounded-2xl border border-white/20 w-full max-w-md p-6 shadow-2xl">
-                        <h2 class="text-2xl font-bold text-white mb-4 text-center">🎛️ LE BON CHOIX DE PLUGIN</h2>
-                        <p class="text-gray-400 text-sm mb-6 text-center">${question.question}</p>
+                <div class="gta-evt-backdrop fixed inset-0 flex items-center justify-center z-[999999] p-3 sm:p-4" style="--evt-rgb: 56, 189, 248;">
+                    <div class="gta-evt-dossier wide">
+                        <div class="gta-evt-topbar">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="gta-evt-dot"></span>
+                                <span class="truncate">DOSSIER STUDIO · QUIZ TECHNIQUE</span>
+                            </div>
+                            <span class="shrink-0 text-sky-400">+1 PLUGIN LÉGAL</span>
+                        </div>
 
-                        <div class="grid grid-cols-2 gap-3">
-                            ${question.options.map((option, i) => `
-                                <button onclick="selectPluginQuizOption(${i})" class="bg-gray-800 hover:bg-gray-700 p-4 rounded-lg border border-gray-700 text-left transition-colors">
-                                    <p class="text-white font-bold">${option.name}</p>
-                                    <p class="text-gray-400 text-xs mt-1">${option.desc}</p>
-                                </button>
-                            `).join('')}
+                        <div class="p-5 sm:p-6 flex flex-col gap-4">
+                            <div class="gta-evt-title-block">
+                                <div class="text-[10px] font-mono uppercase tracking-[0.26em] text-sky-400/90">INGÉNIERIE AUDIO · QCM</div>
+                                <h2 class="text-xl sm:text-2xl font-extrabold tracking-[0.12em] uppercase text-white leading-tight mt-0.5">LE BON CHOIX DE PLUGIN</h2>
+                            </div>
+
+                            <div class="bg-black/45 border border-white/10 rounded-xl p-3.5 sm:p-4">
+                                <p class="text-[13px] sm:text-sm text-zinc-200 leading-relaxed font-medium">${question.question}</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                ${question.options.map((option, i) => `
+                                    <button onclick="selectPluginQuizOption(${i})" class="gta-evt-choice flex flex-col justify-between gap-1.5" style="--choice-rgb: 56, 189, 248;">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <span class="text-white font-bold text-sm leading-snug">${option.name}</span>
+                                            <span class="gta-evt-badge shrink-0 text-sky-300 border-sky-400/30 bg-sky-500/10">0${i + 1}</span>
+                                        </div>
+                                        <p class="text-zinc-400 text-xs leading-relaxed">${option.desc}</p>
+                                    </button>
+                                `).join('')}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -29704,16 +29947,107 @@ document.addEventListener('mouseover', (e) => {
 
 
         // ==========================================
-        // SYSTÈME D'ÉVÈNEMENTS ALÉATOIRES
+        // SYSTÈME D'ÉVÈNEMENTS ALÉATOIRES (DA CINÉMA / GTA 6 — DOSSIER INDUSTRIE)
         // ==========================================
-        let rappersConnusPool = [...rappersConnus];
-        let rappersPasConnusPool = [...rappersPasConnus];
-        
+        function _shuffleEventPool(source, avoidFirst) {
+            const arr = [...source];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            if (avoidFirst && arr.length > 1 && arr[0] === avoidFirst) {
+                const swapIdx = 1 + Math.floor(Math.random() * (arr.length - 1));
+                [arr[0], arr[swapIdx]] = [arr[swapIdx], arr[0]];
+            }
+            return arr;
+        }
+
+        const _eventPools = {
+            rappersConnus:    { pool: _shuffleEventPool(rappersConnus),    last: null },
+            rappersPasConnus: { pool: _shuffleEventPool(rappersPasConnus), last: null },
+            voleursConnus:    { pool: _shuffleEventPool(voleursConnus),    last: null },
+            voleursPasConnus: { pool: _shuffleEventPool(voleursPasConnus), last: null },
+            rappersCancel:    { pool: _shuffleEventPool(rappersCancel),    last: null }
+        };
+
+        function _drawFromEventPool(key, source) {
+            const entry = _eventPools[key];
+            if (!entry.pool || entry.pool.length === 0) {
+                entry.pool = _shuffleEventPool(source, entry.last);
+            }
+            const picked = entry.pool.shift();
+            entry.last = picked;
+            return picked;
+        }
+
+        function _getArtistInitials(name) {
+            if (!name) return '??';
+            const clean = String(name).replace(/[^A-Za-zÀ-ÿ0-9\s]/g, ' ').trim();
+            const parts = clean.split(/\s+/).filter(Boolean);
+            if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+            return clean.slice(0, 2).toUpperCase() || '??';
+        }
+
+        function _renderEventArtistCard({ name, badgeText, badgeStyle, subtext, isStar }) {
+            const initials = _getArtistInitials(name);
+            const starGlow = isStar
+                ? 'border-amber-400/45 bg-gradient-to-r from-amber-500/[0.12] via-amber-500/[0.04] to-transparent shadow-[0_0_24px_rgba(245,158,11,0.12)]'
+                : '';
+            const avatarStar = isStar
+                ? 'style="background: radial-gradient(circle at 30% 25%, rgba(245, 158, 11, 0.42), rgba(15, 12, 8, 0.96)); border-color: rgba(245, 158, 11, 0.72); color: #fef3c7;"'
+                : '';
+            return `
+                <div class="gta-evt-artist-card ${starGlow}">
+                    <div class="gta-evt-avatar" ${avatarStar}>${initials}</div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-base sm:text-lg font-extrabold text-white tracking-wide truncate">${name}</span>
+                            <span class="gta-evt-badge shrink-0" style="${badgeStyle}">${badgeText}</span>
+                        </div>
+                        <div class="text-[11px] font-mono text-zinc-400 mt-0.5 leading-snug">${subtext}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function _buildGtaChoiceCard({ title, badge, badgeStyle, rightMain, rightSub, probPct, probLabel, probColor, choiceRgb, onClick }) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'gta-evt-choice flex flex-col gap-2';
+            btn.style.setProperty('--choice-rgb', choiceRgb);
+            btn.innerHTML = `
+                <div class="flex items-start justify-between gap-3 w-full">
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-sm font-extrabold tracking-[0.06em] uppercase text-white">${title}</span>
+                            <span class="gta-evt-badge" style="${badgeStyle}">${badge}</span>
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="text-sm font-mono font-extrabold tracking-tight" style="color:${probColor};">${rightMain}</div>
+                        ${rightSub ? `<div class="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">${rightSub}</div>` : ''}
+                    </div>
+                </div>
+                <div class="flex items-center gap-2.5 w-full">
+                    <div class="gta-evt-prob-track flex-1">
+                        <div class="gta-evt-prob-fill" style="width:${probPct}%; background:${probColor}; box-shadow: 0 0 8px ${probColor}66;"></div>
+                    </div>
+                    <span class="text-[10px] font-mono uppercase tracking-[0.14em] text-zinc-400 shrink-0 tabular-nums">${probLabel}</span>
+                </div>
+            `;
+            btn.onclick = onClick;
+            return btn;
+        }
+
         function triggerRandomEvent(forcedType) {
-            state.isEventActive = true; 
+            state.isEventActive = true;
             if (typeof window.enforceFpsModalPriority === 'function') window.enforceFpsModalPriority();
             const overlay = document.getElementById('event-overlay');
+            const eyebrow = document.getElementById('event-eyebrow');
+            const metaTag = document.getElementById('event-meta-tag');
+            const subtitle = document.getElementById('event-subtitle');
             const title = document.getElementById('event-title');
+            const artistSlot = document.getElementById('event-artist-slot');
             const desc = document.getElementById('event-desc');
             const choicesDiv = document.getElementById('event-choices');
 
@@ -29723,130 +30057,246 @@ document.addEventListener('mouseover', (e) => {
             overlay.style.pointerEvents = 'none';
 
             setTimeout(() => {
-            overlay.style.opacity = '1';
+                overlay.style.opacity = '1';
                 overlay.style.pointerEvents = 'all';
-    }, 50);
+            }, 50);
 
-            playTone(500, 'square', 0.2, 0.1); 
-            choicesDiv.innerHTML = ''; 
+            playTone(500, 'square', 0.2, 0.1);
+            choicesDiv.innerHTML = '';
+            if (metaTag) metaTag.textContent = `JOUR ${state.day || 1} · LIVE`;
 
             const rand = Math.random();
             const eventType = forcedType || (rand < 0.45 ? 'collab' : rand < 0.80 ? 'vol' : 'badbuzz');
-                
+
             if (eventType === 'collab' || eventType === 'collab_known') {
-                const isKnown = (eventType === 'collab_known') ? true : (Math.random() < 0.2); 
+                const isKnown = (eventType === 'collab_known') ? true : (Math.random() < 0.2);
                 const rapper = pickRapper(isKnown);
+                const starMult = isKnown ? 1.8 : 1.0;
+                const repReward = isKnown ? 15 : 10;
+                const effectiveMult = (state.multiplier || 1.0) * starMult;
 
-                title.innerText = "🤝 COLLABORATION";
-                title.className = "text-3xl font-retro text-[var(--retro-green)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-green)] shrink-0";
+                overlay.style.setProperty('--evt-rgb', isKnown ? '245, 158, 11' : '16, 185, 129');
+                if (eyebrow) eyebrow.textContent = isKnown ? 'DOSSIER INDUSTRIE · VIP' : 'DOSSIER INDUSTRIE · PROD';
+                if (subtitle) {
+                    subtitle.textContent = isKnown ? 'A&R VIP DISPATCH · BONUS ×1.8' : 'SOUNDNET DIRECT · NÉGOCIATION';
+                    subtitle.className = `text-[10px] font-mono uppercase tracking-[0.26em] ${isKnown ? 'text-amber-400' : 'text-emerald-400'}`;
+                }
+                title.textContent = 'COLLABORATION';
+                title.className = 'text-2xl sm:text-3xl font-extrabold tracking-[0.14em] uppercase text-white leading-tight mt-0.5';
+
+                if (artistSlot) {
+                    artistSlot.classList.remove('hidden');
+                    artistSlot.innerHTML = _renderEventArtistCard({
+                        name: rapper,
+                        isStar: isKnown,
+                        badgeText: isKnown ? '★ TÊTE D\'AFFICHE' : 'ARTISTE INDÉ',
+                        badgeStyle: isKnown
+                            ? 'background:rgba(245,158,11,0.18); border-color:rgba(245,158,11,0.55); color:#fde68a;'
+                            : 'background:rgba(16,185,129,0.16); border-color:rgba(16,185,129,0.45); color:#6ee7b7;',
+                        subtext: isKnown
+                            ? `Cachet majoré ×1.8 · Réputation +${repReward} REP si signé`
+                            : `Circuit indépendant · Réputation +${repReward} REP si signé`
+                    });
+                }
+
                 const textesCollab = [
-                `<span class="text-white font-bold text-base">"${rapper}"</span> te contacte pour collaborer sur un son, mais il essaie de t'arnaquer et marchande. Tu fixes les tarots. Que proposes-tu ?`,
-        
-                `<span class="text-white font-bold text-base">"${rapper}"</span> a kiffé ta dernière boucle et veut poser dessus. Il demande un prix, comment on procède ?`
-    ];
-    desc.innerHTML = textesCollab[Math.floor(Math.random() * textesCollab.length)];
+                    `<span class="text-white font-semibold">${rapper}</span> te contacte pour poser sur un de tes beats, mais il tente de négocier à la baisse. Fixe ton tarif et le format livré.`,
+                    `<span class="text-white font-semibold">${rapper}</span> a validé ta dernière boucle et veut l'acheter pour son prochain projet. Quelle licence lui proposes-tu ?`
+                ];
+                desc.innerHTML = textesCollab[Math.floor(Math.random() * textesCollab.length)];
 
-                const btn1 = document.createElement('button');
-                btn1.className = "btn-action py-3 px-4 rounded-lg font-retro text-xs text-[var(--retro-green)] border-[var(--retro-green)] hover:bg-[var(--retro-green)] hover:text-black transition-colors";
-                btn1.innerText = "Un MP3 - Pas cher (80% d'acceptation)";
-                btn1.onclick = () => resolveCollabEvent(rapper, 80, 150 + Math.random() * 150);
+                const mp3Min = Math.floor(150 * effectiveMult), mp3Max = Math.floor(300 * effectiveMult);
+                const wavMin = Math.floor(400 * effectiveMult), wavMax = Math.floor(800 * effectiveMult);
+                const stmMin = Math.floor(1000 * effectiveMult), stmMax = Math.floor(2500 * effectiveMult);
 
-                const btn2 = document.createElement('button');
-                btn2.className = "btn-action py-3 px-4 rounded-lg font-retro text-xs text-[var(--retro-orange)] border-[var(--retro-orange)] hover:bg-[var(--retro-orange)] hover:text-black transition-colors";
-                btn2.innerText = "Un WAV - Mid price (50% d'acceptation)";
-                btn2.onclick = () => resolveCollabEvent(rapper, 50, 400 + Math.random() * 400);
+                const btn1 = _buildGtaChoiceCard({
+                    title: 'MP3 · Lease Standard',
+                    badge: 'SÛR',
+                    badgeStyle: 'background:rgba(16,185,129,0.16); border-color:rgba(16,185,129,0.45); color:#6ee7b7;',
+                    rightMain: `$${mp3Min.toLocaleString('fr-FR')} – $${mp3Max.toLocaleString('fr-FR')}`,
+                    rightSub: `+${repReward} REP`,
+                    probPct: 80,
+                    probLabel: '80% ACCEPTATION',
+                    probColor: '#34d399',
+                    choiceRgb: '16, 185, 129',
+                    onClick: () => resolveCollabEvent(rapper, 80, 150 + Math.random() * 150, isKnown)
+                });
 
-                const btn3 = document.createElement('button');
-                btn3.className = "btn-action py-3 px-4 rounded-lg font-retro text-xs text-[var(--retro-red)] border-[var(--retro-red)] hover:bg-[var(--retro-red)] hover:text-white transition-colors";
-                btn3.innerText = "Les Stems - Très cher (20% d'acceptation)";
-                btn3.onclick = () => resolveCollabEvent(rapper, 20, 1000 + Math.random() * 1500);
+                const btn2 = _buildGtaChoiceCard({
+                    title: 'WAV · Licence Exclusive',
+                    badge: 'ÉQUILIBRÉ',
+                    badgeStyle: 'background:rgba(245,158,11,0.16); border-color:rgba(245,158,11,0.45); color:#fcd34d;',
+                    rightMain: `$${wavMin.toLocaleString('fr-FR')} – $${wavMax.toLocaleString('fr-FR')}`,
+                    rightSub: `+${repReward} REP`,
+                    probPct: 50,
+                    probLabel: '50% ACCEPTATION',
+                    probColor: '#fbbf24',
+                    choiceRgb: '245, 158, 11',
+                    onClick: () => resolveCollabEvent(rapper, 50, 400 + Math.random() * 400, isKnown)
+                });
+
+                const btn3 = _buildGtaChoiceCard({
+                    title: 'Stems · Cession Master',
+                    badge: 'RISQUÉ · JACKPOT',
+                    badgeStyle: 'background:rgba(244,63,94,0.16); border-color:rgba(244,63,94,0.45); color:#fda4af;',
+                    rightMain: `$${stmMin.toLocaleString('fr-FR')} – $${stmMax.toLocaleString('fr-FR')}`,
+                    rightSub: `+${repReward} REP`,
+                    probPct: 20,
+                    probLabel: '20% ACCEPTATION',
+                    probColor: '#fb7185',
+                    choiceRgb: '244, 63, 94',
+                    onClick: () => resolveCollabEvent(rapper, 20, 1000 + Math.random() * 1500, isKnown)
+                });
 
                 choicesDiv.append(btn1, btn2, btn3);
 
-            } 
-            else if (eventType === 'vol') {
+            } else if (eventType === 'vol') {
                 const isKnown = Math.random() < 0.2;
-                const voleur = isKnown ? voleursConnus[Math.floor(Math.random() * voleursConnus.length)] : voleursPasConnus[Math.floor(Math.random() * voleursPasConnus.length)];
+                const voleur = pickVoleur(isKnown);
 
-                title.innerText = "🚨 VOL DE PROD";
-                title.className = "text-3xl font-retro text-[var(--retro-orange)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-orange)] shrink-0";
+                overlay.style.setProperty('--evt-rgb', '245, 158, 11');
+                if (eyebrow) eyebrow.textContent = 'DOSSIER JURIDIQUE · DROITS';
+                if (subtitle) {
+                    subtitle.textContent = 'COPYRIGHT ALERT · LITIGE PROD';
+                    subtitle.className = 'text-[10px] font-mono uppercase tracking-[0.26em] text-amber-400';
+                }
+                title.textContent = 'VOL DE PROD';
+                title.className = 'text-2xl sm:text-3xl font-extrabold tracking-[0.14em] uppercase text-white leading-tight mt-0.5';
+
+                if (artistSlot) {
+                    artistSlot.classList.remove('hidden');
+                    artistSlot.innerHTML = _renderEventArtistCard({
+                        name: voleur,
+                        isStar: isKnown,
+                        badgeText: isKnown ? '★ ARTISTE MAJEUR' : 'CONFLIT DROITS',
+                        badgeStyle: isKnown
+                            ? 'background:rgba(245,158,11,0.18); border-color:rgba(245,158,11,0.55); color:#fde68a;'
+                            : 'background:rgba(251,146,60,0.16); border-color:rgba(251,146,60,0.45); color:#fdba74;',
+                        subtext: 'Utilisation non créditée détectée sur SoundNet'
+                    });
+                }
+
                 const textesVol = [
-                    `Belek à toi, <span class="text-white font-bold text-base">"${voleur}"</span> t'a volé une prod pour son nouvel album. Que souhaites-tu faire ?`,
-        
-                    `Coup dur ! <span class="text-white font-bold text-base">"${voleur}"</span> a péta ton dernier beat sur SoundNet sans te créditer. On gère ça comment ?`,
-        
-                    `Une de tes vieilles loop s'est retrouvée sur le projet de <span class="text-white font-bold text-base">"${voleur}"</span>. Ça sent la douille...`
-    ];
+                    `Belek à toi, <span class="text-white font-semibold">${voleur}</span> t'a volé une prod pour son nouvel album sans aucun accord. Comment réagis-tu ?`,
+                    `Coup dur ! <span class="text-white font-semibold">${voleur}</span> a péta ton dernier beat sur SoundNet sans te créditer. On gère ça comment ?`,
+                    `Une de tes vieilles loops s'est retrouvée sur le projet de <span class="text-white font-semibold">${voleur}</span>. Ça sent la douille...`
+                ];
+                desc.innerHTML = textesVol[Math.floor(Math.random() * textesVol.length)];
 
-                // 2. On en tire une au hasard
-                const indexAleatoire = Math.floor(Math.random() * textesVol.length);
-                desc.innerHTML = textesVol[indexAleatoire];
+                const btn1 = _buildGtaChoiceCard({
+                    title: 'Porter Plainte',
+                    badge: '50/50 · PROCÈS',
+                    badgeStyle: 'background:rgba(239,68,68,0.16); border-color:rgba(239,68,68,0.45); color:#fca5a5;',
+                    rightMain: '+$1k–$2k / -$300–$600',
+                    rightSub: 'Lourde perte REP',
+                    probPct: 50,
+                    probLabel: '50% GAIN PROCÈS',
+                    probColor: '#f87171',
+                    choiceRgb: '239, 68, 68',
+                    onClick: () => resolveTheftEvent('plainte', voleur)
+                });
 
-                const btn1 = document.createElement('button');
-                btn1.className = "btn-minimal py-3 px-4 rounded-lg text-xs tracking-widest";
-                btn1.innerText = "Porter plainte";
-                btn1.onclick = () => resolveTheftEvent('plainte', voleur);
+                const btn2 = _buildGtaChoiceCard({
+                    title: 'Arrangement à l\'Amiable',
+                    badge: 'RÉGLO',
+                    badgeStyle: 'background:rgba(16,185,129,0.16); border-color:rgba(16,185,129,0.45); color:#6ee7b7;',
+                    rightMain: '-$50 – -$200',
+                    rightSub: '+10 REP GARANTI',
+                    probPct: 100,
+                    probLabel: '100% RÉSOLU',
+                    probColor: '#34d399',
+                    choiceRgb: '16, 185, 129',
+                    onClick: () => resolveTheftEvent('amiable', voleur)
+                });
 
-                const btn2 = document.createElement('button');
-                btn2.className = "btn-minimal py-3 px-4 rounded-lg text-xs tracking-widest";
-                btn2.innerText = "Ne rien faire";
-                btn2.onclick = () => resolveTheftEvent('rien', voleur);
-
-                const btn3 = document.createElement('button');
-                btn3.className = "btn-minimal py-3 px-4 rounded-lg text-xs tracking-widest";
-                btn3.innerText = "Arrangement à l'amiable";
-                btn3.onclick = () => resolveTheftEvent('amiable', voleur);
+                const btn3 = _buildGtaChoiceCard({
+                    title: 'Ne Rien Faire',
+                    badge: 'PASSIF',
+                    badgeStyle: 'background:rgba(148,163,184,0.16); border-color:rgba(148,163,184,0.38); color:#cbd5e1;',
+                    rightMain: '-$100 – -$500',
+                    rightSub: '-50 à -200 FANS',
+                    probPct: 25,
+                    probLabel: 'MANQUE À GAGNER',
+                    probColor: '#94a3b8',
+                    choiceRgb: '148, 163, 184',
+                    onClick: () => resolveTheftEvent('rien', voleur)
+                });
 
                 choicesDiv.append(btn1, btn2, btn3);
 
-            } 
-            else if (eventType === 'badbuzz') {
-                const cancelled = rappersCancel[Math.floor(Math.random() * rappersCancel.length)];
+            } else if (eventType === 'badbuzz') {
+                const cancelled = pickCancelRapper();
+                const repLost = Math.max(2, Math.floor(state.rep * 0.15));
+                const follLost = Math.floor(state.followers * 0.05);
 
-                title.innerText = "❌ BAD BUZZ";
-                title.className = "text-3xl font-retro text-[var(--retro-red)] mb-4 tracking-widest uppercase drop-shadow-[0_0_8px_var(--retro-red)] shrink-0";
+                overlay.style.setProperty('--evt-rgb', '244, 63, 94');
+                if (eyebrow) eyebrow.textContent = 'DOSSIER CRISE · RÉSEAUX';
+                if (subtitle) {
+                    subtitle.textContent = 'PR CRISIS · DOMMAGES RÉPUTATION';
+                    subtitle.className = 'text-[10px] font-mono uppercase tracking-[0.26em] text-rose-400';
+                }
+                title.textContent = 'BAD BUZZ';
+                title.className = 'text-2xl sm:text-3xl font-extrabold tracking-[0.14em] uppercase text-white leading-tight mt-0.5';
+
+                if (artistSlot) {
+                    artistSlot.classList.remove('hidden');
+                    artistSlot.innerHTML = _renderEventArtistCard({
+                        name: cancelled,
+                        isStar: false,
+                        badgeText: 'SCANDALE VIRAL',
+                        badgeStyle: 'background:rgba(244,63,94,0.18); border-color:rgba(244,63,94,0.55); color:#fda4af;',
+                        subtext: `Impact estimé : -${repLost} REP · -${follLost.toLocaleString('fr-FR')} Followers`
+                    });
+                }
+
                 const textesBuzz = [
-                    `Le bourbier... Tu as failli collaborer avec <span class="text-white font-bold text-base">"${cancelled}"</span>. La rumeur a fuité sur SoundNet. Vous perdez en crédibilité.`,
-                    `Aïe... Une vieille photo de toi en studio avec <span class="text-white font-bold text-base">"${cancelled}"</span> vient de refaire surface. La commu ne pardonne pas.`,
-                    `Un thread vient d'exposed <span class="text-white font-bold text-base">"${cancelled}"</span>. Ton nom est cité en tant que co-prod sur un de ses sons maudits. La sauce est totale.`,
-                    `Pendant un live douteux, <span class="text-white font-bold text-base">"${cancelled}"</span> a lâché une dinguerie sur ta prod. L'extrait tourne en boucle, ton image en prend un coup.`,
-                    `Une vidéo leakée montre <span class="text-white font-bold text-base">"${cancelled}"</span> dans un sale état avec ton instru en fond sonore. Internet fait le raccourci.`,
-                    `Tu te fais taguer dans un drama monumental impliquant <span class="text-white font-bold text-base">"${cancelled}"</span>. T'as rien demandé, mais le tribunal de X a déjà tranché.`,
-                    `Le label de <span class="text-white font-bold text-base">"${cancelled}"</span> vient de sombrer suite à un scandale de Gambling. Ton nom apparaît dans leurs factures récentes...`
+                    `Le bourbier... Tu as failli collaborer avec <span class="text-white font-semibold">${cancelled}</span>. La rumeur a fuité sur SoundNet. Vous perdez en crédibilité.`,
+                    `Aïe... Une vieille photo de toi en studio avec <span class="text-white font-semibold">${cancelled}</span> vient de refaire surface. La commu ne pardonne pas.`,
+                    `Un thread vient d'exposed <span class="text-white font-semibold">${cancelled}</span>. Ton nom est cité en tant que co-prod sur un de ses sons maudits. La sauce est totale.`,
+                    `Pendant un live douteux, <span class="text-white font-semibold">${cancelled}</span> a lâché une dinguerie sur ta prod. L'extrait tourne en boucle, ton image en prend un coup.`,
+                    `Une vidéo leakée montre <span class="text-white font-semibold">${cancelled}</span> dans un sale état avec ton instru en fond sonore. Internet fait le raccourci.`,
+                    `Tu te fais taguer dans un drama monumental impliquant <span class="text-white font-semibold">${cancelled}</span>. T'as rien demandé, mais le tribunal de X a déjà tranché.`,
+                    `Le label de <span class="text-white font-semibold">${cancelled}</span> vient de sombrer suite à un scandale de Gambling. Ton nom apparaît dans leurs factures récentes...`
                 ];
                 desc.innerHTML = textesBuzz[Math.floor(Math.random() * textesBuzz.length)];
 
-                const btn1 = document.createElement('button');
-                btn1.className = "btn-action py-3 px-4 rounded-lg font-retro text-xs text-white bg-[var(--retro-red)] border-[var(--retro-red)]";
-                btn1.innerText = "La honte... (Fermer)";
-                btn1.onclick = () => {
-                    // Au lieu d'une sanction fixe, on retire 15% de la REP et 5% des followers.
-                // Le Math.max garantit qu'on perd au minimum 2 points en early-game.
-                const repLost = Math.max(2, Math.floor(state.rep * 0.15));
-                const follLost = Math.floor(state.followers * 0.05);
-                    state.rep = Math.max(0, state.rep - repLost);
-                    state.followers = Math.max(0, state.followers - follLost);
-                    showToast(`Bad Buzz avec ${cancelled} : -${repLost} REP | -${follLost} Followers`, "error");
-                    checkAchievement('cancel_culture', () => true);
-                    playError();
-                    closeRandomEvent();
-                };
+                const btn1 = _buildGtaChoiceCard({
+                    title: 'Encaisser le Coup',
+                    badge: 'CRISE INÉVITABLE',
+                    badgeStyle: 'background:rgba(244,63,94,0.22); border-color:rgba(244,63,94,0.55); color:#fecdd3;',
+                    rightMain: `-${repLost} REP`,
+                    rightSub: `-${follLost.toLocaleString('fr-FR')} FANS`,
+                    probPct: 100,
+                    probLabel: 'FERMER LE DOSSIER',
+                    probColor: '#fb7185',
+                    choiceRgb: '244, 63, 94',
+                    onClick: () => {
+                        state.rep = Math.max(0, state.rep - repLost);
+                        state.followers = Math.max(0, state.followers - follLost);
+                        showToast(`Bad Buzz avec ${cancelled} : -${repLost} REP | -${follLost} Followers`, "error");
+                        checkAchievement('cancel_culture', () => true);
+                        playError();
+                        closeRandomEvent();
+                    }
+                });
 
                 choicesDiv.appendChild(btn1);
             }
         }
 
-        function resolveCollabEvent(rapper, chance, rawPrice) {
+        function resolveCollabEvent(rapper, chance, rawPrice, isKnown = false) {
             if (Math.random() * 100 <= chance) {
-                const finalPrice = Math.floor(rawPrice * state.multiplier);
-                logMoney(finalPrice, `Collab: ${rapper}`);
-                state.rep += 10;
+                const starMult = isKnown ? 1.8 : 1.0;
+                const repGain = isKnown ? 15 : 10;
+                const finalPrice = Math.floor(rawPrice * (state.multiplier || 1.0) * starMult);
+                logMoney(finalPrice, `Collab${isKnown ? ' ★' : ''}: ${rapper}`);
+                state.rep += repGain;
+                const starTag = isKnown ? ' ★' : '';
                 const succesCollab = [
-                `${rapper} a validé direct ! +$${finalPrice} | +10 REP`,
-                `Virement reçu de ${rapper}. Le mix part ce soir ! +$${finalPrice} | +10 REP`
+                    `${rapper}${starTag} a validé direct ! +$${finalPrice} | +${repGain} REP`,
+                    `Virement reçu de ${rapper}${starTag}. Le mix part ce soir ! +$${finalPrice} | +${repGain} REP`
                 ];
                 showToast(succesCollab[Math.floor(Math.random() * succesCollab.length)], "success");
-                
                 playSuccess();
             } else {
                 showToast(`${rapper} t'a lu et t'a ghosté. C'était trop cher pour lui.`, "info");
@@ -29862,15 +30312,15 @@ document.addEventListener('mouseover', (e) => {
                     const winAmt = Math.floor(1000 + Math.random() * 1000);
                     logMoney(winAmt, `Procès gagné contre ${voleur}`);
                     checkAchievement('avocat_du_diable', () => true);
-                    showToast(`Procès gagné ! +$${winAmt} (Mais -20 REP pour avoir balancé)`, "success");
+                    showToast(`Procès gagné ! +$${winAmt} (Mais -90% REP pour avoir balancé)`, "success");
                     playSuccess();
                 } else {
                     const lossAmt = Math.floor(300 + Math.random() * 300);
                     logMoney(-lossAmt, `Frais d'avocats perdus`);
-                    showToast(`Procès perdu... Les frais t'ont coûté $${lossAmt}. (-20 REP)`, "error");
+                    showToast(`Procès perdu... Les frais t'ont coûté $${lossAmt}.`, "error");
                     playError();
                 }
-            } 
+            }
             else if (action === 'rien') {
                 const lossAmt = Math.floor(100 + Math.random() * 400);
                 const follLost = Math.floor(50 + Math.random() * 150);
@@ -29878,7 +30328,7 @@ document.addEventListener('mouseover', (e) => {
                 state.followers = Math.max(0, state.followers - follLost);
                 showToast(`Tu t'es fait marcher dessus. -$${lossAmt} | -${follLost} Followers`, "error");
                 playError();
-            } 
+            }
             else if (action === 'amiable') {
                 const lossAmt = Math.floor(50 + Math.random() * 150);
                 logMoney(-lossAmt, `Arrangement avec ${voleur}`);
@@ -29894,35 +30344,37 @@ document.addEventListener('mouseover', (e) => {
             const overlay = document.getElementById('event-overlay');
             overlay.style.opacity = '0';
             overlay.style.pointerEvents = 'none';
-            
-            // --- NOUVEAU : Période de grâce de 4 heures in-game (~48 sec IRL) ---
+
+            // --- Période de grâce de 4 heures in-game (~48 sec IRL) ---
             state.cooldowns.eventGracePeriod = getTotalMins() + 240;
-            
+
             updateHUD();
             saveGame();
-            
+
             setTimeout(() => {
                 overlay.classList.add('hidden');
-                state.isEventActive = false; 
+                state.isEventActive = false;
             }, 300);
         }
 
         function pickRapper(isKnown) {
-            let pool = isKnown ? rappersConnusPool : rappersPasConnusPool;
-            const source = isKnown ? rappersConnus : rappersPasConnus;
-
-            if (pool.length === 0) {
-                pool = [...source].sort(() => Math.random() - 0.5);
-                if (isKnown) rappersConnusPool = pool;
-                else rappersPasConnusPool = pool;
-            }
-
-            const picked = pool.shift();
-            if (isKnown) rappersConnusPool = pool;
-            else rappersPasConnusPool = pool;
-
-            return picked;
+            return isKnown
+                ? _drawFromEventPool('rappersConnus', rappersConnus)
+                : _drawFromEventPool('rappersPasConnus', rappersPasConnus);
         }
+
+        function pickVoleur(isKnown) {
+            return isKnown
+                ? _drawFromEventPool('voleursConnus', voleursConnus)
+                : _drawFromEventPool('voleursPasConnus', voleursPasConnus);
+        }
+
+        function pickCancelRapper() {
+            return _drawFromEventPool('rappersCancel', rappersCancel);
+        }
+
+        window.triggerRandomEvent = triggerRandomEvent;
+        window.closeRandomEvent = closeRandomEvent;
 
         // ==========================================
         // TRACK REVIEW SYSTEM
