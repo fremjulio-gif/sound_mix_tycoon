@@ -16028,12 +16028,14 @@ const DEFAULT_STATE = {
             };
 
             if (typeof window.startFpsCameraTransition === 'function') {
-                // Sauvegarde position pré-PC pour retour naturel
-                window._prePcPos = currentRoomAvatar ? currentRoomAvatar.position.clone() : new THREE.Vector3(-2.1, -1, -1.9);
-                // Plongée POV fluide face au moniteur AbleStudio (-2.2, 1.25, -4.05)
+                const isPro = (window.activeStudioLocation === 'pro_studio');
+                // Sauvegarde position pré-PC pour retour naturel devant le bureau ou la console SSL
+                const defaultStand = isPro ? new THREE.Vector3(2.15, -1, -0.1) : new THREE.Vector3(-2.1, -1, -1.9);
+                window._prePcPos = currentRoomAvatar ? currentRoomAvatar.position.clone() : defaultStand;
+                // Plongée POV fluide face au moniteur (Chambre: -2.2, 1.26, -3.48 / Studio Pro SSL: 3.35, 1.12, -0.1 face +X)
                 window.startFpsCameraTransition({
-                    toPos: new THREE.Vector3(-2.2, 1.26, -3.48),
-                    toYaw: 0,
+                    toPos: isPro ? new THREE.Vector3(3.35, 1.12, -0.1) : new THREE.Vector3(-2.2, 1.26, -3.48),
+                    toYaw: isPro ? -Math.PI / 2 : 0,
                     toPitch: -0.02,
                     toFov: 44,
                     duration: 480,
@@ -16053,19 +16055,28 @@ const DEFAULT_STATE = {
             playTone(300, 'sawtooth', 0.1, 0.05);
 
             if (typeof window.startFpsCameraTransition === 'function' && currentRoomAvatar) {
-                const backPos = window._prePcPos ? window._prePcPos.clone() : new THREE.Vector3(-2.1, -1, -1.9);
-                // S'assure que le joueur est hors collision devant le bureau
+                const isPro = (window.activeStudioLocation === 'pro_studio');
+                const safeFallback = isPro ? new THREE.Vector3(2.15, -1, -0.1) : new THREE.Vector3(-2.1, -1, -1.9);
+                const backPos = window._prePcPos ? window._prePcPos.clone() : safeFallback;
+                // S'assure que le joueur est hors collision devant le bureau / la console SSL
                 if (typeof checkCollision === 'function' && checkCollision(backPos.x, backPos.z)) {
-                    backPos.set(-1.6, -1, -1.55);
+                    if (isPro) backPos.set(2.15, -1, -0.1);
+                    else backPos.set(-1.6, -1, -1.55);
                 }
                 currentRoomAvatar.position.set(backPos.x, -1, backPos.z);
-                camera.position.set(-2.2, 1.26, -3.48);
+                if (isPro) {
+                    camera.position.set(3.35, 1.12, -0.1);
+                    camera.rotation.set(-0.02, -Math.PI / 2, 0, 'YXZ');
+                } else {
+                    camera.position.set(-2.2, 1.26, -3.48);
+                    camera.rotation.set(-0.02, 0, 0, 'YXZ');
+                }
                 camera.fov = 44;
                 camera.updateProjectionMatrix();
                 window.startFpsCameraTransition({
                     toPos: new THREE.Vector3(backPos.x, 1.45, backPos.z),
-                    toYaw: 0.12,
-                    toPitch: -0.06,
+                    toYaw: isPro ? -Math.PI / 2 : 0.12,
+                    toPitch: isPro ? -0.04 : -0.06,
                     toFov: window.getBaseFpsFov ? window.getBaseFpsFov() : (isMobile ? 82 : 68),
                     duration: 440,
                     lockMovement: true
