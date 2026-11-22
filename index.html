@@ -39,35 +39,81 @@
                 opacity: 0.7;
             }
 
-            /* 2. Top Bar Unifiée en mode OS (Zéro chevauchement avec Quitter / Paramètres) */
+            /* 2. Top Bar Unifiée en mode OS (Zéro chevauchement avec Quitter / Paramètres, Zéro débordement) */
+            html, body {
+                max-width: 100vw !important;
+                overflow: hidden !important;
+            }
+            #pc-ui-layer {
+                max-width: 100vw !important;
+                overflow: hidden !important;
+            }
+            #hud {
+                overflow: hidden !important;
+                box-sizing: border-box !important;
+                max-width: calc(100vw - 12px) !important;
+            }
+            #hud > div:nth-child(2) {
+                min-width: 0 !important;
+                overflow: hidden !important;
+            }
             @media (min-width: 768px) {
+                #hud,
                 body.os-active #hud {
                     top: 12px !important;
                     min-height: 50px !important;
                     height: 50px !important;
-                    padding: 4px 18px !important;
-                    gap: 18px !important;
+                    padding: 4px clamp(10px, 1.3vw, 18px) !important;
+                    gap: clamp(6px, 1vw, 16px) !important;
                     border-radius: 9999px !important;
                     width: max-content !important;
-                    max-width: calc(100vw - 168px) !important;
+                    max-width: calc(100vw - 156px) !important;
+                    overflow: hidden !important;
+                    z-index: 2000 !important;
+                }
+                body.os-active #hud {
                     background: rgba(11, 13, 21, 0.86) !important;
                     backdrop-filter: blur(22px) saturate(160%) !important;
                     -webkit-backdrop-filter: blur(22px) saturate(160%) !important;
                     border: 1px solid rgba(255, 255, 255, 0.13) !important;
                     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55) !important;
-                    z-index: 2000 !important;
+                }
+                #hud > div:nth-child(2) {
+                    gap: clamp(4px, 0.85vw, 16px) !important;
+                    flex-shrink: 1 !important;
+                }
+                #hud > div:nth-child(2) > div {
+                    padding-left: clamp(4px, 0.5vw, 10px) !important;
+                    padding-right: clamp(4px, 0.5vw, 10px) !important;
+                    flex-shrink: 1 !important;
+                }
+                #hud [role="progressbar"] {
+                    min-width: clamp(48px, 5.2vw, 94px) !important;
+                }
+                #hud-name,
+                body.os-active #hud-name {
+                    font-size: clamp(0.68rem, 0.85vw, 0.78rem) !important;
+                    max-width: clamp(68px, 8vw, 118px) !important;
+                    overflow: hidden !important;
+                    text-overflow: ellipsis !important;
+                    white-space: nowrap !important;
                 }
                 body.os-active #hud-avatar {
                     width: 34px !important;
                     height: 34px !important;
                 }
-                body.os-active #hud-name {
-                    font-size: 0.75rem !important;
-                }
+                #hud-money,
+                #hud-foll,
+                #hud-streak,
+                #hud-rep-num,
+                #hud-hype-num,
                 body.os-active #hud-money,
                 body.os-active #hud-foll,
                 body.os-active #hud-streak {
-                    font-size: 0.85rem !important;
+                    font-size: clamp(0.70rem, 0.92vw, 0.86rem) !important;
+                }
+                #hud > div:nth-child(2) span {
+                    font-size: clamp(0.64rem, 0.82vw, 0.80rem);
                 }
                 body.os-active #btn-quit-pc {
                     top: 12px !important;
@@ -94,27 +140,47 @@
                     border: 1px solid rgba(255, 255, 255, 0.14) !important;
                 }
             }
+            @media (min-width: 768px) and (max-width: 1260px) {
+                #hud div[onclick*="'streak'"] span:last-child {
+                    display: none !important;
+                }
+            }
+            @media (min-width: 768px) and (max-width: 1020px) {
+                #hud-name,
+                #hud div[onclick*="'streak'"] {
+                    display: none !important;
+                }
+                #hud > div:nth-child(3) {
+                    display: none !important;
+                }
+            }
 
-            /* 3. Desktop Bento Layout Propre & Aéré */
+            /* 3. Desktop Bento Layout Propre & Aéré (Zéro débordement horizontal) */
             @media (min-width: 768px) {
                 #desktop-content {
                     z-index: 10 !important;
                     display: flex !important;
                     flex-direction: column !important;
                     gap: 14px !important;
-                    padding: 74px 28px 94px 28px !important;
+                    padding: 74px clamp(12px, 2vw, 28px) 94px clamp(12px, 2vw, 28px) !important;
+                    width: 100% !important;
+                    max-width: 100vw !important;
+                    box-sizing: border-box !important;
                     overflow: hidden !important;
                 }
                 #desktop-icons-container {
                     display: flex !important;
                     flex-direction: row !important;
+                    flex-wrap: wrap !important;
                     justify-content: center !important;
                     align-items: center !important;
-                    gap: 14px !important;
+                    gap: clamp(4px, 0.7vw, 10px) !important;
                     margin: 0 auto !important;
-                    padding: 6px 14px !important;
+                    padding: 6px clamp(8px, 1vw, 12px) !important;
                     width: fit-content !important;
-                    border-radius: 18px !important;
+                    max-width: 100% !important;
+                    box-sizing: border-box !important;
+                    border-radius: 16px !important;
                     background: rgba(12, 15, 24, 0.65) !important;
                     border: 1px solid rgba(255, 255, 255, 0.09) !important;
                     backdrop-filter: blur(18px) !important;
@@ -123,12 +189,13 @@
                 #desktop-icons-container .desktop-icon {
                     width: auto !important;
                     flex-direction: row !important;
-                    gap: 8px !important;
+                    gap: 6px !important;
                     margin: 0 !important;
-                    padding: 6px 12px !important;
-                    border-radius: 12px !important;
+                    padding: 5px clamp(7px, 0.8vw, 11px) !important;
+                    border-radius: 10px !important;
                     background: rgba(255, 255, 255, 0.03) !important;
                     border: 1px solid transparent !important;
+                    flex-shrink: 0 !important;
                 }
                 #desktop-icons-container .desktop-icon:hover {
                     background: rgba(129, 140, 248, 0.16) !important;
@@ -136,12 +203,13 @@
                     transform: translateY(-1px) !important;
                 }
                 #desktop-icons-container .desktop-icon .icon-box svg {
-                    width: 18px !important;
-                    height: 18px !important;
+                    width: 16px !important;
+                    height: 16px !important;
                 }
                 #desktop-icons-container .desktop-icon span {
                     margin-top: 0 !important;
-                    font-size: 11px !important;
+                    font-size: clamp(9.5px, 0.82vw, 11px) !important;
+                    white-space: nowrap !important;
                 }
                 .widgets-container {
                     flex: 1 1 0 !important;
@@ -229,7 +297,7 @@
                 resize: none !important;
             }
 
-            /* 5. Dock Inférieur Studio (Toujours accessible au-dessus des fenêtres) */
+            /* 5. Dock Inférieur Studio (Toujours accessible au-dessus des fenêtres, zéro débordement) */
             #taskbar-bottom {
                 position: fixed !important;
                 bottom: 14px !important;
@@ -238,19 +306,24 @@
                 z-index: 1200 !important;
                 height: 60px !important;
                 width: max-content !important;
-                max-width: calc(100vw - 32px) !important;
-                padding: 0 14px !important;
+                max-width: calc(100vw - 24px) !important;
+                overflow-x: auto !important;
+                scrollbar-width: none !important;
+                box-sizing: border-box !important;
+                padding: 0 12px !important;
                 border-radius: 20px !important;
                 background: rgba(11, 13, 22, 0.88) !important;
                 border: 1px solid rgba(255, 255, 255, 0.14) !important;
                 box-shadow: 0 16px 42px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
                 backdrop-filter: blur(26px) saturate(180%) !important;
                 -webkit-backdrop-filter: blur(26px) saturate(180%) !important;
-                gap: 8px !important;
+                gap: clamp(5px, 0.7vw, 8px) !important;
             }
+            #taskbar-bottom::-webkit-scrollbar { display: none; }
             #taskbar-bottom .taskbar-btn {
-                width: 44px !important;
-                height: 44px !important;
+                width: clamp(38px, 4.2vw, 44px) !important;
+                height: clamp(38px, 4.2vw, 44px) !important;
+                flex-shrink: 0 !important;
                 border-radius: 12px !important;
                 background: rgba(255, 255, 255, 0.04);
                 border: 1px solid rgba(255, 255, 255, 0.06);
@@ -300,10 +373,11 @@
                     max-width: calc(100vw - 156px) !important;
                 }
                 body:not(.os-active) #hud {
-                    min-height: 54px !important;
-                    padding: 6px 20px !important;
+                    min-height: 52px !important;
+                    padding: 5px clamp(10px, 1.4vw, 20px) !important;
                     border-radius: 9999px !important;
                     top: 14px !important;
+                    overflow: hidden !important;
                 }
                 body:not(.os-active) #hud-avatar {
                     width: 38px !important;
@@ -535,6 +609,8 @@
             #fps-lock-banner {
                 position: fixed;
                 bottom: max(20px, env(safe-area-inset-bottom));
+                max-width: calc(100vw - 24px);
+                box-sizing: border-box;
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 44;
@@ -1397,8 +1473,8 @@
             align-items: stretch;
         }
         #app-daw { 
-            width: min(1000px, 94vw);
-            min-width: 720px;
+            width: min(1000px, calc(100vw - 24px));
+            min-width: min(720px, calc(100vw - 24px));
             /* S'adapte exactement à la hauteur dispo */
             max-height: calc(100dvh - 120px - env(safe-area-inset-top));
         }
@@ -4735,7 +4811,7 @@
                 <span id="hud-name" class="font-bold font-retro text-lg tracking-widest uppercase text-white hidden md:block">Artiste</span>
             </div>
             
-            <div class="flex items-center justify-between md:justify-center flex-1 md:flex-initial gap-1 md:gap-8 font-retro text-xs md:text-sm text-[var(--text-muted)] tracking-wider whitespace-nowrap overflow-visible opacity-100 w-auto">
+            <div class="flex items-center justify-between md:justify-center flex-1 md:flex-initial gap-1 md:gap-4 font-retro text-xs md:text-sm text-[var(--text-muted)] tracking-wider whitespace-nowrap overflow-hidden min-w-0 opacity-100 w-auto">
                 
                 <div class="flex items-center gap-1 md:gap-2 cursor-pointer px-1 md:px-3 py-2 hover:bg-white/5 rounded-lg transition-colors" onclick="toggleTooltip('money', this)" onmouseenter="!isMobile && showTooltip('money', this)" onmouseleave="!isMobile && hideTooltip()">
                     <span class="text-[var(--retro-green)] drop-shadow-[0_0_5px_var(--retro-green)] text-[10px] md:text-lg">$$$</span> <span id="hud-money" class="text-white text-[11px] md:text-lg">0</span>
