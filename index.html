@@ -4782,14 +4782,15 @@
                     </div>
                 </div>
 
-                <!-- Sélection Personnage & Tenue (Synchronisée avec les 4 Paliers de Studio) -->
+                <!-- Progression Personnage par Palier (Niv.1 Street → Niv.2 Beatmaker → Niv.3 Cyber-DJ → 42e Producer) -->
                 <div class="w-full mb-5 stagger-in" style="animation-delay: 0.24s;">
-                    <div class="flex items-center justify-between mb-2">
-                        <label class="text-[10px] font-mono text-slate-300/80 uppercase tracking-[0.24em]">Personnage &amp; Tenue</label>
-                        <span id="login-avatar-tier-badge" class="text-[9px] font-mono text-amber-300/85 uppercase tracking-widest">Palier 1 · Évolutif</span>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="text-[10px] font-mono text-slate-300/80 uppercase tracking-[0.22em]">Personnage du Palier</label>
+                        <span id="login-avatar-tier-badge" class="text-[9px] font-mono text-amber-300/90 uppercase tracking-widest">Niv.1 · Street_MC</span>
                     </div>
-                    <div class="grid grid-cols-4 gap-2.5" id="avatar-container"></div>
-                    <div id="login-variant-strip" class="grid grid-cols-3 gap-1.5 mt-2.5"></div>
+                    <div id="login-tier-track" class="grid grid-cols-4 gap-1 mb-2.5"></div>
+                    <div class="grid grid-cols-4 gap-2" id="avatar-container"></div>
+                    <div id="login-variant-caption" class="text-[10px] font-mono text-slate-400 mt-1.5 text-center truncate">Variante : Underground Red</div>
                 </div>
 
                 <!-- Bouton Principal Cinéma -->
@@ -6216,17 +6217,17 @@
              MODALE ÉVOLUTION D'AVATAR : CHOIX DE LA VARIANTE D'HABITS AU NOUVEAU PALIER
              ========================================================================= -->
         <div id="avatar-variant-modal" class="fixed inset-0 z-[100010] bg-black/85 backdrop-blur-md hidden items-center justify-center p-3 sm:p-5">
-            <div class="w-full max-w-3xl max-h-[92dvh] overflow-y-auto bg-[#0c0f18] border border-amber-400/40 rounded-2xl shadow-[0_28px_90px_rgba(0,0,0,0.95)] p-4 sm:p-6">
+            <div class="w-full max-w-4xl max-h-[92dvh] overflow-y-auto bg-[#0c0f18] border border-amber-400/40 rounded-2xl shadow-[0_28px_90px_rgba(0,0,0,0.95)] p-4 sm:p-6">
                 <div class="flex items-start justify-between gap-3 border-b border-white/10 pb-3 mb-3">
                     <div>
                         <div id="av-modal-eyebrow" class="text-[10px] font-mono uppercase tracking-[0.26em] text-amber-300 font-bold">GARDE-ROBE · PALIER 1</div>
-                        <h2 id="av-modal-title" class="text-lg sm:text-2xl font-bold text-white tracking-wider uppercase mt-0.5">CHOISIS TON STYLE</h2>
-                        <p id="av-modal-sub" class="text-xs text-gray-400 mt-1">Sélectionne librement n'importe quelle tenue débloquée pour ton artiste (même modèle, nouveau look &amp; thème synchronisé).</p>
+                        <h2 id="av-modal-title" class="text-lg sm:text-2xl font-bold text-white tracking-wider uppercase mt-0.5">CHOISIS TA VARIANTE</h2>
+                        <p id="av-modal-sub" class="text-xs text-gray-400 mt-1">Chaque palier de studio débloque un nouveau personnage et ses 4 variantes de style.</p>
                     </div>
                     <button type="button" onclick="window.closeAvatarVariantModal && window.closeAvatarVariantModal()" class="shrink-0 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/15 border border-white/15 text-gray-300 hover:text-white font-mono text-xs cursor-pointer">✕</button>
                 </div>
                 <div id="av-modal-tier-tabs" class="grid grid-cols-4 gap-1.5 mb-4"></div>
-                <div id="av-variant-cards" class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-5"></div>
+                <div id="av-variant-cards" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5 mb-5"></div>
                 <div class="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
                     <button type="button" id="av-variant-confirm-btn" onclick="window.confirmAvatarVariantModal()" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-amber-500 hover:brightness-110 text-white font-mono font-bold text-xs uppercase tracking-widest shadow-[0_0_24px_rgba(129,140,248,0.45)] cursor-pointer transition-all active:scale-95">
                         ✨ ÉQUIPER CE STYLE
@@ -6431,7 +6432,7 @@
 window.isBooting = true;
 
 const DEFAULT_STATE = {
-            username: '', activeCharacter: 0,
+            username: '', activeCharacter: 2,
             money: 100, rep: 10, followers: 0, energy: 100,
             inspi: 100,
             lastGenres: [],
@@ -18188,36 +18189,52 @@ document.addEventListener('mouseover', (e) => {
         };
         
     // ==========================================
-    // CRÉATION DES AVATARS ÉVOLUTIFS (4 PALIERS DE ROOMS × 3 VARIANTES D'HABITS)
+    // CRÉATION DES AVATARS PAR PALIER DE ROOM (1 PERSO SIGNATURE PAR PALIER × 4 VARIANTES)
+    // Niv.1 = Street_MC (model 2) → Niv.2 = Beatmaker (model 0) → Niv.3 = Cyber-DJ (model 1) → Niv.4 = Producer (model 3)
     // ==========================================
     const AVATAR_TIER_META = {
-        1: { label: 'CHAMBRE GALÈRE · NIV.1', subtitle: 'Tenue underground de tes débuts' },
-        2: { label: 'HOME-STUDIO RÉNOVÉ · NIV.2', subtitle: 'Streetwear propre & premier équipement studio' },
-        3: { label: 'STUDIO ARCHITECTE · NIV.3', subtitle: 'Style créateur & direction artistique affirmée' },
-        4: { label: 'STUDIO PRO 42E ÉTAGE · NIV.4', subtitle: 'Allure Mogul & finitions luxe du 42e étage' }
+        1: { modelIdx: 2, charName: 'Street_MC', shortTab: 'Niv.1 Street', label: 'CHAMBRE GALÈRE · NIV.1', subtitle: 'Street_MC — Casquette, chaîne & style underground de tes débuts' },
+        2: { modelIdx: 0, charName: 'Beatmaker', shortTab: 'Niv.2 Beatmaker', label: 'HOME-STUDIO RÉNOVÉ · NIV.2', subtitle: 'Beatmaker — Casque studio, hoodie & Doc Martens' },
+        3: { modelIdx: 1, charName: 'Cyber-DJ', shortTab: 'Niv.3 Cyber-DJ', label: 'STUDIO ARCHITECTE · NIV.3', subtitle: 'Cyber-DJ — Visière néon & coupe avant-gardiste' },
+        4: { modelIdx: 3, charName: 'Producer', shortTab: '42e Producer', label: 'STUDIO PRO 42E ÉTAGE · NIV.4', subtitle: 'Exec Producer — Costume, lunettes noires & prestige du 42e étage' }
     };
 
-    // 4 paliers × 3 variantes dérivées (même visage/modèle de perso, habits & accessoires évolutifs)
+    const MODEL_TO_TIER = { 2: 1, 0: 2, 1: 3, 3: 4 };
+
+    window.getModelIndexForTier = function(tier) {
+        const t = Math.max(1, Math.min(4, parseInt(tier, 10) || 1));
+        return (AVATAR_TIER_META[t] && typeof AVATAR_TIER_META[t].modelIdx === 'number') ? AVATAR_TIER_META[t].modelIdx : 2;
+    };
+
+    // 4 paliers (1 perso dédié par palier) × 4 variantes d'habits/couleurs sur ce même modèle
     const AVATAR_TIER_VARIANTS = {
+        // PALIER 1 : Street_MC (Casquette + Chaîne + Sneakers)
         1: [
-            { name: 'Underground Hoodie', tag: 'Brut · Débuts', desc: 'Hoodie sombre délavé & basiques de nuit.', torso: '#312e81', sleeves: '#312e81', pants: '#1f2937', shoes: '#d1d5db', accent: '#6366f1', metal: '#94a3b8', bg: '#16172b' },
-            { name: 'Late-Night Vintage', tag: 'Chaud · Lo-Fi', desc: 'Sweat bordeaux vintage & pantalon cargo.', torso: '#7c2d12', sleeves: '#7c2d12', pants: '#292524', shoes: '#e7e5e4', accent: '#f59e0b', metal: '#d97706', bg: '#241410' },
-            { name: 'Raw Monochrome', tag: 'Béton · Indé', desc: 'Ensemble gris anthracite brut & détails blancs.', torso: '#27272a', sleeves: '#3f3f46', pants: '#18181b', shoes: '#f4f4f5', accent: '#94a3b8', metal: '#cbd5e1', bg: '#14161c' }
+            { name: 'Underground Red', tag: 'Original', desc: 'Casquette rouge, hoodie forêt, chaîne or & sneakers blanches.', torso: '#065f46', sleeves: '#065f46', pants: '#1f2937', shoes: '#f8fafc', accent: '#34d399', cap: '#dc2626', metal: '#fbbf24', bg: '#064e3b' },
+            { name: 'Midnight Asphalt', tag: 'Dark Street', desc: 'Casquette noire mate, sweat anthracite & chaîne argent.', torso: '#27272a', sleeves: '#18181b', pants: '#111318', shoes: '#d4d4d8', accent: '#94a3b8', cap: '#111111', metal: '#e2e8f0', bg: '#14161c' },
+            { name: 'Brooklyn Amber', tag: 'Vintage 90s', desc: 'Casquette ocre, veste bordeaux délavée & sneakers crème.', torso: '#7f1d1d', sleeves: '#991b1b', pants: '#292524', shoes: '#fef3c7', accent: '#f59e0b', cap: '#d97706', metal: '#fbbf24', bg: '#26140c' },
+            { name: 'Cobalt Freestyle', tag: 'Urban Blue', desc: 'Casquette marine, sweat bleu cobalt & détails platine.', torso: '#1d4ed8', sleeves: '#1e3a8a', pants: '#0f172a', shoes: '#e0f2fe', accent: '#38bdf8', cap: '#1e3a8a', metal: '#cbd5e1', bg: '#0c1c36' }
         ],
+        // PALIER 2 : Beatmaker (Chignon + Casque Studio + Doc Martens)
         2: [
-            { name: 'Varsity Studio', tag: 'Bicolore · Clean', desc: 'Veste varsity manches contrastées & liseré néon.', torso: '#1e3a8a', sleeves: '#e2e8f0', pants: '#111827', shoes: '#f8fafc', accent: '#38bdf8', metal: '#e2e8f0', bg: '#0c1c36' },
-            { name: 'Techwear Clean', tag: 'Urbain · Sangle', desc: 'Veste utilitaire pétrole, sangle studio & semelles nettes.', torso: '#0f766e', sleeves: '#134e4a', pants: '#0f172a', shoes: '#e2e8f0', accent: '#2dd4bf', metal: '#94a3b8', bg: '#0a2224' },
-            { name: 'Warm Analog', tag: 'Velours · Rétro', desc: 'Surchemise terracotta / crème & touches laiton.', torso: '#9a3412', sleeves: '#7c2d12', pants: '#1c1917', shoes: '#fef3c7', accent: '#fb923c', metal: '#d4af37', bg: '#26140c' }
+            { name: 'Indigo Session', tag: 'Original', desc: 'Hoodie indigo studio, casque noir mat & Doc Martens jaunes.', torso: '#3730a3', sleeves: '#3730a3', pants: '#1e1b4b', shoes: '#111111', accent: '#818cf8', hp: '#111111', metal: '#fbbf24', bg: '#1e1b4b' },
+            { name: 'Warm Vinyl', tag: 'Lo-Fi Chaud', desc: 'Pull terracotta, manches sable & casque finitions laiton.', torso: '#9a3412', sleeves: '#d6c3ab', pants: '#292524', shoes: '#451a03', accent: '#fb923c', hp: '#292524', metal: '#d4af37', bg: '#26140c' },
+            { name: 'Emerald Tape', tag: 'Analogique', desc: 'Sweat vert émeraude, casque chrome & surpiqûre néon.', torso: '#047857', sleeves: '#065f46', pants: '#111827', shoes: '#111111', accent: '#34d399', hp: '#334155', metal: '#34d399', bg: '#08201a' },
+            { name: 'Monochrome Clean', tag: 'Minimal', desc: 'Ensemble noir & crème épuré avec casque blanc studio.', torso: '#18181b', sleeves: '#f4f0e8', pants: '#09090b', shoes: '#111111', accent: '#e2e8f0', hp: '#f8fafc', metal: '#e2e8f0', bg: '#16181f' }
         ],
+        // PALIER 3 : Cyber-DJ (Bande Néon + Visière Cyber + Sneakers)
         3: [
-            { name: 'Architecte Minimal', tag: 'Sable · Chrome', desc: 'Manteau structuré sable/obsidienne, montre & finitions chrome.', torso: '#18181b', sleeves: '#d6c3ab', pants: '#111318', shoes: '#f5f0e6', accent: '#eab308', metal: '#e2e8f0', bg: '#1c1914' },
-            { name: 'Cyber Couture', tag: 'Néon · Futuriste', desc: 'Veste designer obsidienne, bande LED violette & détails cyber.', torso: '#1e1b4b', sleeves: '#0f172a', pants: '#09090b', shoes: '#c084fc', accent: '#a855f7', metal: '#c084fc', bg: '#190f2e' },
-            { name: 'Parisian Label', tag: 'Blazer · Chic', desc: 'Blazer bleu nuit / émeraude, montre argent & coupe pro.', torso: '#064e3b', sleeves: '#065f46', pants: '#0f172a', shoes: '#f8fafc', accent: '#34d399', metal: '#cbd5e1', bg: '#08201a' }
+            { name: 'Cyan Pulse', tag: 'Original', desc: 'Tenue pétrole sombre, visière & bande néon cyan électrique.', torso: '#0e7490', sleeves: '#0e7490', pants: '#0f172a', shoes: '#f8fafc', accent: '#00e5ff', glow: '#00e5ff', metal: '#38bdf8', bg: '#0f172a' },
+            { name: 'Ultraviolet Synth', tag: 'Mike Dean', desc: 'Veste obsidienne, visière & bande néon cyber-violet.', torso: '#1e1b4b', sleeves: '#0f0a1f', pants: '#09090b', shoes: '#e9d5ff', accent: '#a855f7', glow: '#a855f7', metal: '#c084fc', bg: '#190f2e' },
+            { name: 'Solar Amber', tag: 'Warm Cyber', desc: 'Ensemble graphite, visière ambre doré & semelles sable.', torso: '#27272a', sleeves: '#18181b', pants: '#111318', shoes: '#fef3c7', accent: '#f59e0b', glow: '#f59e0b', metal: '#fbbf24', bg: '#211608' },
+            { name: 'Matrix Emerald', tag: 'Acid Synth', desc: 'Tenue carbone noir & visière laser vert émeraude.', torso: '#064e3b', sleeves: '#090d0b', pants: '#050807', shoes: '#d1fae5', accent: '#34d399', glow: '#34d399', metal: '#34d399', bg: '#061c14' }
         ],
+        // PALIER 4 : Exec Producer (Costume ouvert + Chemise + Lunettes noires + Doc Martens)
         4: [
-            { name: '42e Mogul Gold', tag: 'Or 24K · Prestige', desc: 'Costume obsidienne, revers satinés, chaîne & casque Or 24K.', torso: '#0c0d12', sleeves: '#11131a', pants: '#090a0f', shoes: '#18181b', accent: '#f59e0b', metal: '#fbbf24', bg: '#1f1608', glow: '#f59e0b' },
-            { name: 'Mike Dean Cyber-Violet', tag: 'Synth · Ambre', desc: 'Veste cuir studio noire, liseré Cyber-Violet & reflets ambre.', torso: '#140b24', sleeves: '#0d0917', pants: '#09090b', shoes: '#a855f7', accent: '#a855f7', metal: '#f59e0b', bg: '#1b0b2e', glow: '#a855f7' },
-            { name: 'Diamond Executive', tag: 'Platine · Diamant', desc: 'Ensemble blanc glacier, platine miroir & éclat Diamant Cyan.', torso: '#e2e8f0', sleeves: '#f8fafc', pants: '#1e293b', shoes: '#ffffff', accent: '#38bdf8', metal: '#bae6fd', bg: '#0a1e2e', glow: '#38bdf8' }
+            { name: '42e Mogul Classic', tag: 'Original', desc: 'Costume anthracite obsidienne, chemise blanche & lunettes noires.', torso: '#27272a', sleeves: '#27272a', pants: '#18181b', shirt: '#ffffff', shoes: '#111111', accent: '#f59e0b', shades: '#111111', metal: '#fbbf24', bg: '#1c1917' },
+            { name: 'Midnight Velvet', tag: 'Velours Nuit', desc: 'Costume bleu nuit profond, chemise noire & détails or 24K.', torso: '#172554', sleeves: '#172554', pants: '#0f172a', shirt: '#0f172a', shoes: '#111111', accent: '#38bdf8', shades: '#09090b', metal: '#fbbf24', bg: '#0b1429' },
+            { name: 'Ivory Executive', tag: 'Blanc Platine', desc: 'Costume blanc glacier, chemise obsidienne & finitions platine.', torso: '#e2e8f0', sleeves: '#f1f5f9', pants: '#1e293b', shirt: '#18181b', shoes: '#111111', accent: '#bae6fd', shades: '#111111', metal: '#e2e8f0', bg: '#0f1d2e' },
+            { name: 'Crimson Label Boss', tag: 'Prestige Or', desc: 'Costume bordeaux luxe, chemise ivoire & éclat or 24K.', torso: '#7f1d1d', sleeves: '#6b1414', pants: '#18181b', shirt: '#faf8f3', shoes: '#111111', accent: '#fb7185', shades: '#111111', metal: '#fbbf24', bg: '#330b14' }
         ]
     };
 
@@ -18230,33 +18247,31 @@ document.addEventListener('mouseover', (e) => {
 
     window.getActiveAvatarVariantSpec = function() {
         const st = (typeof state !== 'undefined' && state) ? state : null;
-        const t = st ? (st.studioUnlocked && st.activeLocation === 'pro_studio' ? Math.max(4, st.avatarTier || 4) : (st.avatarTier || st.roomTier || 1)) : 1;
-        const v = st ? (st.avatarVariant || 0) : 0;
+        const t = st ? (Number(st.avatarTier) || (st.studioUnlocked ? 4 : (Number(st.roomTier) || 1))) : 1;
+        const v = st ? (Number(st.avatarVariant) || 0) : 0;
         return window.getAvatarVariantSpec(t, v);
     };
 
     function createAvatarGroup(styleIndex, tier = null, variant = null) {
     const group = new THREE.Group();
-    const sIdx = Math.max(0, Math.min(3, parseInt(styleIndex, 10) || 0));
     const resolvedTier = (tier !== null && tier !== undefined)
         ? Math.max(1, Math.min(4, parseInt(tier, 10) || 1))
-        : ((typeof state !== 'undefined' && state && state.avatarTier) ? state.avatarTier : 1);
+        : (MODEL_TO_TIER[styleIndex] || 1);
+    const sIdx = (tier !== null && tier !== undefined)
+        ? window.getModelIndexForTier(resolvedTier)
+        : Math.max(0, Math.min(3, parseInt(styleIndex, 10) || 0));
     const resolvedVariant = (variant !== null && variant !== undefined)
-        ? Math.max(0, Math.min(2, parseInt(variant, 10) || 0))
-        : ((typeof state !== 'undefined' && state && typeof state.avatarVariant === 'number') ? state.avatarVariant : 0);
+        ? Math.max(0, Math.min(3, parseInt(variant, 10) || 0))
+        : 0;
 
     const varSpec = window.getAvatarVariantSpec(resolvedTier, resolvedVariant);
 
-    // 1. Couleurs (même peau / modèle par perso, tenue pilotée par le palier & la variante!)
+    // 1. Couleurs du personnage du palier & de sa variante choisie
     const skinColors = ['#FFCBA4', '#8D4E28', '#F0C080', '#C68642'];
-    const baseClothesFallback = ['#3730a3', '#0e7490', '#065f46', '#27272a'];
-    // En Tier 1 Variant 0, on conserve l'ADN chromatique original du personnage
-    const useBaseIdentity = (resolvedTier === 1 && resolvedVariant === 0);
-
-    const torsoHex = useBaseIdentity ? baseClothesFallback[sIdx] : varSpec.torso;
-    const sleeveHex = useBaseIdentity ? baseClothesFallback[sIdx] : varSpec.sleeves;
-    const pantsHex = useBaseIdentity ? baseClothesFallback[sIdx] : varSpec.pants;
-    const shoeHex = useBaseIdentity ? '#f8fafc' : varSpec.shoes;
+    const torsoHex = varSpec.torso;
+    const sleeveHex = varSpec.sleeves || varSpec.torso;
+    const pantsHex = varSpec.pants || varSpec.torso;
+    const shoeHex = varSpec.shoes || '#f8fafc';
 
     const skinMat = new THREE.MeshStandardMaterial({ color: skinColors[sIdx], roughness: 0.6 });
     const clothesMat = new THREE.MeshStandardMaterial({ color: torsoHex, roughness: resolvedTier >= 3 ? 0.55 : 0.9, metalness: resolvedTier >= 4 ? 0.18 : 0.04 });
@@ -18424,49 +18439,52 @@ document.addEventListener('mouseover', (e) => {
     // DÉTAILS SPÉCIFIQUES SELON LE STYLE
     // ==========================================
 
-    if (styleIndex === 0) {
+    if (sIdx === 0) {
         addBlockyHairAndBun('#1a1a1a');
 
         // Buste subtil : une plaque très fine, très légèrement inclinée pour se fondre dans le torse
         const bust = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.18, 0.03), clothesMat);
         bust.position.set(0, 0.64, 0.135); 
-        bust.rotation.x = -0.12; // Légère inclinaison vers le bas
-        // Volontairement sans "addEdges" pour que la lumière crée le volume sans marquer un trait dur
+        bust.rotation.x = -0.12;
         group.add(bust);
 
         const hpGroup = new THREE.Group();
-            
-            // 1. On agrandit le rayon de l'arceau (de 0.50 à 0.54) et on le remonte un poil (+0.08 en Y)
-            const headband = new THREE.Mesh(new THREE.TorusGeometry(0.54, 0.045, 16, 32, Math.PI), blackMat);
-            headband.position.set(0, 0.08, 0);
-            
-            const cupGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.12, 16);
-            
-            // 2. On écarte les écouteurs sur les côtés (de 0.46 à 0.52) pour ne pas rentrer dans la masse de cheveux
-            const cupL = new THREE.Mesh(cupGeo, blackMat); 
-            cupL.rotation.z = Math.PI/2; 
-            cupL.position.set(-0.52, 0.02, 0);
-            
-            const cupR = new THREE.Mesh(cupGeo, blackMat); 
-            cupR.rotation.z = Math.PI/2; 
-            cupR.position.set(0.52, 0.02, 0);
-            
-            addEdges(cupL); addEdges(cupR);
-            hpGroup.add(headband, cupL, cupR);
-            headGroup.add(hpGroup);
+        const hpMat = new THREE.MeshStandardMaterial({ color: varSpec.hp || '#111111', roughness: 0.45, metalness: 0.25 });
 
-    } else if (styleIndex === 1) {
-        const cyanEmissive = new THREE.MeshStandardMaterial({ color: '#00e5ff', emissive: '#00e5ff', emissiveIntensity: 1 });
-        const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.41, 0.26), cyanEmissive);
+        const headband = new THREE.Mesh(new THREE.TorusGeometry(0.54, 0.045, 16, 32, Math.PI), hpMat);
+        headband.position.set(0, 0.08, 0);
+
+        const cupGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.12, 16);
+        const cupL = new THREE.Mesh(cupGeo, hpMat);
+        cupL.rotation.z = Math.PI/2;
+        cupL.position.set(-0.52, 0.02, 0);
+
+        const cupR = new THREE.Mesh(cupGeo, hpMat);
+        cupR.rotation.z = Math.PI/2;
+        cupR.position.set(0.52, 0.02, 0);
+
+        // Finition anneau métal/accent sur les écouteurs
+        const ringGeo = new THREE.TorusGeometry(0.14, 0.018, 8, 20);
+        const ringL = new THREE.Mesh(ringGeo, metalMat); ringL.rotation.y = Math.PI/2; ringL.position.set(-0.582, 0.02, 0);
+        const ringR = new THREE.Mesh(ringGeo, metalMat); ringR.rotation.y = Math.PI/2; ringR.position.set(0.582, 0.02, 0);
+
+        addEdges(cupL); addEdges(cupR);
+        hpGroup.add(headband, cupL, cupR, ringL, ringR);
+        headGroup.add(hpGroup);
+
+    } else if (sIdx === 1) {
+        const neonHex = varSpec.glow || varSpec.accent || '#00e5ff';
+        const cyberEmissive = new THREE.MeshStandardMaterial({ color: neonHex, emissive: neonHex, emissiveIntensity: 1.05 });
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.41, 0.26), cyberEmissive);
         stripe.position.set(-0.12, 0.57, 0);
         group.add(stripe);
 
-        const glasses = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.15, 0.08), cyanEmissive);
+        const glasses = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.15, 0.08), cyberEmissive);
         glasses.position.set(0, -0.05, 0.32);
         headGroup.add(glasses);
 
-    } else if (styleIndex === 2) {
-        const capMat = new THREE.MeshStandardMaterial({ color: '#dc2626', roughness: 0.9 });
+    } else if (sIdx === 2) {
+        const capMat = new THREE.MeshStandardMaterial({ color: varSpec.cap || '#dc2626', roughness: 0.9 });
         const capBase = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.15, 0.62), capMat);
         capBase.position.set(0, 0.35, 0);
         addEdges(capBase);
@@ -18476,113 +18494,60 @@ document.addEventListener('mouseover', (e) => {
         addEdges(visor);
         headGroup.add(capBase, visor);
 
-        const goldMat = new THREE.MeshStandardMaterial({ color: '#fbbf24', metalness: 0.8, roughness: 0.3 });
-        const chain = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.02, 8, 16), goldMat);
+        const chain = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.02, 8, 16), metalMat);
         chain.position.set(0, 0.68, 0.1);
         chain.rotation.x = Math.PI / 2.5;
 
-        const pendant = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.04), goldMat);
+        const pendant = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.04), metalMat);
         pendant.position.set(0, 0.54, 0.16);
         addEdges(pendant);
         group.add(chain, pendant);
 
-    } else if (styleIndex === 3) {
+    } else if (sIdx === 3) {
         addBlockyHairAndBun('#4a3018');
-        const whiteMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.9 });
-        
-        // Torse principal - Chemise plate
-        const shirt = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.41, 0.26), whiteMat);
+        const shirtMat = new THREE.MeshStandardMaterial({ color: varSpec.shirt || '#ffffff', roughness: 0.85 });
+        const shadesMat = new THREE.MeshStandardMaterial({ color: varSpec.shades || '#111111', roughness: 0.2, metalness: 0.5 });
+
+        // Torse principal - Chemise sous costume ouvert
+        const shirt = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.41, 0.26), shirtMat);
         shirt.position.set(0, 0.57, 0);
         group.add(shirt);
 
-        // Buste subtil pour la veste ouverte : un groupe incliné
+        // Buste subtil pour la veste ouverte
         const bustGroup = new THREE.Group();
         bustGroup.position.set(0, 0.64, 0.135);
-        bustGroup.rotation.x = -0.12; // Légère inclinaison pour la douceur
+        bustGroup.rotation.x = -0.12;
 
-        const shirtBust = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 0.035), whiteMat);
-        
+        const shirtBust = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 0.035), shirtMat);
         const jacketBustL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.03), clothesMat);
         jacketBustL.position.set(-0.15, 0, 0);
-        
         const jacketBustR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.03), clothesMat);
         jacketBustR.position.set(0.15, 0, 0);
-
         bustGroup.add(shirtBust, jacketBustL, jacketBustR);
         group.add(bustGroup);
 
-        // Lunettes
+        // Pin's / pochette métal prestige sur le revers du Producer
+        const lapelPin = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.03, 0.025), metalMat);
+        lapelPin.position.set(0.15, 0.67, 0.145);
+        group.add(lapelPin);
+
+        // Lunettes Producer
         const shadeGeo = new THREE.BoxGeometry(0.22, 0.14, 0.04);
-        const shadeL = new THREE.Mesh(shadeGeo, blackMat);
+        const shadeL = new THREE.Mesh(shadeGeo, shadesMat);
         shadeL.position.set(-0.16, -0.05, 0.32);
-        const shadeR = new THREE.Mesh(shadeGeo, blackMat);
+        const shadeR = new THREE.Mesh(shadeGeo, shadesMat);
         shadeR.position.set(0.16, -0.05, 0.32);
 
-        const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.04, 0.04), blackMat);
+        const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.04, 0.04), metalMat);
         bridge.position.set(0, -0.05, 0.32);
 
         const armGeo = new THREE.BoxGeometry(0.04, 0.04, 0.3);
-        const armL = new THREE.Mesh(armGeo, blackMat);
+        const armL = new THREE.Mesh(armGeo, shadesMat);
         armL.position.set(-0.28, -0.05, 0.15);
-        const armR = new THREE.Mesh(armGeo, blackMat);
+        const armR = new THREE.Mesh(armGeo, shadesMat);
         armR.position.set(0.28, -0.05, 0.15);
 
         headGroup.add(shadeL, shadeR, bridge, armL, armR);
-    }
-
-    // ==========================================
-    // HABITS & ACCESSOIRES DÉRIVÉS SELON LE PALIER DE ROOM (NIV. 1 -> 4)
-    // ==========================================
-    if (resolvedTier === 1 && resolvedVariant === 1) {
-        // Col montant / écharpe chill Late-Night Vintage
-        const scarf = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.08, 0.28), accentMat);
-        scarf.position.set(0, 0.78, 0.01); addEdges(scarf); group.add(scarf);
-    }
-
-    if (resolvedTier === 2) {
-        // Niv.2 Home-Studio Rénové : Col varsity / liseré central + sangle studio (techwear)
-        const collar = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.065, 0.27), accentMat);
-        collar.position.set(0, 0.77, 0); addEdges(collar); group.add(collar);
-        const zipLine = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.38, 0.265), metalMat);
-        zipLine.position.set(0, 0.57, 0); group.add(zipLine);
-        if (resolvedVariant === 1) {
-            // Bandoulière / sangle techwear diagonale
-            const strap = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.48, 0.275), blackMat);
-            strap.position.set(0, 0.57, 0); strap.rotation.z = 0.58; group.add(strap);
-        }
-    }
-
-    if (resolvedTier === 3) {
-        // Niv.3 Studio Architecte : Revers de veste structurés + col roulé / sous-pull contrasté + liseré LED fin
-        const innerTop = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.39, 0.262), new THREE.MeshStandardMaterial({ color: resolvedVariant === 0 ? '#f5f0e6' : '#09090b', roughness: 0.7 }));
-        innerTop.position.set(0, 0.57, 0); group.add(innerTop);
-        [-0.12, 0.12].forEach(lx => {
-            const lapel = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.36, 0.27), accentMat);
-            lapel.position.set(lx, 0.59, 0.005); lapel.rotation.z = lx < 0 ? -0.14 : 0.14;
-            group.add(lapel);
-        });
-        // Broche / badge métal sur la poitrine
-        const pin = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.055, 0.03), metalMat);
-        pin.position.set(0.14, 0.67, 0.14); group.add(pin);
-    }
-
-    if (resolvedTier >= 4) {
-        // Niv.4 Studio Pro 42e Étage (Mogul) : Épaulettes luxe, revers satinés lumineux, chaîne & médaillon 24K/Platine!
-        [-0.24, 0.24].forEach(sx => {
-            const shoulder = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.07, 0.28), metalMat);
-            shoulder.position.set(sx, 0.77, 0); addEdges(shoulder); group.add(shoulder);
-        });
-        [-0.13, 0.13].forEach(lx => {
-            const lapel = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.38, 0.272), accentMat);
-            lapel.position.set(lx, 0.58, 0.006); lapel.rotation.z = lx < 0 ? -0.12 : 0.12;
-            group.add(lapel);
-        });
-        // Chaîne & médaillon 42e Étage (Or 24K / Ambre / Diamant)
-        const mogulChain = new THREE.Mesh(new THREE.TorusGeometry(0.155, 0.022, 10, 20), metalMat);
-        mogulChain.position.set(0, 0.70, 0.105); mogulChain.rotation.x = Math.PI / 2.45;
-        const medallion = new THREE.Mesh(new THREE.OctahedronGeometry(0.065, 0), accentMat);
-        medallion.position.set(0, 0.55, 0.17);
-        group.add(mogulChain, medallion);
     }
 
     return group;
@@ -18629,10 +18594,10 @@ document.addEventListener('mouseover', (e) => {
         window.generateAvatarImage = generateAvatarImage;
 
         const avatars = [
-            { id: 'Beatmaker', img: generateAvatarImage(0, 1, 0) },
-            { id: 'Cyber-DJ', img: generateAvatarImage(1, 1, 0) },
+            { id: 'Beatmaker', img: generateAvatarImage(0, 2, 0) },
+            { id: 'Cyber-DJ', img: generateAvatarImage(1, 3, 0) },
             { id: 'Street_MC', img: generateAvatarImage(2, 1, 0) },
-            { id: 'Exec_Prod', img: generateAvatarImage(3, 1, 0) }
+            { id: 'Exec_Prod', img: generateAvatarImage(3, 4, 0) }
         ];
 
         // ==========================================
@@ -18671,9 +18636,21 @@ document.addEventListener('mouseover', (e) => {
 
         window.refreshActiveAvatarVisuals = function(tierOverride = null, variantOverride = null) {
             const st = (typeof state !== 'undefined' && state) ? state : null;
-            const charIdx = (st && typeof st.activeCharacter === 'number') ? st.activeCharacter : (typeof selectedAvatarIndex === 'number' ? selectedAvatarIndex : 0);
-            const t = (tierOverride !== null && tierOverride !== undefined) ? tierOverride : (st && st.avatarTier ? st.avatarTier : (st && st.roomTier ? st.roomTier : 1));
-            const v = (variantOverride !== null && variantOverride !== undefined) ? variantOverride : (st && typeof st.avatarVariant === 'number' ? st.avatarVariant : 0);
+            const t = Math.max(1, Math.min(4, parseInt(
+                (tierOverride !== null && tierOverride !== undefined)
+                    ? tierOverride
+                    : (st && st.avatarTier ? st.avatarTier : (st && st.studioUnlocked ? 4 : (st && st.roomTier ? st.roomTier : 1))),
+                10
+            ) || 1));
+            const v = Math.max(0, Math.min(3, parseInt(
+                (variantOverride !== null && variantOverride !== undefined)
+                    ? variantOverride
+                    : (st && typeof st.avatarVariant === 'number' ? st.avatarVariant : 0),
+                10
+            ) || 0));
+            const charIdx = window.getModelIndexForTier(t);
+            if (st) st.activeCharacter = charIdx;
+            if (typeof selectedAvatarIndex !== 'undefined') selectedAvatarIndex = charIdx;
 
             if (currentRoomAvatar) {
                 spawnRoomAvatar(charIdx, t, v, true);
@@ -18689,10 +18666,12 @@ document.addEventListener('mouseover', (e) => {
 
         window.applyAvatarVariant = function(tier, variant, persist = true) {
             const t = Math.max(1, Math.min(4, parseInt(tier, 10) || 1));
-            const v = Math.max(0, Math.min(2, parseInt(variant, 10) || 0));
+            const v = Math.max(0, Math.min(3, parseInt(variant, 10) || 0));
+            const charIdx = window.getModelIndexForTier(t);
             if (typeof state !== 'undefined' && state) {
                 state.avatarTier = t;
                 state.avatarVariant = v;
+                state.activeCharacter = charIdx;
                 state.avatarTierPrompted = Math.max(state.avatarTierPrompted || 1, t);
             }
             window.refreshActiveAvatarVisuals(t, v);
@@ -18744,35 +18723,33 @@ document.addEventListener('mouseover', (e) => {
 
             const meta = AVATAR_TIER_META[t] || AVATAR_TIER_META[1];
             const list = AVATAR_TIER_VARIANTS[t] || AVATAR_TIER_VARIANTS[1];
-            const charIdx = (st && typeof st.activeCharacter === 'number')
-                ? st.activeCharacter
-                : (typeof selectedAvatarIndex === 'number' ? selectedAvatarIndex : 0);
+            const charIdx = window.getModelIndexForTier(t);
 
             window._pendingVariantTier = t;
             window._pendingVariantIdx = (t === currentEquippedTier) ? currentEquippedVar : 0;
 
-            if (eyebrow) eyebrow.textContent = isManualOpen ? `GARDE-ROBE · ${meta.label}` : `NOUVEAU PALIER DÉBLOQUÉ · ${meta.label}`;
-            if (title) title.textContent = isManualOpen ? `CHANGER DE STYLE (PALIER ${t})` : `CHOISIS TON NOUVEAU STYLE (NIV. ${t})`;
-            if (sub) sub.textContent = `${meta.subtitle} — Tu peux changer librement entre tous tes paliers débloqués.`;
+            if (eyebrow) eyebrow.textContent = isManualOpen ? `GARDE-ROBE · ${meta.label}` : `NOUVEAU PERSO DÉBLOQUÉ · ${meta.label}`;
+            if (title) title.textContent = isManualOpen ? `STYLE ${meta.charName.toUpperCase()} (PALIER ${t})` : `BIENVENUE ${meta.charName.toUpperCase()} — CHOISIS TA VARIANTE`;
+            if (sub) sub.textContent = `${meta.subtitle}. Change librement entre tous tes paliers débloqués à tout moment.`;
 
-            // Onglets des 4 paliers (débloqués cliquables, futurs verrouillés 🔒)
+            // Onglets des 4 personnages / paliers (débloqués cliquables, futurs verrouillés 🔒)
             if (tabsEl) {
                 tabsEl.innerHTML = '';
-                const tabNames = ['NIV. 1', 'NIV. 2', 'NIV. 3', '42e PRO'];
-                [1, 2, 3, 4].forEach((tierNum, i) => {
+                [1, 2, 3, 4].forEach((tierNum) => {
                     const unlocked = tierNum <= maxUnlocked;
                     const isSelectedTab = tierNum === t;
+                    const tMeta = AVATAR_TIER_META[tierNum] || AVATAR_TIER_META[1];
                     const tb = document.createElement('button');
                     tb.type = 'button';
                     tb.disabled = !unlocked;
-                    tb.className = `py-2 px-1.5 rounded-lg font-mono text-[10px] font-bold uppercase tracking-wider border transition-all ${
+                    tb.className = `py-2 px-1.5 rounded-lg font-mono text-[10px] font-bold uppercase tracking-wider border transition-all truncate ${
                         isSelectedTab
                             ? 'bg-amber-500/25 border-amber-400 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.25)] cursor-pointer'
                             : unlocked
                                 ? 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10 hover:text-white cursor-pointer'
                                 : 'bg-black/40 border-white/5 text-gray-600 cursor-not-allowed'
                     }`;
-                    tb.textContent = unlocked ? tabNames[i] : `${tabNames[i]} 🔒`;
+                    tb.textContent = unlocked ? tMeta.shortTab : `${tMeta.shortTab} 🔒`;
                     if (unlocked) tb.onclick = () => window.openAvatarVariantModal(tierNum);
                     tabsEl.appendChild(tb);
                 });
@@ -18785,18 +18762,18 @@ document.addEventListener('mouseover', (e) => {
                 const isEquipped = (t === currentEquippedTier && idx === currentEquippedVar);
                 const card = document.createElement('button');
                 card.type = 'button';
-                card.className = `av-var-card text-left rounded-xl p-3 border transition-all cursor-pointer flex flex-col gap-2.5 ${isSelected ? 'border-amber-400 bg-white/10 shadow-[0_0_24px_rgba(251,191,36,0.3)]' : 'border-white/10 bg-black/50 hover:border-white/30'}`;
+                card.className = `av-var-card text-left rounded-xl p-2.5 sm:p-3 border transition-all cursor-pointer flex flex-col gap-2 ${isSelected ? 'border-amber-400 bg-white/10 shadow-[0_0_24px_rgba(251,191,36,0.3)]' : 'border-white/10 bg-black/50 hover:border-white/30'}`;
                 card.onclick = () => window.selectAvatarVariantPreview(idx);
                 card.innerHTML = `
                     <div class="relative w-full aspect-square rounded-lg overflow-hidden border border-white/10 bg-black/60">
                         <img src="${previewUrl}" alt="${vSpec.name}" class="w-full h-full object-cover" />
-                        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-black/75 border border-white/15 text-white">${vSpec.tag}</span>
-                        ${isEquipped ? '<span class="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[8px] font-mono font-bold uppercase tracking-wider bg-emerald-500/90 text-black">ACTIF</span>' : ''}
-                        <span class="absolute bottom-2 right-2 w-4 h-4 rounded-full border-2 border-white/80 shadow" style="background:${vSpec.accent}"></span>
+                        <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[8px] font-mono font-bold uppercase tracking-wider bg-black/75 border border-white/15 text-white">${vSpec.tag}</span>
+                        ${isEquipped ? '<span class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[8px] font-mono font-bold uppercase tracking-wider bg-emerald-500/90 text-black">ACTIF</span>' : ''}
+                        <span class="absolute bottom-1.5 right-1.5 w-3.5 h-3.5 rounded-full border-2 border-white/80 shadow" style="background:${vSpec.accent}"></span>
                     </div>
                     <div>
-                        <div class="font-mono text-xs font-bold text-white uppercase tracking-wider">${vSpec.name}</div>
-                        <p class="text-[11px] text-gray-400 leading-snug mt-1">${vSpec.desc}</p>
+                        <div class="font-mono text-[11px] font-bold text-white uppercase tracking-wider truncate">${vSpec.name}</div>
+                        <p class="text-[10px] text-gray-400 leading-snug mt-0.5">${vSpec.desc}</p>
                     </div>
                 `;
                 cardsEl.appendChild(card);
@@ -18810,67 +18787,110 @@ document.addEventListener('mouseover', (e) => {
             const t = window._pendingVariantTier || 1;
             const v = window._pendingVariantIdx || 0;
             const spec = window.getAvatarVariantSpec(t, v);
+            const meta = AVATAR_TIER_META[t] || AVATAR_TIER_META[1];
             window.applyAvatarVariant(t, v, true);
             window.closeAvatarVariantModal();
             try { if (typeof playSuccess === 'function') playSuccess(); } catch(e) {}
             if (typeof showToast === 'function' && spec) {
-                showToast(`✨ Style équipé : ${spec.name} (Palier ${t})`, 'success');
+                showToast(`✨ ${meta.charName} · ${spec.name} équipé !`, 'success');
             }
         };
 
-        // Synchronise les 4 portraits & les 3 puces de tenue sur la page d'accueil (#login-screen)
+        // Synchronise la barre de progression (Niv.1→4) et les 4 variantes du perso du palier actif sur #login-screen
+        window._loginUnlockedMaxTier = 1;
         window._loginSelectedTier = 1;
         window._loginSelectedVariant = 0;
         window._loginThumbCache = {};
-        window.syncLoginAvatarStyleUI = function(tier = 1, variant = 0) {
-            const t = Math.max(1, Math.min(4, parseInt(tier, 10) || 1));
-            const v = Math.max(0, Math.min(2, parseInt(variant, 10) || 0));
+        window.syncLoginAvatarStyleUI = function(unlockedMaxTier = 1, selectedTier = null, selectedVariant = 0) {
+            const maxT = Math.max(1, Math.min(4, parseInt(unlockedMaxTier, 10) || 1));
+            const rawT = (selectedTier !== null && selectedTier !== undefined) ? parseInt(selectedTier, 10) : maxT;
+            const t = Math.max(1, Math.min(maxT, rawT || maxT));
+            const v = Math.max(0, Math.min(3, parseInt(selectedVariant, 10) || 0));
+            const charIdx = window.getModelIndexForTier(t);
+            const meta = AVATAR_TIER_META[t] || AVATAR_TIER_META[1];
+            const list = AVATAR_TIER_VARIANTS[t] || AVATAR_TIER_VARIANTS[1];
+
+            window._loginUnlockedMaxTier = maxT;
             window._loginSelectedTier = t;
             window._loginSelectedVariant = v;
+            if (typeof selectedAvatarIndex !== 'undefined') selectedAvatarIndex = charIdx;
 
             const badge = document.getElementById('login-avatar-tier-badge');
             if (badge) {
-                const labels = { 1: 'Palier 1 · Évolutif', 2: 'Palier 2 · Rénové', 3: 'Palier 3 · Architecte', 4: 'Palier 4 · 42e Pro' };
-                badge.textContent = labels[t] || 'Palier 1 · Évolutif';
+                badge.textContent = t === 4 ? `42e Pro · ${meta.charName}` : `Niv.${t} · ${meta.charName}`;
             }
 
-            // Met à jour les 4 miniatures de personnages avec la tenue du palier & variante choisis
-            const cont = document.getElementById('avatar-container');
-            if (cont) {
-                const imgs = cont.querySelectorAll('img');
-                imgs.forEach((img, idx) => {
-                    const key = `${idx}_${t}_${v}`;
-                    if (!window._loginThumbCache[key]) {
-                        window._loginThumbCache[key] = (t === 1 && v === 0 && avatars[idx])
-                            ? avatars[idx].img
-                            : generateAvatarImage(idx, t, v, 192);
-                    }
-                    img.src = window._loginThumbCache[key];
-                });
-            }
-
-            // Affiche les 3 puces de variantes cliquables directement sous les 4 profils
-            const strip = document.getElementById('login-variant-strip');
-            if (strip) {
-                const list = AVATAR_TIER_VARIANTS[t] || AVATAR_TIER_VARIANTS[1];
-                strip.innerHTML = '';
-                list.forEach((vSpec, idx) => {
-                    const active = (idx === v);
+            // Barre des 4 paliers (débloqués cliquables, paliers supérieurs verrouillés 🔒)
+            const track = document.getElementById('login-tier-track');
+            if (track) {
+                track.innerHTML = '';
+                const shortLabels = ['Niv.1 Street', 'Niv.2 Beat', 'Niv.3 Cyber', '42e Prod'];
+                [1, 2, 3, 4].forEach((tierNum, i) => {
+                    const unlocked = tierNum <= maxT;
+                    const active = tierNum === t;
                     const b = document.createElement('button');
                     b.type = 'button';
-                    b.className = `px-2 py-1.5 rounded-lg border text-[9px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer truncate ${
+                    b.disabled = !unlocked;
+                    b.className = `px-1.5 py-1 rounded-lg border text-[9px] font-mono uppercase tracking-wider truncate transition-all ${
                         active
-                            ? 'bg-white/15 border-amber-400/80 text-white shadow-[0_0_12px_rgba(251,191,36,0.22)]'
-                            : 'bg-black/45 border-white/10 text-slate-400 hover:border-white/30 hover:text-slate-200'
+                            ? 'bg-amber-500/20 border-amber-400/80 text-amber-200 shadow-[0_0_10px_rgba(245,158,11,0.2)] cursor-pointer'
+                            : unlocked
+                                ? 'bg-white/5 border-white/15 text-slate-300 hover:bg-white/10 hover:text-white cursor-pointer'
+                                : 'bg-black/40 border-white/5 text-slate-600 cursor-not-allowed'
                     }`;
-                    b.onclick = () => {
-                        window._loginVariantTouched = true;
-                        window.syncLoginAvatarStyleUI(t, idx);
-                        try { if (typeof playTone === 'function') playTone(460 + idx * 80, 'sine', 0.06, 0.03); } catch(e) {}
-                    };
-                    b.innerHTML = `<span class="w-2 h-2 rounded-full shrink-0" style="background:${vSpec.accent}"></span><span class="truncate">${vSpec.name.split(' ')[0]}</span>`;
-                    strip.appendChild(b);
+                    b.textContent = unlocked ? shortLabels[i] : `${shortLabels[i]} 🔒`;
+                    if (unlocked) {
+                        b.onclick = () => {
+                            window._loginVariantTouched = true;
+                            window.syncLoginAvatarStyleUI(maxT, tierNum, 0);
+                            try { if (typeof playTone === 'function') playTone(440 + tierNum * 70, 'sine', 0.06, 0.03); } catch(e) {}
+                        };
+                    }
+                    track.appendChild(b);
                 });
+            }
+
+            // 4 cartes de variantes du personnage correspondant au palier actif dans #avatar-container
+            const cont = document.getElementById('avatar-container');
+            if (cont) {
+                cont.innerHTML = '';
+                list.forEach((vSpec, idx) => {
+                    const key = `${charIdx}_${t}_${idx}`;
+                    if (!window._loginThumbCache[key]) {
+                        window._loginThumbCache[key] = (idx === 0 && avatars[charIdx])
+                            ? avatars[charIdx].img
+                            : generateAvatarImage(charIdx, t, idx, 192);
+                    }
+                    const wrap = document.createElement('div');
+                    wrap.className = `avatar-sel aspect-square relative p-0 overflow-hidden flex items-center justify-center ${idx === v ? 'selected' : ''}`;
+                    wrap.dataset.idx = idx;
+                    wrap.title = `${meta.charName} · ${vSpec.name} (${vSpec.tag})`;
+                    wrap.onclick = () => {
+                        window._loginVariantTouched = true;
+                        window.syncLoginAvatarStyleUI(maxT, t, idx);
+                        try { if (typeof playBleep === 'function') playBleep(); } catch(e) {}
+                        if (typeof updateThemeColors === 'function') updateThemeColors();
+                    };
+
+                    const img = document.createElement('img');
+                    img.src = window._loginThumbCache[key];
+                    img.alt = `${meta.charName} - ${vSpec.name}`;
+                    img.className = 'w-full h-full object-cover pointer-events-none';
+                    wrap.appendChild(img);
+
+                    const dot = document.createElement('span');
+                    dot.className = 'absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full border border-white/80 pointer-events-none shadow';
+                    dot.style.background = vSpec.accent;
+                    wrap.appendChild(dot);
+
+                    cont.appendChild(wrap);
+                });
+            }
+
+            const caption = document.getElementById('login-variant-caption');
+            if (caption) {
+                const activeSpec = list[v] || list[0];
+                caption.textContent = `Variante ${v + 1}/4 · ${activeSpec.name} (${activeSpec.tag})`;
             }
         };
 
@@ -19758,7 +19778,7 @@ document.addEventListener('mouseover', (e) => {
         normalizeAchievementState();
 
         let easterEgg3AM = false;
-        let selectedAvatarIndex = 0;
+        let selectedAvatarIndex = 2;
         let currentDawGenre = 'drill';
         let currentDawVoice = 'm';
         let activeSettingsPanel = 'audio';
@@ -20409,25 +20429,10 @@ document.addEventListener('mouseover', (e) => {
         // ==========================================
         function initUI() {
             initClouds(); // Génération au lancement de l'interface
-            const cont = document.getElementById('avatar-container');
-            // Clear any accidental text nodes and rebuild avatar buttons programmatically
-            while (cont.firstChild) cont.removeChild(cont.firstChild);
-            avatars.forEach((a, i) => {
-                const wrap = document.createElement('div');
-                wrap.className = `avatar-sel aspect-square relative p-0 overflow-hidden flex items-center justify-center ${i===0? 'selected' : ''}`;
-                wrap.dataset.idx = i;
-                wrap.setAttribute('data-idx', i);
-                wrap.onclick = () => selectAvatar(i);
-
-                const img = document.createElement('img');
-                img.src = a.img;
-                img.alt = a.id || `avatar-${i}`;
-                img.className = 'w-full h-full object-cover pointer-events-none';
-                img.onerror = function() { this.style.border = '1px solid red'; };
-
-                wrap.appendChild(img);
-                cont.appendChild(wrap);
-            });
+            // Initialise la grille des 4 variantes du personnage de palier (Niv.1 = Street_MC par défaut)
+            if (typeof window.syncLoginAvatarStyleUI === 'function') {
+                window.syncLoginAvatarStyleUI(1, 1, 0);
+            }
             // --- LISTENERS CLAVIER PIANO ROLL ---
             window.addEventListener('keydown', (e) => {
                 const prWindow = document.getElementById('app-pianoroll');
@@ -21278,13 +21283,13 @@ document.addEventListener('mouseover', (e) => {
             // === PROFILS DEV PRÉ-CALIBRÉS (ACCÈS DIRECT TIERS 1, 2 & 3 + STUDIO PRO 42e) ===
             window.DEV_PRESET_PROFILES = {
                 DEV_T1: {
-                    username: 'DEV_T1', activeCharacter: 0, day: 1, timeMins: 570,
+                    username: 'DEV_T1', activeCharacter: 2, avatarTier: 1, avatarVariant: 0, day: 1, timeMins: 570,
                     money: 150, rep: 5, followers: 12, energy: 92, inspi: 85, hype: 30,
                     roomTier: 1, ownedFurniture: [],
                     stats: { tracks: 0, bangers: 0, flops: 0, totalEarned: 150 }
                 },
                 DEV_T2: {
-                    username: 'DEV_T2', activeCharacter: 1, day: 14, timeMins: 690,
+                    username: 'DEV_T2', activeCharacter: 0, avatarTier: 2, avatarVariant: 0, day: 14, timeMins: 690,
                     money: 2800, rep: 32, followers: 6500, energy: 90, inspi: 88, hype: 62,
                     roomTier: 2, ownedFurniture: ['rug', 'sofa', 'table'],
                     stats: { tracks: 3, bangers: 2, flops: 0, totalEarned: 6400 },
@@ -21295,7 +21300,7 @@ document.addEventListener('mouseover', (e) => {
                     ]
                 },
                 DEV_T3: {
-                    username: 'DEV_T3', activeCharacter: 2, day: 35, timeMins: 960,
+                    username: 'DEV_T3', activeCharacter: 1, avatarTier: 3, avatarVariant: 0, day: 35, timeMins: 960,
                     money: 25000, rep: 78, followers: 28000, energy: 95, inspi: 92, hype: 84,
                     roomTier: 3, ownedFurniture: ['rug', 'sofa', 'table', 'tv', 'rack_lamp', 'led_panel_l', 'led_panel_r', 'synth', 'guitar'],
                     stats: { tracks: 8, bangers: 6, flops: 1, totalEarned: 62000 },
@@ -21306,7 +21311,7 @@ document.addEventListener('mouseover', (e) => {
                     ]
                 },
                 DEV_STUDIO: {
-                    username: 'DEV_STUDIO', activeCharacter: 3, day: 60, timeMins: 1080,
+                    username: 'DEV_STUDIO', activeCharacter: 3, avatarTier: 4, avatarVariant: 0, day: 60, timeMins: 1080,
                     money: 120000, rep: 100, followers: 65000, energy: 96, inspi: 95, hype: 94,
                     roomTier: 3, studioUnlocked: true, activeLocation: 'pro_studio',
                     labelName: '42E RECORDS', signedArtists: ['kaelen', 'nora'], labelSinglesCount: 4,
@@ -21328,6 +21333,7 @@ document.addEventListener('mouseover', (e) => {
                     if (input && key) {
                         input.value = key;
                         avatarChanged = false;
+                        window._loginVariantTouched = false;
                         window.refreshLoginSessionPreview(false);
                     }
                 });
@@ -21350,7 +21356,11 @@ document.addEventListener('mouseover', (e) => {
                             chip.className = 'cinema-profile-chip';
                             chip.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span><span>${p.name}</span><span class="text-[9px] text-slate-400 font-mono">J${p.day}</span>`;
                             chip.onclick = () => {
-                                if (input) { input.value = p.name; window.refreshLoginSessionPreview(false); }
+                                if (input) {
+                                    input.value = p.name;
+                                    window._loginVariantTouched = false;
+                                    window.refreshLoginSessionPreview(false);
+                                }
                             };
                             recentWrap.appendChild(chip);
                         });
@@ -21420,17 +21430,12 @@ document.addEventListener('mouseover', (e) => {
                     if (sBadge) { sBadge.textContent = 'RESUME'; sBadge.className = 'text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 shrink-0'; }
                     if (btnLbl) btnLbl.textContent = 'REPRENDRE LA SESSION';
 
-                    // Synchronise visuellement l'avatar enregistré & sa tenue de palier
-                    const savedAv = parseInt(parsedSave.activeCharacter ?? parsedSave.avatar, 10);
-                    if (!avatarChanged && !isNaN(savedAv) && savedAv >= 0 && savedAv < avatars.length) {
-                        selectedAvatarIndex = savedAv;
-                        document.querySelectorAll('.avatar-sel').forEach(el => el.classList.remove('selected'));
-                        const avEl = document.querySelector(`.avatar-sel[data-idx="${savedAv}"]`);
-                        if (avEl) avEl.classList.add('selected');
-                    }
-                    const previewTier = parsedSave.studioUnlocked ? 4 : Math.max(Number(parsedSave.avatarTier) || 1, Number(parsedSave.roomTier) || 1);
-                    const previewVar = window._loginVariantTouched ? (window._loginSelectedVariant || 0) : (Number(parsedSave.avatarVariant) || 0);
-                    if (typeof window.syncLoginAvatarStyleUI === 'function') window.syncLoginAvatarStyleUI(previewTier, previewVar);
+                    // Synchronise le palier débloqué, le perso du palier et ses 4 variantes
+                    const maxTier = parsedSave.studioUnlocked ? 4 : Math.max(1, Number(parsedSave.roomTier) || 1, Number(parsedSave.avatarTier) || 1);
+                    const savedTier = Math.max(1, Math.min(maxTier, Number(parsedSave.avatarTier) || maxTier));
+                    const selTier = (window._loginVariantTouched && window._loginSelectedTier <= maxTier) ? window._loginSelectedTier : savedTier;
+                    const selVar = window._loginVariantTouched ? (window._loginSelectedVariant || 0) : (Number(parsedSave.avatarVariant) || 0);
+                    if (typeof window.syncLoginAvatarStyleUI === 'function') window.syncLoginAvatarStyleUI(maxTier, selTier, selVar);
                 } else {
                     if (typeof window.applyStudioLocation === 'function') window.applyStudioLocation('bedroom');
                     if (typeof window.applyRoomEvolutionTier === 'function') window.applyRoomEvolutionTier(1, false);
@@ -21439,7 +21444,7 @@ document.addEventListener('mouseover', (e) => {
                     if (sSub) sSub.textContent = 'Jour 1 · 08:00 · Studio de départ';
                     if (sBadge) { sBadge.textContent = 'NEW'; sBadge.className = 'text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300 shrink-0'; }
                     if (btnLbl) btnLbl.textContent = 'OUVRIR LA SESSION';
-                    if (typeof window.syncLoginAvatarStyleUI === 'function') window.syncLoginAvatarStyleUI(1, window._loginVariantTouched ? (window._loginSelectedVariant || 0) : 0);
+                    if (typeof window.syncLoginAvatarStyleUI === 'function') window.syncLoginAvatarStyleUI(1, 1, window._loginVariantTouched ? (window._loginSelectedVariant || 0) : 0);
                 }
 
                 // Applique l'ambiance 3D live (soit Auto=sauvegarde, soit choix manuel du joueur)
@@ -21459,7 +21464,10 @@ document.addEventListener('mouseover', (e) => {
 
             const loginInputEl = document.getElementById('login-username');
             if (loginInputEl) {
-                loginInputEl.addEventListener('input', () => window.refreshLoginSessionPreview(false));
+                loginInputEl.addEventListener('input', () => {
+                    window._loginVariantTouched = false;
+                    window.refreshLoginSessionPreview(false);
+                });
             }
             const ambBtn = document.getElementById('login-ambience-btn');
             if (ambBtn) {
@@ -23013,13 +23021,22 @@ document.addEventListener('mouseover', (e) => {
             if (document.activeElement && typeof document.activeElement.blur === 'function') {
                 document.activeElement.blur();
             }
-            // Synchronise le palier & la variante d'avatar (3D + HUD + thème) avec le niveau de room chargé
-            if (!state.avatarTier) state.avatarTier = state.studioUnlocked ? 4 : (Number(state.roomTier) || 1);
-            if (window._loginVariantTouched && typeof window._loginSelectedVariant === 'number') {
-                state.avatarVariant = window._loginSelectedVariant;
+            // Synchronise le personnage du palier & sa variante choisie (3D + HUD + thème) avec le niveau de room chargé
+            const maxUnlockedTier = state.studioUnlocked ? 4 : Math.max(1, Number(state.roomTier) || 1, Number(state.avatarTier) || 1);
+            if (window._loginVariantTouched) {
+                if (typeof window._loginSelectedTier === 'number') {
+                    state.avatarTier = Math.max(1, Math.min(maxUnlockedTier, window._loginSelectedTier));
+                }
+                if (typeof window._loginSelectedVariant === 'number') {
+                    state.avatarVariant = Math.max(0, Math.min(3, window._loginSelectedVariant));
+                }
                 window._loginVariantTouched = false;
-            } else if (typeof state.avatarVariant !== 'number') {
-                state.avatarVariant = 0;
+            }
+            if (!state.avatarTier || state.avatarTier > maxUnlockedTier) state.avatarTier = maxUnlockedTier;
+            if (typeof state.avatarVariant !== 'number' || state.avatarVariant < 0 || state.avatarVariant > 3) state.avatarVariant = 0;
+            if (typeof window.getModelIndexForTier === 'function') {
+                state.activeCharacter = window.getModelIndexForTier(state.avatarTier);
+                selectedAvatarIndex = state.activeCharacter;
             }
             if (!state.avatarTierPrompted) state.avatarTierPrompted = state.avatarTier;
             if (typeof window.refreshActiveAvatarVisuals === 'function') {
