@@ -3376,27 +3376,105 @@
             animation: text-glitch 0.15s ease-in-out 3;
         }
 
-        /* --- ECHO NEXT-GEN CSS --- */
+        /* --- ECHO AI STUDIO — REALISTIC MODERN SAAS UI --- */
         #app-echo {
-            backdrop-filter: blur(20px) saturate(180%) !important;
-            background: rgba(10, 10, 15, 0.65) !important;
-            border: 1px solid rgba(251, 191, 36, 0.2) !important;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 0 0 20px rgba(251, 191, 36, 0.1) !important;
+            background: #0b0d12 !important;
+            border: 1px solid rgba(255, 255, 255, 0.10) !important;
+            box-shadow: 0 28px 90px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.04) inset !important;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+            color: #e5e7eb;
+            overflow: hidden;
         }
-        
+        #app-echo .window-header {
+            background: #0e1118 !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+            padding: 10px 14px !important;
+            min-height: 44px;
+        }
+        .echo-sidebar {
+            background: #0f1219;
+            border-right: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .echo-chat-surface {
+            background:
+                radial-gradient(ellipse 75% 45% at 50% 0%, rgba(16, 185, 129, 0.045) 0%, transparent 65%),
+                #0b0d12;
+        }
         .echo-msg-bubble {
-            animation: echoSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: echoSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
-            transform: translateY(12px);
+            transform: translateY(8px);
         }
-        
         @keyframes echoSlideUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
+        .echo-btn-pop {
+            animation: echoBtnPop 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+            transform: translateY(4px);
+        }
+        @keyframes echoBtnPop {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .echo-card {
+            background: rgba(20, 24, 34, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 12px;
+        }
+        .echo-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: #cbd5e1;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.16s ease;
+        }
+        .echo-chip:hover {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: rgba(255, 255, 255, 0.22);
+            color: #ffffff;
+        }
+        .echo-composer-box {
+            background: #141822;
+            border: 1px solid rgba(255, 255, 255, 0.11);
+            border-radius: 14px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .echo-composer-box:focus-within {
+            border-color: rgba(16, 185, 129, 0.55);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.10);
+        }
+        .echo-module-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 8px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 11px;
+        }
+        .echo-plan-card {
+            background: #121620;
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 14px;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+        .echo-plan-card:hover {
+            border-color: rgba(255, 255, 255, 0.22);
+            transform: translateY(-2px);
+        }
+        .echo-plan-card.is-current {
+            border-color: rgba(16, 185, 129, 0.65);
+            box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.25), 0 12px 32px rgba(0, 0, 0, 0.45);
+        }
         .btn-action, .btn-minimal {
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s, background-color 0.2s !important;
         }
@@ -3406,133 +3484,24 @@
         .btn-action:active, .btn-minimal:active {
             transform: scale(0.975);
         }
-        
-        .echo-btn-pop {
-            animation: echoBtnPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            opacity: 0;
-            transform: scale(0.9);
-        }
-        
-        @keyframes echoBtnPop {
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        /* ECHO ABSTRACT ENTITY STYLES */
-        .echo-abstract-container {
-            width: 100%;
-            height: 180px;
-            background: radial-gradient(circle at bottom center, rgba(var(--echo-c1, 6, 182, 212), 0.15) 0%, transparent 70%);
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            overflow: hidden;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            transition: background 1s ease;
-        }
-
-        .echo-entity-wrapper {
-            --echo-c1: 6, 182, 212;
-            --echo-c2: 139, 92, 246;
-            width: 300px;
-            height: 300px;
-            position: absolute;
-            bottom: -50px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-        }
-
-        .echo-entity-svg {
-            width: 100%;
-            height: 100%;
-            filter: drop-shadow(0 0 20px rgba(var(--echo-c1), 0.5));
-            transition: filter 0.8s ease;
-        }
-
-        .echo-entity-path {
-            stroke: rgb(var(--echo-c1));
-            fill: none;
-            stroke-linecap: round;
-            transition: stroke 1s ease;
-        }
-        .echo-entity-path.alt {
-            stroke: rgb(var(--echo-c2));
-        }
-
-        /* IDLE: Morphing/breathing paths via dashoffset and scale */
-        @keyframes entity-breathe {
-            0%, 100% { transform: scaleY(0.98) translateY(2px); opacity: 0.8; }
-            50% { transform: scaleY(1.02) translateY(-2px); opacity: 1; }
-        }
-
-        @keyframes path-flow {
-            0% { stroke-dashoffset: 0; }
-            100% { stroke-dashoffset: 40; }
-        }
-
-        /* Active animations under a helper class .echo-active-anim */
-        .echo-active-anim .holo-core {
-            animation: entity-breathe 5s ease-in-out infinite;
-        }
-        .echo-active-anim .echo-entity-path.wave {
-            stroke-dasharray: 10 30;
-            animation: path-flow 8s linear infinite;
-        }
-        .echo-active-anim .echo-entity-path.wave.alt {
-            stroke-dasharray: 15 25;
-            animation: path-flow 6s linear infinite reverse;
-        }
-        .echo-active-anim .echo-entity-path.wave-h {
-            stroke-dasharray: 20 20;
-            animation: path-flow 4s linear infinite;
-        }
-
-        .holo-core {
-            transform-origin: center bottom;
-        }
-
-        /* Dynamic Shaking Classes */
-        .echo-shake-light {
-            animation: entity-talk-shake-light 0.1s infinite !important;
-        }
-        .echo-shake-heavy {
-            animation: entity-talk-shake-heavy 0.1s infinite !important;
-        }
-        
-        @keyframes entity-talk-shake-light {
-            0% { transform: translateX(0) scaleY(1.01); }
-            50% { transform: translateX(-1px) scaleY(0.99); opacity: 0.95; }
-            100% { transform: translateX(1px) scaleY(1); opacity: 1; }
-        }
-        @keyframes entity-talk-shake-heavy {
-            0% { transform: translateX(0) scaleY(1.05); }
-            25% { transform: translateX(-4px) scaleY(0.92); opacity: 0.9; }
-            50% { transform: translateX(5px) scaleY(1.08); opacity: 0.7; }
-            75% { transform: translateX(-3px) scaleY(0.95); opacity: 0.85; }
-            100% { transform: translateX(2px) scaleY(1.02); opacity: 1; }
-        }
-
-        /* Juicy pop feedback for gauges */
         .juicy-pop {
-            animation: juicyPopAnim 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            animation: juicyPopAnim 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
         @keyframes juicyPopAnim {
             0% { transform: scale(1); }
-            50% { transform: scale(1.15); filter: brightness(1.3); }
+            50% { transform: scale(1.08); filter: brightness(1.25); }
             100% { transform: scale(1); }
         }
-
-        /* TALKING: Visceral glitch/vibration */
-        .echo-talking .echo-entity-svg {
-            filter: url(#talking-glitch) drop-shadow(0 0 30px rgba(var(--echo-c2), 0.8));
-        }
-
-        .echo-talking .echo-abstract-container {
-            background: radial-gradient(circle at bottom center, rgba(var(--echo-c2, 139, 92, 246), 0.25) 0%, transparent 80%);
+        @media (max-width: 767px) {
+            #echo-sidebar {
+                width: 100% !important;
+                border-right: none !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+                padding: 10px 12px !important;
+            }
+            #echo-sidebar .echo-desktop-only {
+                display: none !important;
+            }
         }
 
 
@@ -5581,6 +5550,19 @@
                             </div>
                         </div>
 
+                        <!-- ECHO AI COPILOT BAR (Connecté à Echo AI Pro / Neural) -->
+                        <div id="daw-echo-copilot-bar" class="mt-2.5 px-3 py-2 rounded-lg bg-[#10131b] border border-white/10 flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span id="daw-echo-dot" class="w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.75)]"></span>
+                                <span class="text-[10px] font-mono uppercase tracking-wider text-slate-200 font-semibold shrink-0">Echo Copilot</span>
+                                <span id="daw-echo-status" class="text-[10.5px] text-slate-400 truncate">Analyse session en direct…</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <button type="button" id="btn-daw-echo-calibrate" onclick="echoDawAutoCalibrate()" class="px-2.5 py-1 rounded-md bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/35 text-[9.5px] font-mono uppercase tracking-wider text-emerald-300 transition-all cursor-pointer">Auto-Calibrer</button>
+                                <button type="button" id="btn-daw-echo-ghost" onclick="echoArmGhostProd()" class="px-2.5 py-1 rounded-md bg-violet-500/15 hover:bg-violet-500/25 border border-violet-400/35 text-[9.5px] font-mono uppercase tracking-wider text-violet-200 transition-all cursor-pointer">Ghost-Prod IA</button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -5639,6 +5621,26 @@
             </div>
 
             <div class="window-content p-4 md:p-8 bg-[#0E0E14]" id="social-content-feed">
+                <!-- ECHO AI SOUNDNET RADAR BAR -->
+                <div id="social-echo-radar-bar" class="mb-5 px-4 py-3 rounded-xl bg-[#11141c] border border-emerald-500/25 flex flex-wrap items-center justify-between gap-3 shadow-md">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 12l5-5"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-mono uppercase tracking-widest text-emerald-300 font-bold">Echo Radar · SoundNet</span>
+                                <span id="social-echo-tier-pill" class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300">LITE</span>
+                            </div>
+                            <div id="social-echo-radar-text" class="text-xs text-slate-300 truncate mt-0.5">Analyse des tendances algorithme en cours…</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button type="button" id="btn-social-echo-boost" onclick="echoActivateAlgoPush()" class="px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/40 text-[10px] font-mono uppercase tracking-wider text-emerald-200 transition-all cursor-pointer">Boost Algo</button>
+                        <button type="button" onclick="openApp('app-echo')" class="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] font-mono uppercase tracking-wider text-slate-300 transition-all cursor-pointer">Ouvrir Echo</button>
+                    </div>
+                </div>
+
                 <div class="border border-white/10 bg-[#0A0A0D] p-6 md:p-10 rounded-xl text-center mb-8 shadow-inner flex flex-col items-center justify-center">
                     <div class="flex flex-col items-center gap-4">
                         <svg class="w-12 h-12 text-[#4DD8E8] opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -6022,99 +6024,223 @@
 
 
 
-        <div id="app-echo" class="os-window liquid-glass flex-col" style="display:none;">
-    <div class="window-header">
-        <button class="window-close-btn" onclick="closeApp('app-echo', event)">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-        </button>
-        <span class="font-retro text-xs text-[var(--retro-orange)] tracking-widest uppercase flex items-center gap-3 font-bold">
-            <span class="w-3 h-3 rounded-full bg-[var(--retro-orange)] shadow-[0_0_10px_var(--retro-orange)] animate-pulse"></span> ECHO_OS v2.1
-        </span>
-    </div>
-    
-    <div class="window-content flex flex-col p-0 bg-black/60 relative" id="echo-content">
-        <div id="echo-paywall" class="hidden flex-col items-center justify-center p-8 h-full text-center">
-            <h3 class="font-bold text-2xl mb-4 text-[var(--retro-orange)] font-retro tracking-widest">ECHO ASSISTANT</h3>
-            <p class="text-sm text-gray-300 mb-8 max-w-sm">Ton accès à l'intelligence artificielle du studio est expiré ou non initié. Renouvelle ton abonnement pour continuer à recevoir des conseils de carrière.</p>
-            <button id="btn-echo-subscribe" class="btn-action w-full max-w-xs py-4 text-xs tracking-widest rounded-lg" onclick="purchaseEchoSub()">S'ABONNER ($1500 / 7 JOURS)</button>
-            <button id="btn-echo-trial" class="btn-minimal w-full max-w-xs py-4 text-xs tracking-widest rounded-lg mt-3" onclick="startEchoTrial()">ESSAI GRATUIT (2 JOURS)</button>
+        <div id="app-echo" class="os-window flex-col" style="display:none;">
+    <!-- Barre de titre SaaS réaliste -->
+    <div class="window-header flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 min-w-0">
+            <button class="window-close-btn relative top-0 left-0 hover:bg-white/10" onclick="closeApp('app-echo', event)" style="position:relative;">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 flex items-center justify-center shadow-[0_0_12px_rgba(16,185,129,0.35)] shrink-0">
+                    <svg class="w-3.5 h-3.5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M4 12h3l2.5-6 4 12 2.5-6H20"/></svg>
+                </div>
+                <span class="text-sm font-semibold tracking-tight text-white">Echo AI</span>
+                <span id="echo-header-model-pill" class="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-mono text-emerald-300">Echo-3.5 Lite</span>
+            </div>
         </div>
-
-        <div id="echo-active" class="hidden flex-col h-full">
-            <div id="echo-avatar-wrapper" class="echo-abstract-container shrink-0">
-                <div id="echo-avatar-element" class="echo-entity-wrapper">
-                    <svg class="echo-entity-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <filter id="talking-glitch" x="-20%" y="-20%" width="140%" height="140%">
-                                <feTurbulence type="fractalNoise" baseFrequency="0.1 0.8" numOctaves="2" result="noise" />
-                                <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G" />
-                                <feGaussianBlur stdDeviation="1.5" result="blur" />
-                                <feMerge>
-                                    <feMergeNode in="blur" />
-                                    <feMergeNode in="SourceGraphic" />
-                                </feMerge>
-                            </filter>
-                        </defs>
-                        <g class="holo-core">
-                            <!-- Center Spine -->
-                            <path class="echo-entity-path alt" stroke-width="3" d="M100,200 Q100,100 100,20" opacity="0.2"/>
-                            
-                            <!-- Left Shoulder lines -->
-                            <path class="echo-entity-path wave" stroke-width="1.5" d="M100,160 Q50,160 0,200" />
-                            <path class="echo-entity-path wave alt" stroke-width="1" d="M100,145 Q60,135 0,180" opacity="0.7"/>
-                            <path class="echo-entity-path wave" stroke-width="0.5" d="M100,130 Q70,115 0,160" opacity="0.5"/>
-                            
-                            <!-- Right Shoulder lines -->
-                            <path class="echo-entity-path wave alt" stroke-width="1.5" d="M100,160 Q150,160 200,200" />
-                            <path class="echo-entity-path wave" stroke-width="1" d="M100,145 Q140,135 200,180" opacity="0.7"/>
-                            <path class="echo-entity-path wave alt" stroke-width="0.5" d="M100,130 Q130,115 200,160" opacity="0.5"/>
-                            
-                            <!-- Abstract Head Shell -->
-                            <path class="echo-entity-path alt" stroke-width="2" d="M70,120 C50,80 65,30 100,30 C135,30 150,80 130,120" opacity="0.8"/>
-                            <path class="echo-entity-path" stroke-width="1.5" d="M80,115 C65,85 75,40 100,40 C125,40 135,85 120,115" opacity="0.6"/>
-                            <path class="echo-entity-path alt" stroke-width="1" d="M88,110 C78,90 83,50 100,50 C117,50 122,90 112,110" opacity="0.4"/>
-                            
-                            <!-- Horizontal Internal Frequencies -->
-                            <path class="echo-entity-path wave-h" stroke-width="1.5" d="M60,100 Q100,130 140,100" />
-                            <path class="echo-entity-path wave-h alt" stroke-width="1.2" d="M55,80 Q100,50 145,80" />
-                            <path class="echo-entity-path wave-h" stroke-width="1.8" d="M60,60 Q100,90 140,60" />
-                            <path class="echo-entity-path wave-h alt" stroke-width="1" d="M72,40 Q100,20 128,40" opacity="0.7"/>
-                        </g>
-                    </svg>
-                </div>
+        <div class="flex items-center gap-2.5 shrink-0">
+            <div class="hidden sm:flex items-center gap-1.5 text-[10px] font-mono text-slate-400">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span>AbleOS Live</span>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4" id="echo-dialogue-history">
-                <div class="flex items-start gap-3">
-                    <div class="w-8 h-8 rounded bg-[var(--retro-orange)] flex items-center justify-center text-black font-bold flex-shrink-0 shadow-[0_0_10px_rgba(251,191,36,0.5)]">E</div>
-                    <div class="bg-black/50 border border-[var(--retro-orange)]/30 rounded-lg rounded-tl-none p-3 text-sm text-gray-200" id="echo-intro-text">
-                        Analyse en cours...
+            <button type="button" id="btn-echo-toggle-plans" onclick="toggleEchoPlansView()" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-medium text-slate-200 transition-colors cursor-pointer">Forfaits</button>
+        </div>
+    </div>
+
+    <!-- Corps principal : Sidebar gauche + Workspace Chat/Plans -->
+    <div class="window-content flex flex-col md:flex-row p-0 min-h-0 flex-1 overflow-hidden bg-[#0b0d12]" id="echo-content">
+        <!-- Sidebar gauche (SaaS Claude / ChatGPT Studio) -->
+        <aside id="echo-sidebar" class="echo-sidebar w-full md:w-[232px] shrink-0 p-3.5 flex flex-col justify-between gap-3 overflow-y-auto no-scrollbar">
+            <div class="flex flex-col gap-3">
+                <!-- Carte Plan actif -->
+                <div class="p-3 rounded-xl bg-[#141822] border border-white/10">
+                    <div class="flex items-center justify-between gap-2">
+                        <span id="echo-sidebar-plan-name" class="text-xs font-semibold text-white">Forfait Free</span>
+                        <span id="echo-sub-timer" class="text-[10px] font-mono text-emerald-400">ACTIF</span>
+                    </div>
+                    <p id="echo-sidebar-plan-desc" class="text-[10.5px] text-slate-400 mt-1 leading-snug">Conseils &amp; audit de base. Passe Pro pour connecter DAW, DM &amp; Radar.</p>
+                    <button type="button" onclick="toggleEchoPlansView(true)" class="mt-2.5 w-full py-1.5 px-2.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/35 text-[11px] font-medium text-emerald-300 transition-colors cursor-pointer">
+                        Gérer / Upgrade
+                    </button>
+                </div>
+
+                <!-- Modules connectés à AbleOS -->
+                <div class="echo-desktop-only flex flex-col gap-1.5">
+                    <div class="text-[10px] font-mono uppercase tracking-wider text-slate-500 px-1">Modules AbleOS</div>
+                    <div class="echo-module-row">
+                        <span class="text-slate-300">Radar SoundNet</span>
+                        <span id="echo-mod-radar" class="text-[9.5px] font-mono text-slate-500">BASE</span>
+                    </div>
+                    <div class="echo-module-row">
+                        <span class="text-slate-300">Anti-Scam DM</span>
+                        <span id="echo-mod-scam" class="text-[9.5px] font-mono text-slate-500">PRO</span>
+                    </div>
+                    <div class="echo-module-row">
+                        <span class="text-slate-300">Copilote DAW</span>
+                        <span id="echo-mod-daw" class="text-[9.5px] font-mono text-slate-500">PRO</span>
+                    </div>
+                    <div class="echo-module-row">
+                        <span class="text-slate-300">Ghost-Prod &amp; Algo</span>
+                        <span id="echo-mod-neural" class="text-[9.5px] font-mono text-slate-500">NEURAL</span>
                     </div>
                 </div>
             </div>
 
-            <div class="p-4 bg-[#121214] border-t border-white/10 shrink-0">
-                <div class="flex justify-between items-start mb-3">
-                    <div class="flex flex-col gap-1.5">
-                        <span class="text-[10px] text-[var(--text-muted)] font-retro uppercase tracking-widest">Requête requise</span>
-                        <span id="echo-sub-timer" class="text-[10px] text-[var(--retro-orange)] font-retro tracking-widest">EXP: 0J</span>
+            <!-- Télémétrie Alignement + Suspicion IA -->
+            <div class="echo-desktop-only flex flex-col gap-2.5 pt-2.5 border-t border-white/10">
+                <div id="echo-alignment-container">
+                    <div class="flex items-center justify-between text-[10px] mb-1">
+                        <span class="text-slate-400">Alignement</span>
+                        <span id="echo-alignment-label" class="font-mono text-slate-200">ÉQUILIBRÉ</span>
                     </div>
-                    <div class="flex flex-col gap-2 items-end">
-                        <span class="flex items-center gap-2" id="echo-alignment-container">
-                            <span id="echo-alignment-label" class="text-[9px] font-retro text-gray-300">MODE: NEUTRE ⚖️</span>
-                            <span class="inline-block w-20 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10">
-                                <span id="echo-alignment-bar" class="block h-full bg-gradient-to-r from-orange-500 to-purple-500" style="width: 50%"></span>
-                            </span>
-                        </span>
-                        <span class="flex items-center gap-2" id="echo-trust-container">
-                            <span id="echo-trust-label" class="text-[9px] font-retro text-gray-300">CONFIANCE: NEUTRE</span>
-                            <span class="inline-block w-20 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10">
-                                <span id="echo-trust-bar" class="block h-full bg-blue-500 transition-all duration-300" style="width: 50%"></span>
-                            </span>
-                        </span>
+                    <div class="w-full h-1.5 bg-black/60 rounded-full overflow-hidden border border-white/10">
+                        <div id="echo-alignment-bar" class="h-full bg-gradient-to-r from-amber-500 via-slate-300 to-emerald-400 transition-all duration-300" style="width: 50%"></div>
+                    </div>
+                    <div id="echo-alignment-perk" class="text-[9.5px] text-slate-500 mt-1">+5% Cash · +8% Streams</div>
+                </div>
+
+                <div id="echo-heat-container">
+                    <div class="flex items-center justify-between text-[10px] mb-1">
+                        <span class="text-slate-400">Suspicion IA</span>
+                        <span id="echo-heat-label" class="font-mono text-emerald-400">0% · CLEAN</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-black/60 rounded-full overflow-hidden border border-white/10">
+                        <div id="echo-heat-bar" class="h-full bg-emerald-400 transition-all duration-300" style="width: 0%"></div>
                     </div>
                 </div>
-                <div id="echo-action-choices" class="flex flex-col gap-2">
+
+                <div id="echo-trust-container" class="hidden">
+                    <span id="echo-trust-label"></span>
+                    <span id="echo-trust-bar"></span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Zone principale droite -->
+        <div class="flex-1 min-w-0 flex flex-col min-h-0 relative echo-chat-surface">
+            <!-- VUE 1 : WORKSPACE CHAT & CARTES INTERACTIVES -->
+            <div id="echo-active" class="flex flex-col h-full min-h-0">
+                <!-- Fil de conversation -->
+                <div class="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 py-4 space-y-4 custom-scrollbar" id="echo-dialogue-history"></div>
+
+                <!-- Zone de choix actifs (Dilemmes stratégiques) -->
+                <div id="echo-action-choices" class="hidden px-4 md:px-6 pb-2 flex flex-col gap-1.5 shrink-0"></div>
+
+                <!-- Dock Composer style ChatGPT / Claude -->
+                <div class="px-4 md:px-6 pb-4 pt-2 border-t border-white/5 bg-[#0b0d12]/95 shrink-0">
+                    <!-- Chips d'actions rapides 1-clic -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2.5">
+                        <button type="button" class="echo-chip" onclick="runEchoQuickAction('radar')">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Radar Tendances
+                        </button>
+                        <button type="button" class="echo-chip" onclick="runEchoQuickAction('algo')">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>Boost Algo
+                        </button>
+                        <button type="button" class="echo-chip" onclick="runEchoQuickAction('ghost')">
+                            <span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>Ghost-Prod IA
+                        </button>
+                        <button type="button" class="echo-chip" onclick="runEchoQuickAction('audit')">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>Audit Carrière &amp; DM
+                        </button>
+                        <button type="button" class="echo-chip" onclick="runEchoQuickAction('dilemma')">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Dilemme Stratégique
+                        </button>
+                        <button type="button" class="echo-chip" onclick="runEchoQuickAction('tech')">
+                            <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>Conseil Mix
+                        </button>
                     </div>
+
+                    <!-- Barre de prompt interactive -->
+                    <form id="echo-prompt-form" onsubmit="submitEchoPrompt(event)" class="echo-composer-box flex items-center gap-2 px-3 py-2">
+                        <input id="echo-prompt-input" type="text" autocomplete="off" placeholder="Demande à Echo : tendance du jour, calibrer un mix, auditer tes DMs, ghost-prod..." class="flex-1 bg-transparent text-[13px] text-white placeholder:text-slate-500 focus:outline-none">
+                        <button type="submit" id="echo-prompt-send" class="w-8 h-8 rounded-lg bg-white text-black hover:bg-emerald-400 transition-colors flex items-center justify-center shrink-0 cursor-pointer" title="Envoyer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- VUE 2 : FORFAITS SAAS (Free / Pro / Studio Neural) -->
+            <div id="echo-paywall" class="hidden flex-col h-full min-h-0 overflow-y-auto p-5 md:p-6 custom-scrollbar">
+                <div class="flex items-center justify-between gap-3 mb-5">
+                    <div>
+                        <h3 class="text-lg font-semibold text-white tracking-tight">Forfaits Echo AI Studio</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Connecte les modules temps réel d'Echo à AbleStudio, SoundNet et ta messagerie.</p>
+                    </div>
+                    <button type="button" onclick="toggleEchoPlansView(false)" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-slate-200 cursor-pointer">← Retour au Chat</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <!-- Plan Free -->
+                    <div id="echo-plan-card-free" class="echo-plan-card p-4 flex flex-col justify-between gap-4">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Lite</span>
+                                <span id="echo-badge-free" class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400">FREE</span>
+                            </div>
+                            <div class="mt-2 flex items-baseline gap-1">
+                                <span class="text-2xl font-bold text-white">$0</span>
+                                <span class="text-xs text-slate-500">/ toujours</span>
+                            </div>
+                            <ul class="mt-3.5 space-y-2 text-[11.5px] text-slate-300">
+                                <li>✓ Chat studio &amp; base technique mix</li>
+                                <li>✓ Audit carrière en direct</li>
+                                <li>✓ Dilemmes d'alignement Puriste/Algo</li>
+                                <li class="text-slate-500">✕ Radar exact &amp; Auto-Calibrage DAW</li>
+                                <li class="text-slate-500">✕ Anti-Scam DM &amp; Bonus Négo</li>
+                            </ul>
+                        </div>
+                        <button type="button" onclick="toggleEchoPlansView(false)" class="w-full py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-slate-300 cursor-pointer">Utiliser Echo Lite</button>
+                    </div>
+
+                    <!-- Plan Pro -->
+                    <div id="echo-plan-card-pro" class="echo-plan-card p-4 flex flex-col justify-between gap-4 border-emerald-500/35">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-mono uppercase tracking-wider text-emerald-300">Echo-4 Pro</span>
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300">POPULAIRE</span>
+                            </div>
+                            <div class="mt-2 flex items-baseline gap-1">
+                                <span class="text-2xl font-bold text-white">$600</span>
+                                <span class="text-xs text-slate-400">/ 7 jours</span>
+                            </div>
+                            <ul class="mt-3.5 space-y-2 text-[11.5px] text-slate-200">
+                                <li>✓ <strong>Radar SoundNet exact</strong> (+40% Trend)</li>
+                                <li>✓ <strong>Auto-Calibrage DAW</strong> (BPM &amp; Voix +15%)</li>
+                                <li>✓ <strong>Bouclier Anti-Scam DM</strong> automatique</li>
+                                <li>✓ <strong>Agent Négo +15%</strong> sur Deals &amp; DMs</li>
+                                <li class="text-slate-500">✕ Ghost-Prod IA &amp; Boost Algo</li>
+                            </ul>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <button type="button" id="btn-echo-subscribe-pro" onclick="purchaseEchoSub('pro')" class="w-full py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs transition-colors cursor-pointer">Activer Pro ($600 / 7j)</button>
+                            <button type="button" id="btn-echo-trial" onclick="startEchoTrial()" class="w-full py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-slate-300 transition-colors cursor-pointer">Essai Pro gratuit (2 jours)</button>
+                        </div>
+                    </div>
+
+                    <!-- Plan Studio Neural -->
+                    <div id="echo-plan-card-neural" class="echo-plan-card p-4 flex flex-col justify-between gap-4 border-violet-500/35">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-mono uppercase tracking-wider text-violet-300">Echo-4.5 Neural</span>
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-violet-500/15 text-violet-200">STUDIO MAX</span>
+                            </div>
+                            <div class="mt-2 flex items-baseline gap-1">
+                                <span class="text-2xl font-bold text-white">$1800</span>
+                                <span class="text-xs text-slate-400">/ 7 jours</span>
+                            </div>
+                            <ul class="mt-3.5 space-y-2 text-[11.5px] text-slate-200">
+                                <li>✓ Tout Echo-4 Pro inclus</li>
+                                <li>✓ <strong>Ghost-Prod IA</strong> (-50% énergie, Banger)</li>
+                                <li>✓ <strong>Boost Algo SoundNet</strong> (+35% streams, x2 viral)</li>
+                                <li>✓ <strong>Agent Business +30%</strong> cash Deals &amp; DMs</li>
+                                <li class="text-amber-300/90">⚠ Gère ta jauge Suspicion IA</li>
+                            </ul>
+                        </div>
+                        <button type="button" id="btn-echo-subscribe" onclick="purchaseEchoSub('neural')" class="w-full py-2 rounded-lg bg-gradient-to-r from-violet-500 to-indigo-500 hover:brightness-110 text-white font-semibold text-xs transition-all cursor-pointer">Activer Neural ($1800 / 7j)</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -6511,8 +6637,11 @@ const DEFAULT_STATE = {
             isReviewActive: false, // Ajout de l'état pour les revues
             lastRankId: 1, // Nouveau : ID de la dernière ligue atteinte
             trackList: [],
-            echoAlignment: 0, // De -100 (Cynique/Sellout) à +100 (Qualité/Puriste)
+            echoAlignment: 0, // De -100 (Algorithme/Sellout) à +100 (Qualité/Puriste)
             echoTrialUsed: false, // True si le joueur a déjà consommé ses 2 jours d'essai
+            echoPlan: 'free', // 'free' | 'pro' | 'neural'
+            echoAiHeat: 0, // 0..100 : Suspicion IA / risque de scandale Bad Buzz
+            echoBuffs: { algoBoostTracks: 0, ghostProdReady: false, autoMixReady: false, trendDay: 0, trendGenreId: null, lastAlgoPushDay: 0 },
             activeDoorBoosts: { vinylCharges: 0, proStudioCharges: 0 },
             activeContracts: [],
             completedDeals: [],
@@ -21546,14 +21675,29 @@ document.addEventListener('mouseover', (e) => {
             return a.resolved ? 1 : -1;
         });
 
+        const echoTier = typeof window.getEchoTier === 'function' ? window.getEchoTier() : 'free';
+        const echoNegoPct = echoTier === 'neural' ? 30 : (echoTier === 'pro' ? 15 : 0);
+
         container.innerHTML = sortedDMs.map(dm => {
             const template = getTemplateById(dm.templateId);
             if (!template) return '';
+
+            const isScamDM = (DM_TEMPLATES.spam || []).some(t => t.id === dm.templateId);
+            const isBizOrCollab = !isScamDM;
 
             // Use runtime overrides if present (unique sender/avatar/text per instance)
             const sender = dm.runtimeSender || template.sender || (`@${template.baseName || template.id}`);
             const avatarColor = dm.runtimeAvatarColor || template.avatarColor || 'bg-gray-600';
             const text = dm.runtimeText || template.text || '';
+
+            let echoShieldBadge = '';
+            if (!dm.resolved && echoTier !== 'free') {
+                if (isScamDM) {
+                    echoShieldBadge = `<div class="mt-2.5 px-2.5 py-1.5 rounded-lg bg-rose-500/15 border border-rose-500/40 text-[10px] font-mono text-rose-300 flex items-center gap-2"><span>🛡️</span><span><strong>ECHO SHIELD :</strong> Arnaque / Faux compte détecté. Ne paie pas ce contact.</span></div>`;
+                } else if (isBizOrCollab && echoNegoPct > 0) {
+                    echoShieldBadge = `<div class="mt-2.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/12 border border-emerald-400/35 text-[10px] font-mono text-emerald-300 flex items-center gap-2"><span>✦</span><span><strong>ECHO AGENT :</strong> Contact vérifié · Bonus négociation +${echoNegoPct}% cash si deal conclu.</span></div>`;
+                }
+            }
 
             let choicesHTML = '';
             if (!dm.resolved) {
@@ -21567,7 +21711,7 @@ document.addEventListener('mouseover', (e) => {
             }
 
             return `
-                <div class="bg-[#18181b] border border-[#27272a] rounded-xl p-4 shadow-sm ${dm.resolved ? 'opacity-50' : 'border-l-4 border-l-[var(--accent)]'}">
+                <div class="bg-[#18181b] border ${(!dm.resolved && isScamDM && echoTier !== 'free') ? 'border-rose-500/50' : 'border-[#27272a]'} rounded-xl p-4 shadow-sm ${dm.resolved ? 'opacity-50' : 'border-l-4 border-l-[var(--accent)]'}">
                     <div class="flex items-center gap-3 mb-3">
                         <div class="w-8 h-8 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold text-xs shadow-inner">
                             ${sender.charAt(1) ? sender.charAt(1).toUpperCase() : sender.charAt(0).toUpperCase()}
@@ -21578,6 +21722,7 @@ document.addEventListener('mouseover', (e) => {
                         </div>
                     </div>
                     <p class="text-xs text-gray-300 leading-relaxed font-sans">${text}</p>
+                    ${echoShieldBadge}
                     ${choicesHTML}
                 </div>
             `;
@@ -21588,8 +21733,21 @@ document.addEventListener('mouseover', (e) => {
         const dm = state.dms.find(d => d.instanceId == instanceId);
         if (!dm || dm.resolved) return;
         const template = getTemplateById(dm.templateId);
+        const moneyBefore = Number(state.money) || 0;
+        const isScamDM = (DM_TEMPLATES.spam || []).some(t => t.id === dm.templateId);
+
         if (template && template.choices[choiceIdx]) {
             try { template.choices[choiceIdx].effect(); } catch(e) { console.error('DM effect error', e); }
+        }
+
+        // Bonus réel Agent Business Echo AI sur les DMs légitimes rémunérateurs
+        const earned = (Number(state.money) || 0) - moneyBefore;
+        const echoTier = typeof window.getEchoTier === 'function' ? window.getEchoTier() : 'free';
+        if (!isScamDM && earned > 0 && echoTier !== 'free') {
+            const pct = echoTier === 'neural' ? 0.30 : 0.15;
+            const bonusCash = Math.max(40, Math.round(earned * pct));
+            logMoney(bonusCash, `Echo Agent (+${Math.round(pct * 100)}% Négo DM)`);
+            showToast(`✦ Echo Agent a renégocié ce DM : +$${bonusCash} bonus !`, 'success');
         }
 
         dm.resolved = true;
@@ -24141,6 +24299,7 @@ document.addEventListener('mouseover', (e) => {
         
         updateDawGenres();
         if (typeof populateDawSamples === 'function') populateDawSamples();
+        if (typeof window.updateDawEchoCopilot === 'function') window.updateDawEchoCopilot();
         if (typeof playUIAudio === 'function') playUIAudio('switch', 0.7);
     }
 
@@ -24153,6 +24312,7 @@ document.addEventListener('mouseover', (e) => {
             btn.classList.toggle('selected', btn.dataset.val === currentDawVoice);
         });
 
+        if (typeof window.updateDawEchoCopilot === 'function') window.updateDawEchoCopilot();
         if (typeof playBleep === 'function') playBleep();
     }
     
@@ -25273,6 +25433,11 @@ document.addEventListener('mouseover', (e) => {
 
             if (typeof state.echoAlignment === 'undefined') state.echoAlignment = 0;
             if (typeof state.echoTrialUsed === 'undefined') state.echoTrialUsed = false;
+            if (!state.echoPlan) state.echoPlan = ((parseInt(state.cooldowns.echoSubExpiry, 10) || 0) > getTotalMins()) ? 'pro' : 'free';
+            if (typeof state.echoAiHeat !== 'number') state.echoAiHeat = 0;
+            if (!state.echoBuffs || typeof state.echoBuffs !== 'object') {
+                state.echoBuffs = { algoBoostTracks: 0, ghostProdReady: false, autoMixReady: false, trendDay: 0, trendGenreId: null, lastAlgoPushDay: 0 };
+            }
             if (!state.cooldowns.echoSubExpiry) state.cooldowns.echoSubExpiry = 0;
             if (typeof state.cooldowns.echoQueryReady === 'undefined') state.cooldowns.echoQueryReady = 0;
             state.echoHistory = state.echoHistory || [];
@@ -26059,27 +26224,23 @@ document.addEventListener('mouseover', (e) => {
         // Si on a un abonnement actif et qu'on vient de dépasser l'heure limite
         if (echoSubExpiry !== 0 && currentTotalMins >= echoSubExpiry) {
     
-            // 1. Désactivation immédiate pour éviter le spam à chaque tick
+            // 1. Retour gracieux sur le plan Free (jamais bloquant)
             state.cooldowns.echoSubExpiry = 0;
-         saveGame();
+            state.echoPlan = 'free';
+            saveGame();
 
-         // 2. Choix du message d'adieu selon la personnalité acquise
-            let expiryMsg = "Abonnement ECHO expiré. Renouvellement requis.";
-         if (state.echoAlignment <= -30) {
-                expiryMsg = "Abonnement expiré. Pas d'argent, pas de conseils. Paye ton IA.";
+            // 2. Notification d'expiration adaptée à l'alignement
+            let expiryMsg = "Ton forfait Echo AI Pro/Neural a expiré — retour sur Echo-3.5 Lite (Gratuit).";
+            if (state.echoAlignment <= -30) {
+                expiryMsg = "Forfait Echo expiré. Plus de budget, plus de Boost Algo. Retour sur Lite.";
             } else if (state.echoAlignment >= 30) {
-                expiryMsg = "Nos services sont suspendus. Reviens quand les finances le permettront.";
+                expiryMsg = "Abonnement Echo suspendu. Tes modules Pro restent en veille jusqu'au renouvellement.";
             }
-    
-    // 3. Feedback OS
-    showToast(expiryMsg, "warning");
-    if (typeof playBleep === 'function') playBleep();
-    
-    // 4. Si la fenêtre est ouverte devant le joueur au moment de l'expiration, on la force à actualiser le paywall
-    const echoWindow = document.getElementById('app-echo');
-    if (echoWindow && echoWindow.style.display !== 'none') {
-        initEchoApp();
-    }
+            showToast(expiryMsg, "warning");
+            if (typeof playBleep === 'function') playBleep();
+            if (typeof window.syncEchoSidebarUI === 'function') window.syncEchoSidebarUI();
+            if (typeof window.updateDawEchoCopilot === 'function') window.updateDawEchoCopilot();
+            if (typeof window.updateSocialEchoRadar === 'function') window.updateSocialEchoRadar();
 }
 
             // TÂCHE 3 - Prise de Position Progressive
@@ -26841,7 +27002,7 @@ document.addEventListener('mouseover', (e) => {
             'app-browser': { w: 900, h: 600 },
             'app-social': { w: 840, h: 590 },
             'app-stats': { w: 820, h: 570 },
-            'app-echo': { w: 780, h: 570 },
+            'app-echo': { w: 900, h: 610 },
             'app-empire': { w: 960, h: 620 },
             'sample-digger-window': { w: 660, h: 520 }
         };
@@ -27004,6 +27165,7 @@ document.addEventListener('mouseover', (e) => {
             if (id === 'app-social') refreshSocial();
             if (id === 'app-empire' && typeof window.renderEmpireApp === 'function') window.renderEmpireApp();
             if (id === 'app-daw' && typeof window.syncMasteringRackUI === 'function') window.syncMasteringRackUI();
+            if (id === 'app-daw' && typeof window.updateDawEchoCopilot === 'function') window.updateDawEchoCopilot();
             if (id === 'app-browser') {
                 const tabAudio = document.getElementById('tab-audio');
                 const isAudioTab = tabAudio && tabAudio.classList.contains('text-white');
@@ -27205,7 +27367,9 @@ document.addEventListener('mouseover', (e) => {
             const trackTitle = document.getElementById('track-title-input').value.trim() || `UNTITLED_${state.stats.tracks + 1}`;
 
             const initialEnergy = state.energy;
-            state.energy = Math.max(0, state.energy - 20); 
+            const ghostArmedForExport = Boolean(state.echoBuffs && state.echoBuffs.ghostProdReady);
+            const energyCost = ghostArmedForExport ? 10 : 20;
+            state.energy = Math.max(0, state.energy - energyCost); 
             updateHUD();
 
             const energyRatio = initialEnergy / 100;
@@ -27343,6 +27507,33 @@ document.addEventListener('mouseover', (e) => {
                 const result = calculateSuccess(genre, bpm, voice);
                 let moneyGain = 0, repGain = 0, follGain = 0, resultTxt = "", critique = "";
 
+                // --- ECHO AI : INTERVENTION SUR LA QUALITÉ, GHOST-PROD & AUTO-CALIBRAGE ---
+                const echoTierNow = typeof window.getEchoTier === 'function' ? window.getEchoTier() : 'free';
+                const echoBuffs = state.echoBuffs || (state.echoBuffs = { algoBoostTracks: 0, ghostProdReady: false, autoMixReady: false, trendDay: 0, trendGenreId: null, lastAlgoPushDay: 0 });
+                const usedGhostProd = Boolean(echoBuffs.ghostProdReady);
+                const usedAutoMix = Boolean(echoBuffs.autoMixReady);
+                const alignVal = Number(state.echoAlignment) || 0;
+                const heatMult = alignVal >= 30 ? 0.60 : (alignVal <= -30 ? 1.35 : 1.0);
+
+                if (usedGhostProd) {
+                    result.score = 3;
+                    echoBuffs.ghostProdReady = false;
+                    const addHeat = Math.round(22 * heatMult);
+                    state.echoAiHeat = Math.min(100, (Number(state.echoAiHeat) || 0) + addHeat);
+                    critique += `\n[Echo Ghost-Prod IA] Prod optimisée (-50% énergie, Banger garanti · +${addHeat}% Suspicion IA).`;
+                }
+                if (usedAutoMix) {
+                    if (result.score === 0) result.score = 1;
+                    echoBuffs.autoMixReady = false;
+                    const addHeat = alignVal >= 30 ? 0 : Math.round(6 * heatMult);
+                    state.echoAiHeat = Math.min(100, (Number(state.echoAiHeat) || 0) + addHeat);
+                    critique += `\n[Echo Auto-Mix] Calibrage spectral +15% cash${addHeat > 0 ? ` (+${addHeat}% Suspicion IA)` : ' (Mode Puriste : 0% suspicion)'}.`;
+                }
+                if (!usedGhostProd && !usedAutoMix) {
+                    // Production 100% organique : refroidit la suspicion IA
+                    state.echoAiHeat = Math.max(0, (Number(state.echoAiHeat) || 0) - 10);
+                }
+
                 let sampleClaimTriggered = false;
                 if (state.activeSample) {
                     const isCleared = state.clearedSamples && state.clearedSamples.includes(state.activeSample.id);
@@ -27431,8 +27622,63 @@ document.addEventListener('mouseover', (e) => {
                     window.checkDailyQuests('export_tracks', 1);
                 }
 
-                // 4. Calculate Viral Chance (Base 1% + score/hype/followers bonuses)
-                const viralChance = 0.01 + (result.score === 3 ? 0.04 : 0.01) + Math.min(0.05, ((state.hype || 50) / 100) * 0.05) + Math.min(0.05, ((state.followers || 0) / 100000) * 0.05);
+                // 4. Calculate Viral Chance (Base 1% + score/hype/followers bonuses + Echo Algo Boost)
+                let viralChance = 0.01 + (result.score === 3 ? 0.04 : 0.01) + Math.min(0.05, ((state.hype || 50) / 100) * 0.05) + Math.min(0.05, ((state.followers || 0) / 100000) * 0.05);
+
+                // --- ECHO AI : RADAR TENDANCE, BOOST ALGO, ALIGNEMENT & SCANDALE IA ---
+                const dailyTrend = typeof window.getDailyTrendGenre === 'function' ? window.getDailyTrendGenre() : null;
+                if (dailyTrend && dailyTrend.id === genre) {
+                    moneyGain = Math.floor(moneyGain * 1.30);
+                    follGain = Math.floor(follGain * 1.40);
+                    critique += `\n[SoundNet Trend · ${dailyTrend.name}] Genre chaud du jour : +30% Cash & +40% Fans !`;
+                }
+                if (usedGhostProd) {
+                    moneyGain = Math.floor(moneyGain * 1.20);
+                    follGain = Math.floor(follGain * 1.20);
+                }
+                if (usedAutoMix) {
+                    moneyGain = Math.floor(moneyGain * 1.15);
+                }
+                if (echoBuffs.algoBoostTracks > 0) {
+                    echoBuffs.algoBoostTracks = Math.max(0, echoBuffs.algoBoostTracks - 1);
+                    follGain = Math.floor(follGain * 1.35);
+                    viralChance *= 2.0;
+                    critique += "\n[Echo Algo Push] Portée SoundNet amplifiée : +35% Fans & chances virales x2 !";
+                }
+                // Passifs réels d'Alignement (Puriste vs Algorithme)
+                if (alignVal >= 30) {
+                    if (result.score === 3) moneyGain = Math.floor(moneyGain * 1.15);
+                    if (repGain > 0) repGain = Math.ceil(repGain * 1.25);
+                    critique += "\n[Alignement Puriste] Intégrité artistique : +25% REP" + (result.score === 3 ? " & +15% Cash Banger." : ".");
+                } else if (alignVal <= -30) {
+                    follGain = Math.floor(follGain * 1.25);
+                    moneyGain = Math.floor(moneyGain * 1.15);
+                    if (repGain > 0) repGain = Math.max(1, Math.floor(repGain * 0.85));
+                    critique += "\n[Alignement Algorithme] Format viral optimisé : +25% Fans, +15% Cash (-15% REP).";
+                } else if (echoTierNow !== 'free') {
+                    moneyGain = Math.floor(moneyGain * 1.05);
+                    follGain = Math.floor(follGain * 1.08);
+                }
+
+                // Risque réel de Scandale "Artiste IA Démasqué" si Suspicion IA >= 75%
+                const aiHeatNow = Number(state.echoAiHeat) || 0;
+                if ((usedGhostProd || usedAutoMix) && aiHeatNow >= 75) {
+                    const scandalProb = Math.min(0.85, (aiHeatNow - 60) / 100);
+                    if (Math.random() < scandalProb) {
+                        const lostFans = Math.floor((state.followers || 0) * 0.12);
+                        repGain -= 25;
+                        if (lostFans > 0) state.followers = Math.max(0, state.followers - lostFans);
+                        state.echoAiHeat = 25;
+                        critique += `\n🚨 SCANDALE IA : Un thread SoundNet prouve que tu abuses d'Echo AI (-25 REP${lostFans > 0 ? `, -${lostFans} Fans` : ''}) !`;
+                        setTimeout(() => {
+                            showToast("🚨 BAD BUZZ : Un thread SoundNet t'accuse d'être un 'Producteur IA' (-25 REP) !", "error");
+                            if (typeof playError === 'function') playError();
+                        }, 1500);
+                    }
+                }
+                if (typeof window.updateDawEchoCopilot === 'function') setTimeout(() => window.updateDawEchoCopilot(), 300);
+                if (typeof window.syncEchoSidebarUI === 'function') setTimeout(() => window.syncEchoSidebarUI(), 300);
+
                 if (Math.random() < viralChance) {
                     state.viralActive = true;
                     state.viralEndTime = getTotalMins() + 1440; // 24 hours in-game
@@ -28277,6 +28523,10 @@ document.addEventListener('mouseover', (e) => {
 
             const sList = document.getElementById('sponsor-list');
             const hList = document.getElementById('sponsor-history');
+            if (typeof window.updateSocialEchoRadar === 'function') window.updateSocialEchoRadar();
+            const echoDealTier = typeof window.getEchoTier === 'function' ? window.getEchoTier() : 'free';
+            const echoDealMult = echoDealTier === 'neural' ? 1.30 : (echoDealTier === 'pro' ? 1.15 : 1.0);
+            const echoDealPct = Math.round((echoDealMult - 1) * 100);
             
             // Render Available Deals
             let availHtml = '';
@@ -28289,6 +28539,11 @@ document.addEventListener('mouseover', (e) => {
                 // Si on a déjà ce contrat d'actif, on ne l'affiche plus dans les dispos
                 const isActive = state.activeContracts.find(c => c.id === deal.id);
                 if (isActive) return;
+
+                const effectiveReward = Math.round(deal.reward * echoDealMult);
+                const echoDealBadge = echoDealPct > 0
+                    ? `<span class="text-[8.5px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 border border-emerald-400/35 text-emerald-300">✦ ECHO +${echoDealPct}%</span>`
+                    : '';
                 
                 let repColor = "text-yellow-400"; // Neutre
                 if (deal.repCost > 20) repColor = "text-rose-500";
@@ -28328,7 +28583,7 @@ document.addEventListener('mouseover', (e) => {
                             
                             <!-- Visual Trade-off Dilemma Bar -->
                             <div class="mt-3 flex items-center justify-between text-[9px] font-retro tracking-widest mb-1">
-                                <span class="text-[#4ADE80]">+$${deal.reward}</span>
+                                <span class="text-[#4ADE80] flex items-center gap-1.5">+$${effectiveReward} ${echoDealBadge}</span>
                                 <span class="${repColor}">${deal.repCost > 0 ? '-' : '+'}${Math.abs(deal.repCost)} REP</span>
                             </div>
                             <div class="w-full h-1.5 bg-black/50 rounded-full overflow-hidden flex">
@@ -28418,9 +28673,12 @@ document.addEventListener('mouseover', (e) => {
             
             state.cooldowns.storyTimeReady = total + 120;
             
-            // Calcul des gains (Version Grind)
-            // Gain de base fixe + un micro-pourcentage des fans (0.1%) pour que le bouton reste utile en late-game
-            const followerGain = Math.floor((state.rep * 1.5) + 15 + (state.followers * 0.001));
+            // Calcul des gains (Version Grind + Bonus Echo AI / Alignement Algorithme)
+            const echoStoryTier = typeof window.getEchoTier === 'function' ? window.getEchoTier() : 'free';
+            let storyMult = 1.0;
+            if (echoStoryTier !== 'free') storyMult += 0.15;
+            if ((Number(state.echoAlignment) || 0) <= -30) storyMult += 0.20;
+            const followerGain = Math.floor(((state.rep * 1.5) + 15 + (state.followers * 0.001)) * storyMult);
             
             // Le grind de la réputation doit être lent mais constant (1 à 2 points max par story)
             let repGain = Math.floor(Math.random() * 2) + 1; 
@@ -28449,6 +28707,11 @@ document.addEventListener('mouseover', (e) => {
         function acceptDeal(id) {
             const deal = TIERED_DEALS.find(x => x.id === id);
             if (!deal) return;
+
+            const echoTier = typeof window.getEchoTier === 'function' ? window.getEchoTier() : 'free';
+            const echoDealMult = echoTier === 'neural' ? 1.30 : (echoTier === 'pro' ? 1.15 : 1.0);
+            const finalReward = Math.round(deal.reward * echoDealMult);
+            const echoBonusNote = echoDealMult > 1.0 ? ` (✦ Echo Agent +${Math.round((echoDealMult - 1) * 100)}%)` : '';
             
             // Marquer comme accepté dans le pool
             if (state.dealPool[deal.id]) {
@@ -28457,12 +28720,12 @@ document.addEventListener('mouseover', (e) => {
             
             if (!deal.duration || deal.duration <= 0) {
                 // Paiement instantané
-                logMoney(deal.reward, 'Sponsor: ' + deal.name);
+                logMoney(finalReward, 'Sponsor: ' + deal.name + echoBonusNote);
                 state.rep = Math.max(0, (parseInt(state.rep, 10) || 0) - deal.repCost);
                 if (typeof spawnFloatingText === 'function') spawnFloatingText('hud-rep-num', (deal.repCost > 0 ? '-' : '+') + Math.abs(deal.repCost) + ' REP', deal.repCost > 0 ? 'text-rose-500' : 'text-emerald-400');
-                showToast(`Contrat signé avec ${deal.name} ! (Paiement immédiat)`, 'success');
+                showToast(`Contrat signé avec ${deal.name} : +$${finalReward}${echoBonusNote}`, 'success');
                 if (!state.completedDeals) state.completedDeals = [];
-                state.completedDeals.push({ id: deal.id, name: deal.name, emoji: deal.emoji, totalPay: deal.reward, totalRep: deal.repCost });
+                state.completedDeals.push({ id: deal.id, name: deal.name, emoji: deal.emoji, totalPay: finalReward, totalRep: deal.repCost });
             } else {
                 // Ajouter aux contrats actifs
                 state.activeContracts.push({
@@ -28471,10 +28734,10 @@ document.addEventListener('mouseover', (e) => {
                     emoji: deal.emoji,
                     duration: deal.duration,
                     daysLeft: deal.duration,
-                    reward: deal.reward,
+                    reward: finalReward,
                     repCost: deal.repCost
                 });
-                showToast(`Contrat signé avec ${deal.name} pour ${deal.duration} jours !`, 'success');
+                showToast(`Contrat signé avec ${deal.name} (${deal.duration}j · $${finalReward})${echoBonusNote}`, 'success');
             }
             
             if (typeof updateHUD === 'function') updateHUD();
@@ -29771,574 +30034,894 @@ document.addEventListener('mouseover', (e) => {
 
         
     // ==========================================
-// ECHO SYSTEM (Assistante IA)
-// ==========================================
+    // ECHO AI 2.0 — REALISTIC SAAS ENGINE & GAMEPLAY INTEGRATION
+    // ==========================================
+    const ECHO_PLANS = {
+        free:   { id: 'free',   name: 'Forfait Free',          model: 'Echo-3.5 Lite',   cost: 0,    negoBonus: 0,  desc: 'Chat studio, audit de base & dilemmes.' },
+        pro:    { id: 'pro',    name: 'Echo-4 Pro',            model: 'Echo-4 Pro',      cost: 600,  negoBonus: 15, desc: 'Radar exact, Auto-Mix DAW, Anti-Scam DM & Négo +15%.' },
+        neural: { id: 'neural', name: 'Echo-4.5 Studio Neural', model: 'Echo-4.5 Neural', cost: 1800, negoBonus: 30, desc: 'Tout Pro + Ghost-Prod IA, Boost Algo & Négo +30%.' }
+    };
 
-function initEchoApp() {
-    const paywall = document.getElementById('echo-paywall');
-    const activeView = document.getElementById('echo-active');
-    
-    const totalMins = getTotalMins();
-    const subExpiry = parseInt(state.cooldowns.echoSubExpiry, 10) || 0;
-    const trialUsed = state.echoTrialUsed;
-
-    if (subExpiry === 0 || totalMins >= subExpiry) {
-        // Bloqué : Pas d'abonnement ou expiré
-        paywall.classList.remove('hidden');
-        paywall.style.display = 'flex';
-        activeView.classList.add('hidden');
-        activeView.style.display = 'none';
-        
-        document.getElementById('btn-echo-trial').style.display = trialUsed ? 'none' : 'block';
-    } else {
-        // Accès autorisé
-        paywall.classList.add('hidden');
-        paywall.style.display = 'none';
-        activeView.classList.remove('hidden');
-        activeView.style.display = 'flex';
-        
-        // Bug 4 - Vider et réinitialiser l'historique visuel
-        document.getElementById('echo-dialogue-history').innerHTML = `
-          <div class="flex items-start gap-3">
-            <div class="w-2 h-2 rounded-full bg-[var(--retro-orange)] shadow-[0_0_8px_rgba(251,191,36,0.8)] mt-2 flex-shrink-0 animate-pulse"></div>
-            <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl rounded-tl-none p-3 text-sm text-gray-200 max-w-[80%]" id="echo-intro-text">
-              Analyse en cours...
-            </div>
-          </div>`;
-        
-        // Mise à jour visuelle du timer
-        const timeLeft = subExpiry - totalMins;
-        document.getElementById('echo-sub-timer').innerText = `EXP: ${formatTimeLeft(timeLeft)}`;
-        
-        // On prépare le terrain pour la prochaine étape
-        generateEchoContext();
-        renderEchoMainChoices();
-    }
-}
-
-function purchaseEchoSub() {
-    if (state.money < ECHO_DATA.costPerWeek) {
-        showToast("Fonds insuffisants. Reviens quand tu auras percé.", "error");
-        playError();
-        return;
-    }
-    
-    logMoney(-ECHO_DATA.costPerWeek, "Abo ECHO OS");
-    
-    const totalMins = getTotalMins();
-    const currentExpiry = parseInt(state.cooldowns.echoSubExpiry, 10) || 0;
-    
-    // Ajoute le temps au cooldown existant ou démarre un nouveau compte à rebours
-    const baseTime = Math.max(totalMins, currentExpiry);
-    state.cooldowns.echoSubExpiry = baseTime + ECHO_DATA.subDurationMins;
-    
-    showToast("Abonnement ECHO activé (7 jours in-game).", "success");
-    playSuccess();
-    
-    // Bug 3 - Déclencher l'achievement echo_scammed
-    if (typeof checkAchievement === 'function') {
-        checkAchievement('echo_scammed', () => true);
-    }
-    
-    saveGame();
-    initEchoApp();
-}
-
-function startEchoTrial() {
-    if (state.echoTrialUsed) return;
-    
-    state.echoTrialUsed = true;
-    state.cooldowns.echoSubExpiry = getTotalMins() + ECHO_DATA.trialDurationMins;
-    
-    showToast("Période d'essai ECHO activée (2 jours in-game).", "success");
-    playSuccess();
-    saveGame();
-    initEchoApp();
-}
-
-// --- UTILITAIRE LOCAL (pour éviter les collisions) ---
-function _getEchoRandom(arr) {
-    if (!arr || !arr.length) return "";
-    return arr[Math.floor(Math.random() * arr.length)];
-}
-
-// --- 1. LECTURE DU CONTEXTE (Intro automatique) ---
-function findRecentEchoMemory(category, withinDays = 15) {
-    if (!state.echoHistory) return null;
-    const recent = state.echoHistory.filter(e => 
-        e.category === category && (state.day - e.day) <= withinDays
-    );
-    return recent.length > 0 ? recent[recent.length - 1] : null;
-}
-
-function generateEchoContext() {
-    const introEl = document.getElementById('echo-intro-text');
-    let text = "";
-    let prefix = "";
-
-    // TÂCHE 3 : Priorité 33% pour la stance si non-neutre
-    if (state.echoStance && state.echoStance !== 'neutral' && Math.random() < 0.33) {
-        text = _getEchoRandom(ECHO_DATA.intros[state.echoStance]);
-        // Modificateur textuel selon echoTrust
-        if (state.echoTrust > 75) text += " On est une bonne équipe.";
-        if (state.echoTrust < 25) text += " Pas que j'apprécie ta compagnie, mais c'est un fait.";
-        if (introEl) introEl.innerText = text;
-        return;
+    function _ensureEchoState() {
+        if (!state.cooldowns) state.cooldowns = {};
+        if (!state.echoBuffs || typeof state.echoBuffs !== 'object') {
+            state.echoBuffs = { algoBoostTracks: 0, ghostProdReady: false, autoMixReady: false, trendDay: 0, trendGenreId: null, lastAlgoPushDay: 0 };
+        }
+        if (typeof state.echoAlignment !== 'number') state.echoAlignment = 0;
+        if (typeof state.echoTrust !== 'number') state.echoTrust = 50;
+        if (typeof state.echoAiHeat !== 'number') state.echoAiHeat = 0;
+        if (!state.echoPlan) state.echoPlan = 'free';
     }
 
-    // Sécurité pour récupérer le rang actuel selon la structure existante
-    const currentRank = typeof getCurrentRank === 'function' ? getCurrentRank() : null;
-    
-    // Bug 2 - Obsolescence : Remplacement de currentRank.index par currentRank.id >= 4
-    const isMaxRank = (currentRank && currentRank.id >= 4) || state.followers >= 500000;
+    function getEchoTier() {
+        _ensureEchoState();
+        const subExpiry = parseInt(state.cooldowns.echoSubExpiry, 10) || 0;
+        if (subExpiry > getTotalMins()) {
+            return state.echoPlan === 'neural' ? 'neural' : 'pro';
+        }
+        return 'free';
+    }
+    window.getEchoTier = getEchoTier;
 
-    if (isMaxRank) {
-        text = ECHO_DATA.intros.obsolete;
-    } 
-    // B. ANALYSE DES FLOPS
-    else if (state.stats?.consecutiveFlops >= 3) {
-        text = _getEchoRandom(ECHO_DATA.intros.highFlops);
-    } 
-    // C. ANALYSE DE L'ÉNERGIE
-    else if (state.energy <= 25) {
-        text = _getEchoRandom(ECHO_DATA.intros.lowEnergy);
-    } 
-    // D. ALIGNEMENT CYNIQUE
-    else if (state.echoAlignment <= -30) {
-        text = _getEchoRandom(ECHO_DATA.intros.cynical);
-    } 
-    // E. ALIGNEMENT PURISTE
-    else if (state.echoAlignment >= 30) {
-        text = _getEchoRandom(ECHO_DATA.intros.purist);
-    } 
-    // F. NEUTRE
-    else {
-        text = _getEchoRandom(ECHO_DATA.intros.neutral);
+    function getDailyTrendGenre() {
+        _ensureEchoState();
+        if (typeof DAW_GENRES === 'undefined' || !DAW_GENRES.length) return null;
+        const curDay = Math.max(1, parseInt(state.day, 10) || 1);
+        if (state.echoBuffs.trendDay === curDay && state.echoBuffs.trendGenreId) {
+            const found = DAW_GENRES.find(g => g.id === state.echoBuffs.trendGenreId);
+            if (found) return found;
+        }
+        const tracks = (state.stats && typeof state.stats.tracks === 'number') ? state.stats.tracks : 0;
+        const unlocked = DAW_GENRES.filter(g => tracks >= g.unlockAt);
+        const pool = unlocked.length > 0 ? unlocked : DAW_GENRES.slice(0, 2);
+        const pick = pool[(curDay * 7 + 3) % pool.length];
+        state.echoBuffs.trendDay = curDay;
+        state.echoBuffs.trendGenreId = pick.id;
+        return pick;
+    }
+    window.getDailyTrendGenre = getDailyTrendGenre;
+
+    function _echoVoiceLabel(v) {
+        return v === 'm' ? 'Male Voc' : (v === 'f' ? 'Fem Voc' : 'Instru');
     }
 
-    // TÂCHE 1.3 : Modificateur Mémoire
-    let memoryMatched = false;
-    // On vérifie une catégorie au hasard parmi celles qu'on veut tracker
-    const memCats = ["career_focus", "social_vs_studio", "collab_loyalty"];
-    for (let c of memCats) {
-        const memory = findRecentEchoMemory(c, 15);
-        if (memory) {
-            const arr = ECHO_DATA.intros.reminders[c] || ECHO_DATA.intros.reminders["generic"];
-            prefix = _getEchoRandom(arr).replace("%d", state.day - memory.day) + " ";
-            memoryMatched = true;
-            break;
+    function _escapeEchoHtml(str) {
+        return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function syncEchoSidebarUI() {
+        _ensureEchoState();
+        const tier = getEchoTier();
+        const plan = ECHO_PLANS[tier] || ECHO_PLANS.free;
+        const totalMins = getTotalMins();
+        const subExpiry = parseInt(state.cooldowns.echoSubExpiry, 10) || 0;
+
+        const modelPill = document.getElementById('echo-header-model-pill');
+        if (modelPill) {
+            modelPill.textContent = plan.model;
+            modelPill.className = tier === 'neural'
+                ? 'px-2 py-0.5 rounded-md bg-violet-500/15 border border-violet-400/35 text-[10px] font-mono text-violet-200'
+                : (tier === 'pro'
+                    ? 'px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-400/35 text-[10px] font-mono text-emerald-300'
+                    : 'px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-mono text-slate-300');
+        }
+
+        const planNameEl = document.getElementById('echo-sidebar-plan-name');
+        if (planNameEl) planNameEl.textContent = plan.name;
+        const planDescEl = document.getElementById('echo-sidebar-plan-desc');
+        if (planDescEl) planDescEl.textContent = plan.desc;
+
+        const timerEl = document.getElementById('echo-sub-timer');
+        if (timerEl) {
+            if (tier === 'free') {
+                timerEl.textContent = 'FREE';
+                timerEl.className = 'text-[10px] font-mono text-slate-400';
+            } else {
+                const left = Math.max(0, subExpiry - totalMins);
+                timerEl.textContent = typeof formatTimeLeft === 'function' ? formatTimeLeft(left) : `${Math.ceil(left / 1440)}J`;
+                timerEl.className = tier === 'neural' ? 'text-[10px] font-mono text-violet-300' : 'text-[10px] font-mono text-emerald-400';
+            }
+        }
+
+        // Statut des modules AbleOS
+        const setMod = (id, active, lockedText, activeColor = 'text-emerald-400') => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = active ? 'ACTIF' : lockedText;
+            el.className = active ? `text-[9.5px] font-mono font-semibold ${activeColor}` : 'text-[9.5px] font-mono text-slate-500';
+        };
+        setMod('echo-mod-radar', tier !== 'free', 'BASE');
+        setMod('echo-mod-scam', tier !== 'free', 'PRO');
+        setMod('echo-mod-daw', tier !== 'free', 'PRO');
+        setMod('echo-mod-neural', tier === 'neural', 'NEURAL', 'text-violet-300');
+
+        // Jauge Alignement + Passif actif
+        const align = Math.max(-100, Math.min(100, Number(state.echoAlignment) || 0));
+        const alignPct = (align + 100) / 2;
+        const alignBar = document.getElementById('echo-alignment-bar');
+        const alignLbl = document.getElementById('echo-alignment-label');
+        const alignPerk = document.getElementById('echo-alignment-perk');
+        if (alignBar) alignBar.style.width = `${alignPct}%`;
+        if (alignLbl && alignPerk) {
+            if (align >= 30) {
+                alignLbl.textContent = 'PURISTE';
+                alignLbl.className = 'font-mono text-emerald-300';
+                alignPerk.textContent = '+25% REP · +15% Banger · -40% Risque IA';
+            } else if (align <= -30) {
+                alignLbl.textContent = 'ALGORITHME';
+                alignLbl.className = 'font-mono text-amber-300';
+                alignPerk.textContent = '+25% Fans · +15% Cash · +35% Risque IA';
+            } else {
+                alignLbl.textContent = 'ÉQUILIBRÉ';
+                alignLbl.className = 'font-mono text-slate-200';
+                alignPerk.textContent = '+5% Cash · +8% Fans (Zéro malus)';
+            }
+        }
+
+        // Jauge Suspicion IA (Heat)
+        const heat = Math.max(0, Math.min(100, Math.round(Number(state.echoAiHeat) || 0)));
+        const heatBar = document.getElementById('echo-heat-bar');
+        const heatLbl = document.getElementById('echo-heat-label');
+        if (heatBar) {
+            heatBar.style.width = `${heat}%`;
+            heatBar.className = heat >= 75
+                ? 'h-full bg-rose-500 transition-all duration-300'
+                : (heat >= 40 ? 'h-full bg-amber-400 transition-all duration-300' : 'h-full bg-emerald-400 transition-all duration-300');
+        }
+        if (heatLbl) {
+            heatLbl.textContent = heat >= 75 ? `${heat}% · DANGER` : (heat >= 40 ? `${heat}% · SURVEILLÉ` : `${heat}% · CLEAN`);
+            heatLbl.className = heat >= 75 ? 'font-mono text-rose-400 animate-pulse' : (heat >= 40 ? 'font-mono text-amber-300' : 'font-mono text-emerald-400');
+        }
+
+        // Highlight plan actif dans la vue Forfaits
+        ['free', 'pro', 'neural'].forEach(pId => {
+            const card = document.getElementById(`echo-plan-card-${pId}`);
+            if (card) card.classList.toggle('is-current', tier === pId);
+        });
+        const trialBtn = document.getElementById('btn-echo-trial');
+        if (trialBtn) trialBtn.style.display = state.echoTrialUsed ? 'none' : 'block';
+    }
+    window.syncEchoSidebarUI = syncEchoSidebarUI;
+
+    function toggleEchoPlansView(forceShow = null) {
+        const chatView = document.getElementById('echo-active');
+        const plansView = document.getElementById('echo-paywall');
+        const toggleBtn = document.getElementById('btn-echo-toggle-plans');
+        if (!chatView || !plansView) return;
+
+        const currentlyPlans = plansView.style.display === 'flex' && !plansView.classList.contains('hidden');
+        const showPlans = forceShow !== null ? Boolean(forceShow) : !currentlyPlans;
+
+        if (showPlans) {
+            chatView.classList.add('hidden');
+            chatView.style.display = 'none';
+            plansView.classList.remove('hidden');
+            plansView.style.display = 'flex';
+            if (toggleBtn) toggleBtn.textContent = 'Chat';
+        } else {
+            plansView.classList.add('hidden');
+            plansView.style.display = 'none';
+            chatView.classList.remove('hidden');
+            chatView.style.display = 'flex';
+            if (toggleBtn) toggleBtn.textContent = 'Forfaits';
+        }
+        syncEchoSidebarUI();
+    }
+    window.toggleEchoPlansView = toggleEchoPlansView;
+
+    // --- INTÉGRATION DAW : COPILOTE TEMPS RÉEL ---
+    function updateDawEchoCopilot() {
+        _ensureEchoState();
+        const statusEl = document.getElementById('daw-echo-status');
+        const dotEl = document.getElementById('daw-echo-dot');
+        const calBtn = document.getElementById('btn-daw-echo-calibrate');
+        const ghostBtn = document.getElementById('btn-daw-echo-ghost');
+        if (!statusEl) return;
+
+        const tier = getEchoTier();
+        const trend = getDailyTrendGenre();
+        const isTrendMatch = trend && typeof currentDawGenre !== 'undefined' && currentDawGenre === trend.id;
+        const ghostArmed = Boolean(state.echoBuffs.ghostProdReady);
+        const autoMixArmed = Boolean(state.echoBuffs.autoMixReady);
+
+        if (tier === 'free') {
+            if (dotEl) dotEl.className = 'w-2 h-2 rounded-full bg-slate-500 shrink-0';
+            statusEl.innerHTML = `Mode Lite · <span class="text-slate-300">Passe Pro pour Auto-Calibrer BPM/Voix &amp; voir la Tendance +40%</span>`;
+        } else {
+            if (dotEl) dotEl.className = ghostArmed
+                ? 'w-2 h-2 rounded-full bg-violet-400 shrink-0 shadow-[0_0_8px_rgba(167,139,250,0.85)] animate-pulse'
+                : 'w-2 h-2 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.75)]';
+            const parts = [];
+            if (isTrendMatch) parts.push(`<span class="text-emerald-300 font-semibold">🔥 Genre Tendance (+40% Fans)</span>`);
+            else if (trend) parts.push(`Tendance : <strong class="text-slate-200">${trend.name}</strong>`);
+            if (autoMixArmed) parts.push(`<span class="text-emerald-300">Auto-Mix Armé</span>`);
+            if (ghostArmed) parts.push(`<span class="text-violet-300 font-semibold">Ghost-Prod Armé (-50% Énergie)</span>`);
+            statusEl.innerHTML = parts.join(' · ') || 'Session analysée · Prêt.';
+        }
+
+        if (calBtn) {
+            calBtn.textContent = autoMixArmed ? '✓ Calibré (+15%)' : (tier === 'free' ? 'Auto-Calibrer (Pro)' : 'Auto-Calibrer');
+        }
+        if (ghostBtn) {
+            ghostBtn.textContent = ghostArmed ? '✓ Ghost-Prod Armé' : (tier === 'neural' ? 'Ghost-Prod IA' : 'Ghost-Prod (Neural)');
+        }
+    }
+    window.updateDawEchoCopilot = updateDawEchoCopilot;
+
+    function echoDawAutoCalibrate() {
+        _ensureEchoState();
+        const tier = getEchoTier();
+        if (tier === 'free') {
+            showToast("Auto-Calibrage DAW réservé à Echo-4 Pro ou Neural.", "info");
+            openApp('app-echo');
+            toggleEchoPlansView(true);
+            return;
+        }
+        const g = (typeof DAW_GENRES !== 'undefined') ? DAW_GENRES.find(x => x.id === currentDawGenre) : null;
+        if (!g) {
+            showToast("Sélectionne d'abord un genre dans AbleStudio.", "warning");
+            return;
+        }
+        const bpmInput = document.getElementById('daw-bpm');
+        const bpmVal = document.getElementById('bpm-val');
+        if (bpmInput) bpmInput.value = g.targetBpm;
+        if (bpmVal) bpmVal.innerText = String(g.targetBpm);
+        if (typeof selectDawVoice === 'function') selectDawVoice(g.targetVoice);
+        state.echoBuffs.autoMixReady = true;
+        saveGame();
+        updateDawEchoCopilot();
+        syncEchoSidebarUI();
+        showToast(`✦ Echo Auto-Mix : ${g.name} calibré (${g.targetBpm} BPM · ${_echoVoiceLabel(g.targetVoice)} · +15% cash).`, "success");
+        if (typeof playSuccess === 'function') playSuccess();
+    }
+    window.echoDawAutoCalibrate = echoDawAutoCalibrate;
+
+    function echoArmGhostProd() {
+        _ensureEchoState();
+        const tier = getEchoTier();
+        if (tier !== 'neural') {
+            showToast("Ghost-Production IA nécessite Echo-4.5 Studio Neural.", "info");
+            openApp('app-echo');
+            toggleEchoPlansView(true);
+            return;
+        }
+        if (state.echoBuffs.ghostProdReady) {
+            showToast("Ghost-Prod IA déjà armée pour ton prochain export DAW.", "info");
+            return;
+        }
+        state.echoBuffs.ghostProdReady = true;
+        // Applique aussi le réglage optimal sur le DAW si ouvert
+        const g = (typeof DAW_GENRES !== 'undefined') ? DAW_GENRES.find(x => x.id === currentDawGenre) : null;
+        if (g) {
+            const bpmInput = document.getElementById('daw-bpm');
+            const bpmVal = document.getElementById('bpm-val');
+            if (bpmInput) bpmInput.value = g.targetBpm;
+            if (bpmVal) bpmVal.innerText = String(g.targetBpm);
+            if (typeof selectDawVoice === 'function') selectDawVoice(g.targetVoice);
+        }
+        saveGame();
+        updateDawEchoCopilot();
+        syncEchoSidebarUI();
+        const heatWarn = (Number(state.echoAiHeat) || 0) >= 55 ? " ⚠ Attention : Suspicion IA élevée !" : "";
+        showToast(`✦ Ghost-Prod IA armée : -50% énergie & Banger garanti au prochain export.${heatWarn}`, "success");
+        if (typeof playSuccess === 'function') playSuccess();
+    }
+    window.echoArmGhostProd = echoArmGhostProd;
+
+    // --- INTÉGRATION SOUNDNET : RADAR & BOOST ALGO ---
+    function updateSocialEchoRadar() {
+        _ensureEchoState();
+        const pillEl = document.getElementById('social-echo-tier-pill');
+        const textEl = document.getElementById('social-echo-radar-text');
+        const boostBtn = document.getElementById('btn-social-echo-boost');
+        if (!textEl) return;
+
+        const tier = getEchoTier();
+        const trend = getDailyTrendGenre();
+        const boostCount = state.echoBuffs.algoBoostTracks || 0;
+
+        if (pillEl) {
+            pillEl.textContent = tier === 'neural' ? 'NEURAL' : (tier === 'pro' ? 'PRO' : 'LITE');
+            pillEl.className = tier === 'neural'
+                ? 'text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-violet-500/20 border border-violet-400/35 text-violet-200'
+                : (tier === 'pro'
+                    ? 'text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-400/35 text-emerald-300'
+                    : 'text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400');
+        }
+
+        if (tier === 'free') {
+            textEl.innerHTML = `Signal tendance détecté sur SoundNet (<span class="text-slate-400">débloque Echo Pro pour révéler le genre +40% &amp; protéger tes DMs</span>).`;
+        } else if (trend) {
+            const boostTxt = boostCount > 0 ? ` · <span class="text-cyan-300 font-semibold">Boost Algo armé (${boostCount})</span>` : '';
+            textEl.innerHTML = `Genre chaud du jour : <strong class="text-emerald-300">${trend.name}</strong> (${trend.targetBpm} BPM · ${_echoVoiceLabel(trend.targetVoice)}) → <strong>+40% Fans / +30% Cash</strong>${boostTxt}`;
+        }
+
+        if (boostBtn) {
+            if (tier !== 'neural') {
+                boostBtn.textContent = 'Boost Algo (Neural)';
+            } else if (boostCount > 0) {
+                boostBtn.textContent = `✓ Boost Armé (${boostCount})`;
+            } else if (state.echoBuffs.lastAlgoPushDay === state.day) {
+                boostBtn.textContent = 'Prêt demain';
+            } else {
+                boostBtn.textContent = 'Armer Boost Algo';
+            }
+        }
+    }
+    window.updateSocialEchoRadar = updateSocialEchoRadar;
+
+    function echoActivateAlgoPush() {
+        _ensureEchoState();
+        const tier = getEchoTier();
+        if (tier !== 'neural') {
+            showToast("Boost Algorithme SoundNet réservé à Echo-4.5 Neural.", "info");
+            openApp('app-echo');
+            toggleEchoPlansView(true);
+            return;
+        }
+        if (state.echoBuffs.lastAlgoPushDay === state.day) {
+            showToast("Boost Algo déjà utilisé aujourd'hui. Nouveau créneau demain.", "warning");
+            return;
+        }
+        state.echoBuffs.lastAlgoPushDay = state.day;
+        state.echoBuffs.algoBoostTracks = (state.echoBuffs.algoBoostTracks || 0) + 1;
+        const alignVal = Number(state.echoAlignment) || 0;
+        const addHeat = alignVal >= 30 ? 5 : 9;
+        state.echoAiHeat = Math.min(100, (Number(state.echoAiHeat) || 0) + addHeat);
+        saveGame();
+        updateSocialEchoRadar();
+        syncEchoSidebarUI();
+        showToast(`✦ Echo Algo Push armé : +35% Fans & chances virales x2 sur ton prochain son (+${addHeat}% Suspicion IA).`, "success");
+        if (typeof playSuccess === 'function') playSuccess();
+    }
+    window.echoActivateAlgoPush = echoActivateAlgoPush;
+
+    function echoApplyTrendToDaw() {
+        const trend = getDailyTrendGenre();
+        if (!trend) return;
+        const tier = getEchoTier();
+        if (tier === 'free') {
+            toggleEchoPlansView(true);
+            return;
+        }
+        openApp('app-daw');
+        if (typeof selectDawGenre === 'function') selectDawGenre(trend.id, trend.name);
+        const bpmInput = document.getElementById('daw-bpm');
+        const bpmVal = document.getElementById('bpm-val');
+        if (bpmInput) bpmInput.value = trend.targetBpm;
+        if (bpmVal) bpmVal.innerText = String(trend.targetBpm);
+        if (typeof selectDawVoice === 'function') selectDawVoice(trend.targetVoice);
+        state.echoBuffs.autoMixReady = true;
+        saveGame();
+        updateDawEchoCopilot();
+        showToast(`✦ DAW calibré sur la tendance ${trend.name} (${trend.targetBpm} BPM · ${_echoVoiceLabel(trend.targetVoice)}).`, "success");
+    }
+    window.echoApplyTrendToDaw = echoApplyTrendToDaw;
+
+    // --- INITIALISATION & ABONNEMENTS SAAS ---
+    function initEchoApp() {
+        _ensureEchoState();
+        toggleEchoPlansView(false);
+        syncEchoSidebarUI();
+
+        const history = document.getElementById('echo-dialogue-history');
+        const choices = document.getElementById('echo-action-choices');
+        if (choices) {
+            choices.innerHTML = '';
+            choices.classList.add('hidden');
+        }
+        if (history) {
+            history.innerHTML = '';
+            const tier = getEchoTier();
+            const trend = getDailyTrendGenre();
+            const unreadDms = (state.dms || []).filter(d => !d.resolved);
+            const scamCount = unreadDms.filter(d => (DM_TEMPLATES.spam || []).some(t => t.id === d.templateId)).length;
+            const legitCount = unreadDms.length - scamCount;
+
+            // Intro contextuelle réaliste + carte télémétrie studio
+            const greeting = _buildEchoLiveBriefing(tier, trend, unreadDms.length, scamCount);
+            const trendPill = tier === 'free'
+                ? `<span class="text-slate-400">Verrouillé (Pro)</span>`
+                : `<span class="text-emerald-300 font-semibold">${trend ? trend.name : '—'} (+40%)</span>`;
+            const heat = Math.round(Number(state.echoAiHeat) || 0);
+            const heatTone = heat >= 75 ? 'text-rose-400' : (heat >= 40 ? 'text-amber-300' : 'text-emerald-400');
+
+            const cardHtml = `
+                <div class="echo-card p-3 mt-2.5 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-[11px]">
+                    <div class="p-2 rounded-lg bg-black/35 border border-white/5">
+                        <div class="text-[9.5px] font-mono uppercase text-slate-500">Tendance Jour ${state.day}</div>
+                        <div class="mt-0.5 truncate">${trendPill}</div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-black/35 border border-white/5">
+                        <div class="text-[9.5px] font-mono uppercase text-slate-500">Messagerie DM</div>
+                        <div class="mt-0.5 text-slate-200">${unreadDms.length === 0 ? 'Boîte calme' : (tier !== 'free' ? `${legitCount} deal · <span class="text-rose-400">${scamCount} scam</span>` : `${unreadDms.length} non lu(s)`)}</div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-black/35 border border-white/5">
+                        <div class="text-[9.5px] font-mono uppercase text-slate-500">Suspicion IA</div>
+                        <div class="mt-0.5 font-mono ${heatTone}">${heat}%</div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-black/35 border border-white/5">
+                        <div class="text-[9.5px] font-mono uppercase text-slate-500">Bonus Négo</div>
+                        <div class="mt-0.5 font-mono text-emerald-300">${tier === 'neural' ? '+30% Cash' : (tier === 'pro' ? '+15% Cash' : '0% (Lite)')}</div>
+                    </div>
+                </div>`;
+            appendEchoDialogue(greeting, 'echo', false, null, 0, cardHtml, true);
         }
     }
 
-    // Modificateurs de ton liés à echoTrust (Tâche 2.5)
-    if (state.echoTrust > 75) {
-        text = "Salut boss. " + text;
-    } else if (state.echoTrust < 25) {
-        text = "[INIT_ERROR_IGNORE] " + text;
+    function _buildEchoLiveBriefing(tier, trend, unreadCount, scamCount) {
+        if ((state.energy || 100) <= 25) {
+            return `Énergie critique (${Math.round(state.energy)}%). Je te déconseille de mixer sans repos — ou arme Ghost-Prod IA pour diviser le coût énergétique par 2.`;
+        }
+        if ((state.stats?.consecutiveFlops || 0) >= 2) {
+            return `J'ai détecté ${state.stats.consecutiveFlops} flops récents. Utilise le Radar Tendances ou l'Auto-Calibrage DAW pour recaler ton BPM et ta voix avant le prochain export.`;
+        }
+        if (tier !== 'free' && scamCount > 0) {
+            return `Bouclier Anti-Scam actif : j'ai repéré ${scamCount} arnaque${scamCount > 1 ? 's' : ''} dans tes DMs SoundNet. ${trend ? `Côté sorties, le genre chaud aujourd'hui est ${trend.name} (+40% fans).` : ''}`;
+        }
+        if (state.echoAlignment >= 30) {
+            return `Mode Puriste actif (+25% REP sur tes Bangers, -40% suspicion IA). Prêt à calibrer ta prochaine session ou auditer tes contrats.`;
+        }
+        if (state.echoAlignment <= -30) {
+            return `Mode Algorithme actif (+25% streams, +15% cash). On optimise la portée aujourd'hui — garde juste un œil sur ta jauge de suspicion IA.`;
+        }
+        return `Contexte Studio synchronisé (Jour ${state.day} · $${formatNum(state.money || 0)} · ${formatNum(state.followers || 0)} fans). Que veux-tu optimiser maintenant ?`;
     }
 
-    if (introEl) introEl.innerText = prefix + text;
-}
+    function purchaseEchoSub(planId = 'pro') {
+        _ensureEchoState();
+        const target = (planId === 'neural') ? ECHO_PLANS.neural : ECHO_PLANS.pro;
+        if ((Number(state.money) || 0) < target.cost) {
+            showToast(`Fonds insuffisants ($${target.cost} requis pour ${target.name}).`, "error");
+            if (typeof playError === 'function') playError();
+            return;
+        }
+        logMoney(-target.cost, `Abo ${target.name}`);
+        const totalMins = getTotalMins();
+        const currentExpiry = parseInt(state.cooldowns.echoSubExpiry, 10) || 0;
+        const baseTime = (state.echoPlan === target.id && currentExpiry > totalMins) ? currentExpiry : totalMins;
+        state.cooldowns.echoSubExpiry = baseTime + ECHO_DATA.subDurationMins;
+        state.echoPlan = target.id;
 
-// --- 2. MENU PRINCIPAL DES CHOIX ---
-function renderEchoMainChoices() {
-    const container = document.getElementById('echo-action-choices');
-    container.innerHTML = '';
+        showToast(`✦ ${target.name} activé pour 7 jours in-game !`, "success");
+        if (typeof playSuccess === 'function') playSuccess();
+        if (typeof checkAchievement === 'function') checkAchievement('echo_scammed', () => true);
 
-    // Amélioration 2 - Mise à jour de l'indicateur visuel d'alignement
-    const pct = (state.echoAlignment + 100) / 2; // 0 à 100
-    const barEl = document.getElementById('echo-alignment-bar');
-    if (barEl) barEl.style.width = pct + '%';
-    const label = state.echoAlignment <= -30 ? "MODE: CYNIQUE 🤑"
-                : state.echoAlignment >= 30  ? "MODE: PURISTE 🎛️"
-                :                              "MODE: NEUTRE ⚖️";
-    const labelEl = document.getElementById('echo-alignment-label');
-    if (labelEl) labelEl.innerText = label;
-    
-    // Tâche 2 : UI Trust Bar
-    const trustBarEl = document.getElementById('echo-trust-bar');
-    if (trustBarEl) trustBarEl.style.width = state.echoTrust + '%';
-    const trustLabel = state.echoTrust <= 33 ? "MÉFIANT"
-                     : state.echoTrust >= 67 ? "CONFIANT"
-                     : "NEUTRE";
-    const trustLabelEl = document.getElementById('echo-trust-label');
-    if (trustLabelEl) trustLabelEl.innerText = `CONFIANCE: ${trustLabel}`;
-
-    // Amélioration 1 - Cooldown de 30 min in-game
-    const totalMins = getTotalMins();
-    const queryReady = parseInt(state.cooldowns.echoQueryReady, 10) || 0;
-    if (totalMins < queryReady) {
-        const diff = queryReady - totalMins;
-        container.innerHTML = `<p class="text-[10px] text-[var(--text-muted)] font-retro text-center py-3 uppercase tracking-wider">Prochain conseil dans : ${diff} MIN</p>`;
-        return;
+        saveGame();
+        updateHUD();
+        syncEchoSidebarUI();
+        updateDawEchoCopilot();
+        updateSocialEchoRadar();
+        if (typeof renderDMs === 'function') renderDMs();
+        toggleEchoPlansView(false);
+        appendEchoDialogue(`Forfait ${target.name} activé. Tous tes modules AbleOS (${target.id === 'neural' ? 'Radar, Auto-Mix DAW, Anti-Scam DM, Ghost-Prod IA & Boost Algo' : 'Radar SoundNet, Auto-Mix DAW & Anti-Scam DM'}) sont maintenant en ligne.`, 'echo', false, null, 0, '', true);
     }
 
-    // On tire au sort 1 dilemme et 1 question factuelle pour ne pas surcharger l'UI
-    
-    // Tâche 1.4 : Filtrer les répétitions des dilemmes (10 jours in-game)
-    const validOrientations = ECHO_DATA.orientations.filter(o => {
-        if (!state.echoHistory) return true;
-        const recent = state.echoHistory.find(e => e.dilemmaId === o.id && (state.day - e.day) <= 10);
-        return !recent;
-    });
-    const orientationList = validOrientations.length > 0 ? validOrientations : ECHO_DATA.orientations;
-    const orientation = _getEchoRandom(orientationList);
-    
-    const factual = _getEchoRandom(ECHO_DATA.factual);
+    function startEchoTrial() {
+        _ensureEchoState();
+        if (state.echoTrialUsed) return;
+        state.echoTrialUsed = true;
+        state.echoPlan = 'pro';
+        state.cooldowns.echoSubExpiry = getTotalMins() + ECHO_DATA.trialDurationMins;
+        showToast("✦ Essai gratuit Echo-4 Pro activé (2 jours in-game) !", "success");
+        if (typeof playSuccess === 'function') playSuccess();
+        saveGame();
+        syncEchoSidebarUI();
+        updateDawEchoCopilot();
+        updateSocialEchoRadar();
+        if (typeof renderDMs === 'function') renderDMs();
+        toggleEchoPlansView(false);
+        appendEchoDialogue("Essai Echo-4 Pro activé pour 2 jours. Le Radar SoundNet exact, l'Auto-Calibrage DAW et le Bouclier Anti-Scam DM sont actifs.", 'echo', false, null, 0, '', true);
+    }
 
-    // Bouton 1 : Dilemme d'orientation
-    if (orientation) {
-        const btnOr = document.createElement('button');
-        btnOr.className = 'btn-action echo-btn-pop w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 flex gap-2 items-center';
-        btnOr.style.animationDelay = "0ms";
-        btnOr.innerHTML = `<span class="text-[var(--retro-orange)] font-bold">›</span> <span class="truncate">J'ai besoin d'un conseil stratégique.</span>`;
-        btnOr.onclick = () => {
-            // Le joueur pose la question
-            appendEchoDialogue("J'ai besoin d'un conseil stratégique.", 'user');
-            
-            const actionContainer = document.getElementById('echo-action-choices');
-            actionContainer.innerHTML = '';
+    function _getEchoRandom(arr) {
+        if (!arr || !arr.length) return "";
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    // --- ACTIONS RAPIDES 1-CLIC & CARTES INTERACTIVES ---
+    function runEchoQuickAction(actionType) {
+        _ensureEchoState();
+        const choicesEl = document.getElementById('echo-action-choices');
+        if (choicesEl) { choicesEl.innerHTML = ''; choicesEl.classList.add('hidden'); }
+        const tier = getEchoTier();
+
+        if (actionType === 'radar') {
+            appendEchoDialogue("Analyse la tendance SoundNet du jour.", 'user');
+            const trend = getDailyTrendGenre();
             showEchoTypingIndicator();
-            
             setTimeout(() => {
                 removeEchoTypingIndicator();
-                // ECHO pose la question/dilemme
+                if (tier === 'free') {
+                    const card = `
+                        <div class="echo-card p-3 mt-2.5 flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-xs font-semibold text-white">Radar SoundNet Exact (Echo-4 Pro)</div>
+                                <div class="text-[11px] text-slate-400 mt-0.5">Révèle le genre +40% Fans / +30% Cash du jour et calibre AbleStudio en 1 clic.</div>
+                            </div>
+                            <button type="button" onclick="toggleEchoPlansView(true)" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-black font-semibold text-[11px] shrink-0 cursor-pointer">Débloquer</button>
+                        </div>`;
+                    appendEchoDialogue(`Je détecte un pic d'écoute sur un genre ${trend && trend.targetBpm >= 130 ? 'rapide (130+ BPM)' : 'mid-tempo (< 130 BPM)'} aujourd'hui. Passe sur Echo-4 Pro pour révéler le genre exact et le calibrer automatiquement.`, 'echo', false, null, 0, card);
+                } else if (trend) {
+                    const card = `
+                        <div class="echo-card p-3 mt-2.5 flex flex-wrap items-center justify-between gap-3 border-emerald-500/30">
+                            <div>
+                                <div class="text-[10px] font-mono uppercase tracking-wider text-emerald-300">Signal Confirmé · Jour ${state.day}</div>
+                                <div class="text-sm font-bold text-white mt-0.5">${trend.name} · ${trend.targetBpm} BPM · ${_echoVoiceLabel(trend.targetVoice)}</div>
+                                <div class="text-[11px] text-slate-300 mt-0.5">Bonus garanti à l'export : <span class="text-emerald-300 font-semibold">+40% Fans</span> &amp; <span class="text-emerald-300 font-semibold">+30% Cash</span></div>
+                            </div>
+                            <button type="button" onclick="echoApplyTrendToDaw()" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-[11px] shrink-0 cursor-pointer">Appliquer au DAW →</button>
+                        </div>`;
+                    appendEchoDialogue(`Radar SoundNet calibré : les auditeurs sur-indexent sur le genre ${trend.name} aujourd'hui. Si tu exports dans ce créneau avec le bon tempo (${trend.targetBpm} BPM), tes streams décollent.`, 'echo', false, null, 0, card);
+                }
+            }, 420);
+            return;
+        }
+
+        if (actionType === 'algo') {
+            appendEchoDialogue("Prépare un Boost Algorithme pour ma prochaine sortie.", 'user');
+            showEchoTypingIndicator();
+            setTimeout(() => {
+                removeEchoTypingIndicator();
+                if (tier !== 'neural') {
+                    const card = `
+                        <div class="echo-card p-3 mt-2.5 flex items-center justify-between gap-3 border-violet-500/30">
+                            <div>
+                                <div class="text-xs font-semibold text-white">Boost Algorithme SoundNet (Studio Neural)</div>
+                                <div class="text-[11px] text-slate-400 mt-0.5">+35% Fans et chances de viralité x2 sur ta prochaine sortie.</div>
+                            </div>
+                            <button type="button" onclick="toggleEchoPlansView(true)" class="px-3 py-1.5 rounded-lg bg-violet-500 text-white font-semibold text-[11px] shrink-0 cursor-pointer">Voir Neural</button>
+                        </div>`;
+                    appendEchoDialogue("Le module Boost Algorithme nécessite Echo-4.5 Studio Neural pour pousser ta prochaine sortie dans les playlists recommandées SoundNet.", 'echo', false, null, 0, card);
+                } else {
+                    const alreadyToday = state.echoBuffs.lastAlgoPushDay === state.day;
+                    const card = `
+                        <div class="echo-card p-3 mt-2.5 flex flex-wrap items-center justify-between gap-3 border-cyan-500/30">
+                            <div>
+                                <div class="text-xs font-semibold text-white">Push Algorithme SoundNet (+35% Fans · Viral x2)</div>
+                                <div class="text-[11px] text-slate-400 mt-0.5">Charges armées : ${state.echoBuffs.algoBoostTracks || 0} · Coût : +${state.echoAlignment >= 30 ? 5 : 9}% Suspicion IA</div>
+                            </div>
+                            <button type="button" onclick="echoActivateAlgoPush()" ${alreadyToday ? 'disabled' : ''} class="px-3 py-1.5 rounded-lg ${alreadyToday ? 'bg-white/10 text-slate-400 cursor-not-allowed' : 'bg-cyan-400 hover:bg-cyan-300 text-black font-semibold cursor-pointer'} text-[11px] shrink-0">${alreadyToday ? 'Déjà utilisé aujourd\'hui' : 'Armer Boost Algo'}</button>
+                        </div>`;
+                    appendEchoDialogue(alreadyToday ? "Tu as déjà poussé l'algorithme aujourd'hui. Un nouveau créneau sera disponible demain matin." : "L'algorithme SoundNet est ouvert à une injection de portée. Arme le Boost avant d'exporter ton morceau dans le DAW.", 'echo', false, null, 0, card);
+                }
+            }, 420);
+            return;
+        }
+
+        if (actionType === 'ghost') {
+            appendEchoDialogue("Prépare une Ghost-Production IA pour économiser mon énergie.", 'user');
+            showEchoTypingIndicator();
+            setTimeout(() => {
+                removeEchoTypingIndicator();
+                const heat = Math.round(Number(state.echoAiHeat) || 0);
+                if (tier !== 'neural') {
+                    const card = `
+                        <div class="echo-card p-3 mt-2.5 flex items-center justify-between gap-3 border-violet-500/30">
+                            <div>
+                                <div class="text-xs font-semibold text-white">Ghost-Production IA (Studio Neural)</div>
+                                <div class="text-[11px] text-slate-400 mt-0.5">-50% énergie à l'export, Banger garanti &amp; +20% gains (avec risque Suspicion IA).</div>
+                            </div>
+                            <button type="button" onclick="toggleEchoPlansView(true)" class="px-3 py-1.5 rounded-lg bg-violet-500 text-white font-semibold text-[11px] shrink-0 cursor-pointer">Passer Neural</button>
+                        </div>`;
+                    appendEchoDialogue("La Ghost-Production IA est réservée au modèle Echo-4.5 Studio Neural. Elle génère la structure et le mix de base tout en exposant ta carrière au risque de scandale IA si tu en abuses.", 'echo', false, null, 0, card);
+                } else {
+                    const armed = Boolean(state.echoBuffs.ghostProdReady);
+                    const card = `
+                        <div class="echo-card p-3 mt-2.5 flex flex-wrap items-center justify-between gap-3 border-violet-500/35">
+                            <div>
+                                <div class="text-xs font-semibold text-white">Ghost-Prod IA · Risque actuel : <span class="${heat >= 70 ? 'text-rose-400' : 'text-amber-300'}">${heat}%</span></div>
+                                <div class="text-[11px] text-slate-400 mt-0.5">-50% énergie · Score Banger garanti · +20% gains · Fais des sons organiques pour refroidir la suspicion.</div>
+                            </div>
+                            <button type="button" onclick="echoArmGhostProd()" class="px-3 py-1.5 rounded-lg ${armed ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40' : 'bg-violet-500 hover:bg-violet-400 text-white font-semibold'} text-[11px] shrink-0 cursor-pointer">${armed ? '✓ Déjà armé' : 'Armer Ghost-Prod IA'}</button>
+                        </div>`;
+                    appendEchoDialogue(heat >= 65
+                        ? "Attention : ta jauge de Suspicion IA est haute. Si tu lances une Ghost-Prod maintenant, un thread SoundNet risque de t'exposer (-25 REP & perte de fans)."
+                        : "Je peux pré-produire ta prochaine session : coût énergétique divisé par deux et mix verrouillé en Banger. Utilise-le stratégiquement.", 'echo', false, null, 0, card);
+                }
+            }, 420);
+            return;
+        }
+
+        if (actionType === 'audit') {
+            appendEchoDialogue("Fais un audit complet de ma carrière, mes DMs et mes contrats.", 'user');
+            showEchoTypingIndicator();
+            setTimeout(() => {
+                removeEchoTypingIndicator();
+                const unread = (state.dms || []).filter(d => !d.resolved);
+                const scams = unread.filter(d => (DM_TEMPLATES.spam || []).some(t => t.id === d.templateId)).length;
+                const legit = unread.length - scams;
+                const availDeals = Object.values(state.dealPool || {}).filter(d => d && d.status === 'available').length;
+                const negoPct = tier === 'neural' ? 30 : (tier === 'pro' ? 15 : 0);
+                const card = `
+                    <div class="echo-card p-3 mt-2.5 space-y-2 text-[11.5px]">
+                        <div class="flex justify-between"><span class="text-slate-400">DMs en attente</span><span class="text-white font-mono">${unread.length} ${tier !== 'free' ? `(${legit} sûr · ${scams} arnaque)` : '(Upgrade Pro pour filtrer les scams)'}</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Offres Brand Deals</span><span class="text-white font-mono">${availDeals} dispo · Bonus Echo +${negoPct}%</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Ratio Bangers / Tracks</span><span class="text-emerald-300 font-mono">${state.stats?.bangers || 0} / ${state.stats?.tracks || 0}</span></div>
+                        <div class="pt-1.5 flex gap-2">
+                            <button type="button" onclick="openApp('app-social'); switchSocialTab('dms');" class="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-slate-200 cursor-pointer">Ouvrir DMs</button>
+                            <button type="button" onclick="openApp('app-social'); switchSocialTab('feed');" class="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-slate-200 cursor-pointer">Voir Brand Deals</button>
+                        </div>
+                    </div>`;
+                const advice = scams > 0 && tier !== 'free'
+                    ? `Audit terminé : ${scams} arnaque(s) bloquée(s) visuellement dans tes DMs. Ignore-les et concentre-toi sur tes ${availDeals} offres sponsors (+${negoPct}% avec Echo).`
+                    : `Audit studio : ${state.stats?.tracks || 0} titres sortis, $${formatNum(state.money || 0)} en trésorerie et ${formatNum(state.followers || 0)} fans. ${availDeals > 0 ? `${availDeals} contrats sponsors attendent sur SoundNet.` : 'Continue à sortir des Bangers pour débloquer de nouveaux sponsors.'}`;
+                appendEchoDialogue(advice, 'echo', false, null, 0, card);
+            }, 420);
+            return;
+        }
+
+        if (actionType === 'dilemma') {
+            appendEchoDialogue("Soumets-moi un dilemme stratégique de carrière.", 'user');
+            const validOrientations = ECHO_DATA.orientations.filter(o => {
+                if (!state.echoHistory) return true;
+                return !state.echoHistory.find(e => e.dilemmaId === o.id && (state.day - e.day) <= 8);
+            });
+            const orientation = _getEchoRandom(validOrientations.length > 0 ? validOrientations : ECHO_DATA.orientations);
+            showEchoTypingIndicator();
+            setTimeout(() => {
+                removeEchoTypingIndicator();
                 appendEchoDialogue(orientation.question, 'echo', false, () => {
                     renderPlayerChoiceButtons(orientation.choices, orientation.id);
                 });
-            }, 1200);
-        };
-        container.appendChild(btnOr);
+            }, 480);
+            return;
+        }
+
+        if (actionType === 'tech') {
+            const factual = _getEchoRandom(ECHO_DATA.factual);
+            if (factual) processEchoFactualAnswer(factual);
+        }
     }
+    window.runEchoQuickAction = runEchoQuickAction;
 
-    // Bouton 2 : Question technique / factuelle
-    if (factual) {
-        const btnFact = document.createElement('button');
-        btnFact.className = 'btn-action echo-btn-pop w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 flex gap-2 items-center';
-        btnFact.style.animationDelay = "100ms";
-        btnFact.innerHTML = `<span class="text-[var(--retro-orange)] font-bold">›</span> <span class="truncate">${factual.question}</span>`;
-        btnFact.onclick = () => processEchoFactualAnswer(factual);
-        container.appendChild(btnFact);
-    }
-}
+    // --- BARRE DE PROMPT NATURELLE ---
+    function submitEchoPrompt(event) {
+        if (event) event.preventDefault();
+        const input = document.getElementById('echo-prompt-input');
+        if (!input) return;
+        const raw = input.value.trim();
+        if (!raw) return;
+        input.value = '';
 
-// --- 3. GESTION DES DILEMMES (Shift d'alignement & Tiroirs) ---
-function renderEchoOrientationChoices(orientationData) {
-    const container = document.getElementById('echo-action-choices');
-    container.innerHTML = '';
-    
-    // ECHO pose le dilemme (dialogue ping-pong)
-    appendEchoDialogue(orientationData.question, 'echo', false, () => {
-        renderPlayerChoiceButtons(orientationData.choices, orientationData.id);
-    });
-}
+        const q = raw.toLowerCase();
+        if (/(tendance|trend|genre|hot|chaud|quoi sortir)/.test(q)) {
+            runEchoQuickAction('radar');
+            return;
+        }
+        if (/(algo|viral|stream|boost|portée)/.test(q)) {
+            runEchoQuickAction('algo');
+            return;
+        }
+        if (/(ghost|génère|genere|beat|prod ia|auto prod|triche)/.test(q)) {
+            runEchoQuickAction('ghost');
+            return;
+        }
+        if (/(dm|mail|message|scam|arnaque|deal|sponsor|contrat|audit|cash|argent)/.test(q)) {
+            runEchoQuickAction('audit');
+            return;
+        }
+        if (/(dilemme|alignement|puriste|sellout|stratégie|strategie)/.test(q)) {
+            runEchoQuickAction('dilemma');
+            return;
+        }
+        if (/(forfait|prix|abo|upgrade|pro|neural|tarif)/.test(q)) {
+            appendEchoDialogue(raw, 'user');
+            toggleEchoPlansView(true);
+            return;
+        }
+        if (/(calibr|auto-mix|automix|daw)/.test(q)) {
+            appendEchoDialogue(raw, 'user');
+            const card = `<div class="echo-card p-3 mt-2 flex items-center justify-between gap-2"><span class="text-xs text-slate-200">Calibrage automatique BPM &amp; Voix sur AbleStudio</span><button type="button" onclick="echoDawAutoCalibrate()" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-black font-semibold text-[11px] cursor-pointer">Calibrer</button></div>`;
+            appendEchoDialogue("Je peux caler automatiquement ton BPM et ta piste vocale sur le standard optimal du genre sélectionné dans AbleStudio (+15% cash).", 'echo', false, null, 0, card);
+            return;
+        }
 
-function renderPlayerChoiceButtons(choices, dilemmaId = null) {
-    const container = document.getElementById('echo-action-choices');
-    container.innerHTML = '';
-
-    choices.forEach((choice, index) => {
-        const btn = document.createElement('button');
-        btn.className = 'btn-action echo-btn-pop w-full py-3 text-[10px] tracking-widest rounded-lg mb-2 text-left px-4 border border-[var(--retro-orange)]/30 hover:border-[var(--retro-orange)] transition-all';
-        btn.style.animationDelay = `${index * 120}ms`;
-        btn.innerText = choice.label;
-        
-        btn.onclick = () => {
-            // Le joueur répond à l'IA
-            appendEchoDialogue(choice.label, 'user');
-            
-            // On applique le shift d'alignement
-            if (typeof choice.shift === 'number') {
-                state.echoAlignment += choice.shift;
-                if (state.echoAlignment < -100) state.echoAlignment = -100;
-                if (state.echoAlignment > 100) state.echoAlignment = 100;
-            }
-            
-            // Tâche 2 : Jauge de confiance
-            let followedEchoAdvice = null;
-            if (choice.echoRecommends) {
-                state.echoTrust = Math.min(100, state.echoTrust + 5);
-                followedEchoAdvice = true;
-            } else {
-                // S'il y a au moins un choix recommandé dans ce dilemme, et qu'on ne l'a pas pris
-                const hasRecommendedChoice = choices.some(c => c.echoRecommends);
-                if (hasRecommendedChoice) {
-                    state.echoTrust = Math.max(0, state.echoTrust - 5);
-                    followedEchoAdvice = false;
-                }
-            }
-
-            // Tâche 1.2 : Enregistrer dans la mémoire conversationnelle
-            if (!state.echoHistory) state.echoHistory = [];
-            state.echoHistory.push({
-                day: state.day,
-                category: dilemmaId || 'general',
-                dilemmaId: dilemmaId,
-                choiceLabel: choice.label,
-                followedEchoAdvice: followedEchoAdvice
-            });
-            if (state.echoHistory.length > 50) state.echoHistory.shift();
-
-            // Amélioration 1 - Set Cooldown
-            state.cooldowns.echoQueryReady = getTotalMins() + 30;
-            
-            saveGame();
-            checkEchoAchievements();
-            
-            const container = document.getElementById('echo-action-choices');
-            container.innerHTML = '';
-            showEchoTypingIndicator();
-
-            setTimeout(() => {
-                removeEchoTypingIndicator();
-                // Si la branche a des sous-choix (Format B - À tiroirs)
-                if (choice.nextChoices && choice.nextChoices.length > 0) {
-                    appendEchoDialogue(choice.response, 'echo', false, () => {
-                        renderPlayerChoiceButtons(choice.nextChoices);
-                    });
-                } else {
-                    // Format A - Fin de dialogue
-                    appendEchoDialogue(choice.response, 'echo', false, () => {
-                        renderEchoBackButton();
-                    });
-                }
-            }, 1200);
-        };
-        container.appendChild(btn);
-    });
-}
-
-// --- 4. GESTION FACTUELLE (Le mensonge) ---
-function processEchoFactualAnswer(factualData) {
-    const container = document.getElementById('echo-action-choices');
-    container.innerHTML = '';
-
-    // Le joueur pose la question technique
-    appendEchoDialogue(factualData.question, 'user');
-    showEchoTypingIndicator();
-
-    // 15% de chance de mentir
-    const isLying = Math.random() < 0.15;
-    const answer = isLying ? factualData.falseAnswer : factualData.trueAnswer;
-
-    // Amélioration 1 - Set Cooldown
-    state.cooldowns.echoQueryReady = getTotalMins() + 30;
-    saveGame();
-
-    setTimeout(() => {
-        removeEchoTypingIndicator();
-        // L'IA répond
-        appendEchoDialogue(answer, 'echo', isLying, () => {
-            renderEchoBackButton();
-        });
-    }, 1200);
-}
-
-// --- 5. UTILITAIRES D'INTERFACE & TYPING EFFECT ---
-function showEchoTypingIndicator() {
-    const history = document.getElementById('echo-dialogue-history');
-    if (!history) return null;
-
-    const indicator = document.createElement('div');
-    indicator.id = 'echo-typing-indicator';
-    indicator.className = 'flex items-start gap-3 mt-4 echo-msg-bubble';
-    indicator.innerHTML = `
-        <div class="w-2 h-2 rounded-full bg-[var(--retro-orange)] shadow-[0_0_8px_rgba(251,191,36,0.8)] mt-2.5 flex-shrink-0 animate-pulse"></div>
-        <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl rounded-tl-none p-3 max-w-[80%] flex items-center gap-1.5 min-h-[36px]">
-            <span class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
-            <span class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
-            <span class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
-        </div>
-    `;
-    history.appendChild(indicator);
-    history.scrollTop = history.scrollHeight;
-    return indicator;
-}
-
-function removeEchoTypingIndicator() {
-    const indicator = document.getElementById('echo-typing-indicator');
-    if (indicator) indicator.remove();
-}
-
-function triggerEchoGaugeFeedback(type) {
-    const containerId = type === 'alignment' ? 'echo-alignment-container' : 'echo-trust-container';
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.classList.remove('juicy-pop');
-        void container.offsetWidth; // Force Reflow
-        container.classList.add('juicy-pop');
-        setTimeout(() => container.classList.remove('juicy-pop'), 600);
-    }
-    
-    // Flash background de l'avatar
-    const avatarWrapper = document.getElementById('echo-avatar-wrapper');
-    if (avatarWrapper) {
-        const flashColor = type === 'alignment' ? 'rgba(251, 191, 36, 0.45)' : 'rgba(59, 130, 246, 0.45)';
-        avatarWrapper.style.transition = 'none';
-        avatarWrapper.style.background = `radial-gradient(circle at bottom center, ${flashColor} 0%, transparent 80%)`;
+        // Recherche intelligente dans la base technique ECHO_DATA.factual
+        appendEchoDialogue(raw, 'user');
+        showEchoTypingIndicator();
         setTimeout(() => {
-            avatarWrapper.style.transition = 'background 1s ease';
-            // Restaure selon trust
-            let c1 = '6, 182, 212';
-            if (state.echoTrust > 70) c1 = '236, 72, 153';
-            else if (state.echoTrust < 30) c1 = '59, 130, 246';
-            avatarWrapper.style.background = `radial-gradient(circle at bottom center, rgba(${c1}, 0.15) 0%, transparent 70%)`;
-        }, 200);
-    }
-}
-
-function appendEchoDialogue(text, sender, isLying = false, callback = null, toneIntensity = 0) {
-    const history = document.getElementById('echo-dialogue-history');
-    if (!history) return;
-
-    // Clear any previous typing timeout to prevent overlapping text animations
-    if (window.echoTypingTimeout) {
-        clearTimeout(window.echoTypingTimeout);
-        window.echoTypingTimeout = null;
-    }
-
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'flex items-start gap-3 mt-4 echo-msg-bubble';
-    
-    if (sender === 'echo') {
-        const textClass = isLying ? "text-gray-200 echo-glitch" : "text-gray-200";
-        
-        msgDiv.innerHTML = `
-            <div class="w-2 h-2 rounded-full bg-[var(--retro-orange)] shadow-[0_0_8px_rgba(251,191,36,0.8)] mt-2 flex-shrink-0 animate-pulse"></div>
-            <div class="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl rounded-tl-none p-3 text-sm shadow-md max-w-[80%] ${textClass}">
-                <span class="typing-target"></span>
-            </div>
-        `;
-        history.appendChild(msgDiv);
-        history.scrollTop = history.scrollHeight;
-
-        const target = msgDiv.querySelector('.typing-target');
-        let index = 0;
-
-        // Sound design: pitch calculé dynamiquement
-        let pitch = 750;
-        if (isLying) {
-            pitch = 350;
-        } else {
-            pitch = Math.max(300, 750 - (toneIntensity * 80));
-            if (state.echoAlignment <= -30) {
-                pitch -= 150; // Pitch plus bas pour le ton cynique
-            } else if (state.echoAlignment >= 30) {
-                pitch += 150; // Pitch plus aigu pour le puriste
-            }
-        }
-
-        // Web Audio Procedural Click
-        function playTypewriterClick(frequency) {
-            try {
-                if (!audioCtxUI) initAudio();
-                if (!audioCtxUI) return;
-                if (audioCtxUI.state === 'suspended') audioCtxUI.resume();
-                
-                const osc = audioCtxUI.createOscillator();
-                const gainNode = audioCtxUI.createGain();
-                
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(frequency, audioCtxUI.currentTime);
-                
-                const sfxVol = typeof window.sfxVolume === 'number' ? window.sfxVolume : 1.0;
-                gainNode.gain.setValueAtTime(0.004 * sfxVol, audioCtxUI.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtxUI.currentTime + 0.015);
-                
-                osc.connect(gainNode);
-                gainNode.connect(audioCtxUI.destination);
-                
-                osc.start();
-                osc.stop(audioCtxUI.currentTime + 0.015);
-            } catch (e) {}
-        }
-        
-        if (isLying && typeof playTone === 'function') {
-            setTimeout(() => playTone(180, 'sine', 0.08, 0.02), 100);
-        }
-
-        // Update avatar colors based on trust (Tâche 2.5)
-        const avatarWrapper = document.getElementById('echo-avatar-wrapper');
-        const avatarEl = document.getElementById('echo-avatar-element');
-        const svgEl = avatarEl ? avatarEl.querySelector('.echo-entity-svg') : null;
-        
-        let shakeClass = 'echo-shake-light';
-        if (isLying || toneIntensity > 2 || state.echoAlignment <= -30) {
-            shakeClass = 'echo-shake-heavy';
-        }
-
-        if (avatarWrapper && avatarEl) {
-            let c1 = '6, 182, 212';     // Cyan
-            let c2 = '139, 92, 246';    // Deep Purple
-            if (state.echoTrust > 70) {
-                c1 = '236, 72, 153';    // Pink (Warm)
-                c2 = '168, 85, 247';    // Bright Purple
-            } else if (state.echoTrust < 30) {
-                c1 = '59, 130, 246';    // Cold Blue
-                c2 = '14, 165, 233';    // Light Blue
-            }
-            avatarEl.style.setProperty('--echo-c1', c1);
-            avatarEl.style.setProperty('--echo-c2', c2);
-            
-            // Activate talking animation & shake
-            avatarWrapper.classList.add('echo-talking');
-            if (svgEl) {
-                svgEl.classList.remove('echo-shake-light', 'echo-shake-heavy');
-                svgEl.classList.add(shakeClass);
-            }
-        }
-
-        // Animation d'écriture progressive (Typing effect)
-        function typeChar() {
-            if (index < text.length) {
-                target.textContent += text.charAt(index);
-                playTypewriterClick(pitch);
-                index++;
-                history.scrollTop = history.scrollHeight;
-                // Typewriter speed: 20 to 40ms
-                window.echoTypingTimeout = setTimeout(typeChar, 20 + Math.random() * 20);
+            removeEchoTypingIndicator();
+            const match = (ECHO_DATA.factual || []).find(f => {
+                const hay = (f.id + ' ' + f.question + ' ' + f.trueAnswer).toLowerCase();
+                return q.split(/\s+/).some(w => w.length >= 3 && hay.includes(w));
+            });
+            if (match) {
+                appendEchoDialogue(match.trueAnswer, 'echo', false);
+            } else if (/(fatigue|énergie|energie|dormir|sommeil|inspi)/.test(q)) {
+                appendEchoDialogue(`Tu es à ${Math.round(state.energy || 0)}% d'énergie et ${Math.round(state.inspi || 0)}% d'inspiration. Passe par le lit pour récupérer ton énergie ou chill sur le canapé pour remonter l'inspi avant d'exporter.`, 'echo', false);
             } else {
-                window.echoTypingTimeout = null;
-                if (avatarWrapper) avatarWrapper.classList.remove('echo-talking');
-                if (svgEl) svgEl.classList.remove('echo-shake-light', 'echo-shake-heavy');
-                // Slight delay before calling callback to let UI breathe
-                if (callback) setTimeout(callback, 250);
+                const trend = getDailyTrendGenre();
+                const tier = getEchoTier();
+                appendEchoDialogue(`Bien reçu. En ce moment (Jour ${state.day}, $${formatNum(state.money || 0)}), ${tier !== 'free' && trend ? `la meilleure opportunité est une sortie ${trend.name} (${trend.targetBpm} BPM) pour +40% fans` : "je te recommande de lancer un Audit Carrière ou de débloquer Echo-4 Pro pour connecter mon Radar au DAW"}. Utilise les raccourcis ci-dessous pour exécuter une action directe.`, 'echo', false);
             }
-        }
-        typeChar();
-    } else {
-        msgDiv.innerHTML = `
-            <div class="bg-indigo-600/20 backdrop-blur-md border border-indigo-500/30 rounded-2xl rounded-tr-none p-3 text-sm text-white ml-auto max-w-[80%] shadow-md">
-                ${text}
-            </div>
-        `;
-        history.appendChild(msgDiv);
-        history.scrollTop = history.scrollHeight;
-        if (callback) setTimeout(callback, 200);
+        }, 420);
     }
-}
+    window.submitEchoPrompt = submitEchoPrompt;
 
-function renderEchoBackButton() {
-    const container = document.getElementById('echo-action-choices');
-    container.innerHTML = '';
-    
-    const btn = document.createElement('button');
-    btn.className = 'btn-minimal echo-btn-pop w-full py-3 text-[10px] tracking-widest rounded-lg uppercase';
-    btn.innerText = "← Nouvelle requête";
-    btn.onclick = () => renderEchoMainChoices();
-    
-    container.appendChild(btn);
-}
+    // --- DILEMMES D'ALIGNEMENT (AVEC CONSÉQUENCES RÉELLES) ---
+    function renderPlayerChoiceButtons(choices, dilemmaId = null) {
+        const container = document.getElementById('echo-action-choices');
+        if (!container) return;
+        container.innerHTML = '';
+        container.classList.remove('hidden');
 
+        choices.forEach((choice, index) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            const shiftVal = typeof choice.shift === 'number' ? choice.shift : 0;
+            const shiftTag = shiftVal > 0
+                ? `<span class="text-[9.5px] font-mono text-emerald-300 shrink-0">+${shiftVal} Puriste</span>`
+                : (shiftVal < 0 ? `<span class="text-[9.5px] font-mono text-amber-300 shrink-0">${shiftVal} Algo</span>` : '');
+            btn.className = 'echo-btn-pop w-full py-2.5 px-3.5 rounded-xl bg-[#141822] hover:bg-[#1c2230] border border-white/10 hover:border-emerald-400/40 text-left text-xs text-slate-100 flex items-center justify-between gap-3 transition-all cursor-pointer';
+            btn.style.animationDelay = `${index * 60}ms`;
+            btn.innerHTML = `<span>${_escapeEchoHtml(choice.label)}</span>${shiftTag}`;
 
-function checkEchoAchievements() {
-    // S'assurer que checkAchievement existe dans l'architecture globale
-    if (typeof checkAchievement !== 'function') return;
+            btn.onclick = () => {
+                appendEchoDialogue(choice.label, 'user');
+                if (typeof choice.shift === 'number') {
+                    state.echoAlignment = Math.max(-100, Math.min(100, (Number(state.echoAlignment) || 0) + choice.shift));
+                }
+                if (choice.echoRecommends) {
+                    state.echoTrust = Math.min(100, (Number(state.echoTrust) || 50) + 5);
+                } else if (choices.some(c => c.echoRecommends)) {
+                    state.echoTrust = Math.max(0, (Number(state.echoTrust) || 50) - 5);
+                }
+                if (!state.echoHistory) state.echoHistory = [];
+                state.echoHistory.push({ day: state.day, category: dilemmaId || 'general', dilemmaId, choiceLabel: choice.label });
+                if (state.echoHistory.length > 50) state.echoHistory.shift();
 
-    // Bug 1 - Correction de la signature de checkAchievement
-    checkAchievement('echo_sellout', () => state.echoAlignment <= -100);
-    checkAchievement('echo_purist', () => state.echoAlignment >= 100);
-}
+                saveGame();
+                syncEchoSidebarUI();
+                checkEchoAchievements();
+
+                container.innerHTML = '';
+                container.classList.add('hidden');
+                showEchoTypingIndicator();
+
+                setTimeout(() => {
+                    removeEchoTypingIndicator();
+                    if (choice.nextChoices && choice.nextChoices.length > 0) {
+                        appendEchoDialogue(choice.response, 'echo', false, () => {
+                            renderPlayerChoiceButtons(choice.nextChoices, dilemmaId);
+                        });
+                    } else {
+                        appendEchoDialogue(choice.response, 'echo', false);
+                    }
+                }, 460);
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    function processEchoFactualAnswer(factualData) {
+        const container = document.getElementById('echo-action-choices');
+        if (container) { container.innerHTML = ''; container.classList.add('hidden'); }
+        appendEchoDialogue(factualData.question, 'user');
+        showEchoTypingIndicator();
+
+        // Sur Echo Lite, 12% de risque d'hallucination IA ; sur Pro/Neural, 0% d'erreur !
+        const tier = getEchoTier();
+        const isLying = (tier === 'free') && Math.random() < 0.12;
+        const answer = isLying ? factualData.falseAnswer : factualData.trueAnswer;
+        saveGame();
+
+        setTimeout(() => {
+            removeEchoTypingIndicator();
+            appendEchoDialogue(answer, 'echo', isLying);
+        }, 460);
+    }
+
+    // --- UI STREAMING STYLE CLAUDE / CHATGPT ---
+    function showEchoTypingIndicator() {
+        const history = document.getElementById('echo-dialogue-history');
+        if (!history) return null;
+        removeEchoTypingIndicator();
+        const indicator = document.createElement('div');
+        indicator.id = 'echo-typing-indicator';
+        indicator.className = 'flex items-start gap-3 echo-msg-bubble';
+        indicator.innerHTML = `
+            <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shrink-0 mt-0.5">
+                <svg class="w-3.5 h-3.5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M4 12h3l2.5-6 4 12 2.5-6H20"/></svg>
+            </div>
+            <div class="pt-1.5 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" style="animation-delay:0ms"></span>
+                <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" style="animation-delay:140ms"></span>
+                <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" style="animation-delay:280ms"></span>
+            </div>`;
+        history.appendChild(indicator);
+        history.scrollTop = history.scrollHeight;
+        return indicator;
+    }
+
+    function removeEchoTypingIndicator() {
+        const indicator = document.getElementById('echo-typing-indicator');
+        if (indicator) indicator.remove();
+    }
+
+    function appendEchoDialogue(text, sender, isLying = false, callback = null, toneIntensity = 0, extraCardHtml = '', instant = false) {
+        const history = document.getElementById('echo-dialogue-history');
+        if (!history) return;
+
+        if (window.echoTypingTimeout) {
+            clearTimeout(window.echoTypingTimeout);
+            window.echoTypingTimeout = null;
+        }
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'echo-msg-bubble';
+
+        if (sender === 'echo') {
+            const tier = getEchoTier();
+            const modelName = (ECHO_PLANS[tier] || ECHO_PLANS.free).model;
+            const badgeTone = tier === 'neural' ? 'text-violet-300' : (tier === 'pro' ? 'text-emerald-300' : 'text-slate-400');
+            msgDiv.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br ${tier === 'neural' ? 'from-violet-400 to-indigo-500' : 'from-emerald-400 to-cyan-500'} flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                        <svg class="w-3.5 h-3.5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M4 12h3l2.5-6 4 12 2.5-6H20"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs font-semibold text-white">Echo</span>
+                            <span class="text-[10px] font-mono ${badgeTone}">${modelName}</span>
+                            ${isLying ? '<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-300">NON VÉRIFIÉ</span>' : ''}
+                        </div>
+                        <div class="text-[13px] leading-relaxed text-slate-200 ${isLying ? 'echo-glitch' : ''}"><span class="typing-target"></span></div>
+                        <div class="echo-extra-slot"></div>
+                    </div>
+                </div>`;
+            history.appendChild(msgDiv);
+            history.scrollTop = history.scrollHeight;
+
+            const target = msgDiv.querySelector('.typing-target');
+            const extraSlot = msgDiv.querySelector('.echo-extra-slot');
+
+            if (instant) {
+                target.textContent = text;
+                if (extraCardHtml && extraSlot) extraSlot.innerHTML = extraCardHtml;
+                history.scrollTop = history.scrollHeight;
+                if (callback) setTimeout(callback, 120);
+                return;
+            }
+
+            // Streaming rapide mot-à-mot (réaliste façon ChatGPT/Claude)
+            const words = String(text || '').split(/(\s+)/);
+            let wIdx = 0;
+            function streamWord() {
+                if (wIdx < words.length) {
+                    target.textContent += words[wIdx];
+                    wIdx++;
+                    history.scrollTop = history.scrollHeight;
+                    window.echoTypingTimeout = setTimeout(streamWord, 18 + Math.random() * 16);
+                } else {
+                    window.echoTypingTimeout = null;
+                    if (extraCardHtml && extraSlot) extraSlot.innerHTML = extraCardHtml;
+                    history.scrollTop = history.scrollHeight;
+                    if (callback) setTimeout(callback, 140);
+                }
+            }
+            streamWord();
+        } else {
+            msgDiv.innerHTML = `
+                <div class="flex justify-end">
+                    <div class="px-3.5 py-2.5 rounded-2xl rounded-br-sm bg-[#1c212e] border border-white/10 text-[13px] text-white max-w-[82%] leading-relaxed">
+                        ${_escapeEchoHtml(text)}
+                    </div>
+                </div>`;
+            history.appendChild(msgDiv);
+            history.scrollTop = history.scrollHeight;
+            if (callback) setTimeout(callback, 140);
+        }
+    }
+
+    function renderEchoMainChoices() { syncEchoSidebarUI(); }
+    function renderEchoBackButton() { syncEchoSidebarUI(); }
+
+    function checkEchoAchievements() {
+        if (typeof checkAchievement !== 'function') return;
+        checkAchievement('echo_sellout', () => state.echoAlignment <= -100);
+        checkAchievement('echo_purist', () => state.echoAlignment >= 100);
+    }
         
     // ====================================================
         
