@@ -4612,10 +4612,15 @@
                     </div>
                     <span id="fps-vitals-inspi-val" class="text-white w-8 text-right">100%</span>
                 </div>
-                <button onclick="window.triggerCinematic('escape')" class="mt-1 w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-400/50 text-[9px] font-retro tracking-widest text-emerald-300 uppercase cursor-pointer transition-colors">
-                    <span>🌱 PRENDRE L'AIR</span>
-                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-black/50 text-white/75 border border-white/15">F</span>
-                </button>
+                <div class="mt-1 flex gap-1.5 w-full">
+                    <button onclick="window.triggerCinematic('escape')" class="flex-1 flex items-center justify-between px-2 py-1.5 rounded-lg bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-400/50 text-[9px] font-retro tracking-wider text-emerald-300 uppercase cursor-pointer transition-colors">
+                        <span>🌱 AIR</span>
+                        <span class="text-[8px] px-1 py-0.5 rounded bg-black/50 text-white/75 border border-white/15">F</span>
+                    </button>
+                    <button onclick="window.openAvatarVariantModal && window.openAvatarVariantModal()" class="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-400/50 text-[9px] font-retro tracking-wider text-amber-200 uppercase cursor-pointer transition-colors" title="Changer de variante de tenue parmi tes paliers débloqués">
+                        <span>👕 STYLE</span>
+                    </button>
+                </div>
                 <button id="btn-switch-studio-room" onclick="window.travelToStudioLocation && window.travelToStudioLocation()" class="hidden mt-1 w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/30 border border-amber-400/45 text-[9px] font-retro tracking-widest text-amber-200 uppercase cursor-pointer transition-colors">
                     <span id="btn-switch-studio-label">🏢 STUDIO PRO 42e</span>
                     <span class="text-[9px] px-1.5 py-0.5 rounded bg-black/50 text-amber-300 border border-amber-400/30">L</span>
@@ -4683,9 +4688,12 @@
                         <input type="range" id="sfx-volume-slider" min="0" max="1" step="0.01" value="0.5" class="w-full accent-[var(--accent)] cursor-pointer">
                         <span id="sfx-volume-value" class="font-retro text-xs text-white">50%</span>
                     </div>
-                    <div class="border-t border-white/10 pt-4 flex gap-4 w-full mt-2">
-                        <button onclick="exportSave()" class="btn-action flex-1 py-3 text-[10px] md:text-xs rounded-lg font-bold shadow-md uppercase tracking-widest font-retro">Exporter</button>
-                        <button onclick="importSave()" class="btn-minimal flex-1 py-3 text-[10px] md:text-xs rounded-lg border-white/20 hover:border-white text-white font-bold shadow-md uppercase tracking-widest font-retro">Importer</button>
+                    <div class="border-t border-white/10 pt-4 flex flex-col gap-3 w-full mt-2">
+                        <button onclick="closeAudioSettings(); window.openAvatarVariantModal && window.openAvatarVariantModal();" class="w-full py-3 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/45 text-amber-200 text-[10px] md:text-xs font-bold uppercase tracking-widest font-retro cursor-pointer transition-all">👕 Changer de Style / Garde-Robe</button>
+                        <div class="flex gap-4 w-full">
+                            <button onclick="exportSave()" class="btn-action flex-1 py-3 text-[10px] md:text-xs rounded-lg font-bold shadow-md uppercase tracking-widest font-retro">Exporter</button>
+                            <button onclick="importSave()" class="btn-minimal flex-1 py-3 text-[10px] md:text-xs rounded-lg border-white/20 hover:border-white text-white font-bold shadow-md uppercase tracking-widest font-retro">Importer</button>
+                        </div>
                     </div>
                 </div> 
             </div> 
@@ -4774,13 +4782,14 @@
                     </div>
                 </div>
 
-                <!-- Sélection Avatar Compacte -->
+                <!-- Sélection Personnage & Tenue (Synchronisée avec les 4 Paliers de Studio) -->
                 <div class="w-full mb-5 stagger-in" style="animation-delay: 0.24s;">
                     <div class="flex items-center justify-between mb-2">
-                        <label class="text-[10px] font-mono text-slate-300/80 uppercase tracking-[0.24em]">Identité Visuelle</label>
-                        <span class="text-[9px] font-mono text-slate-500 uppercase tracking-widest">4 Profils</span>
+                        <label class="text-[10px] font-mono text-slate-300/80 uppercase tracking-[0.24em]">Personnage &amp; Tenue</label>
+                        <span id="login-avatar-tier-badge" class="text-[9px] font-mono text-amber-300/85 uppercase tracking-widest">Palier 1 · Évolutif</span>
                     </div>
                     <div class="grid grid-cols-4 gap-2.5" id="avatar-container"></div>
+                    <div id="login-variant-strip" class="grid grid-cols-3 gap-1.5 mt-2.5"></div>
                 </div>
 
                 <!-- Bouton Principal Cinéma -->
@@ -6208,17 +6217,19 @@
              ========================================================================= -->
         <div id="avatar-variant-modal" class="fixed inset-0 z-[100010] bg-black/85 backdrop-blur-md hidden items-center justify-center p-3 sm:p-5">
             <div class="w-full max-w-3xl max-h-[92dvh] overflow-y-auto bg-[#0c0f18] border border-amber-400/40 rounded-2xl shadow-[0_28px_90px_rgba(0,0,0,0.95)] p-4 sm:p-6">
-                <div class="flex items-start justify-between gap-3 border-b border-white/10 pb-3 mb-4">
+                <div class="flex items-start justify-between gap-3 border-b border-white/10 pb-3 mb-3">
                     <div>
-                        <div id="av-modal-eyebrow" class="text-[10px] font-mono uppercase tracking-[0.26em] text-amber-300 font-bold">NOUVEAU PALIER DÉBLOQUÉ · NIVEAU 2</div>
-                        <h2 id="av-modal-title" class="text-lg sm:text-2xl font-bold text-white tracking-wider uppercase mt-0.5">CHOISIS TON NOUVEAU STYLE</h2>
-                        <p id="av-modal-sub" class="text-xs text-gray-400 mt-1">Ton studio évolue ! Choisis une variante de tenue dérivée pour ton artiste (même modèle, nouveau look & thème synchronisé).</p>
+                        <div id="av-modal-eyebrow" class="text-[10px] font-mono uppercase tracking-[0.26em] text-amber-300 font-bold">GARDE-ROBE · PALIER 1</div>
+                        <h2 id="av-modal-title" class="text-lg sm:text-2xl font-bold text-white tracking-wider uppercase mt-0.5">CHOISIS TON STYLE</h2>
+                        <p id="av-modal-sub" class="text-xs text-gray-400 mt-1">Sélectionne librement n'importe quelle tenue débloquée pour ton artiste (même modèle, nouveau look &amp; thème synchronisé).</p>
                     </div>
+                    <button type="button" onclick="window.closeAvatarVariantModal && window.closeAvatarVariantModal()" class="shrink-0 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/15 border border-white/15 text-gray-300 hover:text-white font-mono text-xs cursor-pointer">✕</button>
                 </div>
+                <div id="av-modal-tier-tabs" class="grid grid-cols-4 gap-1.5 mb-4"></div>
                 <div id="av-variant-cards" class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-5"></div>
                 <div class="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
                     <button type="button" id="av-variant-confirm-btn" onclick="window.confirmAvatarVariantModal()" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-amber-500 hover:brightness-110 text-white font-mono font-bold text-xs uppercase tracking-widest shadow-[0_0_24px_rgba(129,140,248,0.45)] cursor-pointer transition-all active:scale-95">
-                        ✨ CONFIRMER CE STYLE
+                        ✨ ÉQUIPER CE STYLE
                     </button>
                 </div>
             </div>
@@ -18705,40 +18716,82 @@ document.addEventListener('mouseover', (e) => {
             try { if (typeof playTone === 'function') playTone(520 + idx * 90, 'sine', 0.08, 0.04); } catch(e) {}
         };
 
+        window.closeAvatarVariantModal = function() {
+            const modal = document.getElementById('avatar-variant-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        };
+
         window.openAvatarVariantModal = function(targetTier) {
             const modal = document.getElementById('avatar-variant-modal');
             const cardsEl = document.getElementById('av-variant-cards');
+            const tabsEl = document.getElementById('av-modal-tier-tabs');
             const eyebrow = document.getElementById('av-modal-eyebrow');
             const title = document.getElementById('av-modal-title');
             const sub = document.getElementById('av-modal-sub');
             if (!modal || !cardsEl) return;
 
             if (typeof window.exitFpsPointerLock === 'function') window.exitFpsPointerLock();
-            const t = Math.max(1, Math.min(4, parseInt(targetTier, 10) || 2));
-            const meta = AVATAR_TIER_META[t] || AVATAR_TIER_META[2];
-            const list = AVATAR_TIER_VARIANTS[t] || AVATAR_TIER_VARIANTS[2];
-            const charIdx = (typeof state !== 'undefined' && state && typeof state.activeCharacter === 'number')
-                ? state.activeCharacter
+            const st = (typeof state !== 'undefined' && state) ? state : null;
+            const maxUnlocked = st ? (st.studioUnlocked ? 4 : Math.max(1, Number(st.roomTier) || 1, Number(st.avatarTier) || 1)) : 1;
+            const isManualOpen = (targetTier === undefined || targetTier === null);
+            const activeTier = st ? (Number(st.avatarTier) || maxUnlocked) : 1;
+            const t = Math.max(1, Math.min(maxUnlocked, parseInt(isManualOpen ? activeTier : targetTier, 10) || maxUnlocked));
+            const currentEquippedTier = st ? (Number(st.avatarTier) || 1) : 1;
+            const currentEquippedVar = st ? (Number(st.avatarVariant) || 0) : 0;
+
+            const meta = AVATAR_TIER_META[t] || AVATAR_TIER_META[1];
+            const list = AVATAR_TIER_VARIANTS[t] || AVATAR_TIER_VARIANTS[1];
+            const charIdx = (st && typeof st.activeCharacter === 'number')
+                ? st.activeCharacter
                 : (typeof selectedAvatarIndex === 'number' ? selectedAvatarIndex : 0);
 
             window._pendingVariantTier = t;
-            window._pendingVariantIdx = 0;
+            window._pendingVariantIdx = (t === currentEquippedTier) ? currentEquippedVar : 0;
 
-            if (eyebrow) eyebrow.textContent = `NOUVEAU PALIER DÉBLOQUÉ · ${meta.label}`;
-            if (title) title.textContent = `CHOISIS TON NOUVEAU STYLE (NIV. ${t})`;
-            if (sub) sub.textContent = `${meta.subtitle} — Sélectionne l'une des 3 tenues dérivées pour ton artiste.`;
+            if (eyebrow) eyebrow.textContent = isManualOpen ? `GARDE-ROBE · ${meta.label}` : `NOUVEAU PALIER DÉBLOQUÉ · ${meta.label}`;
+            if (title) title.textContent = isManualOpen ? `CHANGER DE STYLE (PALIER ${t})` : `CHOISIS TON NOUVEAU STYLE (NIV. ${t})`;
+            if (sub) sub.textContent = `${meta.subtitle} — Tu peux changer librement entre tous tes paliers débloqués.`;
+
+            // Onglets des 4 paliers (débloqués cliquables, futurs verrouillés 🔒)
+            if (tabsEl) {
+                tabsEl.innerHTML = '';
+                const tabNames = ['NIV. 1', 'NIV. 2', 'NIV. 3', '42e PRO'];
+                [1, 2, 3, 4].forEach((tierNum, i) => {
+                    const unlocked = tierNum <= maxUnlocked;
+                    const isSelectedTab = tierNum === t;
+                    const tb = document.createElement('button');
+                    tb.type = 'button';
+                    tb.disabled = !unlocked;
+                    tb.className = `py-2 px-1.5 rounded-lg font-mono text-[10px] font-bold uppercase tracking-wider border transition-all ${
+                        isSelectedTab
+                            ? 'bg-amber-500/25 border-amber-400 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.25)] cursor-pointer'
+                            : unlocked
+                                ? 'bg-white/5 border-white/15 text-gray-300 hover:bg-white/10 hover:text-white cursor-pointer'
+                                : 'bg-black/40 border-white/5 text-gray-600 cursor-not-allowed'
+                    }`;
+                    tb.textContent = unlocked ? tabNames[i] : `${tabNames[i]} 🔒`;
+                    if (unlocked) tb.onclick = () => window.openAvatarVariantModal(tierNum);
+                    tabsEl.appendChild(tb);
+                });
+            }
 
             cardsEl.innerHTML = '';
             list.forEach((vSpec, idx) => {
                 const previewUrl = generateAvatarImage(charIdx, t, idx, 256);
+                const isSelected = (idx === window._pendingVariantIdx);
+                const isEquipped = (t === currentEquippedTier && idx === currentEquippedVar);
                 const card = document.createElement('button');
                 card.type = 'button';
-                card.className = `av-var-card text-left rounded-xl p-3 border transition-all cursor-pointer flex flex-col gap-2.5 ${idx === 0 ? 'border-amber-400 bg-white/10 shadow-[0_0_24px_rgba(251,191,36,0.3)]' : 'border-white/10 bg-black/50 hover:border-white/30'}`;
+                card.className = `av-var-card text-left rounded-xl p-3 border transition-all cursor-pointer flex flex-col gap-2.5 ${isSelected ? 'border-amber-400 bg-white/10 shadow-[0_0_24px_rgba(251,191,36,0.3)]' : 'border-white/10 bg-black/50 hover:border-white/30'}`;
                 card.onclick = () => window.selectAvatarVariantPreview(idx);
                 card.innerHTML = `
                     <div class="relative w-full aspect-square rounded-lg overflow-hidden border border-white/10 bg-black/60">
                         <img src="${previewUrl}" alt="${vSpec.name}" class="w-full h-full object-cover" />
                         <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-black/75 border border-white/15 text-white">${vSpec.tag}</span>
+                        ${isEquipped ? '<span class="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[8px] font-mono font-bold uppercase tracking-wider bg-emerald-500/90 text-black">ACTIF</span>' : ''}
                         <span class="absolute bottom-2 right-2 w-4 h-4 rounded-full border-2 border-white/80 shadow" style="background:${vSpec.accent}"></span>
                     </div>
                     <div>
@@ -18754,18 +18807,70 @@ document.addEventListener('mouseover', (e) => {
         };
 
         window.confirmAvatarVariantModal = function() {
-            const modal = document.getElementById('avatar-variant-modal');
-            const t = window._pendingVariantTier || 2;
+            const t = window._pendingVariantTier || 1;
             const v = window._pendingVariantIdx || 0;
             const spec = window.getAvatarVariantSpec(t, v);
             window.applyAvatarVariant(t, v, true);
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
+            window.closeAvatarVariantModal();
             try { if (typeof playSuccess === 'function') playSuccess(); } catch(e) {}
             if (typeof showToast === 'function' && spec) {
-                showToast(`✨ Nouveau style équipé : ${spec.name} (Palier ${t})`, 'success');
+                showToast(`✨ Style équipé : ${spec.name} (Palier ${t})`, 'success');
+            }
+        };
+
+        // Synchronise les 4 portraits & les 3 puces de tenue sur la page d'accueil (#login-screen)
+        window._loginSelectedTier = 1;
+        window._loginSelectedVariant = 0;
+        window._loginThumbCache = {};
+        window.syncLoginAvatarStyleUI = function(tier = 1, variant = 0) {
+            const t = Math.max(1, Math.min(4, parseInt(tier, 10) || 1));
+            const v = Math.max(0, Math.min(2, parseInt(variant, 10) || 0));
+            window._loginSelectedTier = t;
+            window._loginSelectedVariant = v;
+
+            const badge = document.getElementById('login-avatar-tier-badge');
+            if (badge) {
+                const labels = { 1: 'Palier 1 · Évolutif', 2: 'Palier 2 · Rénové', 3: 'Palier 3 · Architecte', 4: 'Palier 4 · 42e Pro' };
+                badge.textContent = labels[t] || 'Palier 1 · Évolutif';
+            }
+
+            // Met à jour les 4 miniatures de personnages avec la tenue du palier & variante choisis
+            const cont = document.getElementById('avatar-container');
+            if (cont) {
+                const imgs = cont.querySelectorAll('img');
+                imgs.forEach((img, idx) => {
+                    const key = `${idx}_${t}_${v}`;
+                    if (!window._loginThumbCache[key]) {
+                        window._loginThumbCache[key] = (t === 1 && v === 0 && avatars[idx])
+                            ? avatars[idx].img
+                            : generateAvatarImage(idx, t, v, 192);
+                    }
+                    img.src = window._loginThumbCache[key];
+                });
+            }
+
+            // Affiche les 3 puces de variantes cliquables directement sous les 4 profils
+            const strip = document.getElementById('login-variant-strip');
+            if (strip) {
+                const list = AVATAR_TIER_VARIANTS[t] || AVATAR_TIER_VARIANTS[1];
+                strip.innerHTML = '';
+                list.forEach((vSpec, idx) => {
+                    const active = (idx === v);
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = `px-2 py-1.5 rounded-lg border text-[9px] font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer truncate ${
+                        active
+                            ? 'bg-white/15 border-amber-400/80 text-white shadow-[0_0_12px_rgba(251,191,36,0.22)]'
+                            : 'bg-black/45 border-white/10 text-slate-400 hover:border-white/30 hover:text-slate-200'
+                    }`;
+                    b.onclick = () => {
+                        window._loginVariantTouched = true;
+                        window.syncLoginAvatarStyleUI(t, idx);
+                        try { if (typeof playTone === 'function') playTone(460 + idx * 80, 'sine', 0.06, 0.03); } catch(e) {}
+                    };
+                    b.innerHTML = `<span class="w-2 h-2 rounded-full shrink-0" style="background:${vSpec.accent}"></span><span class="truncate">${vSpec.name.split(' ')[0]}</span>`;
+                    strip.appendChild(b);
+                });
             }
         };
 
@@ -21315,7 +21420,7 @@ document.addEventListener('mouseover', (e) => {
                     if (sBadge) { sBadge.textContent = 'RESUME'; sBadge.className = 'text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 shrink-0'; }
                     if (btnLbl) btnLbl.textContent = 'REPRENDRE LA SESSION';
 
-                    // Synchronise visuellement l'avatar enregistré si l'utilisateur n'a pas encore changé
+                    // Synchronise visuellement l'avatar enregistré & sa tenue de palier
                     const savedAv = parseInt(parsedSave.activeCharacter ?? parsedSave.avatar, 10);
                     if (!avatarChanged && !isNaN(savedAv) && savedAv >= 0 && savedAv < avatars.length) {
                         selectedAvatarIndex = savedAv;
@@ -21323,6 +21428,9 @@ document.addEventListener('mouseover', (e) => {
                         const avEl = document.querySelector(`.avatar-sel[data-idx="${savedAv}"]`);
                         if (avEl) avEl.classList.add('selected');
                     }
+                    const previewTier = parsedSave.studioUnlocked ? 4 : Math.max(Number(parsedSave.avatarTier) || 1, Number(parsedSave.roomTier) || 1);
+                    const previewVar = window._loginVariantTouched ? (window._loginSelectedVariant || 0) : (Number(parsedSave.avatarVariant) || 0);
+                    if (typeof window.syncLoginAvatarStyleUI === 'function') window.syncLoginAvatarStyleUI(previewTier, previewVar);
                 } else {
                     if (typeof window.applyStudioLocation === 'function') window.applyStudioLocation('bedroom');
                     if (typeof window.applyRoomEvolutionTier === 'function') window.applyRoomEvolutionTier(1, false);
@@ -21331,6 +21439,7 @@ document.addEventListener('mouseover', (e) => {
                     if (sSub) sSub.textContent = 'Jour 1 · 08:00 · Studio de départ';
                     if (sBadge) { sBadge.textContent = 'NEW'; sBadge.className = 'text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300 shrink-0'; }
                     if (btnLbl) btnLbl.textContent = 'OUVRIR LA SESSION';
+                    if (typeof window.syncLoginAvatarStyleUI === 'function') window.syncLoginAvatarStyleUI(1, window._loginVariantTouched ? (window._loginSelectedVariant || 0) : 0);
                 }
 
                 // Applique l'ambiance 3D live (soit Auto=sauvegarde, soit choix manuel du joueur)
@@ -22906,7 +23015,12 @@ document.addEventListener('mouseover', (e) => {
             }
             // Synchronise le palier & la variante d'avatar (3D + HUD + thème) avec le niveau de room chargé
             if (!state.avatarTier) state.avatarTier = state.studioUnlocked ? 4 : (Number(state.roomTier) || 1);
-            if (typeof state.avatarVariant !== 'number') state.avatarVariant = 0;
+            if (window._loginVariantTouched && typeof window._loginSelectedVariant === 'number') {
+                state.avatarVariant = window._loginSelectedVariant;
+                window._loginVariantTouched = false;
+            } else if (typeof state.avatarVariant !== 'number') {
+                state.avatarVariant = 0;
+            }
             if (!state.avatarTierPrompted) state.avatarTierPrompted = state.avatarTier;
             if (typeof window.refreshActiveAvatarVisuals === 'function') {
                 window.refreshActiveAvatarVisuals(state.avatarTier, state.avatarVariant);
