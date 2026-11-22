@@ -1463,15 +1463,77 @@
             ::-webkit-resizer { background-color: transparent; background-image: radial-gradient(rgba(255,255,255,0.4) 40%, transparent 40%); background-size: 5px 5px; background-position: bottom right; }
 
             @keyframes slideInLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+            @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
             .toast { animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; pointer-events: auto; cursor: grab; }
             .toast:active { cursor: grabbing; }
-            @media (max-width: 768px) {
-                .toast {
-                    padding: 8px 12px !important;
+
+            /* === MOBILE UNIQUEMENT (PORTRAIT & PAYSAGE) : TOASTS COMPACTS, ZÉRO CHEVAUCHEMENT HUD / VITALS === */
+            @media (max-width: 767px), (max-width: 940px) and (max-height: 500px) {
+                #toast-zone {
+                    /* Ancré sous le bouton Paramètres (y=80..128) à droite : laisse HUD, Engrenage et #fps-vitals-hud 100% dégagés */
+                    top: calc(134px + env(safe-area-inset-top, 4px)) !important;
+                    right: max(8px, env(safe-area-inset-right, 8px)) !important;
+                    left: auto !important;
+                    bottom: auto !important;
+                    width: min(calc(100vw - 198px), 215px) !important;
+                    max-width: 215px !important;
+                    gap: 6px !important;
+                    align-items: flex-end !important;
+                }
+                /* En mode AbleOS sur mobile portrait, place les toasts discrètement au-dessus de la barre de nav basse */
+                body.os-active #toast-zone {
+                    top: auto !important;
+                    bottom: calc(66px + env(safe-area-inset-bottom, 0px)) !important;
+                    right: max(8px, env(safe-area-inset-right, 8px)) !important;
+                    left: auto !important;
+                    width: min(76vw, 260px) !important;
+                    max-width: 260px !important;
+                    flex-direction: column-reverse !important;
+                }
+                #toast-zone .toast {
+                    animation: slideInRight 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+                    padding: 6px 9px !important;
                     font-size: 9px !important;
-                    line-height: 1.2 !important;
-                    width: 95% !important;
-                    margin: 0 auto !important;
+                    line-height: 1.28 !important;
+                    letter-spacing: 0.04em !important;
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    margin: 0 !important;
+                    border-radius: 10px !important;
+                    max-height: 76px !important;
+                    overflow-y: auto !important;
+                    overscroll-behavior: contain;
+                    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55) !important;
+                }
+                #toast-zone .toast[data-toast-type="review"] {
+                    padding: 0 !important;
+                    max-height: 112px !important;
+                    font-size: 9px !important;
+                }
+                #toast-zone .toast[data-toast-type="review"] .toast-review-report {
+                    font-size: 9px !important;
+                }
+            }
+            /* Raffinement Mobile Paysage (hauteur très réduite <= 500px) */
+            @media (max-width: 940px) and (max-height: 500px) {
+                #toast-zone {
+                    top: calc(56px + env(safe-area-inset-top, 4px)) !important;
+                    right: max(10px, env(safe-area-inset-right, 10px)) !important;
+                    width: min(36vw, 240px) !important;
+                    max-width: 240px !important;
+                }
+                body.os-active #toast-zone {
+                    top: calc(46px + env(safe-area-inset-top, 2px)) !important;
+                    bottom: auto !important;
+                    width: min(36vw, 240px) !important;
+                    max-width: 240px !important;
+                    flex-direction: column !important;
+                }
+                #toast-zone .toast {
+                    padding: 5px 8px !important;
+                    font-size: 8.5px !important;
+                    line-height: 1.22 !important;
+                    max-height: 62px !important;
                 }
             }
 
@@ -1910,22 +1972,34 @@
 
             /* Mobile Paysage (ex: iPhone 844x390 / 932x430 / Android 740x360) */
             @media (max-width: 940px) and (max-height: 500px) {
-                #hud {
-                    top: max(4px, env(safe-area-inset-top, 4px)) !important;
+                #hud,
+                body:not(.os-active) #hud {
+                    top: max(6px, env(safe-area-inset-top, 6px)) !important;
+                    height: 42px !important;
                     min-height: 42px !important;
-                    padding: 3px 10px !important;
+                    padding: 3px 12px !important;
                     border-radius: 14px !important;
+                    overflow: hidden !important;
+                }
+                body:not(.os-active) #audio-settings-gear {
+                    top: max(6px, env(safe-area-inset-top, 6px)) !important;
+                    right: max(10px, env(safe-area-inset-right, 10px)) !important;
+                    width: 42px !important;
+                    height: 42px !important;
+                    min-width: 42px !important;
+                    min-height: 42px !important;
                 }
                 /* Dans l'OS en paysage, masque le HUD 3D pour libérer toute la hauteur verticale utile */
                 body.os-active #hud {
                     display: none !important;
                 }
-                #hud-avatar {
-                    width: 34px !important;
-                    height: 34px !important;
+                #hud-avatar,
+                body:not(.os-active) #hud-avatar {
+                    width: 30px !important;
+                    height: 30px !important;
                 }
                 #fps-vitals-hud {
-                    top: calc(52px + env(safe-area-inset-top, 4px)) !important;
+                    top: calc(56px + env(safe-area-inset-top, 6px)) !important;
                     left: max(8px, env(safe-area-inset-left, 8px)) !important;
                     min-width: 126px !important;
                     padding: 5px 8px !important;
@@ -11247,7 +11321,7 @@ const DEFAULT_STATE = {
             const bedsideShadeMat = new THREE.MeshStandardMaterial({ color: '#fff7e6', emissive: '#ffcf87', emissiveIntensity: 0.65, roughness: 0.85, side: THREE.DoubleSide });
             const lampShade = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.19, 0.24, 18, 1, true), bedsideShadeMat);
             lampShade.position.set(0, 0.92, 0); nsGroup.add(lampShade);
-            const bedsideLight = new THREE.PointLight('#ffbe78', 0.8, 7.5, 1.7);
+            const bedsideLight = new THREE.PointLight('#ffbe78', 1.2, 11.0, 1.45);
             bedsideLight.position.set(0, 0.96, 0.12); nsGroup.add(bedsideLight);
             window.bedsideLight = bedsideLight;
             window.bedsideShadeMat = bedsideShadeMat;
@@ -12913,16 +12987,22 @@ const DEFAULT_STATE = {
             });
             proStudioGroup.add(penthouseSkylineGroup);
 
-            // 9. ÉCLAIRAGE DARK & CINÉMATIQUE + AUDIO-RÉACTIF DÉDIÉ AU STUDIO PRO 42e
-            const psPodiumKey = new THREE.PointLight('#ffcf8b', 2.8, 16, 1.5);
+            // 9. ÉCLAIRAGE CINÉMATIQUE + AUDIO-RÉACTIF DÉDIÉ AU STUDIO PRO 42e (PLUS LUMINEUX DE NUIT)
+            const psPodiumKey = new THREE.PointLight('#ffd8a3', 5.4, 22, 1.3);
             psPodiumKey.position.set(3.4, 3.5, -0.1); proStudioGroup.add(psPodiumKey);
-            const psCyberAccent = new THREE.PointLight('#a855f7', 2.2, 18, 1.5);
+            const psCyberAccent = new THREE.PointLight('#b779ff', 3.6, 22, 1.35);
             psCyberAccent.position.set(1.2, 3.6, -1.8); proStudioGroup.add(psCyberAccent);
-            const psLiveRoomLight = new THREE.PointLight('#ffb86c', 2.1, 14, 1.5);
+            const psLiveRoomLight = new THREE.PointLight('#ffc88a', 4.6, 18, 1.3);
             psLiveRoomLight.position.set(-2.5, 3.2, -4.2); proStudioGroup.add(psLiveRoomLight);
-            const psVipBarLight = new THREE.PointLight('#f59e0b', 2.0, 14, 1.5);
+            const psVipBarLight = new THREE.PointLight('#fbbf24', 4.4, 18, 1.3);
             psVipBarLight.position.set(-2.2, 3.1, 4.6); proStudioGroup.add(psVipBarLight);
+            const psStudioOverheadFill = new THREE.PointLight('#ffe8cc', 5.2, 26, 1.2);
+            psStudioOverheadFill.position.set(0.4, 3.85, 0.3); proStudioGroup.add(psStudioOverheadFill);
+            window._psPodiumKeyLight = psPodiumKey;
             window._psCyberAccentLight = psCyberAccent;
+            window._psLiveRoomLight = psLiveRoomLight;
+            window._psVipBarLight = psVipBarLight;
+            window._psStudioOverheadFill = psStudioOverheadFill;
 
             // 10. GROUPE D'INVITÉS & ARTISTES SIGNÉS EN 3D (Salon VIP & Live Room)
             const proStudioGuestsGroup = new THREE.Group();
@@ -13713,8 +13793,8 @@ const DEFAULT_STATE = {
                 let zenHex = '#2e63a8', horHex = '#c4dff5', sunColHex = '#fff8e6', farHex = '#8ea9c7', sunHex = '#fff5e4';
                 let sunInt = 1.65, bounceInt = 4.6, hemiInt = 0.98, nightF = 0.0, cityGlow = 0.12, sunY = 0.68;
                 if (isNight) {
-                    zenHex = '#091124'; horHex = '#1c2842'; sunColHex = '#c8dcff'; farHex = '#19243b'; sunHex = '#8fb0f5';
-                    sunInt = 0.05; bounceInt = 1.6; hemiInt = 0.52; nightF = 1.0; cityGlow = 1.15; sunY = 0.72;
+                    zenHex = '#0c162e'; horHex = '#233354'; sunColHex = '#d4e4ff'; farHex = '#1f2d4a'; sunHex = '#a8c4ff';
+                    sunInt = 0.24; bounceInt = 3.2; hemiInt = 0.86; nightF = 1.0; cityGlow = 1.35; sunY = 0.72;
                 } else if (isGolden) {
                     zenHex = '#2c3563'; horHex = '#eb956a'; sunColHex = '#ffc48a'; farHex = '#75667a'; sunHex = '#ffae73';
                     sunInt = 1.32; bounceInt = 3.8; hemiInt = 0.84; nightF = 0.35; cityGlow = 0.68; sunY = 0.38;
@@ -13760,8 +13840,8 @@ const DEFAULT_STATE = {
                     const fl = (Math.sin(time * 29.0) * Math.sin(time * 7.3) > 0.92) ? 0.62 : 1.48;
                     window.tier1NeonMat.emissiveIntensity = fl;
                 }
-                if (window.bedsideLight) window.bedsideLight.intensity += ((isNight ? 3.2 : 0.45) - window.bedsideLight.intensity) * 0.08;
-                if (window.deskHaloLight) window.deskHaloLight.intensity += ((isNight ? 2.4 : 0.7) - window.deskHaloLight.intensity) * 0.08;
+                if (window.bedsideLight) window.bedsideLight.intensity += ((isNight ? 7.2 : 0.65) - window.bedsideLight.intensity) * 0.08;
+                if (window.deskHaloLight) window.deskHaloLight.intensity += ((isNight ? 4.4 : 0.9) - window.deskHaloLight.intensity) * 0.08;
                 if (window.windowRainUniforms) {
                     window.windowRainUniforms.uTime.value = time * 1.1;
                     window.windowRainUniforms.uRainIntensity.value += (pRain - window.windowRainUniforms.uRainIntensity.value) * 0.06;
@@ -14359,9 +14439,9 @@ const DEFAULT_STATE = {
                     const hour = (tMins % 1440) / 60;
                     const isLampDark = window.pixarLamp && window.pixarLamp.userData && window.pixarLamp.userData.isOn;
 
-                    let zenHex = '#091124', horHex = '#1c2842', sunColHex = '#c8dcff', farHex = '#19243b';
-                    let sunHex = '#8fb0f5', sunInt = 0.05, bounceHex = '#6a8cd9', bounceInt = 1.65, hemiInt = 0.54;
-                    let cityGlow = 1.15, nightFactor = 1.0, beamOp = 0.0, sunY = 0.72;
+                    let zenHex = '#0c162e', horHex = '#233354', sunColHex = '#d4e4ff', farHex = '#1f2d4a';
+                    let sunHex = '#a8c4ff', sunInt = 0.24, bounceHex = '#86a6eb', bounceInt = 3.35, hemiInt = 0.88;
+                    let cityGlow = 1.35, nightFactor = 1.0, beamOp = 0.0, sunY = 0.72;
 
                     if (hour >= 6 && hour < 8.5) {
                         // Aube claire & dorée
@@ -14397,8 +14477,8 @@ const DEFAULT_STATE = {
                         // Regard vers la baie vitrée Est (+X)
                         const lookEast = Math.max(-1, Math.min(1, lookDir.x));
                         const daylightAmt = (1.0 - nightFactor) * (isLampDark ? 0.15 : 1.0);
-                        // Quand on fixe la fenêtre en plein jour -> exposition serrée (0.97) ; vers l'intérieur -> ouverte (1.24)
-                        const targetExp = 1.16 - (lookEast * 0.17 * daylightAmt) + (nightFactor * 0.05);
+                        // Quand on fixe la fenêtre en plein jour -> exposition serrée (0.97) ; vers l'intérieur / nuit -> bien éclairée
+                        const targetExp = 1.16 - (lookEast * 0.17 * daylightAmt) + (nightFactor * 0.14);
                         renderer.toneMappingExposure += (targetExp - renderer.toneMappingExposure) * 0.04;
                     }
 
@@ -14468,44 +14548,56 @@ const DEFAULT_STATE = {
                         window.windowRainUniforms.uLightning.value = window._lightningFlash;
                     }
 
-                    // --- AMBIANCE « SESSION NOCTURNE » AUTOMATIQUE (21h00 -> 05h30) ---
-                    const isNightSession = (hour >= 21.0 || hour < 5.5);
+                    // --- AMBIANCE « SESSION NOCTURNE » AUTOMATIQUE (20h30 -> 06h00) : BIEN ÉCLAIRÉE & CHALEUREUSE ---
+                    const isNightSession = (hour >= 20.5 || hour < 6.0);
                     if (window.bedsideLight && window.bedsideShadeMat) {
-                        const targetBedInt = isNightSession ? 5.2 : 0.45;
-                        window.bedsideLight.intensity += (targetBedInt - window.bedsideLight.intensity) * 0.03;
-                        window.bedsideShadeMat.emissiveIntensity += ((isNightSession ? 2.1 : 0.45) - window.bedsideShadeMat.emissiveIntensity) * 0.03;
+                        const targetBedInt = isNightSession ? 8.5 : 0.65;
+                        window.bedsideLight.intensity += (targetBedInt - window.bedsideLight.intensity) * 0.04;
+                        window.bedsideShadeMat.emissiveIntensity += ((isNightSession ? 2.4 : 0.45) - window.bedsideShadeMat.emissiveIntensity) * 0.04;
                     }
                     if (window.deskBiasLight) {
-                        const targetBias = isNightSession ? 5.6 : 2.6;
-                        window.deskBiasLight.intensity += (targetBias - window.deskBiasLight.intensity) * 0.03;
+                        const targetBias = isNightSession ? 9.2 : 2.8;
+                        window.deskBiasLight.intensity += (targetBias - window.deskBiasLight.intensity) * 0.04;
+                    }
+                    if (window.deskHaloLight) {
+                        const targetHalo = isNightSession ? 4.4 : 0.9;
+                        window.deskHaloLight.intensity += (targetHalo - window.deskHaloLight.intensity) * 0.04;
                     }
                     if (window.sconceGlowMat) {
-                        window.sconceGlowMat.emissiveIntensity += ((isNightSession ? 2.6 : 0.9) - window.sconceGlowMat.emissiveIntensity) * 0.03;
+                        window.sconceGlowMat.emissiveIntensity += ((isNightSession ? 3.2 : 0.9) - window.sconceGlowMat.emissiveIntensity) * 0.04;
                     }
 
+                    // Boost dynamique de l'éclairage Studio Pro 42e la nuit (toujours lisible & lumineux)
+                    const psNightBoost = 1.0 + nightFactor * 0.78;
+                    if (window._psPodiumKeyLight) window._psPodiumKeyLight.intensity += ((5.4 * psNightBoost) - window._psPodiumKeyLight.intensity) * 0.05;
+                    if (window._psLiveRoomLight) window._psLiveRoomLight.intensity += ((4.6 * psNightBoost) - window._psLiveRoomLight.intensity) * 0.05;
+                    if (window._psVipBarLight) window._psVipBarLight.intensity += ((4.4 * psNightBoost) - window._psVipBarLight.intensity) * 0.05;
+                    if (window._psStudioOverheadFill) window._psStudioOverheadFill.intensity += ((5.2 * psNightBoost) - window._psStudioOverheadFill.intensity) * 0.05;
+
                     if (!isLampDark) {
-                        const stormDim = 1.0 - targetRain * 0.35;
+                        const stormDim = isNightSession ? (1.0 - targetRain * 0.12) : (1.0 - targetRain * 0.35);
                         const isProLoc = (window.activeStudioLocation === 'pro_studio');
-                        const nightCeil = isProLoc ? 0 : (isNightSession ? 22 : 42);
+                        const nightCeil = isProLoc ? 0 : (isNightSession ? 38 : 42);
                         dirLight.color.lerp(window._tmpSunCol ? window._tmpSunCol.set(sunHex) : (window._tmpSunCol = new THREE.Color(sunHex)), 0.04);
-                        dirLight.intensity += (((isProLoc ? sunInt * 0.65 : sunInt) * stormDim + window._lightningFlash * 2.2) - dirLight.intensity) * 0.06;
-                        const tMult = window.roomTierLightMult || 1.0;
-                        hemiLight.intensity += ((hemiInt * stormDim * tMult) - hemiLight.intensity) * 0.04;
+                        dirLight.intensity += (((isProLoc ? sunInt * 0.75 : sunInt) * stormDim + window._lightningFlash * 2.2) - dirLight.intensity) * 0.06;
+                        const tMult = isNightSession ? Math.max(0.95, window.roomTierLightMult || 1.0) : (window.roomTierLightMult || 1.0);
+                        const effectiveHemi = isProLoc ? Math.max(hemiInt, 0.98) : hemiInt;
+                        hemiLight.intensity += ((effectiveHemi * stormDim * tMult) - hemiLight.intensity) * 0.05;
                         ceilingLight.intensity += (nightCeil - ceilingLight.intensity) * 0.06;
                         if (window.windowBounceLight) {
                             window.windowBounceLight.color.lerp(window._tmpBncCol ? window._tmpBncCol.set(bounceHex) : (window._tmpBncCol = new THREE.Color(bounceHex)), 0.04);
                             window.windowBounceLight.intensity += ((bounceInt * stormDim + window._lightningFlash * 4.5) - window.windowBounceLight.intensity) * 0.06;
                         }
                         if (window.ceilingFixtureMat) {
-                            let fixInt = isNightSession ? 1.1 : 1.9;
+                            let fixInt = isNightSession ? 1.65 : 1.9;
                             if (window.currentRoomVisualTier === 1) {
-                                fixInt = (Math.sin(time * 31.0) * Math.sin(time * 6.7) > 0.93) ? 0.55 : 1.45;
+                                fixInt = (Math.sin(time * 31.0) * Math.sin(time * 6.7) > 0.93) ? 0.85 : 1.65;
                             }
                             window.ceilingFixtureMat.emissiveIntensity = fixInt;
                         }
                     } else {
-                        if (window.windowBounceLight) window.windowBounceLight.intensity += ((0.8 + window._lightningFlash * 3.0) - window.windowBounceLight.intensity) * 0.06;
-                        if (window.ceilingFixtureMat) window.ceilingFixtureMat.emissiveIntensity = 0.12;
+                        if (window.windowBounceLight) window.windowBounceLight.intensity += ((1.6 + window._lightningFlash * 3.0) - window.windowBounceLight.intensity) * 0.06;
+                        if (window.ceilingFixtureMat) window.ceilingFixtureMat.emissiveIntensity = 0.25;
                     }
 
                     // --- VAPEUR CHAUDE AU-DESSUS DU MUG DE CAFÉ ---
@@ -28942,6 +29034,21 @@ document.addEventListener('mouseover', (e) => {
                 t.innerText = msg;
             }
             t.dataset.toastType = type;
+
+            // Mobile uniquement (portrait & paysage) : limite stricte à 1 toast simultané (+1 si review) pour ne jamais encombrer l'écran
+            const isMobileToastViewport = (window.innerWidth <= 767) || (window.innerWidth <= 940 && window.innerHeight <= 500);
+            if (isMobileToastViewport) {
+                const maxMobileToasts = (type === 'review') ? 1 : 2;
+                const existing = Array.from(zone.children).filter(el => !el.classList.contains('leaving'));
+                while (existing.length >= maxMobileToasts) {
+                    const oldest = existing.shift();
+                    if (oldest && oldest.parentElement) {
+                        if (oldest.hideTimer) clearTimeout(oldest.hideTimer);
+                        oldest.remove();
+                    }
+                }
+            }
+
             zone.appendChild(t);
             
             updateToastStack();
@@ -28951,7 +29058,7 @@ document.addEventListener('mouseover', (e) => {
                 let startX = 0;
                 let currentDelta = 0;
 
-                t.style.touchAction = 'none'; 
+                t.style.touchAction = 'pan-y'; 
                 t.style.userSelect = 'none';  
                 t.style.webkitUserSelect = 'none';
 
@@ -28969,8 +29076,10 @@ document.addEventListener('mouseover', (e) => {
                 t.addEventListener('pointermove', (e) => {
                     if (!isDragging) return;
                     currentDelta = e.clientX - startX;
-                    t.style.transform = `translateX(${currentDelta}px)`;
-                    t.style.opacity = Math.max(0, 1 - Math.abs(currentDelta) / 200);
+                    if (Math.abs(currentDelta) > 6) {
+                        t.style.transform = `translateX(${currentDelta}px)`;
+                        t.style.opacity = Math.max(0, 1 - Math.abs(currentDelta) / 200);
+                    }
                 });
 
                 const onEnd = (e) => {
@@ -28980,14 +29089,18 @@ document.addEventListener('mouseover', (e) => {
                     
                     t.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease';
 
-                    if (Math.abs(currentDelta) < 5 && onClick) {
-                        onClick();
-                        t.remove();
-                        updateToastStack();
-                        return;
+                    if (Math.abs(currentDelta) < 6) {
+                        if (onClick) onClick();
+                        // Sur mobile, un tap ferme instantanément la notif pour dégager la vue
+                        if (onClick || isMobileToastViewport) {
+                            t.classList.add('leaving');
+                            t.style.opacity = '0';
+                            setTimeout(() => { if (t.parentElement) t.remove(); updateToastStack(); }, 180);
+                            return;
+                        }
                     }
 
-                    if (Math.abs(currentDelta) > 80) {
+                    if (Math.abs(currentDelta) > 65) {
                         const direction = currentDelta > 0 ? '100vw' : '-100vw';
                         t.classList.add('leaving');
                         t.style.transform = `translateX(${direction})`;
@@ -29009,6 +29122,7 @@ document.addEventListener('mouseover', (e) => {
             
             addSwipe();
 
+            const autoHideMs = isMobileToastViewport ? (type === 'review' ? 4200 : 3000) : 4000;
             t.hideTimer = setTimeout(() => { 
                 if (t.parentElement) { 
                     t.classList.add('leaving');
@@ -29019,7 +29133,7 @@ document.addEventListener('mouseover', (e) => {
                         updateToastStack();
                     }, 400); 
                 } 
-            }, 4000);
+            }, autoHideMs);
         }
 
         function closeReview() {
@@ -31148,7 +31262,8 @@ function updateToastStack() {
             t.style.transition = 'all 0.3s ease';
         });
     } else {
-        zone.style.position = 'relative';
+        // Conserve position: fixed (déjà un containing block pour les toasts absolus, ne casse jamais le positionnement!)
+        zone.style.position = '';
         let maxHeight = 60;
         toasts.forEach((t, i) => {
             t.style.position = 'absolute';
