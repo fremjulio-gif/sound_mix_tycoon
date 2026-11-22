@@ -6203,6 +6203,27 @@
             </div>
         </div>
 
+        <!-- =========================================================================
+             MODALE ÉVOLUTION D'AVATAR : CHOIX DE LA VARIANTE D'HABITS AU NOUVEAU PALIER
+             ========================================================================= -->
+        <div id="avatar-variant-modal" class="fixed inset-0 z-[100010] bg-black/85 backdrop-blur-md hidden items-center justify-center p-3 sm:p-5">
+            <div class="w-full max-w-3xl max-h-[92dvh] overflow-y-auto bg-[#0c0f18] border border-amber-400/40 rounded-2xl shadow-[0_28px_90px_rgba(0,0,0,0.95)] p-4 sm:p-6">
+                <div class="flex items-start justify-between gap-3 border-b border-white/10 pb-3 mb-4">
+                    <div>
+                        <div id="av-modal-eyebrow" class="text-[10px] font-mono uppercase tracking-[0.26em] text-amber-300 font-bold">NOUVEAU PALIER DÉBLOQUÉ · NIVEAU 2</div>
+                        <h2 id="av-modal-title" class="text-lg sm:text-2xl font-bold text-white tracking-wider uppercase mt-0.5">CHOISIS TON NOUVEAU STYLE</h2>
+                        <p id="av-modal-sub" class="text-xs text-gray-400 mt-1">Ton studio évolue ! Choisis une variante de tenue dérivée pour ton artiste (même modèle, nouveau look & thème synchronisé).</p>
+                    </div>
+                </div>
+                <div id="av-variant-cards" class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-5"></div>
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+                    <button type="button" id="av-variant-confirm-btn" onclick="window.confirmAvatarVariantModal()" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-amber-500 hover:brightness-110 text-white font-mono font-bold text-xs uppercase tracking-widest shadow-[0_0_24px_rgba(129,140,248,0.45)] cursor-pointer transition-all active:scale-95">
+                        ✨ CONFIRMER CE STYLE
+                    </button>
+                </div>
+            </div>
+        </div>
+
     <div id="bsod" class="absolute inset-0 z-[2000] bg-[#0000AA] text-white p-8 md:p-16 flex-col hidden font-retro">
             <h1 class="text-3xl md:text-5xl font-bold bg-white text-[#0000AA] inline-block px-5 py-2 mb-8 md:mb-10 mt-10">CRITICAL_SYSTEM_ERROR</h1>
             <p id="bsod-msg" class="mb-6 text-lg md:text-xl tracking-wider">*** STOP: 0x000000FE (MALWARE_DETECTED)</p>
@@ -6429,6 +6450,7 @@ const DEFAULT_STATE = {
             history: { money: [{ amt: 100, txt: "Initial Bank Setup" }], followers: [] },
             isExporting: false, isSleeping: false, isEventActive: false,
             roomTier: 1, studioUnlocked: false, activeLocation: 'bedroom',
+            avatarTier: 1, avatarVariant: 0, avatarTierPrompted: 1,
             labelName: '42E RECORDS', signedArtists: [], artistRoyaltyMults: {}, labelSinglesCount: 0,
             isSitting: false,
             isReviewActive: false, // Ajout de l'état pour les revues
@@ -6658,8 +6680,9 @@ const DEFAULT_STATE = {
             // Couleurs de l'avatar (0:Beatmaker, 1:Cyber, 2:Street, 3:Exec)
             const avatarColors = ['#4a5bff', '#41d5ec', '#8ad16a', '#ff6f65']; 
             
-            // On récupère la couleur de l'avatar actuel
-            const cTheme = avatarColors[selectedAvatarIndex] || '#818cf8';
+            // On récupère la couleur d'accent de la variante d'avatar active (ou défaut du perso)
+            const activeVarSpec = (typeof window.getActiveAvatarVariantSpec === 'function') ? window.getActiveAvatarVariantSpec() : null;
+            const cTheme = (activeVarSpec && activeVarSpec.accent) || avatarColors[selectedAvatarIndex] || '#818cf8';
 
             // --- MISE À JOUR DU FOND DE LA ROOM (HARMONIE VISUELLE) ---
             const hexToHsl = (hex) => {
@@ -16355,18 +16378,26 @@ function calculateLevelData(isSilentInit = false) {
             const isProActive = (window.activeStudioLocation === 'pro_studio');
             if (isSilentInit || window.isBooting) {
                 state.roomTier = Math.max(prevTier, targetTier);
+                if (!state.avatarTier) state.avatarTier = state.studioUnlocked ? 4 : state.roomTier;
                 if (!isProActive && window.currentRoomVisualTier !== state.roomTier) {
                     window.applyRoomEvolutionTier(state.roomTier, false);
                 }
             } else if (targetTier > prevTier) {
                 state.roomTier = targetTier;
+                state.avatarTier = Math.max(Number(state.avatarTier) || 1, targetTier);
                 if (typeof saveGame === 'function') saveGame();
                 if (!isProActive) window.applyRoomEvolutionTier(targetTier, true);
+                if ((Number(state.avatarTierPrompted) || 1) < targetTier && typeof window.openAvatarVariantModal === 'function') {
+                    state.avatarTierPrompted = targetTier;
+                    if (typeof saveGame === 'function') saveGame();
+                    setTimeout(() => window.openAvatarVariantModal(targetTier), 1200);
+                }
             }
             // Déblocage du VRAI STUDIO PRO (42e Étage) dès 80 % de Global Mastery!
             let studioJustUnlocked = false;
             if (avgMastery >= 80 && !state.studioUnlocked) {
                 state.studioUnlocked = true;
+                state.avatarTier = 4;
                 studioJustUnlocked = true;
                 if (typeof saveGame === 'function') saveGame();
                 if (!isSilentInit && !window.isBooting) {
@@ -16377,6 +16408,11 @@ function calculateLevelData(isSilentInit = false) {
                     if (subEl) subEl.textContent = '80 % Global Mastery atteint ! Utilise la porte ou la touche [L] pour y accéder à tout moment.';
                     if (banner) { banner.classList.add('visible'); setTimeout(() => banner.classList.remove('visible'), 5500); }
                     if (typeof showToast === 'function') showToast('🏢 Penthouse Studio Pro (42e Étage) débloqué ! Appuie sur [L] ou passe par la porte.', 'success');
+                    if ((Number(state.avatarTierPrompted) || 1) < 4 && typeof window.openAvatarVariantModal === 'function') {
+                        state.avatarTierPrompted = 4;
+                        if (typeof saveGame === 'function') saveGame();
+                        setTimeout(() => window.openAvatarVariantModal(4), 1600);
+                    }
                 }
             }
             if ((studioJustUnlocked || !isSilentInit) && typeof window.syncStudioSwitchButtons === 'function') {
@@ -18141,20 +18177,93 @@ document.addEventListener('mouseover', (e) => {
         };
         
     // ==========================================
-    // CRÉATION DES AVATARS (Style Funko Pop Blocky / Flat 3D)
+    // CRÉATION DES AVATARS ÉVOLUTIFS (4 PALIERS DE ROOMS × 3 VARIANTES D'HABITS)
     // ==========================================
+    const AVATAR_TIER_META = {
+        1: { label: 'CHAMBRE GALÈRE · NIV.1', subtitle: 'Tenue underground de tes débuts' },
+        2: { label: 'HOME-STUDIO RÉNOVÉ · NIV.2', subtitle: 'Streetwear propre & premier équipement studio' },
+        3: { label: 'STUDIO ARCHITECTE · NIV.3', subtitle: 'Style créateur & direction artistique affirmée' },
+        4: { label: 'STUDIO PRO 42E ÉTAGE · NIV.4', subtitle: 'Allure Mogul & finitions luxe du 42e étage' }
+    };
 
-    function createAvatarGroup(styleIndex) {
+    // 4 paliers × 3 variantes dérivées (même visage/modèle de perso, habits & accessoires évolutifs)
+    const AVATAR_TIER_VARIANTS = {
+        1: [
+            { name: 'Underground Hoodie', tag: 'Brut · Débuts', desc: 'Hoodie sombre délavé & basiques de nuit.', torso: '#312e81', sleeves: '#312e81', pants: '#1f2937', shoes: '#d1d5db', accent: '#6366f1', metal: '#94a3b8', bg: '#16172b' },
+            { name: 'Late-Night Vintage', tag: 'Chaud · Lo-Fi', desc: 'Sweat bordeaux vintage & pantalon cargo.', torso: '#7c2d12', sleeves: '#7c2d12', pants: '#292524', shoes: '#e7e5e4', accent: '#f59e0b', metal: '#d97706', bg: '#241410' },
+            { name: 'Raw Monochrome', tag: 'Béton · Indé', desc: 'Ensemble gris anthracite brut & détails blancs.', torso: '#27272a', sleeves: '#3f3f46', pants: '#18181b', shoes: '#f4f4f5', accent: '#94a3b8', metal: '#cbd5e1', bg: '#14161c' }
+        ],
+        2: [
+            { name: 'Varsity Studio', tag: 'Bicolore · Clean', desc: 'Veste varsity manches contrastées & liseré néon.', torso: '#1e3a8a', sleeves: '#e2e8f0', pants: '#111827', shoes: '#f8fafc', accent: '#38bdf8', metal: '#e2e8f0', bg: '#0c1c36' },
+            { name: 'Techwear Clean', tag: 'Urbain · Sangle', desc: 'Veste utilitaire pétrole, sangle studio & semelles nettes.', torso: '#0f766e', sleeves: '#134e4a', pants: '#0f172a', shoes: '#e2e8f0', accent: '#2dd4bf', metal: '#94a3b8', bg: '#0a2224' },
+            { name: 'Warm Analog', tag: 'Velours · Rétro', desc: 'Surchemise terracotta / crème & touches laiton.', torso: '#9a3412', sleeves: '#7c2d12', pants: '#1c1917', shoes: '#fef3c7', accent: '#fb923c', metal: '#d4af37', bg: '#26140c' }
+        ],
+        3: [
+            { name: 'Architecte Minimal', tag: 'Sable · Chrome', desc: 'Manteau structuré sable/obsidienne, montre & finitions chrome.', torso: '#18181b', sleeves: '#d6c3ab', pants: '#111318', shoes: '#f5f0e6', accent: '#eab308', metal: '#e2e8f0', bg: '#1c1914' },
+            { name: 'Cyber Couture', tag: 'Néon · Futuriste', desc: 'Veste designer obsidienne, bande LED violette & détails cyber.', torso: '#1e1b4b', sleeves: '#0f172a', pants: '#09090b', shoes: '#c084fc', accent: '#a855f7', metal: '#c084fc', bg: '#190f2e' },
+            { name: 'Parisian Label', tag: 'Blazer · Chic', desc: 'Blazer bleu nuit / émeraude, montre argent & coupe pro.', torso: '#064e3b', sleeves: '#065f46', pants: '#0f172a', shoes: '#f8fafc', accent: '#34d399', metal: '#cbd5e1', bg: '#08201a' }
+        ],
+        4: [
+            { name: '42e Mogul Gold', tag: 'Or 24K · Prestige', desc: 'Costume obsidienne, revers satinés, chaîne & casque Or 24K.', torso: '#0c0d12', sleeves: '#11131a', pants: '#090a0f', shoes: '#18181b', accent: '#f59e0b', metal: '#fbbf24', bg: '#1f1608', glow: '#f59e0b' },
+            { name: 'Mike Dean Cyber-Violet', tag: 'Synth · Ambre', desc: 'Veste cuir studio noire, liseré Cyber-Violet & reflets ambre.', torso: '#140b24', sleeves: '#0d0917', pants: '#09090b', shoes: '#a855f7', accent: '#a855f7', metal: '#f59e0b', bg: '#1b0b2e', glow: '#a855f7' },
+            { name: 'Diamond Executive', tag: 'Platine · Diamant', desc: 'Ensemble blanc glacier, platine miroir & éclat Diamant Cyan.', torso: '#e2e8f0', sleeves: '#f8fafc', pants: '#1e293b', shoes: '#ffffff', accent: '#38bdf8', metal: '#bae6fd', bg: '#0a1e2e', glow: '#38bdf8' }
+        ]
+    };
+
+    window.getAvatarVariantSpec = function(tier, variant) {
+        const t = Math.max(1, Math.min(4, parseInt(tier, 10) || 1));
+        const list = AVATAR_TIER_VARIANTS[t] || AVATAR_TIER_VARIANTS[1];
+        const v = Math.max(0, Math.min(list.length - 1, parseInt(variant, 10) || 0));
+        return list[v];
+    };
+
+    window.getActiveAvatarVariantSpec = function() {
+        const st = (typeof state !== 'undefined' && state) ? state : null;
+        const t = st ? (st.studioUnlocked && st.activeLocation === 'pro_studio' ? Math.max(4, st.avatarTier || 4) : (st.avatarTier || st.roomTier || 1)) : 1;
+        const v = st ? (st.avatarVariant || 0) : 0;
+        return window.getAvatarVariantSpec(t, v);
+    };
+
+    function createAvatarGroup(styleIndex, tier = null, variant = null) {
     const group = new THREE.Group();
+    const sIdx = Math.max(0, Math.min(3, parseInt(styleIndex, 10) || 0));
+    const resolvedTier = (tier !== null && tier !== undefined)
+        ? Math.max(1, Math.min(4, parseInt(tier, 10) || 1))
+        : ((typeof state !== 'undefined' && state && state.avatarTier) ? state.avatarTier : 1);
+    const resolvedVariant = (variant !== null && variant !== undefined)
+        ? Math.max(0, Math.min(2, parseInt(variant, 10) || 0))
+        : ((typeof state !== 'undefined' && state && typeof state.avatarVariant === 'number') ? state.avatarVariant : 0);
 
-    // 1. Couleurs
+    const varSpec = window.getAvatarVariantSpec(resolvedTier, resolvedVariant);
+
+    // 1. Couleurs (même peau / modèle par perso, tenue pilotée par le palier & la variante!)
     const skinColors = ['#FFCBA4', '#8D4E28', '#F0C080', '#C68642'];
-    const clothesColors = ['#3730a3', '#0e7490', '#065f46', '#27272a'];
+    const baseClothesFallback = ['#3730a3', '#0e7490', '#065f46', '#27272a'];
+    // En Tier 1 Variant 0, on conserve l'ADN chromatique original du personnage
+    const useBaseIdentity = (resolvedTier === 1 && resolvedVariant === 0);
 
-    const skinMat = new THREE.MeshStandardMaterial({ color: skinColors[styleIndex], roughness: 0.6 });
-    const clothesMat = new THREE.MeshStandardMaterial({ color: clothesColors[styleIndex], roughness: 0.9 });
-    const shoesMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.5 });
+    const torsoHex = useBaseIdentity ? baseClothesFallback[sIdx] : varSpec.torso;
+    const sleeveHex = useBaseIdentity ? baseClothesFallback[sIdx] : varSpec.sleeves;
+    const pantsHex = useBaseIdentity ? baseClothesFallback[sIdx] : varSpec.pants;
+    const shoeHex = useBaseIdentity ? '#f8fafc' : varSpec.shoes;
+
+    const skinMat = new THREE.MeshStandardMaterial({ color: skinColors[sIdx], roughness: 0.6 });
+    const clothesMat = new THREE.MeshStandardMaterial({ color: torsoHex, roughness: resolvedTier >= 3 ? 0.55 : 0.9, metalness: resolvedTier >= 4 ? 0.18 : 0.04 });
+    const sleeveMat = new THREE.MeshStandardMaterial({ color: sleeveHex, roughness: resolvedTier >= 3 ? 0.55 : 0.88, metalness: resolvedTier >= 4 ? 0.16 : 0.04 });
+    const pantsMat = new THREE.MeshStandardMaterial({ color: pantsHex, roughness: 0.85 });
+    const shoesMat = new THREE.MeshStandardMaterial({ color: shoeHex, roughness: 0.45 });
     const blackMat = new THREE.MeshStandardMaterial({ color: '#111111', roughness: 0.9 });
+    const accentMat = new THREE.MeshStandardMaterial({
+        color: varSpec.accent,
+        emissive: varSpec.glow || varSpec.accent,
+        emissiveIntensity: resolvedTier >= 4 ? 0.95 : (resolvedTier >= 3 ? 0.42 : 0.12),
+        roughness: 0.3
+    });
+    const metalMat = new THREE.MeshStandardMaterial({
+        color: varSpec.metal || '#fbbf24',
+        metalness: 0.88,
+        roughness: 0.22
+    });
 
     // Utilitaire pour les arêtes noires typiques du style
     function addEdges(mesh) {
@@ -18173,20 +18282,20 @@ document.addEventListener('mouseover', (e) => {
         legGroup.name = xSign < 0 ? "Leg_L" : "Leg_R";
         legGroup.position.set(xSign * 0.12, 0.42, 0);
 
-        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.16), clothesMat);
+        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.28, 0.16), pantsMat);
         leg.position.set(0, -0.12, 0);
         leg.castShadow = true;
         addEdges(leg);
 
         // Ajout des Doc Martens pour les avatars 0 et 3
-        if (styleIndex === 0 || styleIndex === 3) {
+        if (sIdx === 0 || sIdx === 3) {
         // Corps de la botte
-        const boot = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.22), blackMat);
+        const boot = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.22), resolvedTier === 4 && resolvedVariant === 2 ? shoesMat : blackMat);
         boot.position.set(0, -0.27, 0.02);
         addEdges(boot);
 
-        // Surpiqûre jaune signature
-        const stitch = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.01, 0.23), new THREE.MeshStandardMaterial({ color: '#fbbf24', roughness: 0.8 }));
+        // Surpiqûre signature (dorée/accent selon variante)
+        const stitch = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.01, 0.23), new THREE.MeshStandardMaterial({ color: resolvedTier >= 2 ? varSpec.accent : '#fbbf24', roughness: 0.6 }));
         stitch.position.set(0, -0.355, 0.02);
 
         // Semelle épaisse
@@ -18196,12 +18305,17 @@ document.addEventListener('mouseover', (e) => {
 
         legGroup.add(leg, boot, stitch, sole);
         } else {
-        // Chaussure classique pour les autres
+        // Chaussure classique / sneakers bicolores selon palier
         const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 0.28), shoesMat);
         shoe.position.set(0, -0.34, 0.04);
         shoe.castShadow = true;
         addEdges(shoe);
         legGroup.add(leg, shoe);
+        if (resolvedTier >= 2) {
+            const soleAccent = new THREE.Mesh(new THREE.BoxGeometry(0.205, 0.03, 0.285), accentMat);
+            soleAccent.position.set(0, -0.39, 0.04);
+            legGroup.add(soleAccent);
+        }
         }
 
         return legGroup;
@@ -18216,17 +18330,22 @@ document.addEventListener('mouseover', (e) => {
     addEdges(torso);
     group.add(torso);
 
-    // --- Bras ---
+    // --- Bras (avec manches contrastées & montre métallique à partir du Niv.3) ---
     const createArm = (xSign) => {
         const armGroup = new THREE.Group();
         armGroup.name = xSign < 0 ? "Arm_L" : "Arm_R";
         armGroup.position.set(xSign * 0.29, 0.72, 0);
 
-        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), clothesMat);
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.35, 0.14), sleeveMat);
         arm.position.set(0, -0.16, 0);
         arm.rotation.z = xSign * 0.12;
         arm.castShadow = true;
         addEdges(arm);
+        if (resolvedTier >= 3 && xSign > 0) {
+            const watch = new THREE.Mesh(new THREE.BoxGeometry(0.155, 0.042, 0.155), metalMat);
+            watch.position.set(xSign * 0.025, -0.30, 0);
+            armGroup.add(watch);
+        }
 
         const hand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), skinMat);
         hand.position.set(xSign * 0.04, -0.38, 0);
@@ -18400,60 +18519,117 @@ document.addEventListener('mouseover', (e) => {
         headGroup.add(shadeL, shadeR, bridge, armL, armR);
     }
 
+    // ==========================================
+    // HABITS & ACCESSOIRES DÉRIVÉS SELON LE PALIER DE ROOM (NIV. 1 -> 4)
+    // ==========================================
+    if (resolvedTier === 1 && resolvedVariant === 1) {
+        // Col montant / écharpe chill Late-Night Vintage
+        const scarf = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.08, 0.28), accentMat);
+        scarf.position.set(0, 0.78, 0.01); addEdges(scarf); group.add(scarf);
+    }
+
+    if (resolvedTier === 2) {
+        // Niv.2 Home-Studio Rénové : Col varsity / liseré central + sangle studio (techwear)
+        const collar = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.065, 0.27), accentMat);
+        collar.position.set(0, 0.77, 0); addEdges(collar); group.add(collar);
+        const zipLine = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.38, 0.265), metalMat);
+        zipLine.position.set(0, 0.57, 0); group.add(zipLine);
+        if (resolvedVariant === 1) {
+            // Bandoulière / sangle techwear diagonale
+            const strap = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.48, 0.275), blackMat);
+            strap.position.set(0, 0.57, 0); strap.rotation.z = 0.58; group.add(strap);
+        }
+    }
+
+    if (resolvedTier === 3) {
+        // Niv.3 Studio Architecte : Revers de veste structurés + col roulé / sous-pull contrasté + liseré LED fin
+        const innerTop = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.39, 0.262), new THREE.MeshStandardMaterial({ color: resolvedVariant === 0 ? '#f5f0e6' : '#09090b', roughness: 0.7 }));
+        innerTop.position.set(0, 0.57, 0); group.add(innerTop);
+        [-0.12, 0.12].forEach(lx => {
+            const lapel = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.36, 0.27), accentMat);
+            lapel.position.set(lx, 0.59, 0.005); lapel.rotation.z = lx < 0 ? -0.14 : 0.14;
+            group.add(lapel);
+        });
+        // Broche / badge métal sur la poitrine
+        const pin = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.055, 0.03), metalMat);
+        pin.position.set(0.14, 0.67, 0.14); group.add(pin);
+    }
+
+    if (resolvedTier >= 4) {
+        // Niv.4 Studio Pro 42e Étage (Mogul) : Épaulettes luxe, revers satinés lumineux, chaîne & médaillon 24K/Platine!
+        [-0.24, 0.24].forEach(sx => {
+            const shoulder = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.07, 0.28), metalMat);
+            shoulder.position.set(sx, 0.77, 0); addEdges(shoulder); group.add(shoulder);
+        });
+        [-0.13, 0.13].forEach(lx => {
+            const lapel = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.38, 0.272), accentMat);
+            lapel.position.set(lx, 0.58, 0.006); lapel.rotation.z = lx < 0 ? -0.12 : 0.12;
+            group.add(lapel);
+        });
+        // Chaîne & médaillon 42e Étage (Or 24K / Ambre / Diamant)
+        const mogulChain = new THREE.Mesh(new THREE.TorusGeometry(0.155, 0.022, 10, 20), metalMat);
+        mogulChain.position.set(0, 0.70, 0.105); mogulChain.rotation.x = Math.PI / 2.45;
+        const medallion = new THREE.Mesh(new THREE.OctahedronGeometry(0.065, 0), accentMat);
+        medallion.position.set(0, 0.55, 0.17);
+        group.add(mogulChain, medallion);
+    }
+
     return group;
     }
         // ==========================================
-        // GÉNÉRATION DE L'IMAGE POUR LE MENU
+        // GÉNÉRATION DE L'IMAGE POUR LE MENU & LA MODALE VARIANTES
         // ==========================================
-        function generateAvatarImage(styleIndex) {
+        function generateAvatarImage(styleIndex, tier = 1, variant = 0, size = 320) {
             const cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-            cam.position.set(0, 1.0, 3.2); 
-            cam.lookAt(0, 0.9, 0);
+            cam.position.set(0, 0.96, 3.15);
+            cam.lookAt(0, 0.86, 0);
 
+            const varSpec = window.getAvatarVariantSpec ? window.getAvatarVariantSpec(tier, variant) : null;
             const scn = new THREE.Scene();
-            scn.background = new THREE.Color(['#1e1b4b', '#0f172a', '#064e3b', '#4c0519'][styleIndex]);
+            const defaultBgs = ['#1e1b4b', '#0f172a', '#064e3b', '#4c0519'];
+            const bgCol = (tier === 1 && variant === 0) ? (defaultBgs[styleIndex] || '#1e1b4b') : ((varSpec && varSpec.bg) || '#11131a');
+            scn.background = new THREE.Color(bgCol);
 
-            // NOUVEAU : Augmente la taille du rendu (512x512 est suffisant pour une miniature)
-            const size = 512; 
-            const rnd = new THREE.WebGLRenderer({ 
-                antialias: true, // Lissage des bords
-                alpha: false, 
-                preserveDrawingBuffer: true 
+            const rnd = new THREE.WebGLRenderer({
+                antialias: true,
+                alpha: false,
+                preserveDrawingBuffer: true
             });
-            
-            // Force la résolution
+
             rnd.setSize(size, size);
-            rnd.setPixelRatio(window.devicePixelRatio || 2); // Net sur tous les écrans
+            rnd.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
 
-            const light = new THREE.DirectionalLight(0xffffff, 1.2);
-            light.position.set(2, 3, 2);
+            const light = new THREE.DirectionalLight(0xffffff, 1.35);
+            light.position.set(2, 3, 2.5);
             scn.add(light);
-            scn.add(new THREE.AmbientLight(0x888888));
+            scn.add(new THREE.AmbientLight(0x9a9aa8));
 
-            const group = createAvatarGroup(styleIndex);
+            const group = createAvatarGroup(styleIndex, tier, variant);
             group.rotation.y = -Math.PI / 6;
             scn.add(group);
 
             rnd.render(scn, cam);
-            
-            // Utilise 'image/png' pour une meilleure qualité que le jpeg par défaut
-            const dataUrl = rnd.domElement.toDataURL('image/png', 1.0); 
-            
-            rnd.dispose(); 
+
+            const dataUrl = rnd.domElement.toDataURL('image/png', 0.95);
+
+            rnd.dispose();
             return dataUrl;
         }
+        window.generateAvatarImage = generateAvatarImage;
 
         const avatars = [
-            { id: 'Beatmaker', img: generateAvatarImage(0) },
-            { id: 'Cyber-DJ', img: generateAvatarImage(1) },
-            { id: 'Street_MC', img: generateAvatarImage(2) },
-            { id: 'Exec_Prod', img: generateAvatarImage(3) }
+            { id: 'Beatmaker', img: generateAvatarImage(0, 1, 0) },
+            { id: 'Cyber-DJ', img: generateAvatarImage(1, 1, 0) },
+            { id: 'Street_MC', img: generateAvatarImage(2, 1, 0) },
+            { id: 'Exec_Prod', img: generateAvatarImage(3, 1, 0) }
         ];
 
         // ==========================================
-        // SPAWN DANS LA ROOM 3D
+        // SPAWN DANS LA ROOM 3D & SYNCHRONISATION VARIANTES
         // ==========================================
-        function spawnRoomAvatar(styleIndex) {
+        function spawnRoomAvatar(styleIndex, tier = null, variant = null, keepPos = false) {
+            const prevPos = (keepPos && currentRoomAvatar) ? currentRoomAvatar.position.clone() : null;
+            const prevRotY = (keepPos && currentRoomAvatar) ? currentRoomAvatar.rotation.y : 0;
             if (currentRoomAvatar) {
                 scene.remove(currentRoomAvatar);
                 targetPosition = null;
@@ -18462,9 +18638,14 @@ document.addEventListener('mouseover', (e) => {
             const root = new THREE.Group();
             root.name = "RoomAvatarRoot";
             root.scale.set(1.6, 1.6, 1.6);
-            root.position.set(0.2, -1, 2.4);
+            if (prevPos) {
+                root.position.copy(prevPos);
+                root.rotation.y = prevRotY;
+            } else {
+                root.position.set(0.2, -1, 2.4);
+            }
 
-            const visual = createAvatarGroup(styleIndex);
+            const visual = createAvatarGroup(styleIndex, tier, variant);
             visual.name = "AvatarVisual";
             visual.position.set(0, 0, 0);
             visual.rotation.set(0, 0, 0);
@@ -18476,6 +18657,117 @@ document.addEventListener('mouseover', (e) => {
             scene.add(root);
             currentRoomAvatar = root;
         }
+
+        window.refreshActiveAvatarVisuals = function(tierOverride = null, variantOverride = null) {
+            const st = (typeof state !== 'undefined' && state) ? state : null;
+            const charIdx = (st && typeof st.activeCharacter === 'number') ? st.activeCharacter : (typeof selectedAvatarIndex === 'number' ? selectedAvatarIndex : 0);
+            const t = (tierOverride !== null && tierOverride !== undefined) ? tierOverride : (st && st.avatarTier ? st.avatarTier : (st && st.roomTier ? st.roomTier : 1));
+            const v = (variantOverride !== null && variantOverride !== undefined) ? variantOverride : (st && typeof st.avatarVariant === 'number' ? st.avatarVariant : 0);
+
+            if (currentRoomAvatar) {
+                spawnRoomAvatar(charIdx, t, v, true);
+            }
+            try {
+                const newImg = generateAvatarImage(charIdx, t, v, 256);
+                if (avatars[charIdx]) avatars[charIdx].img = newImg;
+                const hudAv = document.getElementById('hud-avatar');
+                if (hudAv) hudAv.innerHTML = `<img src="${newImg}" alt="Avatar" class="w-full h-full object-cover rounded-full">`;
+            } catch(e) { console.warn('Avatar portrait refresh error:', e); }
+            if (typeof updateThemeColors === 'function') updateThemeColors();
+        };
+
+        window.applyAvatarVariant = function(tier, variant, persist = true) {
+            const t = Math.max(1, Math.min(4, parseInt(tier, 10) || 1));
+            const v = Math.max(0, Math.min(2, parseInt(variant, 10) || 0));
+            if (typeof state !== 'undefined' && state) {
+                state.avatarTier = t;
+                state.avatarVariant = v;
+                state.avatarTierPrompted = Math.max(state.avatarTierPrompted || 1, t);
+            }
+            window.refreshActiveAvatarVisuals(t, v);
+            if (persist && typeof saveGame === 'function') saveGame();
+        };
+
+        window._pendingVariantTier = 2;
+        window._pendingVariantIdx = 0;
+
+        window.selectAvatarVariantPreview = function(idx) {
+            window._pendingVariantIdx = idx;
+            const cards = document.querySelectorAll('#av-variant-cards .av-var-card');
+            cards.forEach((el, i) => {
+                const active = (i === idx);
+                el.classList.toggle('border-amber-400', active);
+                el.classList.toggle('bg-white/10', active);
+                el.classList.toggle('shadow-[0_0_24px_rgba(251,191,36,0.3)]', active);
+                el.classList.toggle('border-white/10', !active);
+                el.classList.toggle('bg-black/50', !active);
+            });
+            try { if (typeof playTone === 'function') playTone(520 + idx * 90, 'sine', 0.08, 0.04); } catch(e) {}
+        };
+
+        window.openAvatarVariantModal = function(targetTier) {
+            const modal = document.getElementById('avatar-variant-modal');
+            const cardsEl = document.getElementById('av-variant-cards');
+            const eyebrow = document.getElementById('av-modal-eyebrow');
+            const title = document.getElementById('av-modal-title');
+            const sub = document.getElementById('av-modal-sub');
+            if (!modal || !cardsEl) return;
+
+            if (typeof window.exitFpsPointerLock === 'function') window.exitFpsPointerLock();
+            const t = Math.max(1, Math.min(4, parseInt(targetTier, 10) || 2));
+            const meta = AVATAR_TIER_META[t] || AVATAR_TIER_META[2];
+            const list = AVATAR_TIER_VARIANTS[t] || AVATAR_TIER_VARIANTS[2];
+            const charIdx = (typeof state !== 'undefined' && state && typeof state.activeCharacter === 'number')
+                ? state.activeCharacter
+                : (typeof selectedAvatarIndex === 'number' ? selectedAvatarIndex : 0);
+
+            window._pendingVariantTier = t;
+            window._pendingVariantIdx = 0;
+
+            if (eyebrow) eyebrow.textContent = `NOUVEAU PALIER DÉBLOQUÉ · ${meta.label}`;
+            if (title) title.textContent = `CHOISIS TON NOUVEAU STYLE (NIV. ${t})`;
+            if (sub) sub.textContent = `${meta.subtitle} — Sélectionne l'une des 3 tenues dérivées pour ton artiste.`;
+
+            cardsEl.innerHTML = '';
+            list.forEach((vSpec, idx) => {
+                const previewUrl = generateAvatarImage(charIdx, t, idx, 256);
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = `av-var-card text-left rounded-xl p-3 border transition-all cursor-pointer flex flex-col gap-2.5 ${idx === 0 ? 'border-amber-400 bg-white/10 shadow-[0_0_24px_rgba(251,191,36,0.3)]' : 'border-white/10 bg-black/50 hover:border-white/30'}`;
+                card.onclick = () => window.selectAvatarVariantPreview(idx);
+                card.innerHTML = `
+                    <div class="relative w-full aspect-square rounded-lg overflow-hidden border border-white/10 bg-black/60">
+                        <img src="${previewUrl}" alt="${vSpec.name}" class="w-full h-full object-cover" />
+                        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider bg-black/75 border border-white/15 text-white">${vSpec.tag}</span>
+                        <span class="absolute bottom-2 right-2 w-4 h-4 rounded-full border-2 border-white/80 shadow" style="background:${vSpec.accent}"></span>
+                    </div>
+                    <div>
+                        <div class="font-mono text-xs font-bold text-white uppercase tracking-wider">${vSpec.name}</div>
+                        <p class="text-[11px] text-gray-400 leading-snug mt-1">${vSpec.desc}</p>
+                    </div>
+                `;
+                cardsEl.appendChild(card);
+            });
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        window.confirmAvatarVariantModal = function() {
+            const modal = document.getElementById('avatar-variant-modal');
+            const t = window._pendingVariantTier || 2;
+            const v = window._pendingVariantIdx || 0;
+            const spec = window.getAvatarVariantSpec(t, v);
+            window.applyAvatarVariant(t, v, true);
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+            try { if (typeof playSuccess === 'function') playSuccess(); } catch(e) {}
+            if (typeof showToast === 'function' && spec) {
+                showToast(`✨ Nouveau style équipé : ${spec.name} (Palier ${t})`, 'success');
+            }
+        };
 
     const ECHO_DATA = {
     costPerWeek: 1500,
@@ -22611,6 +22903,13 @@ document.addEventListener('mouseover', (e) => {
             }
             if (document.activeElement && typeof document.activeElement.blur === 'function') {
                 document.activeElement.blur();
+            }
+            // Synchronise le palier & la variante d'avatar (3D + HUD + thème) avec le niveau de room chargé
+            if (!state.avatarTier) state.avatarTier = state.studioUnlocked ? 4 : (Number(state.roomTier) || 1);
+            if (typeof state.avatarVariant !== 'number') state.avatarVariant = 0;
+            if (!state.avatarTierPrompted) state.avatarTierPrompted = state.avatarTier;
+            if (typeof window.refreshActiveAvatarVisuals === 'function') {
+                window.refreshActiveAvatarVisuals(state.avatarTier, state.avatarVariant);
             }
             if (typeof window.updateVinylCrate === 'function') window.updateVinylCrate();
             if (typeof window.syncCareerWallDiscs === 'function') window.syncCareerWallDiscs();
