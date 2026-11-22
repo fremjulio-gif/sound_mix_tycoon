@@ -23695,7 +23695,7 @@ document.addEventListener('mouseover', (e) => {
                     roomTier: 3, studioUnlocked: true, activeLocation: 'pro_studio',
                     labelName: '42E RECORDS', signedArtists: ['kaelen', 'nora'], labelSinglesCount: 4,
                     ownedFurniture: ['rug', 'sofa', 'table', 'tv', 'rack_lamp', 'led_panel_l', 'led_panel_r', 'synth', 'guitar'],
-                    stats: { tracks: 14, bangers: 11, flops: 1, totalEarned: 340000 },
+                    stats: { tracks: 55, bangers: 44, flops: 2, totalEarned: 340000 },
                     trackList: [
                         { title: '42E ETAGE', genre: 'Synthwave', score: 9.9, money: 85000, fans: 24000, date: 'J56' },
                         { title: 'ANALOG DREAMS', genre: 'Plug', score: 9.6, money: 64000, fans: 18000, date: 'J48' },
@@ -24106,14 +24106,25 @@ document.addEventListener('mouseover', (e) => {
         { id: 'bossalofi',  name: 'Bossa Lo-Fi',   unlockAt: 50, targetBpm: 88,  tol: 2, targetVoice: 'f',      reward: 'rep' }
     ];
 
+    function isAllDawGenresUnlocked() {
+        return Boolean(
+            state && (
+                state.studioUnlocked ||
+                state.activeLocation === 'pro_studio' ||
+                String(state.username || '').toUpperCase() === 'DEV_STUDIO'
+            )
+        );
+    }
+
     function updateDawGenres() {
         const container = document.getElementById('daw-genres-container');
         if (!container || !DAW_GENRES) return;
         
         const currentTracks = (state && state.stats && typeof state.stats.tracks === 'number') ? state.stats.tracks : 0;
+        const allUnlocked = isAllDawGenresUnlocked();
         
         container.innerHTML = DAW_GENRES.map(g => {
-            const isUnlocked = currentTracks >= g.unlockAt;
+            const isUnlocked = allUnlocked || currentTracks >= g.unlockAt;
             
             if (!isUnlocked) {
                 // CORRECTION : Plus de onclick="selectDawGenre" ici. Le clic est purement et simplement inactif.
@@ -24279,7 +24290,7 @@ document.addEventListener('mouseover', (e) => {
         if (val) {
             const currentTracks = (state && state.stats && typeof state.stats.tracks === 'number') ? state.stats.tracks : 0;
             const genreData = DAW_GENRES.find(g => g.id === val);
-            if (genreData && currentTracks < genreData.unlockAt) {
+            if (genreData && !isAllDawGenresUnlocked() && currentTracks < genreData.unlockAt) {
                 return;
             }
 
@@ -30072,7 +30083,8 @@ document.addEventListener('mouseover', (e) => {
             if (found) return found;
         }
         const tracks = (state.stats && typeof state.stats.tracks === 'number') ? state.stats.tracks : 0;
-        const unlocked = DAW_GENRES.filter(g => tracks >= g.unlockAt);
+        const allGenresUnlocked = typeof isAllDawGenresUnlocked === 'function' && isAllDawGenresUnlocked();
+        const unlocked = allGenresUnlocked ? DAW_GENRES : DAW_GENRES.filter(g => tracks >= g.unlockAt);
         const pool = unlocked.length > 0 ? unlocked : DAW_GENRES.slice(0, 2);
         const pick = pool[(curDay * 7 + 3) % pool.length];
         state.echoBuffs.trendDay = curDay;
