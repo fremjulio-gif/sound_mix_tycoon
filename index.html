@@ -12567,14 +12567,15 @@ const DEFAULT_STATE = {
             proStudioGroup.add(barGroup);
 
             // =========================================================================
-            // 7. GRAND SALON D'ÉCOUTE VIP FACE À LA BAIE SUD-EST (ZÉRO LIT DE CHAMBRE!)
-            //    • Grand Canapé d'Angle en Cuir Noir Obsidienne & Coussins Cognac :
-            //      - Section principale (sofa_mesh : Pause Chill)
+            // 7. GRAND CANAPÉ PRODUCTEUR / CLIENT SWEET SPOT (FACE À LA CONSOLE SSL, MONITEURS & SKYLINE EST!)
+            //    • Placé logiquement derrière l'ingénieur son, adossé au mur diffuseur QRD Ouest :
+            //      - Section principale (sofa_mesh : Pause Chill dans le sweet spot d'écoute)
             //      - Large Méridienne / Chaise Longue intégrée au Sofa VIP (bed_mesh : Repos complet!)
             //    • Table Basse en Marbre Noir Veiné & Contrats Label
             // =========================================================================
             const psLoungeGroup = new THREE.Group();
-            psLoungeGroup.position.set(3.2, -1.0, 4.35);
+            psLoungeGroup.position.set(-4.85, -1.0, 0.10);
+            psLoungeGroup.rotation.y = -Math.PI / 2;
 
             // Tapis de salon noir anthracite sous l'espace VIP
             const vipRug = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.022, 2.8), psPodiumCarpetMat);
@@ -12913,8 +12914,8 @@ const DEFAULT_STATE = {
                 if (x > -6.65 && x < -1.85 && z < -3.35) return true;
                 // Crédence Hall of Fame + Bar VIP & Frigo Vitré (Sud-Ouest)
                 if (x > -6.65 && x < 0.65 && z > 4.65 - rp) return true;
-                // Grand Salon VIP Canapé d'Angle & Méridienne (Sud-Est)
-                if (x > 1.55 - rp && x < 5.45 + rp && z > 3.85 - rp) return true;
+                // Grand Canapé Producteur / Client Sweet Spot + Table Basse Marbre (Ouest-Centre, face Console SSL)
+                if (x > -6.08 - rp && x < -3.72 + rp && z > -1.62 - rp && z < 2.32 + rp) return true;
                 return false;
             }
             if (x > -4.45 - r && x < 0.05 + r && z > -4.6 - r && z < -2.4 + r) return true; // Bureau
@@ -14373,22 +14374,22 @@ const DEFAULT_STATE = {
                     camera.fov = startFov + (targetFov - startFov) * ease;
                     camera.updateProjectionMatrix();
                 } else if (currentState.isSleeping) {
-                    // POV Allongé sur le lit (Chambre) ou sur la Méridienne face skyline (42F Studio Pro)
+                    // POV Allongé sur le lit (Chambre) ou sur la Méridienne Producteur face Console & Skyline (42F Studio Pro)
                     const bedTarget = (window.activeStudioLocation === 'pro_studio')
-                        ? window._v3finalCam.set(4.8, 0.32, 2.55)
+                        ? window._v3finalCam.set(-5.15, 0.35, 1.65)
                         : window._v3finalCam.set(3.8, 0.24, -4.05);
                     camera.position.lerp(bedTarget, 0.08);
                     const restPitch = 0.62 + Math.sin(time * 0.45) * 0.03;
-                    const restYaw = 0.65 + Math.cos(time * 0.3) * 0.04;
+                    const restYaw = (window.activeStudioLocation === 'pro_studio' ? -1.45 : 0.65) + Math.cos(time * 0.3) * 0.04;
                     camera.rotation.set(
                         camera.rotation.x + (restPitch - camera.rotation.x) * 0.06,
                         camera.rotation.y + normalizeAngle(restYaw - camera.rotation.y) * 0.06,
                         0, 'YXZ'
                     );
                 } else if (currentState.isSitting) {
-                    // POV Assis sur le canapé (Chambre ou Lounge VIP 42F)
+                    // POV Assis sur le canapé (Chambre ou Canapé Producteur Sweet Spot 42F)
                     const sitPos = (window.activeStudioLocation === 'pro_studio')
-                        ? window._v3finalCam.set(-4.2, 0.62, 1.65)
+                        ? window._v3finalCam.set(-5.25, 0.58, -0.25)
                         : window._v3finalCam.set(-3.82, 0.56, 1.5);
                     camera.position.lerp(sitPos, 0.12);
                     const breathe = Math.sin(time * 1.1) * 0.012;
@@ -20440,10 +20441,10 @@ document.addEventListener('mouseover', (e) => {
                 const st = overrideState || (typeof state !== 'undefined' ? state : null);
                 const signedIds = (st && Array.isArray(st.signedArtists)) ? st.signedArtists : [];
                 const slots = [
-                    { x: 2.35, y: -1.0, z: 3.35, yaw: -2.45 }, // Salon VIP près du Sofa Cuir
-                    { x: -1.85, y: -1.0, z: 3.75, yaw: 2.85 }, // Près du Bar VIP & Hall of Fame
+                    { x: -3.25, y: -1.0, z: -0.65, yaw: 1.55 }, // Près du Canapé Producteur & Table Marbre (face Console SSL)
+                    { x: -1.85, y: -1.0, z: 3.75, yaw: 2.85 },  // Près du Bar VIP & Hall of Fame
                     { x: -0.25, y: -1.0, z: -3.25, yaw: 0.25 }, // Dans la Live Room
-                    { x: -3.45, y: -1.0, z: 1.85, yaw: 1.45 }  // Près de l'écoute
+                    { x: 3.25, y: -1.0, z: 4.25, yaw: -2.45 }   // Face à la baie panoramique Sud-Est (dégagée!)
                 ];
 
                 signedIds.slice(0, 4).forEach((artId, idx) => {
