@@ -661,6 +661,52 @@
                     padding: 7px 10px;
                     gap: 5px;
                 }
+                /* Prompts & boutons d'interaction compacts sur mobile pour ne pas masquer la scène 3D */
+                #fps-interact-prompt {
+                    padding: 5px 10px;
+                    gap: 6px;
+                    border-radius: 10px;
+                    max-width: min(72vw, 255px);
+                }
+                #fps-interact-key {
+                    min-width: 20px;
+                    height: 20px;
+                    padding: 0 5px;
+                    font-size: 9px;
+                    border-radius: 5px;
+                }
+                #fps-interact-title {
+                    font-size: 9.5px;
+                    line-height: 1.15;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 52vw;
+                }
+                #fps-interact-sub {
+                    font-size: 8.5px;
+                    line-height: 1.15;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 52vw;
+                }
+                #fps-mobile-interact-btn {
+                    min-height: 34px;
+                    padding: 6px 12px;
+                    gap: 6px;
+                    font-size: 9.5px;
+                    letter-spacing: 0.05em;
+                    max-width: 44vw;
+                    bottom: max(18px, env(safe-area-inset-bottom));
+                    right: max(14px, env(safe-area-inset-right));
+                    box-shadow: 0 6px 18px rgba(129, 140, 248, 0.45);
+                }
+                #fps-mobile-interact-label {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
             }
 
             /* =========================================
@@ -1898,13 +1944,17 @@
                     font-size: 9px !important;
                 }
                 #fps-interact-prompt {
-                    bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
-                    padding: 7px 14px !important;
+                    bottom: calc(52px + env(safe-area-inset-bottom, 0px)) !important;
+                    padding: 4px 10px !important;
+                    max-width: min(56vw, 240px) !important;
                 }
                 #fps-mobile-interact-btn {
-                    bottom: max(14px, env(safe-area-inset-bottom, 14px)) !important;
-                    right: max(14px, env(safe-area-inset-right, 14px)) !important;
-                    padding: 10px 16px !important;
+                    bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
+                    right: max(12px, env(safe-area-inset-right, 12px)) !important;
+                    min-height: 32px !important;
+                    padding: 5px 11px !important;
+                    font-size: 9px !important;
+                    max-width: 36vw !important;
                 }
 
                 /* --- ABLE_OS DESKTOP & BARRES EN MOBILE PAYSAGE (ULTRA-LISIBLE & CLEAN) --- */
@@ -6688,8 +6738,12 @@ const DEFAULT_STATE = {
         scene.background = new THREE.Color('#101726');
         scene.fog = new THREE.FogExp2('#162033', 0.008);
 
+        window.getBaseFpsFov = function() {
+            if (!isMobile) return 68;
+            return (window.innerWidth > window.innerHeight) ? 76 : 82;
+        };
         const aspect = window.innerWidth / window.innerHeight;
-        const baseFpsFov = window.innerWidth <= 767 ? 74 : 68;
+        const baseFpsFov = window.getBaseFpsFov();
         const camera = new THREE.PerspectiveCamera(baseFpsFov, aspect, 0.08, 280);
         camera.rotation.order = 'YXZ';
         camera.position.set(0.2, 1.45, 2.4);
@@ -6788,8 +6842,8 @@ const DEFAULT_STATE = {
                 const w = window.innerWidth;
                 const h = window.innerHeight;
                 camera.aspect = w / Math.max(1, h);
-                const baseFov = isMobile ? (w > h ? 66 : 74) : 68;
-                camera.fov = Math.max(42, Math.min(82, baseFov + (window.fps ? window.fps.fovZoomOffset : 0)));
+                const baseFov = window.getBaseFpsFov();
+                camera.fov = Math.max(42, Math.min(90, baseFov + (window.fps ? window.fps.fovZoomOffset : 0)));
                 camera.updateProjectionMatrix();
 
                 const dprNow = isMobile ? Math.min(window.devicePixelRatio || 1, 1.25) : Math.min(window.devicePixelRatio || 1, 2);
@@ -14361,7 +14415,7 @@ const DEFAULT_STATE = {
                     const startYaw = (typeof window._introFromYaw === 'number') ? window._introFromYaw : fps.yaw;
                     const startPitch = (typeof window._introFromPitch === 'number') ? window._introFromPitch : -0.18;
                     const startFov = (typeof window._introFromFov === 'number') ? window._introFromFov : 60;
-                    const targetFov = isMobile ? 74 : 68;
+                    const targetFov = window.getBaseFpsFov ? window.getBaseFpsFov() : (isMobile ? 82 : 68);
 
                     camera.position.set(
                         startPos.x + (currentRoomAvatar.position.x - startPos.x) * ease,
@@ -14426,8 +14480,8 @@ const DEFAULT_STATE = {
                     camera.position.lerp(targetCamPos, 0.36);
 
                     // Smooth FOV zoom (molette pour inspecter les objets)
-                    const baseFov = isMobile ? 74 : 68;
-                    const desiredFov = Math.max(44, Math.min(80, baseFov + (fps.fovZoomOffset || 0)));
+                    const baseFov = window.getBaseFpsFov ? window.getBaseFpsFov() : (isMobile ? 82 : 68);
+                    const desiredFov = Math.max(44, Math.min(90, baseFov + (fps.fovZoomOffset || 0)));
                     if (Math.abs(camera.fov - desiredFov) > 0.05) {
                         camera.fov += (desiredFov - camera.fov) * 0.14;
                         camera.updateProjectionMatrix();
@@ -15949,7 +16003,7 @@ const DEFAULT_STATE = {
                         toPos: new THREE.Vector3(currentRoomAvatar.position.x, 1.45, currentRoomAvatar.position.z),
                         toYaw: Math.PI / 2,
                         toPitch: -0.06,
-                        toFov: isMobile ? 74 : 68,
+                        toFov: window.getBaseFpsFov ? window.getBaseFpsFov() : (isMobile ? 82 : 68),
                         duration: 380,
                         lockMovement: true
                     });
@@ -16012,7 +16066,7 @@ const DEFAULT_STATE = {
                     toPos: new THREE.Vector3(backPos.x, 1.45, backPos.z),
                     toYaw: 0.12,
                     toPitch: -0.06,
-                    toFov: isMobile ? 74 : 68,
+                    toFov: window.getBaseFpsFov ? window.getBaseFpsFov() : (isMobile ? 82 : 68),
                     duration: 440,
                     lockMovement: true
                 });
