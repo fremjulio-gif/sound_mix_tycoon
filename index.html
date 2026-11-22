@@ -3130,6 +3130,9 @@
         #login-panel {
             transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.55s ease;
         }
+        #login-hero-stage {
+            transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.65s ease;
+        }
         #login-screen.cinema-entering {
             pointer-events: none !important;
         }
@@ -3143,6 +3146,10 @@
         }
         #login-screen.cinema-entering #login-panel {
             transform: translateX(-36px);
+            opacity: 0;
+        }
+        #login-screen.cinema-entering #login-hero-stage {
+            transform: translateX(48px) scale(1.03);
             opacity: 0;
         }
         #login-screen.cinema-entering #login-scrim {
@@ -4750,9 +4757,9 @@
             </div>
 
             <!-- Zone Sûre Centrale (entre les 2 bandes noires — jamais rognée, jamais de scrollbar visible) -->
-            <div id="login-viewport" class="relative z-10 flex-1 min-h-0 overflow-y-auto no-scrollbar flex items-center px-5 sm:px-8 md:pl-[5.5vw] md:pr-8">
+            <div id="login-viewport" class="relative z-10 flex-1 min-h-0 overflow-y-auto no-scrollbar flex items-center gap-4 lg:gap-8 px-5 sm:px-8 md:pl-[5.5vw] md:pr-6">
                 <!-- Rail Éditorial GTA 6 Ancré à Gauche (alignement strict gauche/droite) -->
-                <div id="login-panel" class="w-full max-w-[392px] my-auto py-4 flex flex-col">
+                <div id="login-panel" class="w-full max-w-[392px] shrink-0 my-auto py-4 flex flex-col">
                     <!-- Sur-titre & Titre Éditorial -->
                     <div class="mb-4 pl-3.5 border-l-2 border-amber-400 stagger-in" style="animation-delay: 0.05s;">
                         <div class="text-[9.5px] font-mono tracking-[0.34em] uppercase text-amber-300/85 mb-1">
@@ -4825,6 +4832,23 @@
                             <span aria-hidden="true" class="text-sm leading-none">→</span>
                         </button>
                         <p id="login-error" class="text-rose-400 font-mono text-[11px] mt-2 hidden tracking-wide">Veuillez entrer un nom d'artiste pour ouvrir le studio.</p>
+                    </div>
+                </div>
+
+                <!-- Vitrine Personnage 3D Live Grand Format (Effet GTA 6 — Droite / Centre-Droit) -->
+                <div id="login-hero-stage" class="hidden md:flex flex-1 h-full min-w-[300px] relative items-center justify-center pointer-events-none select-none overflow-visible stagger-in" style="animation-delay: 0.14s;">
+                    <!-- Halo studio dynamique accordé à la variante sélectionnée (sans couture verticale) -->
+                    <div id="login-hero-glow" class="absolute w-[360px] h-[360px] lg:w-[440px] lg:h-[440px] rounded-full blur-[110px] opacity-25 transition-colors duration-500" style="background: #f59e0b;"></div>
+                    <!-- Canvas 3D WebGL Transparent (personnage grand format animé temps réel, fondu bas doux) -->
+                    <canvas id="login-hero-canvas" class="relative z-[5] w-full h-full block" style="-webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);"></canvas>
+                    <!-- Cartouche Éditorial GTA 6 du personnage actif -->
+                    <div id="login-hero-callout" class="absolute right-4 lg:right-8 bottom-6 z-20 text-right pr-3.5 border-r-2 border-amber-400 transition-colors duration-300">
+                        <div id="login-hero-tier" class="text-[9.5px] font-mono uppercase tracking-[0.28em] text-slate-300/85 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">NIVEAU 1 · PALIER ACTIF</div>
+                        <div id="login-hero-name" class="text-2xl lg:text-[30px] font-extrabold uppercase tracking-[0.16em] text-white leading-none mt-1 drop-shadow-[0_4px_18px_rgba(0,0,0,0.95)]">STREET_MC</div>
+                        <div class="mt-1.5 inline-flex items-center justify-end gap-2 text-[10px] font-mono uppercase tracking-[0.22em] text-slate-200/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                            <span id="login-hero-dot" class="w-2 h-2 rounded-full shrink-0 shadow-[0_0_8px_currentColor]" style="background:#ef4444;color:#ef4444;"></span>
+                            <span id="login-hero-variant">UNDERGROUND RED</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -18723,7 +18747,10 @@ document.addEventListener('mouseover', (e) => {
 
     // Environment Map Studio HDRI procédurale (PMREMGenerator) pour reflets réalistes (lunettes, visor, yeux, chaîne, montre)
     function getAvatarStudioEnvMap(renderer) {
-        if (window._avatarStudioEnvMap) return window._avatarStudioEnvMap;
+        if (!window._avatarStudioEnvMapCache) window._avatarStudioEnvMapCache = new WeakMap();
+        if (renderer && window._avatarStudioEnvMapCache.has(renderer)) {
+            return window._avatarStudioEnvMapCache.get(renderer);
+        }
         try {
             const pmrem = new THREE.PMREMGenerator(renderer);
             const envScene = new THREE.Scene();
@@ -18745,9 +18772,10 @@ document.addEventListener('mouseover', (e) => {
             makeLightPanel(4, 4, '#fbbf24', 1.6, 3.2, 2.4, -3.5);
 
             const rt = pmrem.fromScene(envScene, 0.035);
+            if (renderer) window._avatarStudioEnvMapCache.set(renderer, rt.texture);
             window._avatarStudioEnvMap = rt.texture;
             pmrem.dispose();
-            return window._avatarStudioEnvMap;
+            return rt.texture;
         } catch (e) {
             return null;
         }
@@ -20552,6 +20580,182 @@ document.addEventListener('mouseover', (e) => {
             }
         };
 
+        // ==========================================
+        // VITRINE 3D GRAND FORMAT SUR L'ÉCRAN D'ACCUEIL (EFFET GTA 6)
+        // ==========================================
+        window._loginHeroRig = null;
+        window.mountLoginHeroAvatar = function(charIdx, tier, variant) {
+            const stage = document.getElementById('login-hero-stage');
+            const canvas = document.getElementById('login-hero-canvas');
+            if (!stage || !canvas) return;
+
+            const resolvedTier = Math.max(1, Math.min(4, parseInt(tier, 10) || 1));
+            const resolvedVar = Math.max(0, Math.min(3, parseInt(variant, 10) || 0));
+            const meta = (typeof AVATAR_TIER_META !== 'undefined' && AVATAR_TIER_META[resolvedTier]) || { charName: 'Street_MC' };
+            const varSpec = window.getAvatarVariantSpec ? window.getAvatarVariantSpec(resolvedTier, resolvedVar) : null;
+            const accentCol = (varSpec && (varSpec.accent || varSpec.glow)) || '#f59e0b';
+
+            // Mise à jour du halo lumineux et du cartouche éditorial GTA 6
+            const glowEl = document.getElementById('login-hero-glow');
+            if (glowEl) glowEl.style.background = accentCol;
+            const calloutEl = document.getElementById('login-hero-callout');
+            if (calloutEl) calloutEl.style.borderColor = accentCol;
+            const tierEl = document.getElementById('login-hero-tier');
+            if (tierEl) tierEl.textContent = resolvedTier === 4 ? 'STUDIO 42E PRO · PALIER MAX' : `NIVEAU ${resolvedTier} · PALIER ACTIF`;
+            const nameEl = document.getElementById('login-hero-name');
+            if (nameEl) nameEl.textContent = (meta.charName || 'AVATAR').replace(/_/g, ' ');
+            const dotEl = document.getElementById('login-hero-dot');
+            if (dotEl) { dotEl.style.background = accentCol; dotEl.style.color = accentCol; }
+            const varEl = document.getElementById('login-hero-variant');
+            if (varEl) varEl.textContent = (varSpec && varSpec.name) ? varSpec.name.toUpperCase() : 'CLASSIQUE';
+
+            if (!window._loginHeroRenderer) {
+                const heroRnd = new THREE.WebGLRenderer({
+                    canvas: canvas,
+                    antialias: true,
+                    alpha: true,
+                    premultipliedAlpha: true,
+                    powerPreference: 'high-performance'
+                });
+                heroRnd.setClearColor(0x000000, 0);
+                if (typeof THREE.ACESFilmicToneMapping !== 'undefined') {
+                    heroRnd.toneMapping = THREE.ACESFilmicToneMapping;
+                    heroRnd.toneMappingExposure = 1.18;
+                }
+                heroRnd.shadowMap.enabled = true;
+                if (typeof THREE.PCFSoftShadowMap !== 'undefined') {
+                    heroRnd.shadowMap.type = THREE.PCFSoftShadowMap;
+                }
+                window._loginHeroRenderer = heroRnd;
+            }
+            const heroRnd = window._loginHeroRenderer;
+
+            const heroKey = `${charIdx}_${resolvedTier}_${resolvedVar}`;
+            if (!window._loginHeroRig || window._loginHeroRig.key !== heroKey) {
+                const scn = new THREE.Scene();
+                scn.background = null;
+
+                const envTex = getAvatarStudioEnvMap(heroRnd);
+                if (envTex) scn.environment = envTex;
+
+                // Setup 3-points Cinéma GTA 6 dédié au plan 3/4 grand format
+                const keyLight = new THREE.DirectionalLight(0xfff6ec, 2.55);
+                keyLight.position.set(1.9, 2.5, 2.6);
+                keyLight.castShadow = true;
+                keyLight.shadow.mapSize.width = 512;
+                keyLight.shadow.mapSize.height = 512;
+                keyLight.shadow.camera.near = 0.5;
+                keyLight.shadow.camera.far = 7.5;
+                keyLight.shadow.camera.left = -0.75;
+                keyLight.shadow.camera.right = 0.75;
+                keyLight.shadow.camera.top = 1.65;
+                keyLight.shadow.camera.bottom = 0.15;
+                keyLight.shadow.bias = -0.0012;
+                keyLight.shadow.radius = 3.0;
+                scn.add(keyLight);
+
+                const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.96);
+                fillLight.position.set(-2.4, 1.35, 1.9);
+                scn.add(fillLight);
+
+                const rimLight = new THREE.DirectionalLight(new THREE.Color(accentCol), 3.45);
+                rimLight.position.set(-1.9, 2.15, -2.0);
+                scn.add(rimLight);
+
+                const rimLightWarm = new THREE.DirectionalLight(0xfef3c7, 1.65);
+                rimLightWarm.position.set(1.9, 2.05, -1.9);
+                scn.add(rimLightWarm);
+
+                const catchLight = new THREE.PointLight(0xffffff, 0.90, 5.5);
+                catchLight.position.set(0.32, 1.28, 1.95);
+                scn.add(catchLight);
+
+                scn.add(new THREE.AmbientLight(0x64748b, 0.74));
+
+                const group = createAvatarGroup(charIdx, resolvedTier, resolvedVar);
+                group.rotation.y = -0.30;
+                group.position.set(-0.04, 0, 0);
+                group.userData.baseHeadYaw = 0.20;
+                group.userData.baseHeadPitch = -0.02;
+                const headGrp = group.getObjectByName("HeadGroup");
+                if (headGrp) {
+                    headGrp.rotation.y = 0.20;
+                    headGrp.rotation.x = -0.02;
+                }
+                scn.add(group);
+
+                const prevMX = window._loginHeroRig ? window._loginHeroRig.smoothMX : 0;
+                const prevMY = window._loginHeroRig ? window._loginHeroRig.smoothMY : 0;
+
+                // Cadrage Héroïque GTA 6 (Buste / Taille-Haute avec respiration en haut & fondu doux en bas)
+                const cam = new THREE.PerspectiveCamera(24, 1, 0.1, 100);
+                cam.position.set(0, 1.07, 1.98);
+                cam.lookAt(0, 1.04, 0);
+
+                window._loginHeroRig = {
+                    key: heroKey,
+                    scn,
+                    group,
+                    cam,
+                    switchTime: performance.now() * 0.001,
+                    seed: resolvedTier * 2.1 + resolvedVar * 3.1 + 0.7,
+                    smoothMX: prevMX,
+                    smoothMY: prevMY,
+                    lastW: 0,
+                    lastH: 0
+                };
+            }
+
+            if (!window._loginHeroLoopRunning) {
+                window._loginHeroLoopRunning = true;
+                const tickLoginHero = (nowMs) => {
+                    const loginEl = document.getElementById('login-screen');
+                    if (!loginEl || loginEl.style.display === 'none') {
+                        window._loginHeroLoopRunning = false;
+                        return;
+                    }
+                    const st = document.getElementById('login-hero-stage');
+                    const rig = window._loginHeroRig;
+                    const rnd = window._loginHeroRenderer;
+                    if (st && rig && rnd) {
+                        const rect = st.getBoundingClientRect();
+                        const w = Math.round(rect.width);
+                        const h = Math.round(rect.height);
+                        if (w > 40 && h > 40) {
+                            if (w !== rig.lastW || h !== rig.lastH) {
+                                rig.lastW = w;
+                                rig.lastH = h;
+                                rnd.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+                                rnd.setSize(w, h, false);
+                                rig.cam.aspect = w / h;
+                                rig.cam.updateProjectionMatrix();
+                            }
+
+                            const tSec = nowMs * 0.001;
+                            const targetMX = typeof window._loginMouseX === 'number' ? window._loginMouseX : 0;
+                            const targetMY = typeof window._loginMouseY === 'number' ? window._loginMouseY : 0;
+                            rig.smoothMX += (targetMX - rig.smoothMX) * 0.08;
+                            rig.smoothMY += (targetMY - rig.smoothMY) * 0.08;
+
+                            rig.group.userData.baseHeadYaw = 0.20 + rig.smoothMX * 0.11;
+                            rig.group.userData.baseHeadPitch = -0.02 + rig.smoothMY * 0.05;
+                            window.updateAvatarIdleAnimation(rig.group, tSec, rig.seed);
+
+                            // Entrée dynamique GTA lors d'un changement de personnage / variante
+                            const dtSwitch = Math.min(1.0, (tSec - rig.switchTime) * 2.8);
+                            const ease = 1.0 - Math.pow(1.0 - dtSwitch, 3);
+                            rig.group.rotation.y = (-0.54 + ease * 0.24) + rig.smoothMX * 0.14;
+                            rig.group.position.y = -0.035 * (1.0 - ease);
+
+                            rnd.render(rig.scn, rig.cam);
+                        }
+                    }
+                    requestAnimationFrame(tickLoginHero);
+                };
+                requestAnimationFrame(tickLoginHero);
+            }
+        };
+
         const avatars = [
             { id: 'Beatmaker', img: generateAvatarImage(0, 2, 0) },
             { id: 'Cyber-DJ', img: generateAvatarImage(1, 3, 0) },
@@ -20905,6 +21109,9 @@ document.addEventListener('mouseover', (e) => {
 
             if (typeof window.mountLiveAvatarOnSelectedCard === 'function') {
                 window.mountLiveAvatarOnSelectedCard(charIdx, t, v, '#avatar-container .avatar-sel.selected');
+            }
+            if (typeof window.mountLoginHeroAvatar === 'function') {
+                window.mountLoginHeroAvatar(charIdx, t, v);
             }
         };
 
