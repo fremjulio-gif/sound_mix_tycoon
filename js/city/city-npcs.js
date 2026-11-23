@@ -205,49 +205,168 @@ function buildTraffic(root) {
     _carMeshes = { chassisInst, cabinInst, axleInst, headInst, tailInst };
 }
 
-function buildTanTramways(root, tramRoutes) {
-    _tramUnits.forEach(tr => root.remove(tr.group));
-    _tramUnits = [];
-    if (!Array.isArray(tramRoutes) || tramRoutes.length === 0) return;
+function createTramHeadsignTexture(code, accentHex) {
+    const c = document.createElement('canvas');
+    c.width = 128; c.height = 48;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#090d14';
+    ctx.fillRect(0, 0, 128, 48);
+    ctx.fillStyle = accentHex || '#10b981';
+    ctx.fillRect(4, 4, 42, 40);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 24px ui-monospace, Menlo, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(code || 'T1', 25, 25);
+    ctx.fillStyle = '#fef08a';
+    ctx.font = 'bold 14px ui-monospace, Menlo, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('NANTES', 54, 25);
+    const tex = new THREE.CanvasTexture(c);
+    if ('colorSpace' in tex && THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+}
 
-    // Pick longest Nantes TAN tram routes
-    const valid = tramRoutes
-        .filter(pts => Array.isArray(pts) && pts.length >= 2 && polylineLength(pts) >= 45)
-        .sort((a, b) => polylineLength(b) - polylineLength(a))
-        .slice(0, 6);
+function buildTanTramways(root, tramLinesOrRoutes, tramStops = []) {
+    _tramUnits.forEach(tr => {
+        if (tr.parts) tr.parts.forEach(p => root.remove(p));
+        else if (tr.group) root.remove(tr.group);
+    });
+    _tramUnits = [];
+    if (!Array.isArray(tramLinesOrRoutes) || tramLinesOrRoutes.length === 0) return;
+
+    // Normalize both stitched manifest.tramLines objects and legacy raw polylines
+    const normalized = tramLinesOrRoutes
+        .map((item, i) => {
+            if (Array.isArray(item)) {
+                return { line: `T${(i % 3) + 1}`, color: '#10b981', doubleTrack: true, pts: item };
+            }
+            return {
+                line: item.line || `T${(i % 3) + 1}`,
+                color: item.color || '#10b981',
+                doubleTrack: item.doubleTrack !== false,
+                pts: item.pts || []
+            };
+        })
+        .filter(r => Array.isArray(r.pts) && r.pts.length >= 2 && polylineLength(r.pts) >= 120)
+        .sort((a, b) => polylineLength(b.pts) - polylineLength(a.pts))
+        .slice(0, 4);
+
+    if (normalized.length === 0) return;
 
     const whiteBodyMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.24, metalness: 0.28 });
-    const greenStripeMat = new THREE.MeshStandardMaterial({ color: '#10b981', roughness: 0.35, metalness: 0.2 });
-    const glassMat = new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.1, metalness: 0.85 });
-    const headLightMat = new THREE.MeshBasicMaterial({ color: '#fef9c3' });
+    const skirtMat = new THREE.MeshStandardMaterial({ color: '#1e293b', roughness: 0.58, metalness: 0.45 });
+    const roofMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', roughness: 0.48, metalness: 0.35 });
+    const greenStripeMat = new THREE.MeshStandardMaterial({ color: '#10b981', roughness: 0.32, metalness: 0.22 });
+    const bellowsMat = new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.85, metalness: 0.15 });
+    const pantoMat = new THREE.MeshStandardMaterial({ color: '#94a3b8', roughness: 0.3, metalness: 0.85 });
+    const winMat = new THREE.MeshStandardMaterial({
+        color: '#0f172a',
+        emissive: '#fde68a',
+        emissiveIntensity: 0.32,
+        roughness: 0.12,
+        metalness: 0.82
+    });
+    const cabGlassMat = new THREE.MeshStandardMaterial({ color: '#090f1a', roughness: 0.08, metalness: 0.9 });
 
-    valid.forEach((pts, idx) => {
-        const grp = new THREE.Group();
-        const carGroup = new THREE.Group();
-        // 3 articulated Nantes TAN tram cars in trainset
-        [-8.2, 0, 8.2].forEach(zOff => {
-            const shell = new THREE.Mesh(new THREE.BoxGeometry(2.45, 2.95, 7.6), whiteBodyMat);
-            shell.position.set(0, 1.75, zOff);
-            const greenBand = new THREE.Mesh(new THREE.BoxGeometry(2.49, 0.45, 7.64), greenStripeMat);
-            greenBand.position.set(0, 0.85, zOff);
-            const winBand = new THREE.Mesh(new THREE.BoxGeometry(2.48, 1.25, 7.1), glassMat);
-            winBand.position.set(0, 1.98, zOff);
-            carGroup.add(shell, greenBand, winBand);
-        });
-        const lampF = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.22, 0.12), headLightMat);
-        lampF.position.set(0, 0.9, 12.1);
-        carGroup.add(lampF);
+    const makeCarModule = (isCab, cabSign, lineAccentMat, headSignMat, lightMat) => {
+        const g = new THREE.Group();
+        const len = isCab ? 6.8 : 7.0;
+        // Lower bogie/wheel skirt
+        const skirt = new THREE.Mesh(new THREE.BoxGeometry(2.38, 0.56, len - 0.15), skirtMat);
+        skirt.position.set(0, 0.42, 0);
+        // Main pearl-white body shell
+        const body = new THREE.Mesh(new THREE.BoxGeometry(2.44, 2.48, len), whiteBodyMat);
+        body.position.set(0, 1.94, 0);
+        // Signature TAN/Naolib emerald waist stripe + line accent trim
+        const greenBand = new THREE.Mesh(new THREE.BoxGeometry(2.48, 0.34, len + 0.04), greenStripeMat);
+        greenBand.position.set(0, 0.94, 0);
+        const lineTrim = new THREE.Mesh(new THREE.BoxGeometry(2.49, 0.12, len + 0.05), lineAccentMat);
+        lineTrim.position.set(0, 3.02, 0);
+        // Panoramic cabin windows with warm evening glow
+        const winBand = new THREE.Mesh(new THREE.BoxGeometry(2.47, 1.24, len - 0.65), winMat);
+        winBand.position.set(0, 2.04, 0);
+        // Roof fairing
+        const roof = new THREE.Mesh(new THREE.BoxGeometry(2.15, 0.22, len - 0.3), roofMat);
+        roof.position.set(0, 3.28, 0);
+        g.add(skirt, body, greenBand, lineTrim, winBand, roof);
 
-        grp.add(carGroup);
-        root.add(grp);
-        const totalLen = polylineLength(pts);
-        _tramUnits.push({
-            pts,
-            len: totalLen,
-            dist: (idx * 0.33 * totalLen) % totalLen,
-            dir: idx % 2 === 0 ? 1 : -1,
-            speed: 10.5,
-            group: grp
+        if (isCab) {
+            // Aerodynamic tapered cab nose facing cabSign * +Z
+            const noseZ = cabSign * (len * 0.5 + 0.38);
+            const nose = new THREE.Mesh(new THREE.BoxGeometry(2.26, 1.25, 0.78), whiteBodyMat);
+            nose.position.set(0, 1.28, noseZ);
+            const windshield = new THREE.Mesh(new THREE.BoxGeometry(2.18, 1.38, 0.64), cabGlassMat);
+            windshield.position.set(0, 2.38, noseZ - cabSign * 0.08);
+            windshield.rotation.x = cabSign * 0.24;
+            const signMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.42, 0.42), headSignMat);
+            signMesh.position.set(0, 2.86, noseZ + cabSign * 0.30);
+            if (cabSign < 0) signMesh.rotation.y = Math.PI;
+            const lampL = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.16, 0.10), lightMat);
+            lampL.position.set(-0.76, 0.92, noseZ + cabSign * 0.38);
+            const lampR = lampL.clone();
+            lampR.position.x = 0.76;
+            g.add(nose, windshield, signMesh, lampL, lampR);
+        } else {
+            // Center module roof HVAC pods + diamond steel pantograph reaching overhead wire (y ~ 5.05m)
+            const hvacA = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.32, 1.65), roofMat);
+            hvacA.position.set(0, 3.52, -1.8);
+            const hvacB = hvacA.clone();
+            hvacB.position.z = 1.8;
+            const armLower = new THREE.Mesh(new THREE.BoxGeometry(0.10, 1.05, 0.10), pantoMat);
+            armLower.position.set(0, 3.85, -0.35);
+            armLower.rotation.x = 0.48;
+            const armUpper = new THREE.Mesh(new THREE.BoxGeometry(0.10, 1.05, 0.10), pantoMat);
+            armUpper.position.set(0, 4.55, -0.35);
+            armUpper.rotation.x = -0.48;
+            const collector = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.08, 0.14), pantoMat);
+            collector.position.set(0, 5.02, 0.0);
+            g.add(hvacA, hvacB, armLower, armUpper, collector);
+        }
+        return g;
+    };
+
+    const stopsClean = Array.isArray(tramStops) ? tramStops : [];
+
+    // Spawn 2 articulated trams per stitched line (opposite directions on their own right-hand tracks)
+    normalized.forEach((route, rIdx) => {
+        const totalLen = polylineLength(route.pts);
+        const lineAccentMat = new THREE.MeshStandardMaterial({ color: route.color, roughness: 0.35, metalness: 0.25 });
+        const headSignMat = new THREE.MeshBasicMaterial({ map: createTramHeadsignTexture(route.line, route.color) });
+
+        [1, -1].forEach((dir, dIdx) => {
+            const frontLightMat = new THREE.MeshBasicMaterial({ color: '#fef9c3' });
+            const rearLightMat = new THREE.MeshBasicMaterial({ color: '#ef4444' });
+
+            const carFront = makeCarModule(true, 1, lineAccentMat, headSignMat, frontLightMat);
+            const carMid = makeCarModule(false, 0, lineAccentMat, headSignMat, null);
+            const carRear = makeCarModule(true, -1, lineAccentMat, headSignMat, rearLightMat);
+            const bellowsA = new THREE.Mesh(new THREE.BoxGeometry(2.14, 2.55, 1.15), bellowsMat);
+            const bellowsB = new THREE.Mesh(new THREE.BoxGeometry(2.14, 2.55, 1.15), bellowsMat);
+
+            const parts = [carFront, bellowsA, carMid, bellowsB, carRear];
+            parts.forEach(p => root.add(p));
+
+            const startFrac = (rIdx * 0.23 + dIdx * 0.48) % 0.86 + 0.07;
+            _tramUnits.push({
+                pts: route.pts,
+                len: totalLen,
+                doubleTrack: route.doubleTrack,
+                dist: startFrac * totalLen,
+                dir,
+                speed: 11.2,
+                stopTimer: 0,
+                lastStopIdx: -1,
+                stops: stopsClean,
+                carFront,
+                carMid,
+                carRear,
+                bellowsA,
+                bellowsB,
+                parts,
+                frontLightMat,
+                rearLightMat
+            });
         });
     });
 }
@@ -647,9 +766,12 @@ export function onNantesManifestApplied(manifest) {
         }
     }
 
-    // Spawn real TAN Tramways along IGN Tramway tracks
-    if (Array.isArray(manifest.tramRoutes) && manifest.tramRoutes.length > 0) {
-        buildTanTramways(_npcRoot, manifest.tramRoutes);
+    // Spawn real articulated TAN Tramways along stitched IGN Tramway lines (T1, T2, T3)
+    const tramSource = (Array.isArray(manifest.tramLines) && manifest.tramLines.length > 0)
+        ? manifest.tramLines
+        : manifest.tramRoutes;
+    if (Array.isArray(tramSource) && tramSource.length > 0) {
+        buildTanTramways(_npcRoot, tramSource, manifest.props && manifest.props.tramStops);
     }
 
     // Snap VIP NPCs & Billboards to actual MNT terrain height
@@ -811,16 +933,56 @@ export function tickCityNpcs(tSec, playerPose) {
         tailInst.instanceMatrix.needsUpdate = true;
     }
 
-    // 3. Update Animated Nantes TAN Tramways
+    // 3. Update Articulated Nantes TAN Tramways (spline-following cars on right-hand rails + station stops)
+    const placeOnRail = (pts, dist, dir, doubleTrack) => {
+        const s = samplePolyline(pts, Math.max(0, dist));
+        const travelYaw = dir > 0 ? s.yaw : (s.yaw + Math.PI);
+        const lat = doubleTrack ? 1.65 : 0;
+        const rx = s.x - Math.cos(travelYaw) * lat;
+        const rz = s.z + Math.sin(travelYaw) * lat;
+        const ry = getCityGroundHeight(rx, rz) + 0.16;
+        return { x: rx, y: ry, z: rz, yaw: travelYaw };
+    };
+    const carStep = 7.65;
     for (let i = 0; i < _tramUnits.length; i++) {
         const tr = _tramUnits[i];
-        tr.dist += tr.dir * tr.speed * dt;
-        if (tr.dist > tr.len) { tr.dist = tr.len; tr.dir = -1; }
-        if (tr.dist < 0) { tr.dist = 0; tr.dir = 1; }
-        const s = samplePolyline(tr.pts, tr.dist);
-        const gy = getCityGroundHeight(s.x, s.z);
-        tr.group.position.set(s.x, gy + 0.10, s.z);
-        tr.group.rotation.y = tr.dir > 0 ? s.yaw : (s.yaw + Math.PI);
+        if (tr.stopTimer > 0) {
+            tr.stopTimer = Math.max(0, tr.stopTimer - dt);
+        } else {
+            tr.dist += tr.dir * tr.speed * dt;
+            if (tr.dist > tr.len - 10) { tr.dist = tr.len - 10; tr.dir = -1; tr.lastStopIdx = -1; }
+            if (tr.dist < 10) { tr.dist = 10; tr.dir = 1; tr.lastStopIdx = -1; }
+        }
+
+        const pFront = placeOnRail(tr.pts, Math.min(tr.len, Math.max(0, tr.dist + tr.dir * carStep)), tr.dir, tr.doubleTrack);
+        const pMid = placeOnRail(tr.pts, tr.dist, tr.dir, tr.doubleTrack);
+        const pRear = placeOnRail(tr.pts, Math.min(tr.len, Math.max(0, tr.dist - tr.dir * carStep)), tr.dir, tr.doubleTrack);
+
+        // Brief realistic pause when passing a TAN platform station
+        if (tr.stopTimer <= 0 && tr.stops && tr.stops.length > 0) {
+            for (let si = 0; si < tr.stops.length; si++) {
+                if (si === tr.lastStopIdx) continue;
+                const st = tr.stops[si];
+                if (Math.hypot(pMid.x - st[0], pMid.z - st[1]) < 7.5) {
+                    tr.stopTimer = 2.6;
+                    tr.lastStopIdx = si;
+                    break;
+                }
+            }
+        }
+
+        tr.carFront.position.set(pFront.x, pFront.y, pFront.z);
+        tr.carFront.rotation.y = pFront.yaw;
+        tr.carMid.position.set(pMid.x, pMid.y, pMid.z);
+        tr.carMid.rotation.y = pMid.yaw;
+        tr.carRear.position.set(pRear.x, pRear.y, pRear.z);
+        tr.carRear.rotation.y = pRear.yaw;
+
+        // Position dark accordion bellows cleanly between articulated car sections
+        tr.bellowsA.position.set((pFront.x + pMid.x) * 0.5, (pFront.y + pMid.y) * 0.5 + 1.85, (pFront.z + pMid.z) * 0.5);
+        tr.bellowsA.rotation.y = Math.atan2(pFront.x - pMid.x, pFront.z - pMid.z);
+        tr.bellowsB.position.set((pMid.x + pRear.x) * 0.5, (pMid.y + pRear.y) * 0.5 + 1.85, (pMid.z + pRear.z) * 0.5);
+        tr.bellowsB.rotation.y = Math.atan2(pMid.x - pRear.x, pMid.z - pRear.z);
     }
 
     // 4. VIP NPCs Idle & Face-Player Reactivity

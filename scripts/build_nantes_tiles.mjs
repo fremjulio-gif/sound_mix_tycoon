@@ -423,7 +423,7 @@ function makeMaterialBuckets() {
         'mat_tuffeau', 'mat_colombage', 'mat_haussmann', 'mat_brick',
         'mat_beton50', 'mat_modern', 'mat_tower', 'mat_shopfront',
         'mat_roof_slate', 'mat_roof_tile', 'mat_roof_flat',
-        'mat_road', 'mat_tram', 'mat_water', 'mat_park'
+        'mat_road', 'mat_road_cobble', 'mat_tram_bed', 'mat_tram', 'mat_water', 'mat_park'
     ];
     const map = {};
     for (const name of defs) {
@@ -614,8 +614,10 @@ function buildGlbFromBuckets(buckets) {
         mat_roof_slate:{ baseColorFactor: [0.17, 0.20, 0.27, 1.0], metallicFactor: 0.24, roughnessFactor: 0.62 },
         mat_roof_tile: { baseColorFactor: [0.58, 0.29, 0.21, 1.0], metallicFactor: 0.04, roughnessFactor: 0.85 },
         mat_roof_flat: { baseColorFactor: [0.22, 0.25, 0.30, 1.0], metallicFactor: 0.12, roughnessFactor: 0.88 },
-        mat_road:      { baseColorFactor: [0.12, 0.14, 0.18, 1.0], metallicFactor: 0.08, roughnessFactor: 0.74 },
-        mat_tram:      { baseColorFactor: [0.58, 0.64, 0.72, 1.0], metallicFactor: 0.85, roughnessFactor: 0.28 },
+        mat_road:        { baseColorFactor: [0.12, 0.14, 0.18, 1.0], metallicFactor: 0.08, roughnessFactor: 0.74 },
+        mat_road_cobble: { baseColorFactor: [0.30, 0.31, 0.34, 1.0], metallicFactor: 0.05, roughnessFactor: 0.84 },
+        mat_tram_bed:    { baseColorFactor: [0.34, 0.37, 0.41, 1.0], metallicFactor: 0.05, roughnessFactor: 0.86 },
+        mat_tram:      { baseColorFactor: [0.76, 0.80, 0.86, 1.0], metallicFactor: 0.92, roughnessFactor: 0.22 },
         mat_water:     { baseColorFactor: [0.06, 0.30, 0.39, 1.0], metallicFactor: 0.55, roughnessFactor: 0.14 },
         mat_park:      { baseColorFactor: [0.15, 0.31, 0.20, 1.0], metallicFactor: 0.02, roughnessFactor: 0.92 }
     };
@@ -943,7 +945,8 @@ async function run() {
         const imp = Number(props.importance) || 5;
         const nature = String(props.nature || '');
         if (nature.includes('Sentier') || nature.includes('Escalier')) continue;
-        const w = Math.max(3.6, Number(props.largeur_de_chaussee) || (imp <= 2 ? 12 : imp <= 4 ? 7.5 : 5.2));
+        const rawW = Number(props.largeur_de_chaussee) || (imp <= 2 ? 10.5 : imp <= 4 ? 6.8 : 4.8);
+        const w = Math.max(3.4, Math.min(11.6, rawW));
         const halfW = w * 0.5;
 
         for (const line of lineParts(f.geometry)) {
@@ -956,15 +959,33 @@ async function run() {
             }
             if (ptsLocal.length < 2) continue;
 
+            // Subdivide long road segments (<= 20m) so carriageways hug terrain slopes cleanly
+            const subRoad = [ptsLocal[0]];
             for (let i = 0; i < ptsLocal.length - 1; i++) {
                 const a = ptsLocal[i], b = ptsLocal[i + 1];
+                const d = Math.hypot(b[0] - a[0], b[1] - a[1]);
+                const steps = Math.max(1, Math.ceil(d / 20));
+                for (let s = 1; s <= steps; s++) {
+                    const t = s / steps;
+                    const sx = a[0] + (b[0] - a[0]) * t;
+                    const sz = a[1] + (b[1] - a[1]) * t;
+                    const sy = Math.max(sampleMNT(sx, sz) + 0.14, a[2] + (b[2] - a[2]) * t);
+                    subRoad.push([sx, sz, sy]);
+                }
+            }
+
+            for (let i = 0; i < subRoad.length - 1; i++) {
+                const a = subRoad[i], b = subRoad[i + 1];
                 const mx = (a[0] + b[0]) * 0.5, mz = (a[1] + b[1]) * 0.5;
                 if (Math.abs(mx) > HALF_EXTENT || Math.abs(mz) > HALF_EXTENT) continue;
                 const [tx, tz] = getTileIdx(mx, mz);
                 const tile = getTile(tx, tz);
-                addRibbonSegment(tile.lod0.mat_road, a, b, a[2], b[2], halfW);
+                const inHistoricCenter = (mx >= -480 && mx <= 680 && mz >= -580 && mz <= 120);
+                const isCobbleRoad = (inHistoricCenter && imp >= 4) || nature.toLowerCase().includes('piéton');
+                const roadMatKey = isCobbleRoad ? 'mat_road_cobble' : 'mat_road';
+                addRibbonSegment(tile.lod0[roadMatKey], a, b, a[2], b[2], halfW);
                 if (imp <= 4) {
-                    addRibbonSegment(tile.lod1.mat_road, a, b, a[2], b[2], halfW);
+                    addRibbonSegment(tile.lod1[roadMatKey], a, b, a[2], b[2], halfW);
                 }
 
                 if (Math.abs(mx) < 1150 && Math.abs(mz) < 1050) {
@@ -999,32 +1020,187 @@ async function run() {
         }
     }
 
-    // 5. IGN Tramway Tracks -> Rail Ribbons + Sampled TAN Tram Polylines
+    // 5. IGN Tramway Tracks -> Dedicated Trackbed + Double Steel Rails (Bridge-Aware) + Stitched TAN Lines
+    const BUILD_BRIDGES = [
+        { a: [-704, 376], b: [-635, 502], width: 16, archRise: 1.5 },
+        { a: [-341, 299], b: [-324, 446], width: 8, archRise: 1.8 },
+        { a: [124, 387], b: [144, 584], width: 14, archRise: 1.5 },
+        { a: [568, 496], b: [624, 646], width: 15, archRise: 1.5 },
+        { a: [1093, 247], b: [1193, 453], width: 15, archRise: 1.6 },
+        { a: [825, -301], b: [867, -215], width: 11, archRise: 1.1 },
+        { a: [1200, 57], b: [1286, 4], width: 10, archRise: 1.1 },
+        { a: [387, -1116], b: [435, -1120], width: 10, archRise: 1.1 }
+    ].map(sp => {
+        const dx = sp.b[0] - sp.a[0], dz = sp.b[1] - sp.a[1];
+        const len = Math.hypot(dx, dz), ux = dx / len, uz = dz / len;
+        const approach = 24;
+        const yStart = Math.max(0.12, sampleMNT(sp.a[0] - ux * approach, sp.a[1] - uz * approach) + 0.08);
+        const yEnd = Math.max(0.12, sampleMNT(sp.b[0] + ux * approach, sp.b[1] + uz * approach) + 0.08);
+        const peakY = Math.max(Math.max(yStart, yEnd) + sp.archRise, 4.4);
+        return { ax: sp.a[0], az: sp.a[1], ux, uz, len, approach, halfWidth: sp.width * 0.5 + 2, yStart, yEnd, peakY };
+    });
+    const getBuildBridgeY = (x, z) => {
+        let best = null;
+        for (const br of BUILD_BRIDGES) {
+            const rx = x - br.ax, rz = z - br.az;
+            const along = rx * br.ux + rz * br.uz;
+            const lat = Math.abs(rx * (-br.uz) + rz * br.ux);
+            if (along >= -br.approach && along <= br.len + br.approach && lat <= br.halfWidth) {
+                const u = Math.max(0, Math.min(1, (along + br.approach) / (br.len + br.approach * 2)));
+                const s = Math.sin(u * Math.PI);
+                const base = br.yStart * (1 - u) + br.yEnd * u;
+                const y = base + Math.max(0, br.peakY - base) * (s * s);
+                if (best === null || y > best) best = y;
+            }
+        }
+        return best;
+    };
+
     let tramSegCount = 0;
     const tramRoutes = [];
+    const tramRawPieces = [];
+    const tramCatenaryCandidates = [];
+
     for (const f of rails) {
         if (String(f.properties?.nature || '') !== 'Tramway') continue;
+        const isDouble = (Number(f.properties?.nombre_de_voies) || 2) >= 2;
         for (const line of lineParts(f.geometry)) {
-            const ptsLocal = [];
+            // Clip & subdivide into <= 18m segments so rails hug MNT slopes and bridge arches cleanly
+            const inBounds = [];
             for (const c of line) {
                 const [gx, gz] = l93ToLocal(c[0], c[1]);
                 if (Math.abs(gx) <= HALF_EXTENT && Math.abs(gz) <= HALF_EXTENT) {
-                    const y = sampleMNT(gx, gz) + 0.20;
-                    ptsLocal.push([gx, gz, y]);
+                    inBounds.push([gx, gz]);
                 }
             }
-            if (ptsLocal.length < 2) continue;
-            for (let i = 0; i < ptsLocal.length - 1; i++) {
-                const a = ptsLocal[i], b = ptsLocal[i + 1];
-                const [tx, tz] = getTileIdx((a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5);
+            if (inBounds.length < 2) continue;
+
+            const subPts = [inBounds[0]];
+            for (let i = 0; i < inBounds.length - 1; i++) {
+                const a = inBounds[i], b = inBounds[i + 1];
+                const d = Math.hypot(b[0] - a[0], b[1] - a[1]);
+                const steps = Math.max(1, Math.ceil(d / 18));
+                for (let s = 1; s <= steps; s++) {
+                    const t = s / steps;
+                    subPts.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]);
+                }
+            }
+
+            let catAccum = 14;
+            for (let i = 0; i < subPts.length - 1; i++) {
+                const a = subPts[i], b = subPts[i + 1];
+                const mx = (a[0] + b[0]) * 0.5, mz = (a[1] + b[1]) * 0.5;
+                if (Math.abs(mx) > HALF_EXTENT || Math.abs(mz) > HALF_EXTENT) continue;
+                const brA = getBuildBridgeY(a[0], a[1]);
+                const brB = getBuildBridgeY(b[0], b[1]);
+                const yBedA = brA !== null ? brA + 0.06 : (sampleMNT(a[0], a[1]) + 0.22);
+                const yBedB = brB !== null ? brB + 0.06 : (sampleMNT(b[0], b[1]) + 0.22);
+                const yRailA = yBedA + 0.06;
+                const yRailB = yBedB + 0.06;
+
+                const [tx, tz] = getTileIdx(mx, mz);
                 const tile = getTile(tx, tz);
-                addRibbonSegment(tile.lod0.mat_tram, a, b, a[2], b[2], 0.14, -0.72);
-                addRibbonSegment(tile.lod0.mat_tram, a, b, a[2], b[2], 0.14, 0.72);
+
+                const bedHalfW = isDouble ? 3.15 : 1.65;
+                const railOffsets = isDouble ? [-2.37, -0.93, 0.93, 2.37] : [-0.72, 0.72];
+
+                addRibbonSegment(tile.lod0.mat_tram_bed, a, b, yBedA, yBedB, bedHalfW, 0);
+                addRibbonSegment(tile.lod1.mat_tram_bed, a, b, yBedA, yBedB, bedHalfW, 0);
+                for (const rOff of railOffsets) {
+                    addRibbonSegment(tile.lod0.mat_tram, a, b, yRailA, yRailB, 0.11, rOff);
+                    addRibbonSegment(tile.lod1.mat_tram, a, b, yRailA, yRailB, 0.12, rOff);
+                }
+
+                // Sample catenary mast positions every ~38m along track
+                const segLen = Math.hypot(b[0] - a[0], b[1] - a[1]);
+                catAccum += segLen;
+                if (catAccum >= 38 && brA === null && brB === null) {
+                    catAccum = 0;
+                    const yaw = Math.atan2(b[0] - a[0], b[1] - a[1]);
+                    tramCatenaryCandidates.push([mx, mz, yaw, isDouble ? 1 : 0]);
+                }
             }
-            if (tramRoutes.length < 48) {
-                tramRoutes.push(ptsLocal.map(p => [Number(p[0].toFixed(1)), Number(p[1].toFixed(1))]));
-            }
+
+            const compactPts = inBounds.map(p => [Number(p[0].toFixed(1)), Number(p[1].toFixed(1))]);
+            if (tramRoutes.length < 48) tramRoutes.push(compactPts);
+            tramRawPieces.push({ pts: compactPts, doubleTrack: isDouble });
             tramSegCount++;
+        }
+    }
+
+    // Stitch connected IGN tram segments into continuous city-spanning TAN Lines (T1, T2, T3)
+    const polyLen2D = (pts) => {
+        let l = 0;
+        for (let i = 0; i < pts.length - 1; i++) l += Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]);
+        return l;
+    };
+    const buildStitchedRoute = (startPieceIdx, reverseStart = false) => {
+        const used = new Set([startPieceIdx]);
+        let chain = reverseStart ? [...tramRawPieces[startPieceIdx].pts].reverse() : [...tramRawPieces[startPieceIdx].pts];
+        let doubleTrack = tramRawPieces[startPieceIdx].doubleTrack;
+
+        for (let iter = 0; iter < 16; iter++) {
+            const tail = chain[chain.length - 1];
+            const prev = chain[Math.max(0, chain.length - 2)];
+            const dirX = tail[0] - prev[0], dirZ = tail[1] - prev[1];
+            const dirL = Math.max(0.01, Math.hypot(dirX, dirZ));
+            const ux = dirX / dirL, uz = dirZ / dirL;
+
+            let bestIdx = -1, bestRev = false, bestScore = -2;
+            for (let i = 0; i < tramRawPieces.length; i++) {
+                if (used.has(i)) continue;
+                const p = tramRawPieces[i].pts;
+                const dHead = Math.hypot(p[0][0] - tail[0], p[0][1] - tail[1]);
+                const dTail = Math.hypot(p[p.length - 1][0] - tail[0], p[p.length - 1][1] - tail[1]);
+                if (dHead <= 16) {
+                    const nx = p[1][0] - p[0][0], nz = p[1][1] - p[0][1];
+                    const nl = Math.max(0.01, Math.hypot(nx, nz));
+                    const dot = (nx / nl) * ux + (nz / nl) * uz;
+                    if (dot > 0.25 && dot > bestScore) { bestScore = dot; bestIdx = i; bestRev = false; }
+                }
+                if (dTail <= 16) {
+                    const m = p.length;
+                    const nx = p[m - 2][0] - p[m - 1][0], nz = p[m - 2][1] - p[m - 1][1];
+                    const nl = Math.max(0.01, Math.hypot(nx, nz));
+                    const dot = (nx / nl) * ux + (nz / nl) * uz;
+                    if (dot > 0.25 && dot > bestScore) { bestScore = dot; bestIdx = i; bestRev = true; }
+                }
+            }
+            if (bestIdx < 0) break;
+            used.add(bestIdx);
+            const seg = bestRev ? [...tramRawPieces[bestIdx].pts].reverse() : tramRawPieces[bestIdx].pts;
+            chain = chain.concat(seg.slice(1));
+            doubleTrack = doubleTrack || tramRawPieces[bestIdx].doubleTrack;
+        }
+        return { pts: chain, len: polyLen2D(chain), doubleTrack };
+    };
+
+    // Find terminal pieces (endpoints near map perimeter or degree-1) and stitch longest distinct routes
+    const stitchedCandidates = [];
+    for (let i = 0; i < tramRawPieces.length; i++) {
+        stitchedCandidates.push(buildStitchedRoute(i, false));
+        stitchedCandidates.push(buildStitchedRoute(i, true));
+    }
+    stitchedCandidates.sort((a, b) => b.len - a.len);
+    const tramLines = [];
+    const lineMeta = [
+        { line: 'T1', label: 'T1 · FRANÇOIS MITTERRAND', color: '#10b981' },
+        { line: 'T2', label: 'T2 · GARE DE PONT ROUSSEAU', color: '#ef4444' },
+        { line: 'T3', label: 'T3 · NEUSTRIE / MARCEL PAUL', color: '#3b82f6' },
+        { line: 'T1', label: 'T1 · BEAUJOIRE / CHANTIERS', color: '#10b981' }
+    ];
+    for (const cand of stitchedCandidates) {
+        if (cand.len < 500 || tramLines.length >= 4) continue;
+        const a0 = cand.pts[0], b0 = cand.pts[cand.pts.length - 1];
+        const dup = tramLines.some(ex => {
+            const ea = ex.pts[0], eb = ex.pts[ex.pts.length - 1];
+            const sameDir = Math.hypot(ea[0] - a0[0], ea[1] - a0[1]) < 120 && Math.hypot(eb[0] - b0[0], eb[1] - b0[1]) < 120;
+            const revDir = Math.hypot(ea[0] - b0[0], ea[1] - b0[1]) < 120 && Math.hypot(eb[0] - a0[0], eb[1] - a0[1]) < 120;
+            return sameDir || revDir;
+        });
+        if (!dup) {
+            const m = lineMeta[tramLines.length];
+            tramLines.push({ line: m.line, label: m.label, color: m.color, doubleTrack: cand.doubleTrack, pts: cand.pts });
         }
     }
 
@@ -1155,27 +1331,59 @@ async function run() {
         }
     }
 
-    // Extract ~18 TAN Tramway shelter stops beside real IGN Tramway polylines
+    // Extract logical parallel TAN Tramway platforms (facing inward toward rails) along T1, T2, T3
     const tramStops = [];
     const seenStopCell = new Set();
-    for (const line of tramRoutes) {
+    const stopSources = tramLines.length > 0 ? tramLines.map(t => t.pts) : tramRoutes;
+    for (const line of stopSources) {
         if (!line || line.length < 2) continue;
-        const midIdx = Math.floor(line.length / 2);
-        const a = line[Math.max(0, midIdx - 1)];
-        const b = line[Math.min(line.length - 1, midIdx)];
-        const mx = (a[0] + b[0]) * 0.5;
-        const mz = (a[1] + b[1]) * 0.5;
-        const dx = b[0] - a[0], dz = b[1] - a[1];
-        const dl = Math.max(0.1, Math.hypot(dx, dz));
-        const yaw = Math.atan2(dx, dz);
-        const sx = mx + (-dz / dl) * 4.2;
-        const sz = mz + (dx / dl) * 4.2;
-        const sk = `${Math.floor(sx / 180)},${Math.floor(sz / 180)}`;
-        if (seenStopCell.has(sk)) continue;
-        if (isClearProp(sx, sz, 2.2) && sampleMNT(sx, sz) >= 0.1) {
-            seenStopCell.add(sk);
-            tramStops.push([Number(sx.toFixed(1)), Number(sz.toFixed(1)), Number(yaw.toFixed(2))]);
-            if (tramStops.length >= 20) break;
+        let acc = 90;
+        for (let i = 0; i < line.length - 1; i++) {
+            const a = line[i], b = line[i + 1];
+            const dl = Math.hypot(b[0] - a[0], b[1] - a[1]);
+            acc += dl;
+            if (acc < 220) continue;
+            acc = 0;
+            const mx = (a[0] + b[0]) * 0.5, mz = (a[1] + b[1]) * 0.5;
+            if (getBuildBridgeY(mx, mz) !== null) continue;
+            const dx = b[0] - a[0], dz = b[1] - a[1];
+            const len = Math.max(0.1, dl);
+            const nx = -dz / len, nz = dx / len;
+            const sk = `${Math.floor(mx / 165)},${Math.floor(mz / 165)}`;
+            if (seenStopCell.has(sk)) continue;
+
+            // Place opposing parallel platforms on both sides of double-track corridor, facing INWARD toward rails
+            let placedAtStop = false;
+            for (const side of [1, -1]) {
+                const sx = mx + nx * side * 4.45;
+                const sz = mz + nz * side * 4.45;
+                if (isClearProp(sx, sz, 1.8) && sampleMNT(sx, sz) >= 0.1 && getBuildBridgeY(sx, sz) === null) {
+                    const facingYaw = Math.atan2(mx - sx, mz - sz);
+                    tramStops.push([Number(sx.toFixed(1)), Number(sz.toFixed(1)), Number(facingYaw.toFixed(3))]);
+                    placedAtStop = true;
+                }
+            }
+            if (placedAtStop) {
+                seenStopCell.add(sk);
+                if (tramStops.length >= 34) break;
+            }
+        }
+        if (tramStops.length >= 34) break;
+    }
+
+    // Filter catenary masts along IGN tramway corridors (cleanly clear of buildings & water)
+    const tramCatenary = [];
+    const seenCatCell = new Set();
+    for (const [cx, cz, yaw, isDbl] of tramCatenaryCandidates) {
+        const ck = `${Math.floor(cx / 32)},${Math.floor(cz / 32)}`;
+        if (seenCatCell.has(ck)) continue;
+        const sideOff = isDbl ? 3.55 : 2.15;
+        const px = Number((cx + Math.cos(yaw) * sideOff).toFixed(1));
+        const pz = Number((cz - Math.sin(yaw) * sideOff).toFixed(1));
+        if (isClearProp(px, pz, 1.0) && sampleMNT(px, pz) >= 0.1) {
+            seenCatCell.add(ck);
+            tramCatenary.push([px, pz, Number(yaw.toFixed(2)), isDbl]);
+            if (tramCatenary.length >= 260) break;
         }
     }
 
@@ -1288,6 +1496,7 @@ async function run() {
         trees: treesThinned,
         lamps: lampsThinned,
         tramStops,
+        tramCatenary,
         benches,
         bicloo,
         morris,
@@ -1336,6 +1545,7 @@ async function run() {
         tiles: manifestTiles,
         roadLanes,
         tramRoutes,
+        tramLines,
         props: propsOut,
         stats: {
             buildings: builtCount,

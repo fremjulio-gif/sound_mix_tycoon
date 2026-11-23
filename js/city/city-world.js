@@ -582,16 +582,59 @@ function getMaterialLibrary() {
 
     const roadC = document.createElement('canvas'); roadC.width = 256; roadC.height = 256;
     const rCtx = roadC.getContext('2d');
-    rCtx.fillStyle = '#1a1e28'; rCtx.fillRect(0, 0, 256, 256);
-    for (let i = 0; i < 4000; i++) {
-        rCtx.fillStyle = (i % 3 === 0) ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.22)';
+    rCtx.fillStyle = '#1b202b'; rCtx.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 4200; i++) {
+        rCtx.fillStyle = (i % 3 === 0) ? 'rgba(255,255,255,0.038)' : 'rgba(0,0,0,0.22)';
         rCtx.fillRect((i * 73) % 256, (i * 139) % 256, 2, 2);
     }
-    rCtx.fillStyle = 'rgba(226, 232, 240, 0.38)';
-    rCtx.fillRect(6, 0, 5, 256);
-    rCtx.fillRect(245, 0, 5, 256);
-    rCtx.fillStyle = 'rgba(226, 232, 240, 0.5)';
+    // Crisp Nantes granite sidewalk curbs & dark rain gutters flanking both sides of carriageway
+    rCtx.fillStyle = '#a4aab6';
+    rCtx.fillRect(0, 0, 15, 256);
+    rCtx.fillRect(241, 0, 15, 256);
+    rCtx.fillStyle = 'rgba(20, 24, 32, 0.5)';
+    for (let y = 0; y < 256; y += 32) {
+        rCtx.fillRect(0, y, 15, 2);
+        rCtx.fillRect(241, y, 15, 2);
+    }
+    rCtx.fillStyle = '#10141d';
+    rCtx.fillRect(15, 0, 6, 256);
+    rCtx.fillRect(235, 0, 6, 256);
+    // White edge lines & dashed center road divider
+    rCtx.fillStyle = 'rgba(226, 232, 240, 0.45)';
+    rCtx.fillRect(25, 0, 4, 256);
+    rCtx.fillRect(227, 0, 4, 256);
+    rCtx.fillStyle = 'rgba(226, 232, 240, 0.58)';
     for (let y = 0; y < 256; y += 64) rCtx.fillRect(126, y + 8, 4, 34);
+
+    // Historic Nantes granite-cobble roadway (Bouffay / Graslin / Château) with light granite curbs
+    const roadCobbleC = document.createElement('canvas'); roadCobbleC.width = 256; roadCobbleC.height = 256;
+    const roadCobbleB = document.createElement('canvas'); roadCobbleB.width = 256; roadCobbleB.height = 256;
+    const rcCtx = roadCobbleC.getContext('2d');
+    const rcbCtx = roadCobbleB.getContext('2d');
+    rcCtx.fillStyle = '#333945'; rcCtx.fillRect(0, 0, 256, 256);
+    rcbCtx.fillStyle = 'rgb(75,75,75)'; rcbCtx.fillRect(0, 0, 256, 256);
+    let rcRow = 0;
+    for (let y = 0; y < 256; y += 16) {
+        const off = (rcRow % 2) * 12;
+        for (let x = -24; x < 280; x += 24) {
+            const v = (((rcRow * 17 + Math.floor(x / 24) * 29) % 17) - 8) * 1.6;
+            const g = Math.max(66, Math.min(110, Math.round(86 + v)));
+            rcCtx.fillStyle = `rgb(${g}, ${g + 4}, ${g + 12})`;
+            rcCtx.fillRect(x + off + 1, y + 1, 22, 14);
+            rcbCtx.fillStyle = 'rgb(195,195,195)';
+            rcbCtx.fillRect(x + off + 1, y + 1, 22, 14);
+        }
+        rcRow++;
+    }
+    rcCtx.fillStyle = '#a8aeb9';
+    rcCtx.fillRect(0, 0, 16, 256);
+    rcCtx.fillRect(240, 0, 16, 256);
+    rcCtx.fillStyle = '#181c26';
+    rcCtx.fillRect(16, 0, 5, 256);
+    rcCtx.fillRect(235, 0, 5, 256);
+    rcbCtx.fillStyle = 'rgb(230,230,230)';
+    rcbCtx.fillRect(0, 0, 16, 256);
+    rcbCtx.fillRect(240, 0, 16, 256);
 
     const waterBumpC = document.createElement('canvas'); waterBumpC.width = 256; waterBumpC.height = 256;
     const wbCtx = waterBumpC.getContext('2d');
@@ -704,16 +747,62 @@ function getMaterialLibrary() {
             roughness: 0.72,
             metalness: 0.08,
             polygonOffset: true,
-            polygonOffsetFactor: -1,
-            polygonOffsetUnits: -1
+            polygonOffsetFactor: -2,
+            polygonOffsetUnits: -2
         }),
-        mat_tram: new THREE.MeshStandardMaterial({
-            color: '#cbd5e1',
-            roughness: 0.28,
-            metalness: 0.85,
+        mat_road_cobble: new THREE.MeshStandardMaterial({
+            map: makeScaledCanvasTexture(roadCobbleC, true, 1, 1),
+            bumpMap: makeScaledCanvasTexture(roadCobbleB, false, 1, 1),
+            bumpScale: 0.08,
+            roughness: 0.82,
+            metalness: 0.06,
             polygonOffset: true,
             polygonOffsetFactor: -2,
             polygonOffsetUnits: -2
+        }),
+        mat_tram_bed: (() => {
+            const tbC = document.createElement('canvas'); tbC.width = 256; tbC.height = 256;
+            const tbB = document.createElement('canvas'); tbB.width = 256; tbB.height = 256;
+            const tCtx = tbC.getContext('2d');
+            const bCtx = tbB.getContext('2d');
+            // Nantes granite-paved / concrete-sleeper dedicated tramway platform
+            tCtx.fillStyle = '#474e59'; tCtx.fillRect(0, 0, 256, 256);
+            bCtx.fillStyle = 'rgb(125,125,125)'; bCtx.fillRect(0, 0, 256, 256);
+            // Outer stone curbs framing the tram corridor
+            tCtx.fillStyle = '#8b93a2';
+            tCtx.fillRect(0, 0, 14, 256);
+            tCtx.fillRect(242, 0, 14, 256);
+            bCtx.fillStyle = 'rgb(215,215,215)';
+            bCtx.fillRect(0, 0, 14, 256);
+            bCtx.fillRect(242, 0, 14, 256);
+            // Transverse paving / sleeper joints
+            for (let y = 0; y < 256; y += 24) {
+                tCtx.fillStyle = 'rgba(20, 24, 31, 0.38)';
+                tCtx.fillRect(14, y, 228, 3);
+                bCtx.fillStyle = 'rgb(75,75,75)';
+                bCtx.fillRect(14, y, 228, 3);
+            }
+            // Subtle dark recessed rail-channel grooves
+            tCtx.fillStyle = 'rgba(10, 14, 20, 0.65)';
+            [36, 94, 162, 220].forEach(gx => tCtx.fillRect(gx - 4, 0, 8, 256));
+            return new THREE.MeshStandardMaterial({
+                map: makeScaledCanvasTexture(tbC, true, 1, 1),
+                bumpMap: makeScaledCanvasTexture(tbB, false, 1, 1),
+                bumpScale: 0.06,
+                roughness: 0.85,
+                metalness: 0.06,
+                polygonOffset: true,
+                polygonOffsetFactor: -3,
+                polygonOffsetUnits: -3
+            });
+        })(),
+        mat_tram: new THREE.MeshStandardMaterial({
+            color: '#f1f5f9',
+            roughness: 0.18,
+            metalness: 0.94,
+            polygonOffset: true,
+            polygonOffsetFactor: -4,
+            polygonOffsetUnits: -4
         }),
         mat_water: _waterMat,
         mat_park: new THREE.MeshStandardMaterial({
@@ -737,26 +826,27 @@ function getCobblestoneTextures() {
     const ctx = c.getContext('2d');
     const bCtx = b.getContext('2d');
 
-    ctx.fillStyle = '#4f5561'; ctx.fillRect(0, 0, S, S);
-    bCtx.fillStyle = 'rgb(85,85,85)'; bCtx.fillRect(0, 0, S, S);
+    // Authentic pale Nantes pedestrian granite sidewalk slabs (dalles piétonnes le long des bâtiments)
+    ctx.fillStyle = '#7b828e'; ctx.fillRect(0, 0, S, S);
+    bCtx.fillStyle = 'rgb(95,95,95)'; bCtx.fillRect(0, 0, S, S);
 
-    const stoneH = 32, stoneW = 48;
+    const slabH = 64, slabW = 64;
     let rN = 0;
-    for (let y = 0; y < S; y += stoneH) {
-        const off = (rN % 2) * (stoneW / 2);
-        for (let x = -stoneW; x < S + stoneW; x += stoneW) {
-            const v = (((rN * 19 + Math.floor(x / stoneW) * 31) % 21) - 10) * 1.3;
-            const g = Math.max(85, Math.min(138, Math.round(112 + v)));
-            ctx.fillStyle = `rgb(${g}, ${g + 2}, ${g + 6})`;
-            ctx.fillRect(x + off + 2, y + 2, stoneW - 4, stoneH - 4);
-            bCtx.fillStyle = 'rgb(200,200,200)';
-            bCtx.fillRect(x + off + 2, y + 2, stoneW - 4, stoneH - 4);
+    for (let y = 0; y < S; y += slabH) {
+        const off = (rN % 2) * (slabW / 2);
+        for (let x = -slabW; x < S + slabW; x += slabW) {
+            const v = (((rN * 19 + Math.floor(x / slabW) * 31) % 17) - 8) * 1.4;
+            const g = Math.max(138, Math.min(182, Math.round(162 + v)));
+            ctx.fillStyle = `rgb(${g}, ${g - 1}, ${g - 4})`;
+            ctx.fillRect(x + off + 2, y + 2, slabW - 4, slabH - 4);
+            bCtx.fillStyle = 'rgb(205,205,205)';
+            bCtx.fillRect(x + off + 2, y + 2, slabW - 4, slabH - 4);
         }
         rN++;
     }
     return {
-        map: makeScaledCanvasTexture(c, true, 220, 220),
-        bumpMap: makeScaledCanvasTexture(b, false, 220, 220)
+        map: makeScaledCanvasTexture(c, true, 240, 240),
+        bumpMap: makeScaledCanvasTexture(b, false, 240, 240)
     };
 }
 
@@ -956,6 +1046,7 @@ function buildOsmPropsInstances(root) {
         trees = [],
         lamps = [],
         tramStops = [],
+        tramCatenary = [],
         benches = [],
         bicloo = [],
         morris = [],
@@ -1114,25 +1205,87 @@ function buildOsmPropsInstances(root) {
         }
     }
 
-    // 3. Stations Tramway TAN (Naolib Glass Shelter + Emerald Fascia + Route Totem)
+    // 3. Stations Tramway TAN (Naolib Raised Parallel Platforms + Glass Shelter + Bench + Emerald Fascia + Route Totem)
     if (tramStops.length > 0) {
         const glassMat = new THREE.MeshStandardMaterial({ color: '#93c5fd', transparent: true, opacity: 0.35, roughness: 0.08, metalness: 0.65 });
         const tanGreenMat = new THREE.MeshBasicMaterial({ color: '#10b981' });
-        tramStops.forEach(([sx, sz, yaw]) => {
+        const platformMat = new THREE.MeshStandardMaterial({ color: '#8b93a0', roughness: 0.80 });
+        const tactileMat = new THREE.MeshBasicMaterial({ color: '#facc15' });
+        const displayMat = new THREE.MeshBasicMaterial({ color: '#fde047' });
+        tramStops.forEach(([sx, sz, facingYaw]) => {
             const gy = sampleNantesMnt(sx, sz) + 0.08;
             const st = new THREE.Group();
             st.position.set(sx, gy, sz);
-            st.rotation.y = yaw;
-            const roof = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.14, 1.9), darkIronMat); roof.position.set(0, 2.6, 0);
-            const tanStrip = new THREE.Mesh(new THREE.BoxGeometry(5.24, 0.18, 0.12), tanGreenMat); tanStrip.position.set(0, 2.6, 0.96);
-            const back = new THREE.Mesh(new THREE.BoxGeometry(4.8, 2.3, 0.06), glassMat); back.position.set(0, 1.25, -0.78);
-            const pL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.5, 0.12), darkIronMat); pL.position.set(-2.45, 1.25, -0.78);
-            const pR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.5, 0.12), darkIronMat); pR.position.set(2.45, 1.25, -0.78);
-            const totem = new THREE.Mesh(new THREE.BoxGeometry(0.45, 2.9, 0.22), darkIronMat); totem.position.set(3.2, 1.45, 0.2);
-            const totemTop = new THREE.Mesh(new THREE.BoxGeometry(0.47, 0.55, 0.24), tanGreenMat); totemTop.position.set(3.2, 2.65, 0.2);
-            st.add(roof, tanStrip, back, pL, pR, totem, totemTop);
+            st.rotation.y = facingYaw;
+            // 11.5m raised granite boarding platform parallel to tracks (local +Z faces inward toward steel rails)
+            const plat = new THREE.Mesh(new THREE.BoxGeometry(11.5, 0.32, 2.4), platformMat); plat.position.set(0, 0.16, 0);
+            const tactile = new THREE.Mesh(new THREE.BoxGeometry(11.5, 0.04, 0.18), tactileMat); tactile.position.set(0, 0.33, 1.06);
+            const roof = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.14, 1.9), darkIronMat); roof.position.set(-0.4, 2.78, -0.15);
+            const tanStrip = new THREE.Mesh(new THREE.BoxGeometry(6.44, 0.18, 0.12), tanGreenMat); tanStrip.position.set(-0.4, 2.78, 0.80);
+            const back = new THREE.Mesh(new THREE.BoxGeometry(6.0, 2.3, 0.06), glassMat); back.position.set(-0.4, 1.44, -0.92);
+            const pL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.5, 0.12), darkIronMat); pL.position.set(-3.45, 1.44, -0.92);
+            const pR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.5, 0.12), darkIronMat); pR.position.set(2.65, 1.44, -0.92);
+            const seat = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.09, 0.45), woodMat); seat.position.set(-0.4, 0.78, -0.52);
+            const totem = new THREE.Mesh(new THREE.BoxGeometry(0.46, 3.0, 0.24), darkIronMat); totem.position.set(4.1, 1.66, 0.25);
+            const totemTop = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.56, 0.26), tanGreenMat); totemTop.position.set(4.1, 2.90, 0.25);
+            const totemDisp = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.24, 0.27), displayMat); totemDisp.position.set(4.1, 2.32, 0.25);
+            st.add(plat, tactile, roof, tanStrip, back, pL, pR, seat, totem, totemTop, totemDisp);
             root.add(st);
         });
+    }
+
+    // 3b. Tramway Overhead Catenary Masts & Contact Wires (LAC)
+    if (tramCatenary.length > 0) {
+        const mastInst = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.08, 0.13, 5.7, 6), darkIronMat, tramCatenary.length);
+        const armInst = new THREE.InstancedMesh(new THREE.BoxGeometry(3.8, 0.09, 0.09), darkIronMat, tramCatenary.length);
+        tramCatenary.forEach(([cx, cz, yaw, isDbl], i) => {
+            const gy = sampleNantesMnt(cx, cz) + 0.08;
+            const armLen = isDbl ? 1.45 : 0.72;
+            dummy.scale.set(1, 1, 1);
+            dummy.rotation.set(0, yaw, 0);
+            dummy.position.set(cx, gy + 2.85, cz);
+            dummy.updateMatrix();
+            mastInst.setMatrixAt(i, dummy.matrix);
+
+            // Cantilever arm extending inward over the tramway tracks (-local X)
+            const inwardX = -Math.cos(yaw) * (isDbl ? 2.75 : 1.35);
+            const inwardZ = Math.sin(yaw) * (isDbl ? 2.75 : 1.35);
+            dummy.scale.set(armLen, 1, 1);
+            dummy.position.set(cx + inwardX, gy + 5.25, cz + inwardZ);
+            dummy.updateMatrix();
+            armInst.setMatrixAt(i, dummy.matrix);
+        });
+        [mastInst, armInst].forEach(inst => {
+            inst.instanceMatrix.needsUpdate = true;
+            root.add(inst);
+        });
+    }
+    if (Array.isArray(_manifest.tramRoutes) && _manifest.tramRoutes.length > 0) {
+        const wirePos = [];
+        for (const line of _manifest.tramRoutes) {
+            if (!line || line.length < 2) continue;
+            for (let i = 0; i < line.length - 1; i++) {
+                const a = line[i], b = line[i + 1];
+                const dx = b[0] - a[0], dz = b[1] - a[1];
+                const len = Math.hypot(dx, dz);
+                if (len < 0.5) continue;
+                const nx = -dz / len, nz = dx / len;
+                const yA = getCityGroundHeight(a[0], a[1]) + 5.15;
+                const yB = getCityGroundHeight(b[0], b[1]) + 5.15;
+                [-1.65, 1.65].forEach(lat => {
+                    wirePos.push(a[0] + nx * lat, yA, a[1] + nz * lat, b[0] + nx * lat, yB, b[1] + nz * lat);
+                });
+            }
+        }
+        if (wirePos.length > 0) {
+            const wireGeo = new THREE.BufferGeometry();
+            wireGeo.setAttribute('position', new THREE.Float32BufferAttribute(wirePos, 3));
+            const wireLines = new THREE.LineSegments(
+                wireGeo,
+                new THREE.LineBasicMaterial({ color: '#475569', transparent: true, opacity: 0.72 })
+            );
+            root.add(wireLines);
+        }
     }
 
     // 4. Benches across all Nantes Neighborhoods (150 wooden slat benches)
