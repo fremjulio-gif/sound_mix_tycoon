@@ -23,6 +23,7 @@ import {
 } from './city-triggers.js';
 import {
     initCityNpcs,
+    onNantesManifestApplied,
     syncCityVipNpcs,
     refreshCityBillboards,
     tickCityNpcs
@@ -86,8 +87,8 @@ export function enterCityWorld(fromLoc = null) {
     refreshCityBillboards();
 
     const spawnOverride = prev === 'pro_studio'
-        ? { x: 24, z: -20, rot: -Math.PI * 0.75 }
-        : { x: -24, z: -18, rot: Math.PI * 0.25 };
+        ? { x: -20.3, z: -512.0, rot: Math.PI }
+        : { x: 680.8, z: 102.0, rot: Math.PI };
 
     document.body.classList.add('city-active');
     const hud = document.getElementById('city-hud');
@@ -170,6 +171,9 @@ export function initCityBridge() {
         refreshDynamicSigns: refreshCityDynamicSigns
     };
     window._refreshCityBillboards = refreshCityBillboards;
+    window._onNantesManifestReady = (manifest) => {
+        onNantesManifestApplied(manifest);
+    };
     window._cityTick = tickCity;
     window._getCityPose = getCityPlayerPose;
 }

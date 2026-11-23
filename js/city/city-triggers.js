@@ -1,4 +1,5 @@
-import { getCityLandmarks } from './city-world.js';
+import { getCityLandmarks, getNantesDistrictAt, getNantesManifest, isPointInWater } from './city-world.js';
+import { getBridgeSpecs } from './nantes-monuments.js';
 import { getNearestCityNpc, interactWithCityNpc, getCityVipMinimapDots } from './city-npcs.js';
 import {
     VEHICLE_ORDER,
@@ -17,12 +18,7 @@ let _lastVehDomSig = '';
 let _lastPromptId = '';
 
 export function getDistrictInfo(x, z) {
-    if (Math.abs(z) <= 11.5) return { name: 'BOULEVARD 808', color: '#38bdf8' };
-    if (Math.abs(x) <= 11.5) return { name: 'AVENUE DU FLOW', color: '#e2e8f0' };
-    if (x < 0 && z < 0) return { name: 'BANLIEUE NORD', color: '#f59e0b' };
-    if (x < 0 && z > 0) return { name: 'VINYL ROW INDÉ', color: '#10b981' };
-    if (x > 0 && z > 0) return { name: 'AVENUE DES CLUBS', color: '#a855f7' };
-    return { name: 'DISTRICT 42 · SKYLINE', color: '#fbbf24' };
+    return getNantesDistrictAt(x, z);
 }
 
 function openAbleOsFromCity() {
@@ -136,40 +132,115 @@ function drawMiniMap(pose) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const S = canvas.width;
-    const worldToMap = (v) => ((v + 160) / 320) * S;
+    const rangeM = 750; // 750m radius player-centered radar (~1.5km across)
+    const toX = (wx) => S * 0.5 + ((wx - pose.x) / rangeM) * (S * 0.5);
+    const toZ = (wz) => S * 0.5 + ((wz - pose.z) / rangeM) * (S * 0.5);
 
     ctx.fillStyle = '#05070c';
     ctx.fillRect(0, 0, S, S);
 
-    // 4 district quadrants
-    const drawBlock = (x0, z0, x1, z1, col) => {
-        ctx.fillStyle = col;
-        ctx.fillRect(worldToMap(x0), worldToMap(z0), worldToMap(x1) - worldToMap(x0), worldToMap(z1) - worldToMap(z0));
-    };
-    drawBlock(-92, -92, -11, -11, 'rgba(245, 158, 11, 0.14)');
-    drawBlock(-92, 11, -11, 92, 'rgba(16, 185, 129, 0.14)');
-    drawBlock(11, 11, 92, 92, 'rgba(168, 85, 247, 0.16)');
-    drawBlock(11, -92, 92, -11, 'rgba(251, 191, 36, 0.16)');
+    // Accurate Loire / Erdre water silhouette (via 10m waterMask) + MNT relief backdrop
+    const man = getNantesManifest();
+    if (man && man.mnt) {
+        const { n, step, heightsDm } = man.mnt;
+        const elevPx = Math.max(2, (step / (rangeM * 2)) * S + 1);
+        for (let iz = 0; iz < n; iz++) {
+            const wz = -1400 + iz * step;
+            if (Math.abs(wz - pose.z) > rangeM + step) continue;
+            const py = toZ(wz);
+            for (let ix = 0; ix < n; ix++) {
+                const wx = -1400 + ix * step;
+                if (Math.abs(wx - pose.x) > rangeM + step) continue;
+                const h = heightsDm[iz * n + ix] * 0.1;
+                if (h >= 8.0) {
+                    ctx.fillStyle = 'rgba(148, 163, 184, 0.08)';
+                    ctx.fillRect(toX(wx) - elevPx * 0.5, py - elevPx * 0.5, elevPx, elevPx);
+                }
+            }
+        }
+    }
 
-    // Main Avenues
-    ctx.fillStyle = 'rgba(148, 163, 184, 0.24)';
-    ctx.fillRect(0, worldToMap(-11), S, worldToMap(11) - worldToMap(-11));
-    ctx.fillRect(worldToMap(-11), 0, worldToMap(11) - worldToMap(-11), S);
+    const wStep = 20;
+    const wPx = Math.max(2, (wStep / (rangeM * 2)) * S + 0.9);
+    ctx.fillStyle = 'rgba(14, 116, 144, 0.55)';
+    const wz0 = Math.max(-1390, Math.floor((pose.z - rangeM) / wStep) * wStep);
+    const wz1 = Math.min(1390, Math.ceil((pose.z + rangeM) / wStep) * wStep);
+    const wx0 = Math.max(-1390, Math.floor((pose.x - rangeM) / wStep) * wStep);
+    const wx1 = Math.min(1390, Math.ceil((pose.x + rangeM) / wStep) * wStep);
+    for (let wz = wz0; wz <= wz1; wz += wStep) {
+        const py = toZ(wz);
+        for (let wx = wx0; wx <= wx1; wx += wStep) {
+            if (isPointInWater(wx, wz)) {
+                ctx.fillRect(toX(wx) - wPx * 0.5, py - wPx * 0.5, wPx, wPx);
+            }
+        }
+    }
 
-    // Central Fountain ring
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
-    ctx.lineWidth = 1.4;
-    ctx.beginPath();
-    ctx.arc(worldToMap(0), worldToMap(0), 2.8, 0, Math.PI * 2);
-    ctx.stroke();
+    // Major IGN roads
+    if (man && Array.isArray(man.roadLanes)) {
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+        ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        for (let i = 0; i < man.roadLanes.length; i++) {
+            const line = man.roadLanes[i];
+            if (!line || line.length < 2) continue;
+            ctx.moveTo(toX(line[0][0]), toZ(line[0][1]));
+            for (let j = 1; j < line.length; j++) {
+                ctx.lineTo(toX(line[j][0]), toZ(line[j][1]));
+            }
+        }
+        ctx.stroke();
+    }
 
-    // Landmarks
+    // Real TAN Tram lines
+    if (man && Array.isArray(man.tramRoutes)) {
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.55)';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        for (let i = 0; i < man.tramRoutes.length; i++) {
+            const line = man.tramRoutes[i];
+            if (!line || line.length < 2) continue;
+            ctx.moveTo(toX(line[0][0]), toZ(line[0][1]));
+            for (let j = 1; j < line.length; j++) {
+                ctx.lineTo(toX(line[j][0]), toZ(line[j][1]));
+            }
+        }
+        ctx.stroke();
+    }
+
+    // All 8 real Nantes Bridges highlighted on radar
+    const bridges = getBridgeSpecs();
+    if (bridges.length > 0) {
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 3.2;
+        ctx.beginPath();
+        for (let i = 0; i < bridges.length; i++) {
+            const br = bridges[i];
+            ctx.moveTo(toX(br.ax), toZ(br.az));
+            ctx.lineTo(toX(br.bx), toZ(br.bz));
+        }
+        ctx.stroke();
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (let i = 0; i < bridges.length; i++) {
+            const br = bridges[i];
+            ctx.moveTo(toX(br.ax), toZ(br.az));
+            ctx.lineTo(toX(br.bx), toZ(br.bz));
+        }
+        ctx.stroke();
+    }
+
+    // 6 Nantes Landmarks (clamped smoothly to radar edge if distant)
     const landmarks = getCityLandmarks();
     for (let i = 0; i < landmarks.length; i++) {
         const lm = landmarks[i];
+        const mx = Math.max(5, Math.min(S - 5, toX(lm.tx)));
+        const mz = Math.max(5, Math.min(S - 5, toZ(lm.tz)));
         ctx.fillStyle = lm.accentHex;
         ctx.beginPath();
-        ctx.arc(worldToMap(lm.tx), worldToMap(lm.tz), 3.3, 0, Math.PI * 2);
+        ctx.arc(mx, mz, 3.2, 0, Math.PI * 2);
         ctx.fill();
     }
 
@@ -177,18 +248,17 @@ function drawMiniMap(pose) {
     const vipDots = getCityVipMinimapDots();
     for (let i = 0; i < vipDots.length; i++) {
         const v = vipDots[i];
+        const mx = toX(v.x), mz = toZ(v.z);
+        if (mx < 0 || mx > S || mz < 0 || mz > S) continue;
         ctx.fillStyle = '#e0f2fe';
         ctx.beginPath();
-        ctx.arc(worldToMap(v.x), worldToMap(v.z), 1.8, 0, Math.PI * 2);
+        ctx.arc(mx, mz, 2.0, 0, Math.PI * 2);
         ctx.fill();
     }
 
-    // Player heading triangle
-    const px = worldToMap(pose.x);
-    const pz = worldToMap(pose.z);
+    // Centered Player heading triangle
     ctx.save();
-    ctx.translate(px, pz);
-    // In canvas, -Y is North (-Z world), +X is East (+X world); yaw=0 faces +Z (+Y canvas)
+    ctx.translate(S * 0.5, S * 0.5);
     ctx.rotate(-pose.yaw);
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();

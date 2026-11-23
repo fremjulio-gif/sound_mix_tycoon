@@ -1,5 +1,6 @@
 import { THREE } from '../core/libs.js';
-import { CITY_BOUNDS, getCityColliders, getCityGroundHeight } from './city-world.js';
+import { CITY_BOUNDS, getCityColliders, getCityGroundHeight, isPointInWater } from './city-world.js';
+import { constrainToBridgeDeck } from './nantes-monuments.js';
 
 export const VEHICLE_ORDER = ['foot', 'scooter', 'bike', 'car'];
 
@@ -58,7 +59,7 @@ export const VEHICLE_SPECS = {
         camDist: 8.6,
         camHeight: 3.55,
         fov: 72,
-        radius: 1.35
+        radius: 1.05
     }
 };
 
@@ -69,6 +70,8 @@ let _avatarSignature = '';
 const _rigs = { scooter: null, bike: null, car: null };
 const _spinWheels = [];
 let _carBrakeMat = null;
+let _headlightPoint = null;
+let _headlightConeMat = null;
 
 const _pose = {
     x: 0,
@@ -227,9 +230,32 @@ function buildVehicleRigs(root) {
         car.add(w);
     });
     car.add(chassis, cabin, spoiler, underNeon, hlL, hlR, tlL, tlR);
+
+    // Dynamic vehicle headlights & additive road projection cone (+Z forward)
+    _headlightConeMat = new THREE.MeshBasicMaterial({
+        color: '#fef9c3',
+        transparent: true,
+        opacity: 0.11,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.DoubleSide
+    });
+    const beamGeo = new THREE.ConeGeometry(1.45, 13.0, 12, 1, true);
+    beamGeo.translate(0, -6.5, 0);
+    beamGeo.rotateX(-Math.PI * 0.485);
+    const beamL = new THREE.Mesh(beamGeo, _headlightConeMat);
+    beamL.position.set(-0.68, 0.52, 2.08);
+    const beamR = new THREE.Mesh(beamGeo, _headlightConeMat);
+    beamR.position.set(0.68, 0.52, 2.08);
+    car.add(beamL, beamR);
+
     car.visible = false;
     root.add(car);
     _rigs.car = car;
+
+    _headlightPoint = new THREE.PointLight('#fff4d2', 0, 28, 1.6);
+    _headlightPoint.position.set(0, 0.85, 4.2);
+    root.add(_headlightPoint);
 }
 
 function syncCityAvatarAppearance() {
@@ -289,24 +315,108 @@ export function cycleCityVehicle() {
     setCityVehicleMode(next, false);
 }
 
-function resolveColliders(nx, nz, radius) {
+function pointInFlatPolyXZ(px, pz, p) {
+    let inside = false;
+    const n = p.length;
+    for (let i = 0, j = n - 2; i < n; j = i, i += 2) {
+        const xi = p[i], zi = p[i + 1];
+        const xj = p[j], zj = p[j + 1];
+        if (((zi > pz) !== (zj > pz)) && (px < ((xj - xi) * (pz - zi)) / (zj - zi) + xi)) {
+            inside = !inside;
+        }
+    }
+    return inside;
+}
+
+function closestPointOnFlatPoly(px, pz, p) {
+    let bestD2 = Infinity;
+    let bestX = px;
+    let bestZ = pz;
+    const n = p.length;
+    for (let i = 0; i < n; i += 2) {
+        const j = (i + 2) % n;
+        const ax = p[i], az = p[i + 1];
+        const bx = p[j], bz = p[j + 1];
+        const vx = bx - ax, vz = bz - az;
+        const len2 = vx * vx + vz * vz;
+        const t = len2 > 1e-6 ? Math.max(0, Math.min(1, ((px - ax) * vx + (pz - az) * vz) / len2)) : 0;
+        const qx = ax + vx * t, qz = az + vz * t;
+        const d2 = (px - qx) * (px - qx) + (pz - qz) * (pz - qz);
+        if (d2 < bestD2) {
+            bestD2 = d2;
+            bestX = qx;
+            bestZ = qz;
+        }
+    }
+    return { qx: bestX, qz: bestZ, d2: bestD2 };
+}
+
+function resolveColliders(nx, nz, radius, prevX = nx, prevZ = nz) {
     let x = Math.max(CITY_BOUNDS.minX, Math.min(CITY_BOUNDS.maxX, nx));
     let z = Math.max(CITY_BOUNDS.minZ, Math.min(CITY_BOUNDS.maxZ, nz));
     const cols = getCityColliders();
-    for (let i = 0; i < cols.length; i++) {
-        const c = cols[i];
-        if (x + radius > c.minX && x - radius < c.maxX && z + radius > c.minZ && z - radius < c.maxZ) {
-            const penLeft = (x + radius) - c.minX;
-            const penRight = c.maxX - (x - radius);
-            const penTop = (z + radius) - c.minZ;
-            const penBot = c.maxZ - (z - radius);
-            const minPen = Math.min(penLeft, penRight, penTop, penBot);
-            if (minPen === penLeft) x = c.minX - radius;
-            else if (minPen === penRight) x = c.maxX + radius;
-            else if (minPen === penTop) z = c.minZ - radius;
-            else z = c.maxZ + radius;
+    const r2 = radius * radius;
+
+    for (let pass = 0; pass < 2; pass++) {
+        for (let i = 0; i < cols.length; i++) {
+            const c = cols[i];
+            if (!(x + radius > c.minX && x - radius < c.maxX && z + radius > c.minZ && z - radius < c.maxZ)) continue;
+
+            if (Array.isArray(c.p) && c.p.length >= 6) {
+                const inside = pointInFlatPolyXZ(x, z, c.p);
+                const { qx, qz, d2 } = closestPointOnFlatPoly(x, z, c.p);
+                if (!inside && d2 >= r2) continue;
+
+                const d = Math.sqrt(d2);
+                if (inside) {
+                    if (d > 1e-4) {
+                        x = qx + ((qx - x) / d) * radius;
+                        z = qz + ((qz - z) / d) * radius;
+                    } else {
+                        const penLeft = (x + radius) - c.minX;
+                        const penRight = c.maxX - (x - radius);
+                        const penTop = (z + radius) - c.minZ;
+                        const penBot = c.maxZ - (z - radius);
+                        const minPen = Math.min(penLeft, penRight, penTop, penBot);
+                        if (minPen === penLeft) x = c.minX - radius;
+                        else if (minPen === penRight) x = c.maxX + radius;
+                        else if (minPen === penTop) z = c.minZ - radius;
+                        else z = c.maxZ + radius;
+                    }
+                } else if (d > 1e-4) {
+                    x = qx + ((x - qx) / d) * radius;
+                    z = qz + ((z - qz) / d) * radius;
+                }
+            } else {
+                const penLeft = (x + radius) - c.minX;
+                const penRight = c.maxX - (x - radius);
+                const penTop = (z + radius) - c.minZ;
+                const penBot = c.maxZ - (z - radius);
+                const minPen = Math.min(penLeft, penRight, penTop, penBot);
+                if (minPen === penLeft) x = c.minX - radius;
+                else if (minPen === penRight) x = c.maxX + radius;
+                else if (minPen === penTop) z = c.minZ - radius;
+                else z = c.maxZ + radius;
+            }
         }
     }
+
+    const brClamped = constrainToBridgeDeck(x, z, radius);
+    x = brClamped.x;
+    z = brClamped.z;
+
+    if (isPointInWater(x, z)) {
+        if (!isPointInWater(x, prevZ)) {
+            z = prevZ;
+        } else if (!isPointInWater(prevX, z)) {
+            x = prevX;
+        } else {
+            x = prevX;
+            z = prevZ;
+        }
+        if (Math.abs(_pose.speed) > 4) _pose.speed *= 0.65;
+    }
+
     return { x, z };
 }
 
@@ -524,7 +634,7 @@ export function tickCityLocomotion(tSec) {
 
     const nextX = _pose.x + Math.sin(_pose.yaw) * _pose.speed * dt;
     const nextZ = _pose.z + Math.cos(_pose.yaw) * _pose.speed * dt;
-    const safe = resolveColliders(nextX, nextZ, spec.radius);
+    const safe = resolveColliders(nextX, nextZ, spec.radius, _pose.x, _pose.z);
     _pose.x = safe.x;
     _pose.z = safe.z;
     const targetGroundY = getCityGroundHeight(_pose.x, _pose.z);
@@ -552,6 +662,14 @@ export function tickCityLocomotion(tSec) {
     }
     if (_carBrakeMat) {
         _carBrakeMat.color.set((throttle < 0 || (_keys.back && canDrive)) ? '#ff1f5a' : '#881337');
+    }
+    if (_headlightPoint && _headlightConeMat) {
+        const tM = (typeof globalThis.state === 'object' && globalThis.state && typeof globalThis.state.timeMins === 'number')
+            ? globalThis.state.timeMins : 1080;
+        const hrNow = (((tM % 1440) + 1440) % 1440) / 60;
+        const lightsOn = (_pose.vehicle !== 'foot') && (hrNow >= 17.0 || hrNow < 7.5);
+        _headlightPoint.intensity = lightsOn ? (hrNow >= 20.0 || hrNow < 6.5 ? 26 : 14) : 0;
+        _headlightConeMat.opacity = lightsOn && _pose.vehicle === 'car' ? (hrNow >= 20.0 || hrNow < 6.5 ? 0.11 : 0.05) : 0;
     }
 
     // Chase Camera Smooth Follow
